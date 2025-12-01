@@ -1,0 +1,89 @@
+@font-face {
+    font-family: 'CustomFont';
+    src: url('font.otf') format('opentype');
+}
+
+#settingsButton {
+display:none;
+opacity: 0;
+color: rgba(255, 255, 255, 0);
+background-color: rgba(0,0,0,0);
+transform: scale(0);
+}
+
+body {
+    font-family: 'CustomFont', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: url('c.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.container {
+    text-align: center;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 40px 40px;
+    border-radius: 10px;
+background: radial-gradient(circle, rgb(0, 0, 0) 10%, rgba(255, 255, 255, 0) 70%, rgba(0, 0, 0, 0) 100%);
+            clip-path: ellipse(50% 50% at 50% 50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+}
+
+#title {
+    font-size: 3em;
+    margin: 0;
+    color: white;
+}
+
+#titleInput {
+    font-size: 3em;
+    margin: 0;
+    text-align: center;
+    width: 100%;
+    border: none;
+    outline: none;
+position:fixed;
+background-color:transparent;
+font-weight: bold;
+font-family: 'CustomFont', sans-serif;
+}
+
+
+#settingsButton:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+#settingsPanel {
+    position: fixed;
+    top: 50px;
+    right: 10px;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    flex-direction: column;
+}
+
+.hidden {
+    display: none;
+opacity:0%;
+}
+
+#textInput {
+    margin-bottom: 10px;
+    padding: 5px;
+    font-size: 1em;
+}
+
+bb{
+    text-decoration: line-through;
+    text-decoration-color: red;
+}
