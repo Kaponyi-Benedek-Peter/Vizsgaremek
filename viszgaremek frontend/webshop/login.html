@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body{
+            padding: 0;
+            margin: 0;
+            text-align:center
+        }
+        #main {
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main">
+        <label for="email">E-mail: <input type="text" id="email"></label>
+        <br>
+        <label for="pass">Password: <input type="text" id="pass"></label>
+        <br>
+        <p><a href="change_pass.html">Elfelejtettem a jelszamat</a></p>
+        <br>
+        <button type="button" id="login" onclick="login()">Login</button>
+        <div class="result"></div>
+    </div>
+
+    <script src="../js/login.js"></script>
+</body>
+
+</html>

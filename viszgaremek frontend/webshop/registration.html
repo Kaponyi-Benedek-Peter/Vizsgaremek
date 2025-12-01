@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+</head>
+
+<body>
+    <div id="main">
+        <label for="firstname">Firstname</label>
+        <input type="text" id="firstname" class="field firstname" placeholder="Firstname">
+        <br>
+        <label for="lastname">Lastname</label>
+        <input type="text" id="lastname" class="field lastname" placeholder="Lastname">
+        <br>
+        <label for="password">Password</label>
+        <input type="password" id="password" class="field password" placeholder="Password">
+        <br>
+        <label for="email">Email</label>
+        <input type="email" id="email" class="field email" placeholder="Email">
+        <br>
+        <p><a href="change_pass.html">Elfelejtettem a jelszamat</a></p>
+        <br>
+        <button type="button" class="regBtn" onclick="reg()">Registration</button>
+    </div>
+    <div id="result"></div>
+
+    <script src="../js/registration.js"></script>
+</body>
+
+</html>

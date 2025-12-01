@@ -1,0 +1,102 @@
+Privacy Policy
+Effective Date: 2025.10.05
+Last Updated: 2025.09.05
+
+Roy's Shack ("we," "our," or "us") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our website and services.
+
+1. Data We Collect
+When you use our webshop, we may collect the following information:
+
+Account Information: Email address, password (securely hashed), full name, preferred language (English or Hungarian).
+
+Shipping Information: Full name, shipping address (street, city, postal code, country), phone number, shipping method.
+
+Billing Information: Full name, billing address (street, city, postal code, country).
+
+Order Information: Order history and details of products purchased.
+
+Cookies: We use cookies to operate the shopping cart and improve the user experience. Cookies are necessary for essential site functionality.
+
+2. How We Use Your Data
+We process your personal data for the following purposes:
+
+To create and maintain your user account.
+
+To process and deliver your orders.
+
+To communicate with you about orders, shipping, and customer support.
+
+To provide secure access to our webshop (password handled in hashed form only).
+
+To comply with legal obligations (e.g., invoicing, accounting, taxation).
+
+To improve our webshop services and customer experience.
+
+3. Data Security
+Your password is stored in hashed form and never saved as plain text.
+
+We use appropriate technical and organizational measures to protect your personal data from unauthorized access, alteration, disclosure, or destruction.
+
+Payment details (e.g., credit card information) are not stored on our servers. Payments are processed securely through trusted third-party providers.
+
+4. Legal Basis for Processing (GDPR)
+If you are located in the European Union (EU) or European Economic Area (EEA), we process your data based on:
+
+Contract performance: To fulfill your orders and provide webshop services.
+
+Legal obligations: To comply with tax, accounting, and consumer protection laws.
+
+Legitimate interests: To improve our webshop, prevent fraud, and ensure security.
+
+Consent: For non-essential cookies and marketing communications (if applicable).
+
+5. Data Retention
+We retain your personal data only as long as it is necessary:
+
+Account and order history: kept until you request deletion, or as required by law.
+
+Billing information: retained for the period required by tax and accounting laws.
+
+Cookies: stored in your browser for the necessary duration (session or persistent, depending on type).
+
+6. Sharing of Information
+We may share your data with third parties only when necessary:
+
+With shipping carriers for order fulfillment.
+
+With payment service providers for processing transactions.
+
+With IT or hosting partners for secure website operation.
+We never sell your personal information to third parties.
+
+7. User Rights (GDPR / applicable laws)
+You have the right to:
+
+Access your personal data.
+
+Request corrections to your information.
+
+Request deletion ("right to be forgotten"), unless legal obligations prevent it.
+
+Request data portability in a machine-readable format.
+
+Object to certain processing or restrict processing.
+
+Withdraw consent (where processing is based on consent).
+
+To exercise your rights, please contact us at: support@roysshack.hu.
+
+8. Cookies
+We use cookies to:
+
+Keep items in your shopping cart.
+
+Save your language preferences.
+Essential cookies are required for the webshop to function. We also provide options to manage or disable cookies through your browser settings.
+
+9. Contact Information
+If you have questions or concerns about this Privacy Policy or how we process your data, contact us:
+
+Roy's Shack
+Email: support@roysshack.hu
+Address: Pécs, Erdei út 4
