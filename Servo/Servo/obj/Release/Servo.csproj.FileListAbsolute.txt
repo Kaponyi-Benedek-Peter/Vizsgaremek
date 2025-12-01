@@ -49,3 +49,4 @@ C:\Users\Nsc\Desktop\Szerver\Servo\Servo\obj\Release\Servo.csproj.CoreCompileInp
 C:\Users\Nsc\Desktop\Szerver\Servo\Servo\obj\Release\Servo.csproj.Up2Date
 C:\Users\Nsc\Desktop\Szerver\Servo\Servo\obj\Release\Servo.exe
 C:\Users\Nsc\Desktop\Szerver\Servo\Servo\obj\Release\Servo.pdb
+C:\Users\Nsc\Desktop\Szerver\Servo\Servo\obj\Release\Servo.exe.config

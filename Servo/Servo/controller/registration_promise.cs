@@ -65,6 +65,7 @@ namespace Servo.controller
                 }
                 else //if (resp == 500)
                 {
+                    service.shared.log(resp.ToString());
                     data.Response.StatusCode = 500;
                     byte[] buffer = Encoding.UTF8.GetBytes("sze_v_felhasznalo_nem_letezik");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);

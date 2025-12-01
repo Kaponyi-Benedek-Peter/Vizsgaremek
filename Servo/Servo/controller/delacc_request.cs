@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,6 +42,30 @@ namespace Servo.controller
             string id = "";
             string jelszo = "";
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             try
             {
                 
@@ -65,10 +90,19 @@ namespace Servo.controller
                     return;
                 }
 
-
+                int resp = 0;
                 service.shared.log("Account deletion request: " + id + "  " + jelszo + "  (" + data.Request.RemoteEndPoint.Address.ToString());
+                try
+                {
+                    service.shared.log("anyád stáció -1");
+                    resp = service.delacc_request.main(id, jelszo, data.Request.RemoteEndPoint.Address.ToString());
+                    service.shared.log("anyád stáció +1");
+                }
+                catch (Exception ex)
+                {
+                    service.shared.log(ex.Message + " -controller.delacc_request.main line 101");
+                }
 
-                int resp = service.delacc_request.main(id, jelszo, data.Request.RemoteEndPoint.Address.ToString());
                 if (resp == 200)
                 {
                     data.Response.StatusCode = 200;
@@ -88,11 +122,25 @@ namespace Servo.controller
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
             }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             catch (Exception ex)
             {
                 service.shared.log($"Error: {ex.Message}");
                 data.Response.StatusCode = 400;
-                byte[] buffer = Encoding.UTF8.GetBytes("Hibas request");
+                byte[] buffer = Encoding.UTF8.GetBytes("Hibas request"); // magyarul: bárhol lehet a hiba
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
             }
             finally

@@ -22,14 +22,15 @@ namespace Servo.service
                 string accstate = model.shared.get_account_state_by_id(controller_id);
                 string model_recieved_token = model.shared.get_token_by_id(controller_id);
                 service.shared.log(model_recieved_token);
-                service.shared.log(accstate+" 43t34t");
+                service.shared.log(accstate+" 43t34t353453453453454");
                 if (accstate == "unverified" || string.IsNullOrEmpty(accstate) && model_recieved_token == controller_token)
                 {
                     var test=model.registration_promise.main(controller_id);
                     //MessageBox.Show(test.ToString());
+                    service.shared.log(test.ToString());
                     if (test == 200)
                     {
-                        service.shared.log(accstate + " 43t34t");
+                        service.shared.log(accstate + " 43t34tbbb");
                         return 200;
                         
                     }

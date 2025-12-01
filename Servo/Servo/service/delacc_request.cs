@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Org.BouncyCastle.Math.EC;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
@@ -30,52 +31,90 @@ namespace Servo.service
 
         public static int main(string controller_id, string controller_jelszo, string ip)
         {
-
-            string fetched_token = model.shared.get_token_by_id(controller_id);
-
-            string jelszo_uj = service.shared.Decrypt(fetched_token, controller_jelszo);
-
-            service.shared.log("Password change request: " + controller_id + "   -> " + controller_jelszo + "  (" + ip);
-
-
-            string model_password = model.shared.get_passhash_by_id(controller_id);
-            string accstate = model.shared.get_account_state_by_id(controller_id);
-            if (accstate == "verified" || accstate == "admin")
+            try
             {
-                string controller_email = model.shared.get_email_by_id(controller_id);
+                service.shared.log("anyád stáció 1");
+                string fetched_token = "";
+                try
+                {
+                    fetched_token = model.shared.get_token_by_id(controller_id);
+                }
+                catch (Exception ex) { service.shared.log("Error get_token_by_id: " + ex.Message); }
 
-                
-                sendaccdeletion(controller_email);
+                string jelszo_uj = "";
+
+                service.shared.log($"{fetched_token} , {controller_jelszo}");
+                try
+                {
+                    jelszo_uj = service.shared.hashpass(controller_jelszo);
+                }
+                catch (Exception ex) { service.shared.log("Error Decrypt: " + ex.Message); }
+
+                string model_password = "";
+                string accstate = "";
+                try
+                {
+                    model_password = model.shared.get_passhash_by_id(controller_id);
+                    accstate = model.shared.get_account_state_by_id(controller_id);
+                }
+                catch (Exception ex) { service.shared.log("Error get_passhash or account_state: " + ex.Message); }
+
+                try
+                {
+                    if (accstate == "verified" || accstate == "admin")
+                    {
+                        string controller_email = "";
+                        try
+                        {
+                            controller_email = model.shared.get_email_by_id(controller_id);
+                        }
+
+                        catch (Exception ex) { service.shared.log("Error get_email_by_id: " + ex.Message); }
+
+                        service.shared.log(model_password+" 67 67  "+jelszo_uj);
+                        if (model_password == jelszo_uj)
+                        {
+                            sendaccdeletion(controller_email);
+                            service.shared.log("szendelte");
+                            return 200;
+                        }
+                        else
+                        {
+                            service.shared.log("roszjelszo");
+                            return 401;
+                        }
 
 
-                string confirmation_token = service.shared.gen_code(false);
-                int result = model.shared.add_confirmation(confirmation_token, controller_id, "-","account_deletion");
 
-               
 
-                return 200;
+                            try
+                            {
+                                string confirmation_token = service.shared.gen_code(false);
+                                int result = model.shared.add_confirmation(confirmation_token, controller_id, "-", "account_deletion");
+                            }
+                            catch (Exception ex) { service.shared.log("Error add_confirmation: " + ex.Message); }
+
+                        service.shared.log("anyád stáció 3");
+                        return 200;
+                    }
+                    else if (accstate == "banned")
+                    {
+                        service.shared.log("anyád stáció 401");
+                        return 401;
+                    }
+                    else
+                    {
+                        service.shared.log("anyád stáció 500");
+                        return 500;
+                    }
+                }
+                catch (Exception ex) { service.shared.log("Error processing accstate: " + ex.Message); }
             }
-
-            else
+            catch (Exception ex)
             {
-
-                if (accstate == "banned")
-                {
-                    return 401;
-                }
-                else
-                {
-                    return 500;
-                }
-
-
-                // nem oké
-
-
+                service.shared.log("Unexpected error in main: " + ex.Message);
             }
-
-
-
+            return 500;
         }
 
 
