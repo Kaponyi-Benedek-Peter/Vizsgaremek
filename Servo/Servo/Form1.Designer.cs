@@ -61,7 +61,7 @@
             this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
             this.richTextBox1.Size = new System.Drawing.Size(716, 774);
             this.richTextBox1.TabIndex = 0;
-            this.richTextBox1.Text = "< 2025.08.26 - 2025.08.28 >\n";
+            this.richTextBox1.Text = "< 2025.08.26 - 2025.12.01 >\n";
             // 
             // button1
             // 
