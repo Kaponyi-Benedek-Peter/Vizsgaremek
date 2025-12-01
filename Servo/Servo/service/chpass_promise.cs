@@ -79,7 +79,7 @@ namespace Servo.service
                     }
 
 
-                return 500; // asdas dasfwregrepgőr
+                return 500;
 
                 }
             }
