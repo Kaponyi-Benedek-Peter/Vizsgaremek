@@ -1,0 +1,129 @@
+﻿using Org.BouncyCastle.Math.EC;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Remoting.Messaging;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Servo.service
+{
+    internal class delacc_request
+    {
+
+        private static string accdeletionhtml_top = "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n  <meta charset=\"UTF-8\">\r\n  <title>Roy's Shack - Login Email</title>\r\n  <style>\r\n    body {\r\n      font-family: Arial, sans-serif;\r\n      margin: 0;\r\n      padding: 0;\r\n      background-color: #F5F0E1;\r\n      color: #333;\r\n      animation: fadeIn 1.2s ease;\r\n    }\r\n\r\n    .header {\r\n      background-color: #067A45;\r\n      color: white;\r\n      text-align: center;\r\n      padding: 40px 20px;\r\n      box-shadow: 0 4px 10px rgba(0,0,0,0.25);\r\n    }\r\n\r\n    .header img {\r\n      width: 70px;\r\n      height: 70px;\r\n      border-radius: 50%;\r\n      border: 3px solid #fff;\r\n      margin-bottom: 10px;\r\n    }\r\n\r\n    .header h1 {\r\n      margin: 0;\r\n      font-size: 28px;\r\n      letter-spacing: 1px;\r\n    }\r\n\r\n    .content {\r\n      padding: 50px 20px;\r\n      text-align: center;\r\n    }\r\n\r\n    .content h2 {\r\n      margin-top: 0;\r\n      font-size: 24px;\r\n      color: #067A45;\r\n    }\r\n\r\n    .content p {\r\n      font-size: 16px;\r\n      line-height: 1.6;\r\n      margin: 20px auto;\r\n      max-width: 600px;\r\n    }\r\n\r\n    .button {\r\n      display: inline-block;\r\n      background-color: #067A45;\r\n      color: #fff;\r\n      text-decoration: none;\r\n      padding: 16px 32px;\r\n      border-radius: 10px;\r\n      font-weight: bold;\r\n      font-size: 16px;\r\n      border: 3px solid #067A45;\r\n      transition: all 0.3s ease;\r\n      box-shadow: 0 4px 8px rgba(0,0,0,0.25);\r\n      margin-top: 20px;\r\n    }\r\n\r\n    .button:hover {\r\n      background-color: #fff;\r\n      color: #067A45;\r\n      transform: scale(1.05);\r\n    }\r\n\r\n    .footer {\r\n      background-color: #fff;\r\n      text-align: center;\r\n      font-size: 13px;\r\n      color: #555;\r\n      padding: 20px;\r\n      border-top: 3px solid #067A45;\r\n      box-shadow: 0 -3px 8px rgba(0,0,0,0.1);\r\n    }\r\n\r\n    @keyframes fadeIn {\r\n      from { opacity: 0; transform: translateY(15px); }\r\n      to { opacity: 1; transform: translateY(0); }\r\n    }\r\n\r\n    html{background-color: white;}\r\n  </style>\r\n</head>\r\n<body>\r\n  <div class=\"header\">\r\n    <img src=\"www.roysshack.hu/media/logo.webp\" alt=\"Logo\">\r\n    <h1>Roy's Shack</h1>\r\n  </div>\r\n\r\n  <div class=\"content\">\r\n    <h2>Welcome Back!</h2>\r\n    <p>\r\n      Hello there,<br>\r\n      We received a request to log in to your Roy's Shack account.<br>\r\n      Click the button below to securely sign in:\r\n    </p>\r\n\r\n    <a href=\"";
+        private static string accdeletionhtml_bottom = "\" class=\"button\">Log In</a>\r\n\r\n    <p>If you didn’t request this login, you can safely ignore this email.</p>\r\n  </div>\r\n\r\n  <div class=\"footer\">\r\n    © 2025 Roy's Shack. All rights reserved.<br>\r\n    This is an automated message, please do not reply.\r\n  </div>\r\n</body>\r\n</html>\r\n";
+
+        public static void sendaccdeletion(string email,string token)
+        {
+
+            service.shared.send_mail(email, "Account deletion", accdeletionhtml_top + $"{service.shared.current_url}?accdel=" + service.shared.b64enc(email) + ";" + service.shared.b64enc(token) + accdeletionhtml_bottom, "accdeletion");
+
+            
+
+            //testpanel.Instance.textBox2.Text = session_token; // csak tesztelés miatt
+
+        }
+
+
+
+        public static int main(string controller_id, string controller_jelszo, string ip)
+        {
+            try
+            {
+                service.shared.log("anyád stáció 1");
+                string fetched_token = "";
+                try
+                {
+                    fetched_token = model.shared.get_token_by_id(controller_id);
+                }
+                catch (Exception ex) { service.shared.log("Error get_token_by_id: " + ex.Message); }
+
+                string jelszo_uj = "";
+
+                service.shared.log($"{fetched_token} , {controller_jelszo}");
+                try
+                {
+                    jelszo_uj = service.shared.hashpass(controller_jelszo);
+                }
+                catch (Exception ex) { service.shared.log("Error Decrypt: " + ex.Message); }
+
+                string model_password = "";
+                string accstate = "";
+                try
+                {
+                    model_password = model.shared.get_passhash_by_id(controller_id);
+                    accstate = model.shared.get_account_state_by_id(controller_id);
+                }
+                catch (Exception ex) { service.shared.log("Error get_passhash or account_state: " + ex.Message); }
+
+                try
+                {
+                    if (accstate == "verified" || accstate == "admin")
+                    {
+                        string controller_email = "";
+                        try
+                        {
+                            controller_email = model.shared.get_email_by_id(controller_id);
+                        }
+
+                        catch (Exception ex) { service.shared.log("Error get_email_by_id: " + ex.Message); }
+
+                        service.shared.log(model_password+" 67 67  "+jelszo_uj);
+                        if (model_password == jelszo_uj)
+                        {
+                            string confirmation_token = service.shared.gen_code(false);
+                            sendaccdeletion(controller_email,confirmation_token);
+                            try
+                            {
+                               
+                                int result = model.shared.add_confirmation(confirmation_token, controller_id, "-", "account_deletion");
+                            }
+                            catch (Exception ex) { service.shared.log("Error add_confirmation: " + ex.Message); }
+
+                            service.shared.log("szendelte");
+                            return 200;
+                        }
+                        else
+                        {
+                            service.shared.log("roszjelszo");
+                            return 401;
+                        }
+
+
+
+                        service.shared.log("anyád stáció 3");
+                        return 200;
+                    }
+                    else if (accstate == "banned")
+                    {
+                        service.shared.log("anyád stáció 401");
+                        return 401;
+                    }
+                    else
+                    {
+                        service.shared.log("anyád stáció 500");
+                        return 500;
+                    }
+                }
+                catch (Exception ex) { service.shared.log("Error processing accstate: " + ex.Message); }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log("Unexpected error in main: " + ex.Message);
+            }
+            return 500;
+        }
+
+
+
+
+
+
+
+
+
+
+    }
+}
