@@ -92,7 +92,7 @@ namespace Servo.controller
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message}");
+                service.shared.log($"Error: {ex.Message} --controller.chpass_request");
                 data.Response.StatusCode = 400;
                 byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);

@@ -21,16 +21,21 @@ namespace Servo.service
                 string controller_email = model.shared.get_email_by_id(controller_id);
                 string accstate = model.shared.get_account_state_by_id(controller_id);
                 string model_recieved_token = model.shared.get_token_by_id(controller_id);
-                service.shared.log(model_recieved_token);
-                service.shared.log(accstate+" 43t34t353453453453454");
+                service.shared.log($"Debug: {model_recieved_token} || {accstate} --service.registration_promise.main 1");
+                
                 if (accstate == "unverified" || string.IsNullOrEmpty(accstate) && model_recieved_token == controller_token)
                 {
                     var test=model.registration_promise.main(controller_id);
                     //MessageBox.Show(test.ToString());
-                    service.shared.log(test.ToString());
+
+                    service.shared.log($"Debug: {test.ToString()} --service.registration_promise.main 2");
+
+
                     if (test == 200)
                     {
-                        service.shared.log(accstate + " 43t34tbbb");
+
+                        service.shared.log($"Debug: {accstate} --service.registration_promise.main 3");
+
                         return 200;
                         
                     }
@@ -48,7 +53,7 @@ namespace Servo.service
 
                     else
                     {
-                        service.shared.log(accstate + " 43t34ttttt");
+                        service.shared.log($"Debug: {accstate} --service.registration_promise.main 4");
                         return 500;
                     }
                     // nem oké
@@ -57,7 +62,7 @@ namespace Servo.service
                 }
 
             }
-            catch (Exception ex) { service.shared.log(ex.Message + " -service.registration_promise.main");return 500; }
+            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.registration_promise.main 1");return 500; }
 
         }
 

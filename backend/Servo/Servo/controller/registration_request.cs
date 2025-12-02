@@ -58,18 +58,20 @@ namespace Servo.controller
                 {
                     data.Response.StatusCode = 401;
                     byte[] buffer = Encoding.UTF8.GetBytes("felhasznalo_mar_letezik");
-                    service.shared.log("[[[");
+                    service.shared.log("Debug: controller.registration_request.main");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 
             }
             catch (Exception ex)
             {
-                service.shared.log("Error processing registration request: " + ex.Message);
+                service.shared.log($"Error: {ex.Message} --controller.registration_request");
                 data.Response.StatusCode = 500;
-                byte[] buffer = Encoding.UTF8.GetBytes("Internal server error");
+                byte[] buffer = Encoding.UTF8.GetBytes("sze_v_felhasznalo_nem_letezik");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                
+
+                service.shared.log("response:500 (hibas_request)");
+
             }
             
 

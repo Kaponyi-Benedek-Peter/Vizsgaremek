@@ -25,8 +25,9 @@ namespace Servo
             hallgatozo.Prefixes.Add($"http://+:{port.ToString()}/");
             
             hallgatozo.Start();
-            service.shared.log($"http://localhost:{port}/");
-            service.shared.log("running at: " + service.shared.baseDir);
+            service.shared.log("[server started 1/1]");
+            service.shared.log($"hosting at: http://localhost:{port}/");
+            service.shared.log($"hosting from: { service.shared.baseDir}\n");
 
             cts = new CancellationTokenSource();
             var token = cts.Token;
@@ -45,11 +46,12 @@ namespace Servo
                     catch (HttpListenerException ex) when (token.IsCancellationRequested)
                     {
 
-                        service.shared.log("stopped (1/1)");
+                        service.shared.log("[server stopped 1/1]");
                     }
                     catch (Exception ex)
                     {
-                        service.shared.log("error: " + ex.Message);
+                       
+                        service.shared.log($"Error: {ex.Message} --shared.start_server");
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);

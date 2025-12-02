@@ -47,7 +47,7 @@ namespace Servo.service
 
                 string model_password = model.shared.get_passhash_by_id(controller_id);
                 string accstate = model.shared.get_account_state_by_id(controller_id);
-                service.shared.log(",, " + accstate + " ,,");
+                service.shared.log($"Debug: {accstate} --service.chpass_request");
                 if (accstate == "verified")
                 {
                     string controller_email = model.shared.get_email_by_id(controller_id);
@@ -69,7 +69,7 @@ namespace Servo.service
                 }
 
             }
-            catch (Exception e) { service.shared.log(e.Message);return 1500; }
+            catch (Exception e) { service.shared.log($"Error: {e.Message} --service.chpass_request");return 1500; }
 
         }
 

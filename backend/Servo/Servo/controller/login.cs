@@ -73,7 +73,7 @@ namespace Servo.controller
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message}");
+                service.shared.log($"Error: {ex.Message} --controller.login.main");
                 data.Response.StatusCode = 400;
                 byte[] buffer = Encoding.UTF8.GetBytes("Hibas request");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);

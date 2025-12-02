@@ -23,7 +23,7 @@ namespace Servo.service
             {
                 resp = model.shared.get_full_confirmation_by_identification(controller_id);
             }
-            catch (Exception ex) { service.shared.log(ex.Message+ " -service.chpass_promise.main 0"); }
+            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.main 1"); }
 
             string recieved_token=""; 
             string expirationdate="";
@@ -37,15 +37,15 @@ namespace Servo.service
              new_passhash = resp["new_value"];
 
             }
-            catch (Exception ex) { service.shared.log(ex.Message+ " -service.chpass_promise.main 1"); }
+            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.main 2"); }
 
 
             string fetched_token = model.shared.get_token_by_id(controller_id);
             string model_password = model.shared.get_sesstoken_expiration_by_id(controller_id);
             string accstate = model.shared.get_account_state_by_id(controller_id);
 
-            service.shared.log(controller_confirmation_token);
-            service.shared.log(fetched_token);
+            //service.shared.log(controller_confirmation_token);
+            //service.shared.log(fetched_token);
 
 
 

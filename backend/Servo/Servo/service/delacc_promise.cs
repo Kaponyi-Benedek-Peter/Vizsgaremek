@@ -19,7 +19,7 @@ namespace Servo.service
             {
                 resp = model.shared.get_full_confirmation_by_identification(controller_id);
             }
-            catch { service.shared.log("ojtopőt43t"); }
+            catch (Exception ex){ service.shared.log($"Error: {ex.Message} --service.delacc_promise.main 1"); }
 
             string recieved_token="";
             string expirationdate = "";
@@ -27,24 +27,19 @@ namespace Servo.service
              recieved_token = resp["confirmation_token"];
              expirationdate = resp["confirmation_token_expire"];
             }
-            catch { service.shared.log("343434343"); }
-            service.shared.log("asdasd");
-            service.shared.log("---> "+expirationdate+" <---"+" ---> "+controller_confirmation_token);
+            catch (Exception ex){ service.shared.log($"Error: {ex.Message} --service.delacc_promise.main 2"); }
+            service.shared.log($"Debug: {expirationdate} || {controller_confirmation_token} --service.delacc_promise.main 2");
+
             string fetched_token = model.shared.get_token_by_id(controller_id);
             string model_password = model.shared.get_passhash_by_id(controller_id);
             string accstate = model.shared.get_account_state_by_id(controller_id);
-           
-            service.shared.log(fetched_token);
-            service.shared.log(model_password);
-            
-            service.shared.log(accstate);
-            service.shared.log("00000");
-            service.shared.log(resp["confirmation_type"] +"rlégkrelégreg");
-            service.shared.log("11111");
+
+
+            service.shared.log($"Debug: {fetched_token} || {model_password} || {accstate} || {resp["confirmation_type"]} --service.delacc_promise.main 3");
 
             DateTime expirationDate = DateTime.Parse(expirationdate);
             DateTime currentDate = DateTime.Now;
-            service.shared.log("22222");
+
 
             if (resp["error"] == "true" && resp["confirmation_type"] != "account_deletion")
             {

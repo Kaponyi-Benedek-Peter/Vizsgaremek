@@ -9,21 +9,23 @@ using System.Threading.Tasks;
 
 namespace Servo.controller
 {
-    internal class delacc_promise
+    internal class ban_user
     {
-
-
         public static void main(HttpListenerContext data, string lenyeg)
         {
             string kert = data.Request.Url.AbsolutePath.TrimStart('/');
-
             
             
             
+            
 
+          
+            string admin_id = "";
+            string admin_token = "";
 
-            string id = "";
-            string confirmation_token = "";
+            string user_id = "";
+            string ban_reason = "";
+
 
             try
             {
@@ -35,17 +37,14 @@ namespace Servo.controller
 
                 service.shared.log($"Body received: {lenyeg}");
 
-                
-                JObject jsonObj = JObject.Parse(lenyeg);
-
                 try { 
-                
+                JObject jsonObj = JObject.Parse(lenyeg);
+                    admin_id = service.shared.b64dec(jsonObj["admin_id"].ToString());
+                    admin_token = service.shared.b64dec(jsonObj["admin_token"].ToString());
 
-                
-                id = service.shared.b64dec(jsonObj["id"].ToString());
+                    user_id = service.shared.b64dec(jsonObj["user_id"].ToString());
+                    ban_reason = service.shared.b64dec(jsonObj["ban_reason"].ToString());
 
-                //error
-                confirmation_token = service.shared.b64dec(jsonObj["token"].ToString());
 
                 }
                 catch
@@ -55,43 +54,37 @@ namespace Servo.controller
                     byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                     return;
+
                 }
 
 
+               /* service.shared.log("User banned: " + email + "  " + jelszo + "  (" + data.Request.RemoteEndPoint.Address.ToString());
 
-                int resp = 500;
-                service.shared.log("Account deletion request: " + id + "  " + confirmation_token + "  (" + data.Request.RemoteEndPoint.Address.ToString());
-                try
-                {
-                    resp = service.delacc_promise.main(id, confirmation_token, data.Request.RemoteEndPoint.Address.ToString());
-                }
-                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --controller.delacc_promise.main");}
-
-                
+                int resp = service.login.main(jelszo, email); // SERVICE
                 if (resp == 200)
                 {
                     data.Response.StatusCode = 200;
-                    byte[] buffer = Encoding.UTF8.GetBytes("felhasznalo_torolve");
+                    byte[] buffer = Encoding.UTF8.GetBytes("email_kuldve");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else if (resp == 401)
                 {
                     data.Response.StatusCode = 401;
-                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_token");
+                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_jelszo");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else //if (resp == 500)
                 {
                     data.Response.StatusCode = 500;
-                    byte[] buffer = Encoding.UTF8.GetBytes("szerver_hiba_vagy_felhasznalo_nem_letezik");
+                    byte[] buffer = Encoding.UTF8.GetBytes("sze_v_felhasznalo_nem_letezik");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                }
+                }*/
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --controller.delacc_promise.main 2");
+                service.shared.log($"Error: {ex.Message}  --controller.ban_user.main");
                 data.Response.StatusCode = 400;
-                byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
+                byte[] buffer = Encoding.UTF8.GetBytes("Hibas request");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
             }
             finally
@@ -99,33 +92,6 @@ namespace Servo.controller
                 data.Response.OutputStream.Close();
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     }
 }

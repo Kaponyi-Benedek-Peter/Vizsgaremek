@@ -62,7 +62,7 @@ namespace Servo.service
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message+"   43t45tg54");
+                service.shared.log($"Error: {ex.Message} --service.registration_request.main 1");
                 return 400;
             }
         }

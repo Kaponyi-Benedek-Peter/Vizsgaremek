@@ -32,22 +32,22 @@ namespace Servo.service
         {
             try
             {
-                service.shared.log("anyád stáció 1");
+                service.shared.log($"Debug: X --service.delacc_request.main 1");
                 string fetched_token = "";
                 try
                 {
                     fetched_token = model.shared.get_token_by_id(controller_id);
                 }
-                catch (Exception ex) { service.shared.log("Error get_token_by_id: " + ex.Message); }
+                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 1"); }
 
                 string jelszo_uj = "";
 
-                service.shared.log($"{fetched_token} , {controller_jelszo}");
+                service.shared.log($"Debug: {fetched_token} || {controller_jelszo} --service.delacc_request.main 2");
                 try
                 {
                     jelszo_uj = service.shared.hashpass(controller_jelszo);
                 }
-                catch (Exception ex) { service.shared.log("Error Decrypt: " + ex.Message); }
+                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 2"); }
 
                 string model_password = "";
                 string accstate = "";
@@ -56,7 +56,7 @@ namespace Servo.service
                     model_password = model.shared.get_passhash_by_id(controller_id);
                     accstate = model.shared.get_account_state_by_id(controller_id);
                 }
-                catch (Exception ex) { service.shared.log("Error get_passhash or account_state: " + ex.Message); }
+                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 3);"); }
 
                 try
                 {
@@ -68,9 +68,9 @@ namespace Servo.service
                             controller_email = model.shared.get_email_by_id(controller_id);
                         }
 
-                        catch (Exception ex) { service.shared.log("Error get_email_by_id: " + ex.Message); }
+                        catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 4"); }
 
-                        service.shared.log(model_password+" 67 67  "+jelszo_uj);
+                        service.shared.log($"Debug: {model_password} || {jelszo_uj} --service.delacc_request.main 3");
                         if (model_password == jelszo_uj)
                         {
                             string confirmation_token = service.shared.gen_code(false);
@@ -80,38 +80,37 @@ namespace Servo.service
                                
                                 int result = model.shared.add_confirmation(confirmation_token, controller_id, "-", "account_deletion");
                             }
-                            catch (Exception ex) { service.shared.log("Error add_confirmation: " + ex.Message); }
+                            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 5"); }
 
-                            service.shared.log("szendelte");
+                            service.shared.log($"Debug: \"szendelte\" --service.delacc_request.main 4");
                             return 200;
                         }
                         else
                         {
-                            service.shared.log("roszjelszo");
+                            service.shared.log($"Debug: \"rosszjelszo\" --service.delacc_request.main 5");
                             return 401;
                         }
 
 
 
-                        service.shared.log("anyád stáció 3");
                         return 200;
                     }
                     else if (accstate == "banned")
                     {
-                        service.shared.log("anyád stáció 401");
+                        service.shared.log($"Debug: \"banned\" --service.delacc_request.main 7");
                         return 401;
                     }
                     else
                     {
-                        service.shared.log("anyád stáció 500");
+                        service.shared.log($"Debug: \"500\" --service.delacc_request.main 8");
                         return 500;
                     }
                 }
-                catch (Exception ex) { service.shared.log("Error processing accstate: " + ex.Message); }
+                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 6"); }
             }
             catch (Exception ex)
             {
-                service.shared.log("Unexpected error in main: " + ex.Message);
+                service.shared.log($"Error: {ex.Message} --service.delacc_request.main 7");
             }
             return 500;
         }

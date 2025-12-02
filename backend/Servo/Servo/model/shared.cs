@@ -17,7 +17,7 @@ namespace Servo.model
         {
             conn= new MySqlConnection(connStr);
             conn.Open();
-            service.shared.log("! connection open !");
+            service.shared.log("[mysql connection open]");
         }
         public static string connStr = "server=localhost;port=3307;user=root;password=root;database=roy;";
 
@@ -183,7 +183,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message+ " -get_email_by_id");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_email_by_id 1");
                 return "500";
             }
 
@@ -221,7 +221,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -get_token_by_id");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_token_by_id 2");
                 return "500";
             }
 
@@ -255,12 +255,12 @@ namespace Servo.model
                             list.Add("confirmation_token", reader.IsDBNull(reader.GetOrdinal("confirmation_token")) ? "" : reader["confirmation_token"].ToString());
                             list.Add("confirmation_token_expire", reader.IsDBNull(reader.GetOrdinal("confirmation_token_expire")) ? "" : reader["confirmation_token_expire"].ToString());
                             list.Add("confirmation_type", reader.IsDBNull(reader.GetOrdinal("confirmation_type")) ? "" : reader["confirmation_type"].ToString());
-
+                            /*
                             service.shared.log($"new_value:{reader["new_value"]?.ToString()}");
                             service.shared.log($"confirmation_token:{reader["confirmation_token"]?.ToString()}");
                             service.shared.log($"confirmation_token_expire:{reader["confirmation_token_expire"]?.ToString()}");
                             service.shared.log($"confirmation_type:{reader["confirmation_type"]?.ToString()}");
-                       
+                            */
 
 
                         }
@@ -269,7 +269,7 @@ namespace Servo.model
                 
             }
             catch (Exception ex) {
-                service.shared.log(ex.Message + " -get_full_confirmation_by_identification");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_full_confirmation_by_identification 3");
                 list["error"] = "true";
             }
 
@@ -307,7 +307,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -get_account_state_by_id: "+id);
+                service.shared.log($"Error: {ex.Message} --model.shared.get_account_state_by_id 4");
                 return "500";
 
             }
@@ -344,7 +344,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -get_passhash_by_id");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_passhash_by_id 5");
                 return "500";
 
             }
@@ -382,7 +382,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -get_sesstoken_expiration_by_id");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_sesstoken_expiration_by_id 6");
                 return "500";
 
             }
@@ -420,7 +420,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -get_id_by_email");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_id_by_email 7");
                 return "500";
             }
 
@@ -447,7 +447,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -add_confirmation");
+                service.shared.log($"Error: {ex.Message} --model.shared.add_confirmation 8");
                 return 500;
             }
         }
@@ -485,7 +485,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -refresh_token");
+                service.shared.log($"Error: {ex.Message} --model.shared.refresh_token 9");
                 return "500";
 
             }
@@ -513,7 +513,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -delete_all_users");
+                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_users 10");
                 return 500;
             }
         }
@@ -534,7 +534,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -delete_all_confirmations");
+                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_confirmations 11");
                 return 500;
             }
         }
@@ -554,7 +554,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -delete_all_orders");
+                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_orders 12");
                 return 500;
             }
         }
@@ -575,7 +575,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -delete_all_orders");
+                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_posts 13");
                 return 500;
             }
         }
@@ -597,7 +597,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -delete_all_products");
+                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_products 14");
                 return 500;
             }
         }

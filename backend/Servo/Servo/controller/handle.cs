@@ -34,7 +34,7 @@ namespace Servo.controller
             {
                 
                 string lenyeg = kert.Replace("api/", "");
-                service.shared.log("api kérés: " +lenyeg);
+                service.shared.log(">api kérés: " +lenyeg+"");
                 // =========== GETTOKen =========== 
 
                 if (lenyeg.Contains("login"))
@@ -115,7 +115,7 @@ namespace Servo.controller
             // =========== NEMAPI =========== 
             else
                 {
-                    service.shared.log("nem api");
+                    service.shared.log(">nem api kérés: "+kert);
                     string hely = Path.Combine(alap, kert);
 
                     if (Directory.Exists(hely))
@@ -128,8 +128,8 @@ namespace Servo.controller
                             byte[] fileBytes = File.ReadAllBytes(hely);
                             data.Response.ContentType = service.shared.mime(Path.GetExtension(hely));
                             data.Response.OutputStream.Write(fileBytes, 0, fileBytes.Length);
-                            Form1.Instance.log(data.Request.RemoteEndPoint.Address.ToString() + hely + " || ok");
-                            Form1.Instance.updatefilesserved();
+                        service.shared.log($"{data.Request.RemoteEndPoint.Address.ToString()} --> {hely.Split(new string[] { "\\public\\" }, StringSplitOptions.None)[1]} || ok");
+                        Form1.Instance.updatefilesserved();
                         }
                         catch (Exception ex)
                         {
@@ -137,7 +137,7 @@ namespace Servo.controller
                             byte[] buffer = Encoding.UTF8.GetBytes("error"); // elhallgatni a hibát és alattomos módon lejelenteni 3 sorral lejjebb
                             data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                             Form1.Instance.updateerrorcount();
-                            Form1.Instance.log(data.Request.RemoteEndPoint.Address.ToString() + hely + " || ERROR: " + ex.Message);
+                        service.shared.log($"{data.Request.RemoteEndPoint.Address.ToString()} --> {hely.Split(new string[] { "\\public\\" }, StringSplitOptions.None)[1]} || ERROR: + {ex.Message}");
                         }
                     }
                     else
@@ -156,7 +156,7 @@ namespace Servo.controller
 
                 data.Response.OutputStream.Close();
                 data.Response.Close();
-            service.shared.log("request end");
+            service.shared.log("[connection end]\n");
         }
 
             

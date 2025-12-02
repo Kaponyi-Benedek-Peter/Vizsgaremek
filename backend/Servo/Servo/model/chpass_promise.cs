@@ -31,7 +31,8 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -change_password");
+                service.shared.log($"Error: {ex.Message} --model.chpass_promise.change_password 1");
+
                 return 500;
             }
         }
@@ -55,7 +56,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log(ex.Message + " -delete_confirmation");
+                service.shared.log($"Error: {ex.Message} --model.chpass_promise.delete_confirmation 2");
                 return 500;
             }
         }

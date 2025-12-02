@@ -94,13 +94,13 @@ namespace Servo.controller
                 service.shared.log("Account deletion request: " + id + "  " + jelszo + "  (" + data.Request.RemoteEndPoint.Address.ToString());
                 try
                 {
-                    service.shared.log("anyád stáció -1");
+                    service.shared.log("Debug: delacc_request.main 1");
                     resp = service.delacc_request.main(id, jelszo, data.Request.RemoteEndPoint.Address.ToString());
-                    service.shared.log("anyád stáció +1");
+                    service.shared.log("Debug: delacc_request.main 2");
                 }
                 catch (Exception ex)
                 {
-                    service.shared.log(ex.Message + " -controller.delacc_request.main line 101");
+                    service.shared.log($"Error: {ex.Message} -controller.delacc_request.main 1");
                 }
 
                 if (resp == 200)
@@ -138,7 +138,7 @@ namespace Servo.controller
 
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message}");
+                service.shared.log($"Error: {ex.Message} --controller.delacc_request.main 2");
                 data.Response.StatusCode = 400;
                 byte[] buffer = Encoding.UTF8.GetBytes("Hibas request"); // magyarul: bárhol lehet a hiba
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);

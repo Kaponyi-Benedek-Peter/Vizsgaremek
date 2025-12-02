@@ -50,11 +50,11 @@ namespace Servo.controller
                      resp = service.chpass_promise.main(id, token, data.Request.RemoteEndPoint.Address.ToString());
 
                 }
-                catch 
+                catch (Exception ex)
                 {
-                    service.shared.log("aaaaaaaaa");
+                    service.shared.log($"Error: {ex.Message} --controller.chpass_promise.main");
                 }
-                service.shared.log(resp.ToString());
+                //service.shared.log(resp.ToString());
                 if (resp == 402)
                 {
                     data.Response.StatusCode = 402;

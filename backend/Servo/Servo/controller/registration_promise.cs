@@ -54,13 +54,14 @@ namespace Servo.controller
                 {
                     data.Response.StatusCode = 200;
                     byte[] buffer = Encoding.UTF8.GetBytes("aktivalva");
-                    service.shared.log("oke oke");
+                    service.shared.log("response:200 (aktivalva)");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else if (resp == 401)
                 {
                     data.Response.StatusCode = 401;
                     byte[] buffer = Encoding.UTF8.GetBytes("hibas_token");
+                    service.shared.log("response:401 (hibas_token)");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else //if (resp == 500)
@@ -69,14 +70,18 @@ namespace Servo.controller
                     data.Response.StatusCode = 500;
                     byte[] buffer = Encoding.UTF8.GetBytes("sze_v_felhasznalo_nem_letezik");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+
+                    service.shared.log("response:500 (sze_v_felhasznalo_nem_letezik)");
                 }
             }
             catch (Exception ex)
             {
                 service.shared.log($"Error: {ex.Message} -registration_promise.main");
                 data.Response.StatusCode = 400;
-                byte[] buffer = Encoding.UTF8.GetBytes("Hibas request");
+                byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+
+                service.shared.log("response:400 (hibas_request)");
             }
             finally
             {
