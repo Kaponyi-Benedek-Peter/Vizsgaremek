@@ -1,3 +1,4 @@
+
 // Adatok
 const email = "bp.kaponyi@gmail.com";
 const password = "Almacsutka_12Rágcsa_01";
@@ -36,38 +37,27 @@ describe("Registration", () => {
   });
 });
 
-describe("Delete Account", () => {
-  it("should delete account with manual confirmation link", () => {
+describe("Login", () => {
+  it("should login with manual confirmation link", () => {
+    cy.visit("http://127.0.0.1:5500/webshop/login.html");
 
-    cy.visit("http://127.0.0.1:5500/webshop/delete_acc.html");
-
+    cy.get("#email").type(email);
     cy.get("#pass").type(password);
 
-    cy.get("#deleteBtn").click();
+    cy.get("#login").click();
 
     // MANUÁLIS LÉPÉS!
-    askForLink("Add meg az account delete link végét (?accdel=...)")
-      .then((deleteLink) => {
+    askForLink("Add meg a loginhez kapott link végét (?login=...)")
+      .then((loginLink) => {
 
-        cy.visit("http://127.0.0.1:5500/webshop/index.html" + deleteLink);
+        cy.visit("http://127.0.0.1:5500/webshop/index.html" + loginLink);
 
-        // Ellenőrzés
         cy.get(".result")
-          .should("contain", "Your account has been successfully deleted!");
+          .should("contain", "Login succesful!");
       });
   });
 });
 
-describe('Registration', () => {
-  it('passes', () => {
-    cy.visit('http://127.0.0.1:5500/webshop/registration.html')
-  })
-});
-describe('Login', () => {
-  it('passes', () => {
-    cy.visit('http://127.0.0.1:5500/webshop/login.html')
-  })
-});
 describe('Products', () => {
   it('passes', () => {
     cy.visit('http://127.0.0.1:5500/webshop/products.html')
@@ -93,13 +83,49 @@ describe('Bracket', () => {
     cy.visit('http://127.0.0.1:5500/webshop/bracket.html')
   })
 });
-describe('Change_Password', () => {
-  it('passes', () => {
-    cy.visit('http://127.0.0.1:5500/webshop/change_pass.html')
-  })
+describe("Change Password", () => {
+  it("should request password change via manual email link", () => {
+
+    cy.visit("http://127.0.0.1:5500/webshop/change_pass.html");
+
+    const newPass = "UjJelszo_12345"; // lehetséges random jelszó is cy.task-al
+
+    cy.get("#pass").type(newPass);
+    cy.get("#pass_again").type(newPass);
+
+    cy.get("#requestBtn").click();
+
+    // // MANUÁLIS LÉPÉS!
+    askForLink("Add meg a password change link végét (?changepass=...)")
+      .then((changePassLink) => {
+
+        cy.visit("http://127.0.0.1:5500/webshop/index.html" + changePassLink);
+
+        // Ellenőrzés
+        cy.get(".result")
+          .should("contain", "Password changed successfully!");
+      });
+  });
 });
-describe('Delete_Account', () => {
-  it('passes', () => {
-    cy.visit('http://127.0.0.1:5500/webshop/delete_acc.html')
-  })
+
+describe("Delete Account", () => {
+  it("should delete account with manual confirmation link", () => {
+
+    cy.visit("http://127.0.0.1:5500/webshop/delete_acc.html");
+
+    cy.get("#pass").type(password);
+
+    cy.get("#deleteBtn").click();
+
+    // MANUÁLIS LÉPÉS!
+    askForLink("Add meg az account delete link végét (?accdel=...)")
+      .then((deleteLink) => {
+
+        cy.visit("http://127.0.0.1:5500/webshop/index.html" + deleteLink);
+
+        // Ellenőrzés
+        cy.get(".result")
+          .should("contain", "Your account has been successfully deleted!");
+      });
+  });
 });
