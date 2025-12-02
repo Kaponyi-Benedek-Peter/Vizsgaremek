@@ -3,6 +3,38 @@
   "WorkspaceRootPath": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\szerver\\servo\\servo\\controller\\registration_promise.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\registration_promise.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\szerver\\servo\\servo\\controller\\registration_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\registration_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\szerver\\servo\\servo\\service\\registration_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\registration_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\szerver\\servo\\servo\\service\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\szerver\\servo\\servo\\service\\delacc_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\delacc_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\szerver\\servo\\servo\\service\\chpass_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\chpass_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\szerver\\servo\\servo\\controller\\handle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\handle.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\szerver\\servo\\servo\\service\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\szerver\\servo\\servo\\service\\delacc_promise.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\delacc_promise.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -18,7 +50,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -26,7 +58,111 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "registration_promise.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\controller\\registration_promise.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\registration_promise.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\controller\\registration_promise.cs",
+              "RelativeToolTip": "Servo\\controller\\registration_promise.cs",
+              "ViewState": "AgIAADEAAAAAAAAAAAAQwDcAAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T09:51:07.235Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "registration_request.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\registration_request.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\registration_request.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\registration_request.cs",
+              "RelativeToolTip": "Servo\\service\\registration_request.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAwAAADqCAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T09:31:40.936Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "login.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\login.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\login.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\login.cs",
+              "RelativeToolTip": "Servo\\service\\login.cs",
+              "ViewState": "AgIAADQAAAAAAAAAAAAiwDwAAADuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T09:31:35.141Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "delacc_request.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\delacc_request.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\delacc_request.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\delacc_request.cs",
+              "RelativeToolTip": "Servo\\service\\delacc_request.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAiwBQAAADTAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T09:31:30.555Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "chpass_request.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\chpass_request.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\chpass_request.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\chpass_request.cs",
+              "RelativeToolTip": "Servo\\service\\chpass_request.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAiwBQAAADSAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T09:31:24.182Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "registration_request.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\controller\\registration_request.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\registration_request.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\controller\\registration_request.cs",
+              "RelativeToolTip": "Servo\\controller\\registration_request.cs",
+              "ViewState": "AgIAACYAAAAAAAAAAAAmwDQAAAAzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T09:31:09.467Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "handle.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\controller\\handle.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\handle.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\controller\\handle.cs",
+              "RelativeToolTip": "Servo\\controller\\handle.cs",
+              "ViewState": "AgIAAHAAAAAAAAAAAAAmwHkAAAA9AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T09:25:40.39Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "shared.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\shared.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\shared.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\shared.cs",
+              "RelativeToolTip": "Servo\\service\\shared.cs",
+              "ViewState": "AgIAAGAAAAAAAAAAAAAmwGkAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T09:24:06.508Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
               "Title": "chpass_promise.cs",
               "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\chpass_promise.cs",
               "RelativeDocumentMoniker": "Servo\\service\\chpass_promise.cs",
@@ -39,13 +175,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 8,
               "Title": "delacc_promise.cs",
               "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\delacc_promise.cs",
               "RelativeDocumentMoniker": "Servo\\service\\delacc_promise.cs",
               "ToolTip": "C:\\Users\\Nsc\\Desktop\\Szerver\\Servo\\Servo\\service\\delacc_promise.cs",
               "RelativeToolTip": "Servo\\service\\delacc_promise.cs",
-              "ViewState": "AgIAACYAAAAAAAAAAAAmwCkAAAA2AAAAAAAAAA==",
+              "ViewState": "AgIAACYAAAAAAAAAAAAmwDEAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-02T08:56:45.755Z",
               "EditorCaption": ""

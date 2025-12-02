@@ -28,12 +28,13 @@ namespace Servo.controller
                 data.Response.Close();
                 return;
             }
-
+            
             //api 
             if (kert.StartsWith("api/", StringComparison.OrdinalIgnoreCase))
             {
+                
                 string lenyeg = kert.Replace("api/", "");
-
+                service.shared.log("api kérés: " +lenyeg);
                 // =========== GETTOKen =========== 
 
                 if (lenyeg.Contains("login"))
@@ -110,11 +111,11 @@ namespace Servo.controller
                 }
 
 
-
-                // =========== NEMAPI =========== 
-                else
+            }
+            // =========== NEMAPI =========== 
+            else
                 {
-
+                    service.shared.log("nem api");
                     string hely = Path.Combine(alap, kert);
 
                     if (Directory.Exists(hely))
@@ -155,11 +156,11 @@ namespace Servo.controller
 
                 data.Response.OutputStream.Close();
                 data.Response.Close();
-
-            }
-
-
-
+            service.shared.log("request end");
         }
+
+            
+
+        
     }
 }

@@ -104,7 +104,7 @@ namespace Servo.service
                 msg.Body = body;
                 msg.BodyEncoding = Encoding.UTF8;
                 msg.IsBodyHtml = true; // html email
-                var smtp = new SmtpClient("smtp.gmail.com", 587);
+                var smtp = new SmtpClient("smtp.gmail.com", 587);//1025 // kicakhist
 
                 smtp.EnableSsl = true;
                 smtp.Credentials = new NetworkCredential("keyooff@gmail.com", "gvpe ncqo xtrr gzgc");
