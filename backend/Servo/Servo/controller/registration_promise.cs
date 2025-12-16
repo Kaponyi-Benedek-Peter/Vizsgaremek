@@ -64,14 +64,21 @@ namespace Servo.controller
                     service.shared.log("response:401 (hibas_token)");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
-                else //if (resp == 500)
+                else if (resp == 409)
+                {
+                    data.Response.StatusCode = 409;
+                    byte[] buffer = Encoding.UTF8.GetBytes("felhasznalo_mar_aktivalva");
+                    service.shared.log("response:409 (felhasznalo_mar_aktivalva)");
+                    data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                }
+                else
                 {
                     service.shared.log(resp.ToString());
-                    data.Response.StatusCode = 500;
-                    byte[] buffer = Encoding.UTF8.GetBytes("sze_v_felhasznalo_nem_letezik");
+                    data.Response.StatusCode = 404;
+                    byte[] buffer = Encoding.UTF8.GetBytes("felhasznalo_nem_letezik");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
-                    service.shared.log("response:500 (sze_v_felhasznalo_nem_letezik)");
+                    service.shared.log("response:500 (felhasznalo_nem_letezik)");
                 }
             }
             catch (Exception ex)

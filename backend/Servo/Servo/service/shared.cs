@@ -107,7 +107,8 @@ namespace Servo.service
                 var smtp = new SmtpClient("smtp.gmail.com", 587);//1025 // kicakhist
 
                 smtp.EnableSsl = true;
-                smtp.Credentials = new NetworkCredential("keyooff@gmail.com", "gvpe ncqo xtrr gzgc");
+                
+                smtp.Credentials = new NetworkCredential(conf("r", "email_auth_address"), conf("r","email_auth_key"));
 
                 smtp.Send(msg);
                 Form1.Instance.log($"{tipus} email sent to {hova} || ok");
@@ -137,14 +138,14 @@ namespace Servo.service
 
         public static string conf(string rw, string id, string val = "___")
         {
-
-            if (!File.Exists("/roys_conf.ini")) { File.WriteAllText("/roys_conf.ini", "lic:\nmem:\nlang:"); }
+            string location = "roys_conf.ini";
+            if (!File.Exists(location)) { File.WriteAllText(location, "init:true\n"); }
 
 
             if (rw == "r")
             {
                 string eredmeny = "___";
-                String[] con = File.ReadAllText("/roys_conf.ini").Split('\n');
+                String[] con = File.ReadAllText(location).Split('\n');
                 foreach (var item in con)
                 {
                     string[] crrln = item.Split(':');
@@ -160,7 +161,7 @@ namespace Servo.service
             {
                 string outx = "";
                 Boolean found = false;
-                foreach (var item in File.ReadAllText("/roys_conf.ini").Split('\n'))
+                foreach (var item in File.ReadAllText(location).Split('\n'))
                 {
                     string[] crrln = item.Split(':');
                     try
@@ -172,8 +173,8 @@ namespace Servo.service
                     catch { }
                 }
                 if (!found) { outx += id + ":" + val; }
-                File.Delete("/roys_conf.ini");
-                File.WriteAllText("/roys_conf.ini", outx);
+                File.Delete(location);
+                File.WriteAllText(location, outx);
             }
 
 

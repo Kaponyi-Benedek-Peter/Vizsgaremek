@@ -29,6 +29,7 @@ namespace Servo
             service.shared.log($"hosting at: http://localhost:{port}/");
             service.shared.log($"hosting from: { service.shared.baseDir}\n");
 
+            
             cts = new CancellationTokenSource();
             var token = cts.Token;
 
