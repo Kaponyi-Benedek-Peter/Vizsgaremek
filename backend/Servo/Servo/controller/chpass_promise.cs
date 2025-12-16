@@ -57,8 +57,8 @@ namespace Servo.controller
                 //service.shared.log(resp.ToString());
                 if (resp == 402)
                 {
-                    data.Response.StatusCode = 402;
-                    byte[] buffer = Encoding.UTF8.GetBytes("megerosito_token_lejart");
+                    data.Response.StatusCode = 410;
+                    byte[] buffer = Encoding.UTF8.GetBytes("confirmation_lejart");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else if (resp == 200)
@@ -67,12 +67,19 @@ namespace Servo.controller
                     byte[] buffer = Encoding.UTF8.GetBytes("jelszo_megvaltoztatva");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
+                else if (resp == 404)
+                {
+                    data.Response.StatusCode = 404;
+                    byte[] buffer = Encoding.UTF8.GetBytes("confirmation_nem_letezik");
+                    data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                }
                 else
                 {
                     data.Response.StatusCode = 400;
                     byte[] buffer = Encoding.UTF8.GetBytes("hibas_token");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
+
             }
             catch (Exception ex)
             {
