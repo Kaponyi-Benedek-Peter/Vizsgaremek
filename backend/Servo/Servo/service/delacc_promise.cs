@@ -34,7 +34,6 @@ namespace Servo.service
             string model_password = model.shared.get_passhash_by_id(controller_id);
             string accstate = model.shared.get_account_state_by_id(controller_id);
 
-
             service.shared.log($"Debug: {fetched_token} || {model_password} || {accstate} || {resp["confirmation_type"]} --service.delacc_promise.main 3");
 
             DateTime expirationDate = DateTime.Parse(expirationdate);
@@ -43,25 +42,18 @@ namespace Servo.service
 
             if (resp["error"] == "true" && resp["confirmation_type"] != "account_deletion")
             {
-                service.shared.log($"Debug:  401 || {resp["error"]} || {resp["confirmation_type"]} || --service.delacc_promise.main 4");
-                return 401;
-                
-
+                return 401; 
             }
             else
             {
                 if (currentDate > expirationDate)
                 {
-                    service.shared.log($"Debug:  402 --service.delacc_promise.main 5");
                     return 402;
-
                 }
                 else
                 {
-
                     if (controller_confirmation_token == recieved_token)
                     {
-
                         model.delacc_promise.delete_account(controller_id);
                         service.shared.log($"Debug:  200 --service.delacc_promise.main 5");
                         return 200;
