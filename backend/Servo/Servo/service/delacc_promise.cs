@@ -28,7 +28,6 @@ namespace Servo.service
              expirationdate = resp["confirmation_token_expire"];
             }
             catch (Exception ex){ service.shared.log($"Error: {ex.Message} --service.delacc_promise.main 2"); }
-            service.shared.log($"Debug: {expirationdate} || {controller_confirmation_token} --service.delacc_promise.main 2");
 
             string fetched_token = model.shared.get_token_by_id(controller_id);
             string model_password = model.shared.get_passhash_by_id(controller_id);
