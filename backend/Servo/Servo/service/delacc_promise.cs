@@ -17,7 +17,7 @@ namespace Servo.service
             Dictionary<string, string> resp = new Dictionary<string, string> { };
             try
             {
-                resp = model.shared.get_full_confirmation_by_identification(controller_id);
+                resp = model.shared.get_full_confirmation_by_identification(controller_id,"account_deletion");
             }
             catch (Exception ex){ service.shared.log($"Error: {ex.Message} --service.delacc_promise.main 1"); }
 
@@ -43,12 +43,16 @@ namespace Servo.service
 
             if (resp["error"] == "true" && resp["confirmation_type"] != "account_deletion")
             {
+                service.shared.log($"Debug:  401 || {resp["error"]} || {resp["confirmation_type"]} || --service.delacc_promise.main 4");
                 return 401;
+                
+
             }
             else
             {
                 if (currentDate > expirationDate)
                 {
+                    service.shared.log($"Debug:  402 --service.delacc_promise.main 5");
                     return 402;
 
                 }
@@ -59,16 +63,17 @@ namespace Servo.service
                     {
 
                         model.delacc_promise.delete_account(controller_id);
-
+                        service.shared.log($"Debug:  200 --service.delacc_promise.main 5");
                         return 200;
                     }
                     else
                     {
+                        service.shared.log($"Debug:  401 || {controller_confirmation_token} || {recieved_token} --service.delacc_promise.main 6");
 
                         return 401;
                     }
 
-
+                    service.shared.log($"Debug:  500 --service.delacc_promise.main 7");
                     return 500;
 
                 }

@@ -228,7 +228,7 @@ namespace Servo.model
         }
 
 
-        public static Dictionary<string, string> get_full_confirmation_by_identification(string identification)
+        public static Dictionary<string, string> get_full_confirmation_by_identification(string identification,string type)
         {
             var list = new Dictionary<string, string> { };
             list.Add("error", "false");
@@ -239,11 +239,13 @@ namespace Servo.model
 
                 
                 
-                using (MySqlCommand cmd = new MySqlCommand("get_confirmations_by_identification", conn))
+                using (MySqlCommand cmd = new MySqlCommand("get_confirmations_by_identification_and_type", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     cmd.Parameters.AddWithValue("@p_identification", identification);
+                    cmd.Parameters.AddWithValue("@p_confirmation_type", type);
+
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {

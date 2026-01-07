@@ -40,20 +40,20 @@ namespace Servo.service
             {
                 string fetched_token = model.shared.get_token_by_id(controller_id);
 
-                string jelszo_uj = service.shared.Decrypt(fetched_token, controller_jelszo_uj);
+                string jelszo_uj = controller_jelszo_uj; //service.shared.Decrypt(fetched_token, controller_jelszo_uj);
 
                 service.shared.log("Password change request: " + controller_id + "   -> " + controller_jelszo_uj + "  (" + ip);
 
 
                 string model_password = model.shared.get_passhash_by_id(controller_id);
                 string accstate = model.shared.get_account_state_by_id(controller_id);
-                service.shared.log($"Debug: {accstate} --service.chpass_request");
+                service.shared.log($"Debug: {accstate} --service.chpass_request ");
                 if (accstate == "verified")
                 {
                     string controller_email = model.shared.get_email_by_id(controller_id);
-                    //  sendchpass(controller_email,controller_id, service.shared.hashpass(controller_jelszo_uj));
+                     sendchpass(controller_email,controller_id, service.shared.hashpass(controller_jelszo_uj));
                     //
-                    model.shared.add_confirmation(service.shared.gen_code(false), controller_id, controller_jelszo_uj, "password_change");
+                    //model.shared.add_confirmation(service.shared.gen_code(false), controller_id, controller_jelszo_uj, "password_change");
                     return 200;
                 }
 
@@ -69,7 +69,7 @@ namespace Servo.service
                 }
 
             }
-            catch (Exception e) { service.shared.log($"Error: {e.Message} --service.chpass_request");return 1500; }
+            catch (Exception e) { service.shared.log($"Error: {e.Message} --service.chpass_request 1");return 1500; }
 
         }
 

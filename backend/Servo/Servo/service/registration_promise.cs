@@ -22,8 +22,8 @@ namespace Servo.service
                 string accstate = model.shared.get_account_state_by_id(controller_id);
                 string model_recieved_token = model.shared.get_token_by_id(controller_id);
 
-                MessageBox.Show(model_recieved_token);
-                MessageBox.Show(controller_token);
+                MessageBox.Show(model_recieved_token + "<<");
+                MessageBox.Show(controller_token+"<<");
 
                 service.shared.log($"Debug: {model_recieved_token} || {accstate} --service.registration_promise.main 1");
                 

@@ -53,6 +53,7 @@ namespace Servo.controller
                 }
 
                 service.shared.log($"Body received: {lenyeg}");
+                
 
                 try { 
                 JObject jsonObj = JObject.Parse(lenyeg);
@@ -61,15 +62,20 @@ namespace Servo.controller
                 }
                 catch
                 {
-
+                    service.shared.log($"Debug: hibas input --controller.chpass_request 0");
                     data.Response.StatusCode = 400;
                     byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                     return;
                 }
+                int resp = 0;
+                try
+                {
+                    resp = service.chpass_request.main(id, controller_jelszo, data.Request.RemoteEndPoint.Address.ToString());
+                }
+                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --controller.chpass_request 1 "); }
 
-                int resp = service.chpass_request.main(id, controller_jelszo, data.Request.RemoteEndPoint.Address.ToString());
-                // SERVICE
+                    // SERVICE
 
                 if (resp == 200)
                 {
@@ -92,7 +98,7 @@ namespace Servo.controller
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --controller.chpass_request");
+                service.shared.log($"Error: {ex.Message} --controller.chpass_request 2 ");
                 data.Response.StatusCode = 400;
                 byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);

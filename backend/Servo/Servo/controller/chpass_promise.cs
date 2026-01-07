@@ -52,7 +52,7 @@ namespace Servo.controller
                 }
                 catch (Exception ex)
                 {
-                    service.shared.log($"Error: {ex.Message} --controller.chpass_promise.main");
+                    service.shared.log($"Error: {ex.Message} --controller.chpass_promise.main 1");
                 }
                 //service.shared.log(resp.ToString());
                 if (resp == 402)
@@ -70,20 +70,21 @@ namespace Servo.controller
                 else if (resp == 404)
                 {
                     data.Response.StatusCode = 404;
-                    byte[] buffer = Encoding.UTF8.GetBytes("confirmation_nem_letezik");
+                    byte[] buffer = Encoding.UTF8.GetBytes("confirmation_nem_letezik_vagy_hibas");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else
                 {
+                    service.shared.log($"Debug: {resp} -controller.chpass_promise.main");
                     data.Response.StatusCode = 400;
-                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_token");
+                    byte[] buffer = Encoding.UTF8.GetBytes("confirmation_nem_letezik_vagy_hibas");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
 
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} -controller.chpass_promise.main");
+                service.shared.log($"Error: {ex.Message} -controller.chpass_promise.main 2");
                 data.Response.StatusCode = 400;
                 byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);

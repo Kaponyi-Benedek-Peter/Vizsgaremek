@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Servo.controller
 {
@@ -44,7 +45,7 @@ namespace Servo.controller
                 
                 id = service.shared.b64dec(jsonObj["id"].ToString());
 
-                //error
+
                 confirmation_token = service.shared.b64dec(jsonObj["token"].ToString());
 
                 }
@@ -53,6 +54,7 @@ namespace Servo.controller
 
                     data.Response.StatusCode = 400;
                     byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
+                    MessageBox.Show(jsonObj.ToString());
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                     return;
                 }

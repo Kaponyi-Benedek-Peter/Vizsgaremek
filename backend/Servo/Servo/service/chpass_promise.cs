@@ -14,14 +14,14 @@ namespace Servo.service
             
             service.shared.log("Password change request: " + controller_id + "   -> " + controller_confirmation_token + "  (" + ip);
 
-
+            controller_confirmation_token = service.shared.b64dec(controller_confirmation_token);
 
             Dictionary<string, string> resp = new Dictionary<string, string>();
 
 
             try
             {
-                resp = model.shared.get_full_confirmation_by_identification(controller_id);
+                resp = model.shared.get_full_confirmation_by_identification(controller_id,"password_change");
             }
             catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.main 1"); }
 
@@ -54,6 +54,7 @@ namespace Servo.service
 
             if (resp["error"] == "true" && resp["type"] != "password_change")
             {
+                shared.log($"Debug: {resp["type"]} --service.chpass_promise.main");
                 return 401;
             }
             else { 
@@ -74,8 +75,9 @@ namespace Servo.service
                     }
                     else
                     {
-
+                        shared.log($"Debug: {controller_confirmation_token} > {recieved_token} --service.chpass_promise.main X");
                         return 401;
+
                     }
 
 
