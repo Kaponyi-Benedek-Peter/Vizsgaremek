@@ -12,7 +12,6 @@ namespace Servo.service
     internal class registration_promise
     {
 
-
         public static int main(string controller_id,string controller_token)
         {
             try
