@@ -52,22 +52,12 @@ namespace Servo.service
                 {
                     string controller_email = model.shared.get_email_by_id(controller_id);
                      sendchpass(controller_email,controller_id, service.shared.hashpass(controller_jelszo_uj));
-                    //
-                    //model.shared.add_confirmation(service.shared.gen_code(false), controller_id, controller_jelszo_uj, "password_change");
                     return 200;
                 }
 
-                else
-                {
-
+                else{
                     return 500;
-
-
-                    // nem oké
-
-
                 }
-
             }
             catch (Exception e) { service.shared.log($"Error: {e.Message} --service.chpass_request 1");return 1500; }
 
