@@ -33,7 +33,5 @@ namespace Servo.model
             }
             return ret;
         }
-
-
     }
 }
