@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 07, 2026 at 11:50 AM
+-- Generation Time: Jan 09, 2026 at 09:50 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -25,6 +25,10 @@ DELIMITER $$
 --
 -- Procedures
 --
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ban_user_by_id` (IN `p_id` INT)   UPDATE roy.users
+SET account_state = 'banned'
+WHERE id = p_id$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_account` (IN `p_first_name` VARCHAR(16), IN `p_last_name` VARCHAR(16), IN `p_email` VARCHAR(255), IN `p_sesstoken` VARCHAR(255), IN `p_passhash` VARCHAR(255), IN `p_account_state` VARCHAR(11))   BEGIN
     INSERT INTO roy.users (first_name, last_name, email, sesstoken, passhash, sesstoken_expire , account_state)
     VALUES (p_first_name, p_last_name, p_email, p_sesstoken, p_passhash, NOW() + INTERVAL 1 week, p_account_state);
@@ -90,13 +94,16 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_users` ()   BEGIN
 DELETE FROM users;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confimation_by_id` (IN `p_id` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_id` (IN `p_id` INT)   BEGIN
     DELETE FROM confirmations WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_identification` (IN `p_identification` VARCHAR(255))   BEGIN
     DELETE FROM confirmations WHERE identification = p_identification;
 END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_expired_confirmations` ()   DELETE FROM confirmations
+    WHERE confirmation_token_expire < NOW()$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_order_by_id` (IN `p_id` INT)   BEGIN
     DELETE FROM orders WHERE id = p_id;
@@ -270,6 +277,11 @@ SELECT * from order_items
 where order_items.id = p_id;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_posts_by_user` (IN `p_user_id` INT)   SELECT *
+    FROM posts
+    WHERE user_id = p_user_id
+    ORDER BY created_at DESC$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_post_by_id` (IN `p_id` INT)   BEGIN
 SELECT * from posts
 where posts.id = p_id;
@@ -348,16 +360,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_password_by_id` (IN `p_id` V
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, IN `p_new_title` VARCHAR(255), IN `p_new_body` TEXT, IN `P_new_user_id` INT, IN `p_new_created_at` DATETIME, IN `p_new_image_source` VARCHAR(255))   BEGIN
-UPDATE roy.posts
-SET title = p_new_title,
-body = p_new_body,
-user_id = p_new_user_id,
-created_at = p_new_created_at,
-image_source = p_new_image_source
-WHERE id = p_id;
-END$$
-
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_stock_by_id` (IN `p_id` INT, IN `p_new_stock` INT)   BEGIN
 	UPDATE roy.products
     SET stock = p_new_stock
@@ -403,8 +405,6 @@ CREATE TABLE `confirmations` (
 --
 
 INSERT INTO `confirmations` (`id`, `identification`, `new_value`, `confirmation_token`, `confirmation_token_expire`, `confirmation_type`) VALUES
-(3, '1', '-', 'uSeUOElKgPWhoZqYLtqLtC', '2026-01-13 10:50:19', 'account_deletion'),
-(4, '0', '0', 'VneufOPxmcieKspecnRXZk', '2026-01-13 10:54:30', 'account_deletion'),
 (5, '1', '1', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
 (6, '2', '2', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
 (7, '3', '3', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
@@ -507,7 +507,8 @@ CREATE TABLE `posts` (
 --
 
 INSERT INTO `posts` (`id`, `title`, `body`, `user_id`, `created_at`, `image_source`) VALUES
-(2, 'test good', 'test good', 1, '2026-01-06 10:37:16', 'test good');
+(2, 'a', 'a', 1, '2025-11-11 10:22:29', 'a'),
+(3, 'a', 'a', 1, '2025-11-11 10:22:29', 'a');
 
 -- --------------------------------------------------------
 
@@ -558,7 +559,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sesstoken_expire`, `first_name`, `last_name`, `account_state`) VALUES
-(2, '0test@gmail.com', '2026-01-06 10:54:26', 'DoqcujMNsXbLUIFarjYrHO', 'D8sOKkFGFGDyq3Y11oRgOKzLJD+F0RcMauZTcYYsx0c=', '2026-01-13 10:54:26', '0Berg', 'Mc0', 'unverified'),
+(2, '0test@gmail.com', '2026-01-06 10:54:26', 'DoqcujMNsXbLUIFarjYrHO', 'D8sOKkFGFGDyq3Y11oRgOKzLJD+F0RcMauZTcYYsx0c=', '2026-01-13 10:54:26', '0Berg', 'Mc0', 'banned'),
 (3, '1test@gmail.com', '2026-01-06 10:54:26', 'iDqUtxuvTmCrRcKewRzraE', 'aU8GLJRZi8O2AlMPf7/NbMO4Wi2OAP1tTQQeEMJxFKU=', '2026-01-13 10:54:26', '1Berg', 'Mc1', 'unverified'),
 (4, '2test@gmail.com', '2026-01-06 10:54:26', 'TXJLQvMxRbgqRKfdUJsLnw', 'ofUDksnla1w2MUXNuhdFTagKytfMAA/TeCDS8X/AAG4=', '2026-01-13 10:54:26', '2Berg', 'Mc2', 'unverified'),
 (5, '3test@gmail.com', '2026-01-06 10:54:26', 'dcsrQAGaIyXAhQPwVUkMtc', 'NLMDlqiqd6aTgq5gfTk4NH3fL4itvFLycXIRvlavXzs=', '2026-01-13 10:54:26', '3Berg', 'Mc3', 'unverified'),
@@ -659,7 +660,7 @@ ALTER TABLE `order_items`
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `products`
