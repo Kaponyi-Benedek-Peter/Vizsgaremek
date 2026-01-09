@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-icon-button.component',
@@ -7,5 +7,6 @@ import { Component } from '@angular/core';
   styleUrl: './icon-button.component.css',
 })
 export class IconButtonComponent {
-
+  @Input() iconSrc: string = '';
+  @Input() altText: string = 'icon';
 }
