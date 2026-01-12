@@ -68,8 +68,6 @@ namespace Servo.service
 
         public static string mime(string ext)
         {
-
-
             List<string[]> mimes = new List<string[]>
             {
                 new[] { ".html", "text/html" },
@@ -90,9 +88,8 @@ namespace Servo.service
                     return item[1];
             }
             return "application/octet-stream";
-
-
         }
+        
         public static void send_mail(string hova, string title, string body, string tipus)
         {
             try
