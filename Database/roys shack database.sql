@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 09, 2026 at 09:50 AM
+-- Generation Time: Jan 12, 2026 at 12:24 PM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -39,21 +39,31 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_confirmation` (IN `p_confirm
     VALUES (p_confirmation_token, NOW() + INTERVAL 1 WEEK, p_identification, p_new_value, p_type);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` INT(4), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(4), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(12))   BEGIN
 
 INSERT INTO roy.orders (user_id, created_at, price, city, zipcode, address, apartment_number, note, house_number, phone_number)
 VALUES(p_user_id, NOW(),'0', p_city, p_zipcode, p_address, p_apartment_number, p_note, p_house_number, p_phone_number);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order_item` (IN `P_order_id` INT, IN `p_product_id` INT, IN `p_quantity` INT)   BEGIN
-DECLARE product_price DECIMAL(10,2);
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order_item` (IN `p_order_id` INT, IN `p_product_id` INT, IN `p_quantity` INT)   BEGIN
+    DECLARE product_price DECIMAL(10,2);
 
-SELECT price INTO product_price
+
+    SELECT 
+        CASE 
+            WHEN sale_price > 0 THEN sale_price
+            ELSE price
+        END
+    INTO product_price
     FROM products
     WHERE id = p_product_id;
-    
-INSERT INTO roy.order_items (order_id, product_id, quantity, price)
-VALUES(p_order_id, p_product_id, p_quantity, product_price * p_quantity);
+
+
+    INSERT INTO order_items(order_id, product_id, quantity, price)
+    VALUES(p_order_id, p_product_id, p_quantity, product_price * p_quantity);
+
+
+    CALL update_order_price(p_order_id);
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_body` TEXT, IN `p_title` VARCHAR(255), IN `p_user_id` INT, IN `p_image_source` VARCHAR(255))   BEGIN
@@ -302,10 +312,6 @@ SELECT * from users
 where users.id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `orders` ()   BEGIN
-DELETE FROM orders;
-END$$
-
 CREATE DEFINER=`root`@`localhost` PROCEDURE `refresh_token_by_id` (IN `p_id` VARCHAR(255), IN `p_new_sesstoken` VARCHAR(255))   BEGIN
 	UPDATE roy.users
     SET sesstoken_expire = NOW() + INTERVAL 1 WEEK,
@@ -319,12 +325,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_account_state_by_id` (IN `p_
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_confirmation_by_id` (IN `p_id` INT(11), IN `p_new_identification` VARCHAR(255), IN `p_new_new_value` VARCHAR(255), IN `p_new_confirmation_token` VARCHAR(255), IN `p_new_confirmation_token_expire` DATETIME, IN `p_new_confirmation_type` VARCHAR(255))   BEGIN
-UPDATE roy.confrimations
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_confirmation_by_id` (IN `p_id` INT, IN `p_new_identification` VARCHAR(255), IN `p_new_new_value` VARCHAR(255), IN `p_new_confirmation_token` VARCHAR(255), IN `p_new_confirmation_token_expire` DATETIME, IN `p_new_confirmation_type` VARCHAR(255))   BEGIN
+UPDATE confirmations
 SET identification = p_new_identification,
-new_value = p_new_new_value,
-confirmation_token = p_new_confirmation_token,
-comfirmation_type = new_confirmation_type
+    new_value = p_new_new_value,
+    confirmation_token = p_new_confirmation_token,
+    confirmation_token_expire = p_new_confirmation_token_expire,
+    confirmation_type = p_new_confirmation_type
 WHERE id = p_id;
 END$$
 
@@ -372,7 +379,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_times_ordered` (IN `
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_user_by_id` (IN `p_id` INT(11), IN `p_new_account_state` VARCHAR(255), IN `p_new_email` VARCHAR(255), IN `p_new_first_name` VARCHAR(16), IN `p_new_last_name` VARCHAR(16), IN `p_new_passhash` VARCHAR(255), IN `p_new_sesstoken` INT(2))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_user_by_id` (IN `p_id` INT(11), IN `p_new_account_state` VARCHAR(255), IN `p_new_email` VARCHAR(255), IN `p_new_first_name` VARCHAR(16), IN `p_new_last_name` VARCHAR(16), IN `p_new_passhash` VARCHAR(255), IN `p_new_sesstoken` VARCHAR(255))   BEGIN
 	UPDATE roy.users
     SET account_state = p_new_account_state,
     email = p_new_email,
@@ -463,7 +470,7 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `user_id`, `created_at`, `price`, `city`, `zipcode`, `address`, `apartment_number`, `note`, `house_number`, `phone_number`) VALUES
-(1, 1, '2025-11-13', '102', 'city', 0, 'address', 0, '--', 0, '');
+(1, 1, '2025-11-13', '6750', 'city', 0, 'address', 0, '--', 0, '');
 
 -- --------------------------------------------------------
 
@@ -485,7 +492,11 @@ CREATE TABLE `order_items` (
 
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`) VALUES
 (3, 1, 1, 1, '66'),
-(4, 1, 2, 3, '36');
+(4, 1, 2, 3, '36'),
+(5, 1, 1, 1000, '3000'),
+(6, 1, 1, 1000, '3000'),
+(7, 1, 1, 2, '600'),
+(8, 1, 1, 2, '48');
 
 -- --------------------------------------------------------
 
@@ -495,7 +506,7 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`) 
 
 CREATE TABLE `posts` (
   `id` int(11) NOT NULL,
-  `title` varchar(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
   `body` text NOT NULL,
   `user_id` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -518,7 +529,7 @@ INSERT INTO `posts` (`id`, `title`, `body`, `user_id`, `created_at`, `image_sour
 
 CREATE TABLE `products` (
   `id` int(11) NOT NULL,
-  `name` varchar(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `price` decimal(11,0) NOT NULL,
   `times_ordered` int(11) NOT NULL,
@@ -533,7 +544,7 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `description`, `price`, `times_ordered`, `image_source`, `stock`, `sale_price`, `description_preview`) VALUES
-(1, 'TEST 1', 'Test 1', '3', 0, '--', 2, '0', '--'),
+(1, 'TEST 1', 'Test 1', '300', 0, '--', 2, '24', '--'),
 (2, 'TEST 2', 'Test 2', '12', 0, '--', 0, '0', '--');
 
 -- --------------------------------------------------------
@@ -654,7 +665,7 @@ ALTER TABLE `orders`
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `posts`
