@@ -47,7 +47,7 @@ namespace Servo.controller
 
                 service.shared.log("Registration request: " + email + "  " + jelszo + "  (" + data.Request.RemoteEndPoint.Address.ToString() + ")");
 
-                int resp = service.registration_request.main(email, jelszo, lastname, firstname, data.Request.RemoteEndPoint.Address.ToString());
+                int resp = service.registration_request.process_registration_request(email, jelszo, lastname, firstname, data.Request.RemoteEndPoint.Address.ToString());
                 if (resp == 200)
                 {
                     data.Response.StatusCode = 200;

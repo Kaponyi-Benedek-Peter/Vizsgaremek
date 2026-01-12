@@ -9,7 +9,7 @@ namespace Servo.service
 {
     internal class chpass_promise
     {
-        public static int main(string controller_id, string controller_confirmation_token, string ip)
+        public static int process_chpass_promise(string controller_id, string controller_confirmation_token, string ip)
         {
             
             service.shared.log("Password change request: " + controller_id + "   -> " + controller_confirmation_token + "  (" + ip);
@@ -23,7 +23,7 @@ namespace Servo.service
             {
                 resp = model.shared.get_full_confirmation_by_identification(controller_id,"password_change");
             }
-            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.main 1"); }
+            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.process_chpass_promise 1"); }
 
             string recieved_token=""; 
             string expirationdate="";
@@ -37,7 +37,7 @@ namespace Servo.service
              new_passhash = resp["new_value"];
 
             }
-            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.main 2"); }
+            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.process_chpass_promise 2"); }
 
 
             string fetched_token = model.shared.get_token_by_id(controller_id);
@@ -54,7 +54,7 @@ namespace Servo.service
 
             if (resp["error"] == "true" && resp["type"] != "password_change")
             {
-                shared.log($"Debug: {resp["type"]} --service.chpass_promise.main");
+                shared.log($"Debug: {resp["type"]} --service.chpass_promise.process_chpass_promise");
                 return 401;
             }
             else { 
@@ -75,7 +75,7 @@ namespace Servo.service
                     }
                     else
                     {
-                        shared.log($"Debug: {controller_confirmation_token} > {recieved_token} --service.chpass_promise.main X");
+                        shared.log($"Debug: {controller_confirmation_token} > {recieved_token} --service.chpass_promise.process_chpass_promise X");
                         return 401;
 
                     }

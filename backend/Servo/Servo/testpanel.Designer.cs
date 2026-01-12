@@ -246,6 +246,7 @@
             this.button9.TabIndex = 43;
             this.button9.Text = "Delete all orders";
             this.button9.UseVisualStyleBackColor = false;
+            this.button9.Click += new System.EventHandler(this.button9_Click);
             // 
             // button10
             // 
@@ -261,6 +262,7 @@
             this.button10.TabIndex = 42;
             this.button10.Text = "Add test orders";
             this.button10.UseVisualStyleBackColor = false;
+            this.button10.Click += new System.EventHandler(this.button10_Click);
             // 
             // button11
             // 

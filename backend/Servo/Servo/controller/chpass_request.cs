@@ -71,7 +71,7 @@ namespace Servo.controller
                 int resp = 0;
                 try
                 {
-                    resp = service.chpass_request.main(id, controller_jelszo, data.Request.RemoteEndPoint.Address.ToString());
+                    resp = service.chpass_request.process_chpas_request(id, controller_jelszo, data.Request.RemoteEndPoint.Address.ToString());
                 }
                 catch (Exception ex) { service.shared.log($"Error: {ex.Message} --controller.chpass_request 1 "); }
 

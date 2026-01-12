@@ -34,7 +34,7 @@ namespace Servo.service
 
 
 
-        public static int main(string controller_id,string controller_jelszo_uj,string ip)
+        public static int process_chpas_request(string controller_id,string controller_jelszo_uj,string ip)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace Servo.service
 
                 string model_password = model.shared.get_passhash_by_id(controller_id);
                 string accstate = model.shared.get_account_state_by_id(controller_id);
-                service.shared.log($"Debug: {accstate} --service.chpass_request ");
+                service.shared.log($"Debug: {accstate} --service.chpass_request.process_chpas_request ");
                 if (accstate == "verified")
                 {
                     string controller_email = model.shared.get_email_by_id(controller_id);
@@ -69,7 +69,7 @@ namespace Servo.service
                 }
 
             }
-            catch (Exception e) { service.shared.log($"Error: {e.Message} --service.chpass_request 1");return 1500; }
+            catch (Exception e) { service.shared.log($"Error: {e.Message} --service.chpass_request.process_chpas_request 1");return 1500; }
 
         }
 

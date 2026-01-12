@@ -16,7 +16,7 @@ namespace Servo.service
 
 
 
-        public static int main(string controller_email, string controller_jelszo, string controller_lastname, string controller_firstname,string ip)
+        public static int process_registration_request(string controller_email, string controller_jelszo, string controller_lastname, string controller_firstname,string ip)
         {
             try
             {
@@ -41,7 +41,7 @@ namespace Servo.service
             };
 
 
-                        if(model.registration_request.mainn(lista) == true){
+                        if(model.registration_request.communicate_registration_request(lista) == true){
                             string controller_id = model.shared.get_id_by_email(controller_email);
                             sendregistration(controller_email, controller_id, session_token);
 
@@ -62,7 +62,7 @@ namespace Servo.service
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --service.registration_request.main 1");
+                service.shared.log($"Error: {ex.Message} --service.registration_request.process_registration_request 1");
                 return 400;
             }
         }

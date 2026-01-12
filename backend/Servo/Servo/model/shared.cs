@@ -183,7 +183,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_email_by_id 1");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_email_by_id");
                 return "500";
             }
 
@@ -221,7 +221,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_token_by_id 2");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_token_by_id");
                 return "500";
             }
 
@@ -271,7 +271,7 @@ namespace Servo.model
                 
             }
             catch (Exception ex) {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_full_confirmation_by_identification 3");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_full_confirmation_by_identification");
                 list["error"] = "true";
             }
 
@@ -309,7 +309,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_account_state_by_id 4");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_account_state_by_id");
                 return "500";
 
             }
@@ -346,7 +346,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_passhash_by_id 5");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_passhash_by_id");
                 return "500";
 
             }
@@ -384,7 +384,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_sesstoken_expiration_by_id 6");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_sesstoken_expiration_by_id");
                 return "500";
 
             }
@@ -422,7 +422,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_id_by_email 7");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_id_by_email");
                 return "500";
             }
 
@@ -449,7 +449,72 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.add_confirmation 8");
+                service.shared.log($"Error: {ex.Message} --model.shared.add_confirmation");
+                return 500;
+            }
+        }
+
+
+        public static int add_product(string name, string description, int price, int times_ordered, string image_source, int stock, int sale_price, string description_preview)
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("create_product", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_name", name);
+                    cmd.Parameters.AddWithValue("@p_description", description);
+
+                    cmd.Parameters.AddWithValue("@p_price", price);
+
+
+                    cmd.Parameters.AddWithValue("@p_times_ordered", times_ordered);
+                    cmd.Parameters.AddWithValue("@p_image_source", image_source);
+                    cmd.Parameters.AddWithValue("@p_stock", stock);
+                    cmd.Parameters.AddWithValue("@p_sale_price", sale_price);
+                    cmd.Parameters.AddWithValue("@p_description_preview", description_preview);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error: {ex.Message} --model.shared.add_product");
+                return 500;
+            }
+        }
+
+        public static int add_order(int user_id, string city, int zipcode, int price, string address, int apartment_number, string note, int house_number, string phone_number)
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("create_product", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_user_id", user_id);
+                    cmd.Parameters.AddWithValue("@p_city", city);
+                    cmd.Parameters.AddWithValue("@p_zipcode", zipcode);
+                    cmd.Parameters.AddWithValue("@p_price", price);
+                    cmd.Parameters.AddWithValue("@p_address", address);
+                    cmd.Parameters.AddWithValue("@p_apartment_number", apartment_number);
+                    cmd.Parameters.AddWithValue("@p_note", note);
+                    cmd.Parameters.AddWithValue("@p_house_number", house_number);
+                    cmd.Parameters.AddWithValue("@p_phone_number", phone_number);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error: {ex.Message} --model.shared.add_order");
                 return 500;
             }
         }

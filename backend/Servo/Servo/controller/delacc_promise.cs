@@ -65,7 +65,7 @@ namespace Servo.controller
                 service.shared.log("Account deletion request: " + id + "  " + confirmation_token + "  (" + data.Request.RemoteEndPoint.Address.ToString());
                 try
                 {
-                    resp = service.delacc_promise.main(id, confirmation_token, data.Request.RemoteEndPoint.Address.ToString());
+                    resp = service.delacc_promise.process_delacc_promise(id, confirmation_token, data.Request.RemoteEndPoint.Address.ToString());
                 }
                 catch (Exception ex) { service.shared.log($"Error: {ex.Message} --controller.delacc_promise.main");}
 

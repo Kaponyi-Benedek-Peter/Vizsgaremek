@@ -13,7 +13,7 @@ namespace Servo.model
     {
         static string connStr = model.shared.connStr;
         static MySqlConnection conn = model.shared.conn;
-        public static Boolean mainn(Dictionary<string, string> lista = null)
+        public static Boolean communicate_registration_request(Dictionary<string, string> lista = null)
         {
             Boolean ret = false;
             using (MySqlCommand cmd = new MySqlCommand("create_account", conn))

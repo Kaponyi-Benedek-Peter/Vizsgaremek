@@ -51,7 +51,7 @@ namespace Servo.controller
 
                 service.shared.log("Login token request: " + email + "  " + jelszo + "  (" + data.Request.RemoteEndPoint.Address.ToString());
 
-                int resp = service.login.main(jelszo, email); // SERVICE
+                int resp = service.login.process_login(jelszo, email); // SERVICE
                 if (resp == 200)
                 {
                     data.Response.StatusCode = 200;

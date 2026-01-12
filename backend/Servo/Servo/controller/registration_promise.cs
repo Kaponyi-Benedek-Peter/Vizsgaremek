@@ -49,7 +49,7 @@ namespace Servo.controller
 
                 service.shared.log("Registration promise: " + id + "  " + confirmation_token + "  (" + data.Request.RemoteEndPoint.Address.ToString() + ")");
 
-                int resp = service.registration_promise.main(id, confirmation_token);
+                int resp = service.registration_promise.process_registration_promise(id, confirmation_token);
                 if (resp == 200)
                 {
                     data.Response.StatusCode = 200;

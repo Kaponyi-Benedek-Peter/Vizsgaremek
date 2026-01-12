@@ -28,26 +28,26 @@ namespace Servo.service
 
 
 
-        public static int main(string controller_id, string controller_jelszo, string ip)
+        public static int process_delacc_request(string controller_id, string controller_jelszo, string ip)
         {
             try
             {
-                service.shared.log($"Debug: X --service.delacc_request.main 1");
+                service.shared.log($"Debug: X --service.delacc_request.process_delacc_request 1");
                 string fetched_token = "";
                 try
                 {
                     fetched_token = model.shared.get_token_by_id(controller_id);
                 }
-                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 1"); }
+                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.process_delacc_request 1"); }
 
                 string jelszo_uj = "";
 
-                service.shared.log($"Debug: {fetched_token} || {controller_jelszo} --service.delacc_request.main 2");
+                service.shared.log($"Debug: {fetched_token} || {controller_jelszo} --service.delacc_request.process_delacc_request 2");
                 try
                 {
                     jelszo_uj = service.shared.hashpass(controller_jelszo);
                 }
-                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 2"); }
+                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.process_delacc_request 2"); }
 
                 string model_password = "";
                 string accstate = "";
@@ -56,7 +56,7 @@ namespace Servo.service
                     model_password = model.shared.get_passhash_by_id(controller_id);
                     accstate = model.shared.get_account_state_by_id(controller_id);
                 }
-                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 3);"); }
+                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.process_delacc_request 3);"); }
 
                 try
                 {
@@ -68,9 +68,9 @@ namespace Servo.service
                             controller_email = model.shared.get_email_by_id(controller_id);
                         }
 
-                        catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 4"); }
+                        catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.process_delacc_request 4"); }
 
-                        service.shared.log($"Debug: {model_password} || {jelszo_uj} --service.delacc_request.main 3");
+                        service.shared.log($"Debug: {model_password} || {jelszo_uj} --service.delacc_request.process_delacc_request 3");
                         if (model_password == jelszo_uj)
                         {
                             string confirmation_token = service.shared.gen_code(false);
@@ -80,14 +80,14 @@ namespace Servo.service
                                
                                 int result = model.shared.add_confirmation(confirmation_token, controller_id, "-", "account_deletion");
                             }
-                            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 5"); }
+                            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.process_delacc_request 5"); }
 
-                            service.shared.log($"Debug: \"szendelte\" --service.delacc_request.main 4");
+                            service.shared.log($"Debug: \"szendelte\" --service.delacc_request.process_delacc_request 4");
                             return 200;
                         }
                         else
                         {
-                            service.shared.log($"Debug: \"rosszjelszo\" --service.delacc_request.main 5");
+                            service.shared.log($"Debug: \"rosszjelszo\" --service.delacc_request.process_delacc_request 5");
                             return 401;
                         }
 
@@ -97,20 +97,20 @@ namespace Servo.service
                     }
                     else if (accstate == "banned")
                     {
-                        service.shared.log($"Debug: \"banned\" --service.delacc_request.main 7");
+                        service.shared.log($"Debug: \"banned\" --service.delacc_request.process_delacc_request 7");
                         return 401;
                     }
                     else
                     {
-                        service.shared.log($"Debug: \"500\" --service.delacc_request.main 8");
+                        service.shared.log($"Debug: \"500\" --service.delacc_request.process_delacc_request 8");
                         return 500;
                     }
                 }
-                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.main 6"); }
+                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.process_delacc_request 6"); }
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --service.delacc_request.main 7");
+                service.shared.log($"Error: {ex.Message} --service.delacc_request.process_delacc_request 7");
             }
             return 500;
         }

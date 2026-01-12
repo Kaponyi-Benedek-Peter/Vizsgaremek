@@ -9,13 +9,13 @@ namespace Servo.service
     internal class login
     {
 
-        public static int main(string controller_jelszo,string email)
+        public static int process_login(string controller_jelszo,string email)
         {
 
             string id = model.shared.get_id_by_email(email);
             string model_password = model.shared.get_passhash_by_id(id);
             string accstate = model.shared.get_account_state_by_id(id);
-            service.shared.log($"Debug: {service.shared.hashpass(controller_jelszo)} || {model_password} --service.login.main 1");
+            service.shared.log($"Debug: {service.shared.hashpass(controller_jelszo)} || {model_password} --service.login.process_login 1");
             if (model_password == service.shared.hashpass(controller_jelszo) && accstate == "verified")
             {
                 // bejelentkeztetés oké

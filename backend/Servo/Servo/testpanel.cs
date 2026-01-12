@@ -67,7 +67,7 @@ namespace Servo
 
         private void button8_Click(object sender, EventArgs e)
         {
-
+            service.nonapi_test.addtestproducts();
         }
 
         private void button12_Click(object sender, EventArgs e)
@@ -78,6 +78,16 @@ namespace Servo
         private void button11_Click(object sender, EventArgs e)
         {
             service.nonapi_test.deleteallconfirmations();
+        }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            service.nonapi_test.addtestorders();
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            service.nonapi_test.deleteallorders();
         }
     }
 }

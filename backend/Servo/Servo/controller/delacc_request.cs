@@ -95,7 +95,7 @@ namespace Servo.controller
                 try
                 {
                     service.shared.log("Debug: delacc_request.main 1");
-                    resp = service.delacc_request.main(id, jelszo, data.Request.RemoteEndPoint.Address.ToString());
+                    resp = service.delacc_request.process_delacc_request(id, jelszo, data.Request.RemoteEndPoint.Address.ToString());
                     service.shared.log("Debug: delacc_request.main 2");
                 }
                 catch (Exception ex)

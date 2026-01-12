@@ -47,7 +47,7 @@ namespace Servo.controller
                 try
                 {
 
-                     resp = service.chpass_promise.main(id, token, data.Request.RemoteEndPoint.Address.ToString());
+                     resp = service.chpass_promise.process_chpass_promise(id, token, data.Request.RemoteEndPoint.Address.ToString());
 
                 }
                 catch (Exception ex)
