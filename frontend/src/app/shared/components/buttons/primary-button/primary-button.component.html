@@ -1,1 +1,6 @@
-<button class="primary-button"></button>
+<button class="primary-button" (click)="onClick()">
+  <span class="button-text">
+    <ng-content></ng-content>
+  </span>
+  <span class="underline"></span>
+</button>
