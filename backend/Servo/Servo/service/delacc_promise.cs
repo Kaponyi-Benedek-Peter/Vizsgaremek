@@ -62,7 +62,7 @@ namespace Servo.service
                     if (controller_confirmation_token == recieved_token)
                     {
 
-                        model.delacc_promise.delete_account(controller_id);
+                        model.delacc_promise.communicate_delete_account(controller_id);
                         service.shared.log($"Debug:  200 --service.delacc_promise.process_delacc_promise 5");
                         return 200;
                     }

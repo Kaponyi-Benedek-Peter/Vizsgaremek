@@ -15,7 +15,7 @@ namespace Servo.model
 
         static string connStr = model.shared.connStr;
         static MySqlConnection conn = model.shared.conn;
-        public static int delete_account(string id)
+        public static int communicate_delete_account(string id)
         {
 
             try

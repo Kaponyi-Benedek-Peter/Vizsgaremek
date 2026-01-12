@@ -19,7 +19,7 @@ namespace Servo.model
             conn.Open();
             service.shared.log("[mysql connection open]");
         }
-        public static string connStr = "server=localhost;port=3307;user=root;password=root;database=roy;";
+        public static string connStr = $"server={service.shared.conf("r", "sql_conn_server")};port={service.shared.conf("r","sql_conn_port")};user={service.shared.conf("r", "sql_conn_user")};password={service.shared.conf("r", "sql_conn_password")};database={service.shared.conf("r", "sql_conn_database")};";
 
         public static MySqlConnection conn;
      
@@ -493,7 +493,7 @@ namespace Servo.model
 
             try
             {
-                using (MySqlCommand cmd = new MySqlCommand("create_product", conn))
+                using (MySqlCommand cmd = new MySqlCommand("create_order", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
