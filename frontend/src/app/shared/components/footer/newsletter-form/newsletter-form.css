@@ -1,0 +1,21 @@
+.newsletter {
+  margin-top: 1rem;
+
+  form {
+    display: flex;
+
+    input {
+      flex: 1;
+      padding: 0.5rem;
+      border: none;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background: #fff;
+      color: #0b7a4b;
+      border: none;
+      cursor: pointer;
+    }
+  }
+}

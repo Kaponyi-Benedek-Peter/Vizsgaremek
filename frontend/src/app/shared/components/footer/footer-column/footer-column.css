@@ -1,0 +1,11 @@
+.footer-column {
+  h4 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .small-text {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+}
