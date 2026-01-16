@@ -16,20 +16,21 @@ import { Register } from './pages/register/register';
 import { NgModule } from '@angular/core';
 
 export const routes: Routes = [
-  { path: '', component: Home },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: 'home', component: Home },
   { path: 'register', component: Register },
   { path: 'login', component: Login },
   { path: 'forum', component: Forum },
   { path: 'products', component: Products },
   { path: 'profile', component: Profile },
   { path: 'purchase', component: Purchase },
-  { path: '**', component: NotFound },
   { path: 'legal', component: Legal },
   { path: 'bracket', component: Bracket },
   { path: 'admin', component: Admin },
   { path: 'password-change', component: PasswordChange },
   { path: 'email', component: Email },
   { path: 'blog', component: Blog },
+  { path: '**', component: NotFound },
 ];
 
 @NgModule({

@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { IconBtn } from '../../icon-btn/icon-btn';
-import { PrimaryBtn } from '../../primary-btn/primary-btn';
 
 @Component({
   selector: 'app-footer-bottom',
-  imports: [IconBtn, PrimaryBtn],
+  standalone: true,
+  imports: [IconBtn],
   templateUrl: './footer-bottom.html',
   styleUrl: './footer-bottom.css',
 })

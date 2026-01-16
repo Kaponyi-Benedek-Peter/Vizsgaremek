@@ -4,6 +4,7 @@ import { FooterMain } from './footer-main/footer-main';
 
 @Component({
   selector: 'app-footer',
+  standalone: true,
   imports: [FooterBottom, FooterMain],
   templateUrl: './footer.html',
   styleUrl: './footer.css',

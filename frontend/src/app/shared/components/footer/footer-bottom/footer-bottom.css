@@ -1,7 +1,10 @@
 .footer-bottom {
+  height: 85px;
+  padding: 0 48px;
+
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: 1rem 2rem;
-  font-size: 0.85rem;
+
   background-color: #08653e;
 }

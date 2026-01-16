@@ -1,0 +1,38 @@
+.primary-btn {
+  height: 55px;
+  padding: 0 16px;
+
+  background: transparent;
+  border: none;
+
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+
+  position: relative;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.btn-text {
+  position: relative;
+  z-index: 1;
+}
+
+.primary-btn .underline {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 2px;
+  width: 10px; /* alap szélesség */
+  background-color: #72e4f0; /* javítva */
+  transition: width 0.3s ease;
+}
+
+.primary-btn:hover .underline {
+  width: 80%; /* hoverkor kiszélesedik */
+}

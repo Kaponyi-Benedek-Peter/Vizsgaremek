@@ -1,10 +1,8 @@
 .footer-main {
+  min-height: 450px; /* NEM height */
+  padding: 64px 96px;
+
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 3rem;
-  padding: 3rem 6rem;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
+  gap: 64px;
 }
