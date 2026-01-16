@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 12, 2026 at 12:24 PM
+-- Generation Time: Jan 16, 2026 at 10:27 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -28,6 +28,19 @@ DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ban_user_by_id` (IN `p_id` INT)   UPDATE roy.users
 SET account_state = 'banned'
 WHERE id = p_id$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `calculate_order_price` (IN `p_id` INT)   BEGIN
+    DECLARE final_price DECIMAL(10,2);
+
+    SELECT SUM(price)
+    INTO final_price
+    FROM roy.order_items
+    WHERE order_id = p_id;
+
+    UPDATE roy.orders
+    SET price = final_price
+    WHERE orders.id = p_id;
+END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_account` (IN `p_first_name` VARCHAR(16), IN `p_last_name` VARCHAR(16), IN `p_email` VARCHAR(255), IN `p_sesstoken` VARCHAR(255), IN `p_passhash` VARCHAR(255), IN `p_account_state` VARCHAR(11))   BEGIN
     INSERT INTO roy.users (first_name, last_name, email, sesstoken, passhash, sesstoken_expire , account_state)
@@ -136,6 +149,13 @@ sesstoken_expire = NULL,
 account_state = 'deleted'
 WHERE id = p_id;
 end$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_active_users` ()   BEGIN
+SELECT *
+    FROM users
+    WHERE account_state <> 'deleted'
+    ORDER BY id ASC;
+END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_confirmations` ()   BEGIN
 SELECT *
@@ -348,19 +368,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_order_item_quantity` (IN `p_
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_order_price` (IN `p_id` INT)   BEGIN
-    DECLARE final_price DECIMAL(10,2);
-
-    SELECT SUM(price)
-    INTO final_price
-    FROM roy.order_items
-    WHERE order_id = p_id;
-
-    UPDATE roy.orders
-    SET price = final_price
-    WHERE orders.id = p_id;
-END$$
-
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_password_by_id` (IN `p_id` VARCHAR(255), IN `p_new_passhash` VARCHAR(255))   BEGIN 
 	UPDATE roy.users
     SET passhash = p_new_passhash
@@ -455,7 +462,7 @@ CREATE TABLE `orders` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `created_at` date NOT NULL,
-  `price` decimal(10,0) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
   `city` varchar(255) NOT NULL,
   `zipcode` int(4) NOT NULL,
   `address` varchar(255) NOT NULL,
@@ -470,7 +477,7 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `user_id`, `created_at`, `price`, `city`, `zipcode`, `address`, `apartment_number`, `note`, `house_number`, `phone_number`) VALUES
-(1, 1, '2025-11-13', '6750', 'city', 0, 'address', 0, '--', 0, '');
+(1, 1, '2025-11-13', '6750.00', 'city', 0, 'address', 0, '--', 0, '');
 
 -- --------------------------------------------------------
 
