@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 20, 2026 at 09:52 AM
+-- Generation Time: Jan 20, 2026 at 10:22 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -147,10 +147,10 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `disable_account_by_id` (IN `p_id` INT)   BEGIN
 UPDATE roy.users
-SET email = NULL,
-passhash = NULL,
-sesstoken = NULL,
-sesstoken_expire = NULL,
+SET
+passhash = 'deleted field',
+sesstoken = 'deleted field',
+sesstoken_expire = NOW(),
 account_state = 'deleted'
 WHERE id = p_id;
 end$$
@@ -423,7 +423,6 @@ CREATE TABLE `confirmations` (
 --
 
 INSERT INTO `confirmations` (`id`, `user_id`, `new_value`, `confirmation_token`, `confirmation_token_expire`, `confirmation_type`) VALUES
-(7, 3, '3', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
 (8, 4, '4', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
 (9, 5, '5', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
 (10, 6, '6', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
@@ -500,7 +499,6 @@ CREATE TABLE `order_items` (
 --
 
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`) VALUES
-(3, 1, 1, 1, '66'),
 (4, 1, 2, 3, '36'),
 (5, 1, 1, 1000, '3000'),
 (6, 1, 1, 1000, '3000'),
@@ -579,8 +577,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sesstoken_expire`, `first_name`, `last_name`, `account_state`) VALUES
-(2, '0test@gmail.com', '2026-01-06 10:54:26', 'DoqcujMNsXbLUIFarjYrHO', 'D8sOKkFGFGDyq3Y11oRgOKzLJD+F0RcMauZTcYYsx0c=', '2026-01-13 10:54:26', '0Berg', 'Mc0', 'verified'),
-(3, '1test@gmail.com', '2026-01-06 10:54:26', 'iDqUtxuvTmCrRcKewRzraE', 'aU8GLJRZi8O2AlMPf7/NbMO4Wi2OAP1tTQQeEMJxFKU=', '2026-01-13 10:54:26', '1Berg', 'Mc1', 'verified'),
+(2, '', '2026-01-06 10:54:26', '', '', '0000-00-00 00:00:00', '0Berg', 'Mc0', 'deleted'),
+(3, '1test@gmail.com', '2026-01-06 10:54:26', 'deleted field', 'deleted field', '2026-01-20 11:21:00', '1Berg', 'Mc1', 'deleted'),
 (4, '2test@gmail.com', '2026-01-06 10:54:26', 'TXJLQvMxRbgqRKfdUJsLnw', 'ofUDksnla1w2MUXNuhdFTagKytfMAA/TeCDS8X/AAG4=', '2026-01-13 10:54:26', '2Berg', 'Mc2', 'unverified'),
 (5, '3test@gmail.com', '2026-01-06 10:54:26', 'dcsrQAGaIyXAhQPwVUkMtc', 'NLMDlqiqd6aTgq5gfTk4NH3fL4itvFLycXIRvlavXzs=', '2026-01-13 10:54:26', '3Berg', 'Mc3', 'unverified'),
 (6, '4test@gmail.com', '2026-01-06 10:54:26', 'nhbXQFBDzUPLxXzPXgcMzH', 'QEloqA0im9fq7vDG+KsG/G9EDTTmeWnhsTLejphFxgs=', '2026-01-13 10:54:26', '4Berg', 'Mc4', 'unverified'),
@@ -668,7 +666,7 @@ ALTER TABLE `confirmations`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `order_items`
