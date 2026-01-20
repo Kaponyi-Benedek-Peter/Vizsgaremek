@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 20, 2026 at 09:36 AM
+-- Generation Time: Jan 20, 2026 at 09:45 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -126,7 +126,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_id` (IN `p_i
     DELETE FROM confirmations WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_user_id` (IN `p_user_id` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_user_id` (IN `p_user_id` INT(255))   BEGIN
     DELETE FROM confirmations WHERE user_id = p_user_id;
 END$$
 
@@ -287,7 +287,7 @@ SELECT * from confirmations
 where confirmations.user_id = p_user_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_user_id_and_type` (IN `p_user_id` VARCHAR(255), IN `p_confirmation_type` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_user_id_and_type` (IN `p_user_id` INT(255), IN `p_confirmation_type` VARCHAR(255))   BEGIN
 SELECT * from confirmations
 where confirmations.user_id = p_user_id AND confirmations.confirmation_type = p_confirmation_type;
 END$$
@@ -350,10 +350,9 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_account_state_by_id` (IN `p_
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_confirmation_by_id` (IN `p_id` INT, IN `p_new_identification` VARCHAR(255), IN `p_new_new_value` VARCHAR(255), IN `p_new_confirmation_token` VARCHAR(255), IN `p_new_confirmation_token_expire` DATETIME, IN `p_new_confirmation_type` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_confirmation_by_id` (IN `p_id` INT, IN `p_new_new_value` VARCHAR(255), IN `p_new_confirmation_token` VARCHAR(255), IN `p_new_confirmation_token_expire` DATETIME, IN `p_new_confirmation_type` VARCHAR(255))   BEGIN
 UPDATE confirmations
-SET identification = p_new_identification,
-    new_value = p_new_new_value,
+SET new_value = p_new_new_value,
     confirmation_token = p_new_confirmation_token,
     confirmation_token_expire = p_new_confirmation_token_expire,
     confirmation_type = p_new_confirmation_type
