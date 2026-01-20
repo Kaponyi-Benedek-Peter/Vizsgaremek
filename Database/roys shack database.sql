@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 16, 2026 at 10:27 AM
+-- Generation Time: Jan 20, 2026 at 09:36 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -47,7 +47,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_account` (IN `p_first_name` 
     VALUES (p_first_name, p_last_name, p_email, p_sesstoken, p_passhash, NOW() + INTERVAL 1 week, p_account_state);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_confirmation` (IN `p_confirmation_token` VARCHAR(255), IN `p_identification` VARCHAR(255), IN `p_new_value` VARCHAR(255), IN `p_type` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_confirmation` (IN `p_confirmation_token` VARCHAR(255), IN `p_user_id` INT(255), IN `p_new_value` VARCHAR(255), IN `p_type` VARCHAR(255))   BEGIN
     INSERT INTO roy.confirmations (confirmation_token, confirmation_token_expire, identification, new_value, confirmation_type)
     VALUES (p_confirmation_token, NOW() + INTERVAL 1 WEEK, p_identification, p_new_value, p_type);
 END$$
@@ -117,12 +117,17 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_users` ()   BEGIN
 DELETE FROM users;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmations_by_user_id_and_type` (IN `p_user_id` INT, IN `p_confirmation_type` VARCHAR(255))   BEGIN
+DELETE from confirmations
+where confirmations.user_id = p_user_id AND confirmations.confirmation_type = p_confirmation_type;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_id` (IN `p_id` INT)   BEGIN
     DELETE FROM confirmations WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_identification` (IN `p_identification` VARCHAR(255))   BEGIN
-    DELETE FROM confirmations WHERE identification = p_identification;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_user_id` (IN `p_user_id` VARCHAR(255))   BEGIN
+    DELETE FROM confirmations WHERE user_id = p_user_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_expired_confirmations` ()   DELETE FROM confirmations
@@ -149,13 +154,6 @@ sesstoken_expire = NULL,
 account_state = 'deleted'
 WHERE id = p_id;
 end$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_active_users` ()   BEGIN
-SELECT *
-    FROM users
-    WHERE account_state <> 'deleted'
-    ORDER BY id ASC;
-END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_confirmations` ()   BEGIN
 SELECT *
@@ -277,14 +275,21 @@ SET p_count_out = (
 
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_identification` (IN `p_identification` INT(255))   BEGIN
-SELECT * from confirmations
-where confirmations.identification = p_identification;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_verified_users` ()   BEGIN
+SELECT *
+    FROM users
+    WHERE account_state = 'verified'
+    ORDER BY id ASC;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_identification_and_type` (IN `p_identification` VARCHAR(255), IN `p_confirmation_type` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_user_id` (IN `p_user_id` INT(255))   BEGIN
 SELECT * from confirmations
-where confirmations.identification = p_identification AND confirmations.confirmation_type = p_confirmation_type;
+where confirmations.user_id = p_user_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_user_id_and_type` (IN `p_user_id` VARCHAR(255), IN `p_confirmation_type` VARCHAR(255))   BEGIN
+SELECT * from confirmations
+where confirmations.user_id = p_user_id AND confirmations.confirmation_type = p_confirmation_type;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmation_by_id` (IN `p_id` INT)   BEGIN
@@ -407,50 +412,48 @@ DELIMITER ;
 
 CREATE TABLE `confirmations` (
   `id` int(11) NOT NULL,
-  `identification` varchar(255) NOT NULL,
+  `user_id` int(255) NOT NULL,
   `new_value` varchar(255) DEFAULT NULL,
   `confirmation_token` varchar(255) NOT NULL,
   `confirmation_token_expire` datetime NOT NULL,
-  `confirmation_type` enum('password_change','post_deletion','account_deletion','account_creation') NOT NULL
+  `confirmation_type` enum('password_change','account_deletion','account_creation') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `confirmations`
 --
 
-INSERT INTO `confirmations` (`id`, `identification`, `new_value`, `confirmation_token`, `confirmation_token_expire`, `confirmation_type`) VALUES
-(5, '1', '1', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
-(6, '2', '2', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
-(7, '3', '3', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
-(8, '4', '4', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
-(9, '5', '5', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
-(10, '6', '6', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(11, '7', '7', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(12, '8', '8', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(13, '9', '9', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(14, '10', '10', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(15, '11', '11', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(16, '12', '12', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(17, '13', '13', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(18, '14', '14', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(19, '15', '15', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(20, '16', '16', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(21, '17', '17', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(22, '18', '18', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(23, '19', '19', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(24, '20', '20', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(25, '21', '21', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(26, '22', '22', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(27, '23', '23', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(28, '24', '24', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(29, '25', '25', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
-(30, '26', '26', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
-(31, '27', '27', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
-(32, '28', '28', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
-(33, '29', '29', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
-(34, '30', '30', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
-(35, '31', '31', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
-(36, '32', '32', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion');
+INSERT INTO `confirmations` (`id`, `user_id`, `new_value`, `confirmation_token`, `confirmation_token_expire`, `confirmation_type`) VALUES
+(7, 3, '3', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
+(8, 4, '4', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
+(9, 5, '5', 'oXnQrOXzlXXEKJzeOjnhgg', '2026-01-13 10:54:30', 'account_deletion'),
+(10, 6, '6', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(11, 7, '7', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(12, 8, '8', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(13, 9, '9', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(14, 10, '10', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(15, 11, '11', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(16, 12, '12', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(17, 13, '13', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(18, 14, '14', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(19, 15, '15', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(20, 16, '16', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(21, 17, '17', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(22, 18, '18', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(23, 19, '19', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(24, 20, '20', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(25, 21, '21', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(26, 22, '22', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(27, 23, '23', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(28, 24, '24', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(29, 25, '25', 'fsMafTJaeyapbzZxeyIXgP', '2026-01-13 10:54:30', 'account_deletion'),
+(30, 26, '26', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
+(31, 27, '27', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
+(32, 28, '28', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
+(33, 29, '29', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
+(34, 30, '30', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
+(35, 31, '31', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion'),
+(36, 32, '32', 'ycWwqSScdtOOaQjxQufhmL', '2026-01-13 10:54:30', 'account_deletion');
 
 -- --------------------------------------------------------
 
@@ -577,8 +580,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sesstoken_expire`, `first_name`, `last_name`, `account_state`) VALUES
-(2, '0test@gmail.com', '2026-01-06 10:54:26', 'DoqcujMNsXbLUIFarjYrHO', 'D8sOKkFGFGDyq3Y11oRgOKzLJD+F0RcMauZTcYYsx0c=', '2026-01-13 10:54:26', '0Berg', 'Mc0', 'banned'),
-(3, '1test@gmail.com', '2026-01-06 10:54:26', 'iDqUtxuvTmCrRcKewRzraE', 'aU8GLJRZi8O2AlMPf7/NbMO4Wi2OAP1tTQQeEMJxFKU=', '2026-01-13 10:54:26', '1Berg', 'Mc1', 'unverified'),
+(2, '0test@gmail.com', '2026-01-06 10:54:26', 'DoqcujMNsXbLUIFarjYrHO', 'D8sOKkFGFGDyq3Y11oRgOKzLJD+F0RcMauZTcYYsx0c=', '2026-01-13 10:54:26', '0Berg', 'Mc0', 'verified'),
+(3, '1test@gmail.com', '2026-01-06 10:54:26', 'iDqUtxuvTmCrRcKewRzraE', 'aU8GLJRZi8O2AlMPf7/NbMO4Wi2OAP1tTQQeEMJxFKU=', '2026-01-13 10:54:26', '1Berg', 'Mc1', 'verified'),
 (4, '2test@gmail.com', '2026-01-06 10:54:26', 'TXJLQvMxRbgqRKfdUJsLnw', 'ofUDksnla1w2MUXNuhdFTagKytfMAA/TeCDS8X/AAG4=', '2026-01-13 10:54:26', '2Berg', 'Mc2', 'unverified'),
 (5, '3test@gmail.com', '2026-01-06 10:54:26', 'dcsrQAGaIyXAhQPwVUkMtc', 'NLMDlqiqd6aTgq5gfTk4NH3fL4itvFLycXIRvlavXzs=', '2026-01-13 10:54:26', '3Berg', 'Mc3', 'unverified'),
 (6, '4test@gmail.com', '2026-01-06 10:54:26', 'nhbXQFBDzUPLxXzPXgcMzH', 'QEloqA0im9fq7vDG+KsG/G9EDTTmeWnhsTLejphFxgs=', '2026-01-13 10:54:26', '4Berg', 'Mc4', 'unverified'),
