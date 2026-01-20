@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 20, 2026 at 09:45 AM
+-- Generation Time: Jan 20, 2026 at 09:52 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -48,8 +48,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_account` (IN `p_first_name` 
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_confirmation` (IN `p_confirmation_token` VARCHAR(255), IN `p_user_id` INT(255), IN `p_new_value` VARCHAR(255), IN `p_type` VARCHAR(255))   BEGIN
-    INSERT INTO roy.confirmations (confirmation_token, confirmation_token_expire, identification, new_value, confirmation_type)
-    VALUES (p_confirmation_token, NOW() + INTERVAL 1 WEEK, p_identification, p_new_value, p_type);
+    INSERT INTO roy.confirmations (confirmation_token, confirmation_token_expire, user_id, new_value, confirmation_type)
+    VALUES (p_confirmation_token, NOW() + INTERVAL 1 WEEK, p_user_id, p_new_value, p_type);
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(4), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(12))   BEGIN
