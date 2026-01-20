@@ -22,12 +22,13 @@ namespace Servo.service
                 string accstate = model.shared.get_account_state_by_id(controller_id);
                 string model_recieved_token = model.shared.get_token_by_id(controller_id);
 
-                MessageBox.Show(model_recieved_token + "<<");
-                MessageBox.Show(controller_token+"<<");
 
                 service.shared.log($"Debug: {model_recieved_token} || {accstate} --service.registration_promise.process_registration_promise 1");
-                
-                if ((accstate == "unverified" || string.IsNullOrEmpty(accstate)) && model_recieved_token == controller_token)
+                if (accstate == "500")
+                {
+                    return 404;
+                }
+                if ((accstate == "unverified" && model_recieved_token == controller_token))
                 {
                     var test=model.registration_promise.main(controller_id);
                     //MessageBox.Show(test.ToString());
@@ -45,10 +46,13 @@ namespace Servo.service
                     }
                     else { return 500; }
                 }
+                else if (string.IsNullOrEmpty(accstate)){
+                    return 404;
+                }
 
                 else
                 {
-                   
+
                     if (controller_token != model_recieved_token)
                     {
 
@@ -62,7 +66,7 @@ namespace Servo.service
 
                     else
                     {
-                        service.shared.log($"Debug: {accstate} --service.registration_promise.process_registration_promise 4");
+                        service.shared.log($"Debug: {accstate} --service.registration_promise.process_registration_promise 5");
                         return 500;
                     }
                     // nem oké
@@ -71,7 +75,7 @@ namespace Servo.service
                 }
 
             }
-            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.registration_promise.process_registration_promise 1");return 404; }
+            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.registration_promise.process_registration_promise 2");return 404; }
 
         }
 

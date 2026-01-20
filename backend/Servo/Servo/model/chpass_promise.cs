@@ -44,11 +44,11 @@ namespace Servo.model
 
             try
             {
-                using (MySqlCommand cmd = new MySqlCommand("delete_confirmation_by_identification", conn))
+                using (MySqlCommand cmd = new MySqlCommand("delete_confirmation_by_user_id", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.AddWithValue("@p_identification", id);
+                    cmd.Parameters.AddWithValue("@p_user_id", id);
                     cmd.ExecuteNonQuery();
 
                     return 200;

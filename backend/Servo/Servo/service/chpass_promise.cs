@@ -21,7 +21,7 @@ namespace Servo.service
 
             try
             {
-                resp = model.shared.get_full_confirmation_by_identification(controller_id,"password_change");
+                resp = model.shared.get_full_confirmation_by_user_id(controller_id,"password_change");
             }
             catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.process_chpass_promise 1"); }
 

@@ -17,7 +17,7 @@ namespace Servo.service
             Dictionary<string, string> resp = new Dictionary<string, string> { };
             try
             {
-                resp = model.shared.get_full_confirmation_by_identification(controller_id,"account_deletion");
+                resp = model.shared.get_full_confirmation_by_user_id(controller_id,"account_deletion");
             }
             catch (Exception ex){ service.shared.log($"Error: {ex.Message} --service.delacc_promise.process_delacc_promise 1"); }
 

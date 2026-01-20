@@ -128,7 +128,7 @@ namespace Servo.model
                         cmd.CommandType = CommandType.StoredProcedure;
                        
                         cmd.Parameters.AddWithValue("@p_confirmation_token", lista["p_confirmation_token"]);
-                        cmd.Parameters.AddWithValue("@p_identification", lista["p_identification"]);
+                        cmd.Parameters.AddWithValue("@p_user_id", lista["p_user_id"]);
                         cmd.Parameters.AddWithValue("@p_new_value", lista["p_new_value"]);
                         cmd.Parameters.AddWithValue("@p_confirmation_type", lista["p_confirmation_type"]);
                         cmd.ExecuteNonQuery();
@@ -228,7 +228,7 @@ namespace Servo.model
         }
 
 
-        public static Dictionary<string, string> get_full_confirmation_by_identification(string identification,string type)
+        public static Dictionary<string, string> get_full_confirmation_by_user_id(string user_id,string type)
         {
             var list = new Dictionary<string, string> { };
             list.Add("error", "false");
@@ -239,11 +239,11 @@ namespace Servo.model
 
                 
                 
-                using (MySqlCommand cmd = new MySqlCommand("get_confirmations_by_identification_and_type", conn))
+                using (MySqlCommand cmd = new MySqlCommand("get_confirmations_by_user_id_and_type", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.AddWithValue("@p_identification", identification);
+                    cmd.Parameters.AddWithValue("@p_user_id", user_id);
                     cmd.Parameters.AddWithValue("@p_confirmation_type", type);
 
 
@@ -271,7 +271,7 @@ namespace Servo.model
                 
             }
             catch (Exception ex) {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_full_confirmation_by_identification");
+                service.shared.log($"Error: {ex.Message} --model.shared.get_full_confirmation_by_user_id");
                 list["error"] = "true";
             }
 
@@ -429,7 +429,7 @@ namespace Servo.model
         }
 
 
-        public static int add_confirmation(string confirmation_token, string identification, string value, string type)
+        public static int add_confirmation(string confirmation_token, string user_id, string value, string type)
         {
 
             try
@@ -439,7 +439,7 @@ namespace Servo.model
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     cmd.Parameters.AddWithValue("@p_confirmation_token", confirmation_token);
-                    cmd.Parameters.AddWithValue("@p_identification", identification);
+                    cmd.Parameters.AddWithValue("@p_user_id", user_id);
                     cmd.Parameters.AddWithValue("@p_new_value", value);
                     cmd.Parameters.AddWithValue("@p_type", type);
                     cmd.ExecuteNonQuery();
@@ -450,6 +450,32 @@ namespace Servo.model
             catch (Exception ex)
             {
                 service.shared.log($"Error: {ex.Message} --model.shared.add_confirmation");
+                return 500;
+            }
+        }
+
+
+
+        //delete_confirmations_by_user_id_and_type
+        public static int delete_confirmations_by_user_id_and_type(string user_id, string type)
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("delete_confirmations_by_user_id_and_type", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_user_id", user_id);
+                    cmd.Parameters.AddWithValue("@p_confirmation_type", type);
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error: {ex.Message} --model.shared.delete_confirmations_by_user_id_and_type");
                 return 500;
             }
         }
