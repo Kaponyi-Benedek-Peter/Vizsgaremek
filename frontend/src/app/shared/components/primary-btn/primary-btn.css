@@ -1,38 +1,41 @@
 .primary-btn {
   height: 55px;
   padding: 0 16px;
-
+  min-width: 100px;
   background: transparent;
   border: none;
-
   color: #ffffff;
-  font-size: 14px;
+  font-family: 'Inconsolata', monospace;
+  font-size: clamp(16px, 3vw, 24px);
+  letter-spacing: 0.13em;
+  line-height: 1;
   font-weight: 500;
-
   position: relative;
   cursor: pointer;
-
   display: flex;
   align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 
 .btn-text {
   position: relative;
+  display: inline-flex;
+  justify-content: center;
   z-index: 1;
 }
 
-.primary-btn .underline {
+.btn-text .underline {
   position: absolute;
-  bottom: 15px;
+  bottom: -6px;
   left: 50%;
   transform: translateX(-50%);
   height: 2px;
-  width: 10px; /* alap szélesség */
-  background-color: #72e4f0; /* javítva */
+  width: 16px;
+  background-color: #72e4f0;
   transition: width 0.3s ease;
 }
 
-.primary-btn:hover .underline {
-  width: 80%; /* hoverkor kiszélesedik */
+.primary-btn:hover .btn-text .underline {
+  width: calc(100% - 0.13em);
 }
