@@ -6,11 +6,6 @@
   margin: 0;
   box-sizing: border-box;
 }
-.logo {
-  object-fit: contain;
-  height: 50px;
-  width: 100px;
-}
 @font-face {
   font-family: 'Inconsolata';
   src: url('./assets/fonts/Inconsolata/static/Inconsolata-Regular.ttf') format('truetype');

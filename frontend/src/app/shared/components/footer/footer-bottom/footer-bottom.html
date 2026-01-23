@@ -1,4 +1,9 @@
 <div class="footer-bottom">
-  <app-icon-btn [iconImg]="'ICONS.user'" />
-  <a routerLink="/legal">Jogi információk</a>
+  <div class="footer-left">
+    <app-icon-btn [iconImg]="ICONS.support" />
+  </div>
+  <div class="footer-center"></div>
+  <div class="footer-right">
+    <app-primary-btn routerLink="/legal">Legal</app-primary-btn>
+  </div>
 </div>

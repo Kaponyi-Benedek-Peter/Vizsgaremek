@@ -1,8 +1,15 @@
 .footer-main {
-  min-height: 450px; /* NEM height */
-  padding: 64px 96px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(40px, 6vw, 80px) 20px;
 
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 64px;
+  gap: 40px;
+}
+@media (max-width: 768px) {
+  .footer-column {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
 }

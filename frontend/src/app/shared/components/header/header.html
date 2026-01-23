@@ -1,13 +1,12 @@
 <header class="header">
-  <img class="logo" [src]="IMAGES.logo" alt="Roy's Shack official logo" />
-
-  <nav class="btns">
+  <div class="header-left">
+    <img class="logo" [src]="IMAGES.logo" alt="Roy's Shack official logo" />
+  </div>
+  <div class="header-center"></div>
+  <div class="header-right">
     <app-primary-btn routerLink="/home">Home</app-primary-btn>
     <app-primary-btn routerLink="/forum">Forum</app-primary-btn>
     <app-primary-btn routerLink="/products">Products</app-primary-btn>
-  </nav>
-
-  <div class="icons">
     <app-icon-btn [iconImg]="ICONS.user"></app-icon-btn>
     <app-icon-btn [iconImg]="ICONS.basket"></app-icon-btn>
   </div>
