@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
 import { NewsletterForm } from '../newsletter-form/newsletter-form';
-import { FooterColumn } from '../footer-column/footer-column';
 
 @Component({
   selector: 'app-footer-main',
   standalone: true,
-  imports: [NewsletterForm, FooterColumn],
+  imports: [NewsletterForm],
   templateUrl: './footer-main.html',
   styleUrl: './footer-main.css',
 })
