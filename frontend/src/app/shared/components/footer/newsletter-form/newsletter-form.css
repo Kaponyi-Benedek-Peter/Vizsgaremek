@@ -20,6 +20,9 @@
   border: none;
   cursor: pointer;
 }
+.newsletter p {
+  margin-bottom: 6px;
+}
 
 input::placeholder {
   color: #ffffff;
@@ -30,8 +33,8 @@ input::placeholder {
 }
 
 .social-icons a {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,4 +49,7 @@ input::placeholder {
 
 .social-icons a:hover img {
   transform: scale(1.1);
+}
+.social-icons {
+  margin-bottom: 6px;
 }

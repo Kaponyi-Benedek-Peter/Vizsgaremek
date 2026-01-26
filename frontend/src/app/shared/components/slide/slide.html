@@ -1,0 +1,27 @@
+<div class="slider" (mouseenter)="pause()" (mouseleave)="resume()">
+  <button class="arrow arrow-left" (click)="prev()">
+    <svg width="60" height="60" viewBox="0 0 60 60">
+      <image href="assets/icons/arrowwhite.png" x="0" y="0" width="60" height="60" />
+    </svg>
+  </button>
+
+  <button class="arrow arrow-right" (click)="next()">
+    <svg width="60" height="60" viewBox="0 0 60 60">
+      <image href="assets/icons/arrowwhite.png" x="0" y="0" width="60" height="60" />
+    </svg>
+  </button>
+
+  <div class="slides">
+    <div class="slide" [style.background-image]="'url(' + slides[currentIndex].image + ')'"></div>
+  </div>
+
+  <div class="dots">
+    <button
+      *ngFor="let slide of slides; let i = index"
+      class="dot"
+      [class.active]="i === currentIndex"
+      (click)="goTo(i)"
+      aria-label="Ugrás a {{ i + 1 }}. slide-ra"
+    ></button>
+  </div>
+</div>

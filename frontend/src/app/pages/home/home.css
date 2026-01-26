@@ -1,0 +1,26 @@
+.home {
+  width: calc(100% - 40px);
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero {
+  background-image: url('/assets/images/herobg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  height: 630px;
+  width: 100%;
+}
+.hero h1 {
+  text-align: center;
+}
+.hero h2 {
+  text-align: center;
+}
+.hero p {
+  text-align: center;
+  margin: 10px 200px;
+}
