@@ -13,4 +13,13 @@
     </p>
     <app-slide></app-slide>
   </div>
+  <app-featured>
+    <app-featured-product-card
+      *ngFor="let product of products"
+      [img]="product.img"
+      [alt]="product.alt"
+      (cardClick)="onProductClick(product.id)"
+    >
+    </app-featured-product-card>
+  </app-featured>
 </div>

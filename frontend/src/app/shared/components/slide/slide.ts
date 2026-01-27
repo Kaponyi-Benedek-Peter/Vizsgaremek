@@ -8,12 +8,7 @@ import { Component } from '@angular/core';
   styleUrl: './slide.css',
 })
 export class Slide {
-  slides = [
-    { image: 'assets/images/hero_part_1.png' },
-    { image: 'assets/images/hero_part_2.png' },
-    { image: 'assets/images/hero_part_3.png' },
-    { image: 'assets/images/hero_part_4.png' },
-  ];
+  slides = [{ image: '' }, { image: '' }, { image: '' }, { image: '' }, { image: '' }];
 
   currentIndex = 0;
   isPaused = false;

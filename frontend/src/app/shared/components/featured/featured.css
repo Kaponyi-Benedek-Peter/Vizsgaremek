@@ -1,0 +1,113 @@
+.featured-section {
+  width: 1480px;
+  max-width: 1840px;
+  background-color: #f5f0e1;
+  position: relative;
+  padding: 60px clamp(40px, 5vw, 80px);
+  margin: 0 auto;
+  min-height: 720px;
+}
+
+.featured-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(100, 90, 70, 0.25) 10%,
+    rgba(100, 90, 70, 0.35) 50%,
+    rgba(100, 90, 70, 0.25) 90%,
+    transparent 100%
+  );
+}
+
+.featured-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(100, 90, 70, 0.25) 10%,
+    rgba(100, 90, 70, 0.35) 50%,
+    rgba(100, 90, 70, 0.25) 90%,
+    transparent 100%
+  );
+}
+
+.section-title {
+  font-family: 'Inconsolata', monospace;
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: clamp(50px, 8vw, 90px);
+  color: #131313;
+  text-transform: uppercase;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 2px;
+  background: #067a45;
+  margin: 20px auto 0;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 573px));
+  gap: 40px;
+  justify-content: center;
+  align-items: start;
+}
+
+.products-grid:has(> :only-child) {
+  grid-template-columns: minmax(500px, 800px);
+}
+
+.products-grid:has(> :nth-child(2):last-child) {
+  grid-template-columns: repeat(2, minmax(450px, 573px));
+}
+
+.products-grid:has(> :nth-child(3)) {
+  grid-template-columns: repeat(auto-fit, minmax(350px, 450px));
+}
+
+@media (max-width: 1400px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  }
+
+  .products-grid:has(> :only-child) {
+    grid-template-columns: minmax(400px, 700px);
+  }
+}
+
+@media (max-width: 768px) {
+  .featured-section {
+    padding: 40px 20px;
+  }
+
+  .section-title {
+    margin-bottom: 40px;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .products-grid:has(> :only-child) {
+    grid-template-columns: 1fr;
+  }
+}
