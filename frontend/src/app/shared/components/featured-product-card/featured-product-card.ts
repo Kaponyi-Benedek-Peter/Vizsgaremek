@@ -1,8 +1,9 @@
+import { NgIf } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-featured-product-card',
-  imports: [],
+  imports: [NgIf],
   templateUrl: './featured-product-card.html',
   styleUrl: './featured-product-card.css',
 })

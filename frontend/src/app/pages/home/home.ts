@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Slide } from '../../shared/components/slide/slide';
 import { Featured } from '../../shared/components/featured/featured';
 import { FeaturedProductCard } from '../../shared/components/featured-product-card/featured-product-card';
+import { IMAGES } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-home',

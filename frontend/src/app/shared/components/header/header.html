@@ -2,12 +2,14 @@
   <div class="header-left">
     <img class="logo" [src]="IMAGES.logo" alt="Roy's Shack official logo" />
   </div>
-  <div class="header-center"></div>
-  <div class="header-right">
+  <div class="header-center">
     <app-primary-btn routerLink="/home">Home</app-primary-btn>
     <app-primary-btn routerLink="/forum">Forum</app-primary-btn>
     <app-primary-btn routerLink="/products">Products</app-primary-btn>
+  </div>
+  <div class="header-right">
     <app-icon-btn [iconImg]="ICONS.user"></app-icon-btn>
     <app-icon-btn [iconImg]="ICONS.basket"></app-icon-btn>
+    <app-language-switcher></app-language-switcher>
   </div>
 </header>

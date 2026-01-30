@@ -1,0 +1,43 @@
+<div class="language-switcher">
+  <button
+    class="lang-button"
+    (click)="toggleDropdown()"
+    [attr.aria-expanded]="isOpen"
+    aria-label="Nyelv váltás"
+  >
+    <img
+      [src]="currentLang.flagImage"
+      [alt]="currentLang.name"
+      class="lang-flag-img"
+      (error)="onImageError($event, currentLang.code)"
+    />
+  </button>
+
+  <div class="lang-dropdown" *ngIf="isOpen">
+    <div class="lang-list">
+      <button
+        *ngFor="let lang of languages"
+        class="lang-item"
+        [class.active]="currentLanguage === lang.code"
+        (click)="selectLanguage(lang.code)"
+      >
+        <img
+          [src]="lang.flagImage"
+          [alt]="lang.name"
+          class="lang-item-flag-img"
+          (error)="onImageError($event, lang.code)"
+        />
+        <span class="lang-item-name">{{ lang.name }}</span>
+      </button>
+    </div>
+
+    <div class="lang-globe">
+      <img
+        [src]="globeImage"
+        alt="Globe"
+        class="globe-icon-img"
+        (error)="$event.target.outerHTML = '<div class=\'globe-icon-emoji\'>🌍</div>'"
+      />
+    </div>
+  </div>
+</div>

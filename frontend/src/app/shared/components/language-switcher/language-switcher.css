@@ -1,0 +1,155 @@
+.language-switcher {
+  position: relative;
+  display: inline-block;
+}
+
+.lang-button {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: 3px solid white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  outline: none;
+  padding: 0;
+  overflow: hidden;
+}
+
+.lang-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.lang-button:focus {
+  outline: 3px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.lang-flag-img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.fallback-text {
+  color: white;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
+
+.lang-dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 8px;
+  width: 192px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lang-list {
+  padding: 4px 0;
+}
+
+.lang-item {
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 0.15s ease;
+}
+
+.lang-item:hover {
+  background-color: #f3f4f6;
+}
+
+.lang-item.active {
+  background-color: #f9fafb;
+}
+
+.lang-item-flag-img {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.lang-item-name {
+  color: #1f2937;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.lang-globe {
+  border-top: 1px solid #e5e7eb;
+  padding: 12px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.globe-icon-img {
+  width: 32px;
+  height: 32px;
+  opacity: 0.4;
+  object-fit: contain;
+}
+
+.globe-icon-emoji {
+  font-size: 1.875rem;
+  opacity: 0.4;
+}
+
+@media (max-width: 640px) {
+  .lang-dropdown {
+    width: 160px;
+  }
+
+  .lang-item {
+    padding: 10px 12px;
+  }
+
+  .lang-item-name {
+    font-size: 0.875rem;
+  }
+
+  .lang-item-flag-img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .lang-button {
+    border-color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.lang-item-flag-img[src=''],
+.lang-flag-img[src=''] {
+  background-color: #e5e7eb;
+}
