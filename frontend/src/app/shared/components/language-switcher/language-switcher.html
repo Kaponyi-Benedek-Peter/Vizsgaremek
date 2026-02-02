@@ -30,14 +30,5 @@
         <span class="lang-item-name">{{ lang.name }}</span>
       </button>
     </div>
-
-    <div class="lang-globe">
-      <img
-        [src]="globeImage"
-        alt="Globe"
-        class="globe-icon-img"
-        (error)="$event.target.outerHTML = '<div class=\'globe-icon-emoji\'>🌍</div>'"
-      />
-    </div>
   </div>
 </div>

@@ -43,7 +43,6 @@
   color: var(--text-inverse);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .footer-main {
     grid-template-columns: 1fr;

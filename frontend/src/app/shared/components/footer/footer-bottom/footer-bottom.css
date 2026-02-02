@@ -30,12 +30,11 @@
   gap: clamp(10px, 3vw, 16px);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .footer-center {
     display: none;
   }
-  
+
   .footer-right {
     gap: 8px;
   }

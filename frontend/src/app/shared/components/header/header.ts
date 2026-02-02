@@ -23,7 +23,6 @@ export class Header implements OnInit {
   constructor(private themeService: ThemeService) {}
 
   ngOnInit(): void {
-    // Feliratkozás a téma változásaira
     this.themeService.currentTheme$.subscribe((theme) => {
       this.currentTheme = theme;
     });

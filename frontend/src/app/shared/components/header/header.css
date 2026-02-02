@@ -41,12 +41,11 @@
   gap: clamp(10px, 3vw, 16px);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .header-center {
     display: none;
   }
-  
+
   .header-right {
     gap: 8px;
   }

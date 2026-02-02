@@ -104,26 +104,6 @@
   font-size: 0.95rem;
 }
 
-.lang-globe {
-  border-top: 1px solid #e5e7eb;
-  padding: 12px 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.globe-icon-img {
-  width: 32px;
-  height: 32px;
-  opacity: 0.4;
-  object-fit: contain;
-}
-
-.globe-icon-emoji {
-  font-size: 1.875rem;
-  opacity: 0.4;
-}
-
 @media (max-width: 640px) {
   .lang-dropdown {
     width: 160px;
