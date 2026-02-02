@@ -1,5 +1,6 @@
 .footer {
-  background-color: #0b7a4b;
-  color: #fff;
+  background-color: var(--color-primary-light);
+  color: var(--text-inverse);
   width: 100%;
+  transition: background-color var(--transition-speed) var(--transition-ease);
 }

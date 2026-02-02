@@ -1,0 +1,55 @@
+{
+  "header": {
+    "home": "Home",
+    "forum": "Forum",
+    "products": "Products",
+    "login": "Login",
+    "cart": "Cart"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025 Roy's shack",
+    "info": "The information, data or documents on the site are for informational purposes only",
+    "contact": "Contact",
+    "contactInfo": "Contact information",
+    "email": "Contact@royshack.hu",
+    "followUs": "Follow us!",
+    "newsletter": "Subscribe to our newsletter!",
+    "emailPlaceholder": "Your e-mail address",
+    "send": "Send",
+    "legal": "Legal"
+  },
+  "home": {
+    "hero": {
+      "title": "Roy's Shack Est. 1888",
+      "subtitle": "Our mission",
+      "description": "Lorem ipsum dolor sit amet consectetur. Euismod eget ut suspendisse leo faucibus sit dui. Aliquet egestas tincidunt nibh massa sed tellus aliquam. Amet auctor odio sit nibh at. Vel sed ipsum interdum vel nulla ornare. Ullamcorper egestas in viverra consequat. Vitae enim pellentesque a cras ornare dui nulla. Leo nam felis aliquet cras vel nulla mi bibendum non. Velit pretium non mi mi justo senectus leo. In congue aliquam adipiscing fames. Turpis orci odio mauris augue lacus mi non nibh. Etiam a in quis commodo vivamus. Gravida luctus risus egestas aliquam scelerisque vitae turpis viverra quisque."
+    },
+    "featured": {
+      "title": "Featured products",
+      "viewAll": "View all"
+    }
+  },
+  "language": {
+    "hu": "Hungarian",
+    "en": "English",
+    "de": "German"
+  },
+  "theme": {
+    "light": "Light mode",
+    "dark": "Dark mode",
+    "toggle": "Toggle theme"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Successful operation",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter"
+  }
+}

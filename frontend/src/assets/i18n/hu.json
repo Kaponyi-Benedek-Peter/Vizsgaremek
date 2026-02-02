@@ -1,0 +1,55 @@
+{
+  "header": {
+    "home": "Főoldal",
+    "forum": "Fórum",
+    "products": "Termékek",
+    "login": "Bejelentkezés",
+    "cart": "Kosár"
+  },
+  "footer": {
+    "copyright": "Szerzői jog © 2025 Roy's shack",
+    "info": "Az oldalon található információk, adatok vagy dokumentumok kizárólag tájékoztató jellegűek",
+    "contact": "Kapcsolat",
+    "contactInfo": "Kapcsolati információk",
+    "email": "Contact@royshack.hu",
+    "followUs": "Kövess minket!",
+    "newsletter": "Iratkozz fel a hírlevélre!",
+    "emailPlaceholder": "E-mail címed",
+    "send": "Küldés",
+    "legal": "Jogi információk"
+  },
+  "home": {
+    "hero": {
+      "title": "Roy's Shack Est. 1888",
+      "subtitle": "Küldetésünk",
+      "description": "Lorem ipsum dolor sit amet consectetur. Euismod eget ut suspendisse leo faucibus sit dui. Aliquet egestas tincidunt nibh massa sed tellus aliquam. Amet auctor odio sit nibh at. Vel sed ipsum interdum vel nulla ornare. Ullamcorper egestas in viverra consequat. Vitae enim pellentesque a cras ornare dui nulla. Leo nam felis aliquet cras vel nulla mi bibendum non. Velit pretium non mi mi justo senectus leo. In congue aliquam adipiscing fames. Turpis orci odio mauris augue lacus mi non nibh. Etiam a in quis commodo vivamus. Gravida luctus risus egestas aliquam scelerisque vitae turpis viverra quisque."
+    },
+    "featured": {
+      "title": "Kiemelt termékek",
+      "viewAll": "Összes megtekintése"
+    }
+  },
+  "language": {
+    "hu": "Magyar",
+    "en": "Angol",
+    "de": "Német"
+  },
+  "theme": {
+    "light": "Világos mód",
+    "dark": "Sötét mód",
+    "toggle": "Téma váltása"
+  },
+  "common": {
+    "loading": "Betöltés...",
+    "error": "Hiba történt",
+    "success": "Sikeres művelet",
+    "cancel": "Mégse",
+    "confirm": "Megerősítés",
+    "save": "Mentés",
+    "delete": "Törlés",
+    "edit": "Szerkesztés",
+    "add": "Hozzáadás",
+    "search": "Keresés",
+    "filter": "Szűrés"
+  }
+}

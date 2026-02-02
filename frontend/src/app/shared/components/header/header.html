@@ -3,13 +3,24 @@
     <img class="logo" [src]="IMAGES.logo" alt="Roy's Shack official logo" />
   </div>
   <div class="header-center">
-    <app-primary-btn routerLink="/home">Home</app-primary-btn>
-    <app-primary-btn routerLink="/forum">Forum</app-primary-btn>
-    <app-primary-btn routerLink="/products">Products</app-primary-btn>
+    <app-primary-btn routerLink="/home">{{ 'header.home' | translate }}</app-primary-btn>
+    <app-primary-btn routerLink="/forum">{{ 'header.forum' | translate }}</app-primary-btn>
+    <app-primary-btn routerLink="/products">{{ 'header.products' | translate }}</app-primary-btn>
   </div>
   <div class="header-right">
-    <app-icon-btn [iconImg]="ICONS.user"></app-icon-btn>
-    <app-icon-btn [iconImg]="ICONS.basket"></app-icon-btn>
+    <app-icon-btn 
+      [iconImg]="ICONS.user" 
+      [attr.aria-label]="'header.login' | translate">
+    </app-icon-btn>
+    <app-icon-btn 
+      [iconImg]="ICONS.basket"
+      [attr.aria-label]="'header.cart' | translate">
+    </app-icon-btn>
+    <app-icon-btn 
+      [iconImg]="currentTheme === 'dark' ? ICONS.sun : ICONS.moon"
+      (click)="toggleTheme()"
+      [attr.aria-label]="'theme.toggle' | translate">
+    </app-icon-btn>
     <app-language-switcher></app-language-switcher>
   </div>
 </header>

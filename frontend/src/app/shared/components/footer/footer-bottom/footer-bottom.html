@@ -1,9 +1,12 @@
 <div class="footer-bottom">
   <div class="footer-left">
-    <app-icon-btn [iconImg]="ICONS.support" />
+    <app-icon-btn 
+      [iconImg]="ICONS.support"
+      [attr.aria-label]="'Support'">
+    </app-icon-btn>
   </div>
   <div class="footer-center"></div>
   <div class="footer-right">
-    <app-primary-btn routerLink="/legal">Legal</app-primary-btn>
+    <app-primary-btn routerLink="/legal">{{ 'footer.legal' | translate }}</app-primary-btn>
   </div>
 </div>

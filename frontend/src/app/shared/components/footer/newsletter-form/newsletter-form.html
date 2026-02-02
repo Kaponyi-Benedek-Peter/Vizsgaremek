@@ -1,19 +1,26 @@
 <div class="newsletter">
   <div class="social-icons">
-    <a href="" target="_blank">
+    <a href="#" target="_blank" [attr.aria-label]="'Facebook'">
       <img [src]="ICONS.facebook" alt="facebook" />
     </a>
-    <a href="" target="_blank">
-      <img [src]="ICONS.instagram" alt="facebook" />
+    <a href="#" target="_blank" [attr.aria-label]="'Instagram'">
+      <img [src]="ICONS.instagram" alt="instagram" />
     </a>
-    <a href="" target="_blank">
-      <img [src]="ICONS.x" alt="facebook" />
+    <a href="#" target="_blank" [attr.aria-label]="'X (Twitter)'">
+      <img [src]="ICONS.x" alt="X" />
     </a>
   </div>
-  <p>Subscribe on our newsletter!</p>
+  
+  <p>{{ 'footer.newsletter' | translate }}</p>
 
-  <form>
-    <input type="email" placeholder="Your e-mail address" />
-    <button type="submit">Send</button>
+  <form (ngSubmit)="onSubmit()">
+    <input 
+      type="email" 
+      [placeholder]="'footer.emailPlaceholder' | translate"
+      [(ngModel)]="email"
+      name="email"
+      required
+    />
+    <button type="submit">{{ 'footer.send' | translate }}</button>
   </form>
 </div>

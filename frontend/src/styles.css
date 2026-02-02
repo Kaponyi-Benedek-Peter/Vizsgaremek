@@ -1,11 +1,18 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global Styles with Theme Support */
 @charset "UTF-8";
 
+/* ========================================
+   RESET & BOX SIZING
+   ======================================== */
 * {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
 }
+
+/* ========================================
+   FONT FACES
+   ======================================== */
 @font-face {
   font-family: 'Inconsolata';
   src: url('./assets/fonts/Inconsolata/static/Inconsolata-Regular.ttf') format('truetype');
@@ -13,6 +20,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'Inconsolata';
   src: url('./assets/fonts/Inconsolata/static/Inconsolata-Medium.ttf') format('truetype');
@@ -20,10 +28,200 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'Inconsolata';
   src: url('./assets/fonts/Inconsolata/static/Inconsolata-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
+}
+
+/* ========================================
+   CSS VARIABLES - LIGHT MODE (DEFAULT)
+   ======================================== */
+:root {
+  /* Brand Colors */
+  --color-primary: #067a45;
+  --color-primary-dark: #0b5f39;
+  --color-primary-light: #0b7a4b;
+  
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #eeeeee;
+  
+  /* Text Colors */
+  --text-primary: #131313;
+  --text-secondary: #666666;
+  --text-inverse: #ffffff;
+  
+  /* Border Colors */
+  --border-color: #e0e0e0;
+  --border-color-hover: #cccccc;
+  
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Input Colors */
+  --input-bg: #ffffff;
+  --input-border: #e0e0e0;
+  --input-text: #131313;
+  --input-placeholder: #999999;
+  
+  /* Button Colors */
+  --btn-primary-bg: #067a45;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: #0b5f39;
+  
+  --btn-secondary-bg: #f5f5f5;
+  --btn-secondary-text: #131313;
+  --btn-secondary-hover: #e0e0e0;
+  
+  /* Overlay */
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+  
+  /* Transitions */
+  --transition-speed: 0.3s;
+  --transition-ease: ease;
+}
+
+/* ========================================
+   CSS VARIABLES - DARK MODE
+   ======================================== */
+[data-theme='dark'] {
+  /* Brand Colors - ugyanazok */
+  --color-primary: #067a45;
+  --color-primary-dark: #0b5f39;
+  --color-primary-light: #0b7a4b;
+  
+  /* Background Colors */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #252525;
+  --bg-tertiary: #303030;
+  
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-inverse: #131313;
+  
+  /* Border Colors */
+  --border-color: #404040;
+  --border-color-hover: #606060;
+  
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.6);
+  
+  /* Input Colors */
+  --input-bg: #252525;
+  --input-border: #404040;
+  --input-text: #ffffff;
+  --input-placeholder: #808080;
+  
+  /* Button Colors */
+  --btn-primary-bg: #067a45;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: #0b5f39;
+  
+  --btn-secondary-bg: #303030;
+  --btn-secondary-text: #ffffff;
+  --btn-secondary-hover: #404040;
+  
+  /* Overlay */
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+}
+
+/* ========================================
+   GLOBAL STYLES
+   ======================================== */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inconsolata', monospace;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background-color var(--transition-speed) var(--transition-ease),
+              color var(--transition-speed) var(--transition-ease);
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-bottom: 0.5em;
+}
+
+h1 { font-size: clamp(2rem, 5vw, 3rem); }
+h2 { font-size: clamp(1.5rem, 4vw, 2.5rem); }
+h3 { font-size: clamp(1.25rem, 3vw, 2rem); }
+h4 { font-size: clamp(1.1rem, 2.5vw, 1.5rem); }
+
+p {
+  color: var(--text-primary);
+  margin-bottom: 1em;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-speed) var(--transition-ease);
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+}
+
+/* ========================================
+   SCROLL ANIMATIONS BASE
+   ======================================== */
+[appScrollReveal] {
+  will-change: transform, opacity;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
 }

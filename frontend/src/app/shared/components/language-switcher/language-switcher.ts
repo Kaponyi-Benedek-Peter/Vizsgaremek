@@ -1,26 +1,28 @@
 import { NgFor, NgIf } from '@angular/common';
-import { Component, ElementRef, HostListener } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
+import { TranslationService, SupportedLanguage } from '../../../core/services/translation.service';
 
 interface Language {
-  code: string;
+  code: SupportedLanguage;
   name: string;
   flagImage: string;
 }
 
 @Component({
   selector: 'app-language-switcher',
+  standalone: true,
   imports: [NgIf, NgFor],
   templateUrl: './language-switcher.html',
   styleUrl: './language-switcher.css',
 })
-export class LanguageSwitcher {
+export class LanguageSwitcher implements OnInit {
   isOpen = false;
-  currentLanguage = 'hu';
+  currentLanguage: SupportedLanguage = 'hu';
 
   languages: Language[] = [
     {
       code: 'en',
-      name: 'Angol',
+      name: 'English',
       flagImage: 'assets/images/English.png',
     },
     {
@@ -30,42 +32,44 @@ export class LanguageSwitcher {
     },
     {
       code: 'de',
-      name: 'Német',
+      name: 'Deutsch',
       flagImage: 'assets/images/German.png',
     },
   ];
 
-  globeImage = 'assets/images/flags/globe.png';
-
-  constructor(private elementRef: ElementRef) {}
+  constructor(
+    private elementRef: ElementRef,
+    private translationService: TranslationService
+  ) {}
 
   ngOnInit(): void {
-    const savedLanguage = localStorage.getItem('preferredLanguage');
-    if (savedLanguage) {
-      this.currentLanguage = savedLanguage;
-    }
+    // Feliratkozás a nyelv változásaira
+    this.translationService.currentLang$.subscribe((lang) => {
+      this.currentLanguage = lang;
+    });
   }
 
   get currentLang(): Language {
-    return this.languages.find((lang) => lang.code === this.currentLanguage) || this.languages[0];
+    return (
+      this.languages.find((lang) => lang.code === this.currentLanguage) || this.languages[1]
+    );
   }
 
   toggleDropdown(): void {
     this.isOpen = !this.isOpen;
   }
 
-  selectLanguage(langCode: string): void {
-    this.currentLanguage = langCode;
+  selectLanguage(langCode: SupportedLanguage): void {
+    this.translationService.setLanguage(langCode);
     this.isOpen = false;
-
-    localStorage.setItem('preferredLanguage', langCode);
-
-    console.log('Nyelv váltás:', langCode);
   }
 
   onImageError(event: any, langCode: string): void {
     event.target.style.display = 'none';
-    event.target.parentElement.innerHTML = `<span class="fallback-text">${langCode.toUpperCase()}</span>`;
+    const fallbackSpan = document.createElement('span');
+    fallbackSpan.className = 'fallback-text';
+    fallbackSpan.textContent = langCode.toUpperCase();
+    event.target.parentElement.appendChild(fallbackSpan);
   }
 
   @HostListener('document:click', ['$event'])
