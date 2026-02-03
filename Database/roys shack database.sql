@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 20, 2026 at 10:22 AM
+-- Generation Time: Feb 03, 2026 at 10:20 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -173,6 +173,16 @@ SET p_count_out = (
     SELECT COUNT(*) FROM `confirmations`
 );
 
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_newsletters` ()   BEGIN
+SELECT *
+    FROM newsletter;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_newsletter_recipients` ()   BEGIN
+SELECT *
+    FROM newsletter_recipients;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_orders` ()   BEGIN
@@ -456,6 +466,32 @@ INSERT INTO `confirmations` (`id`, `user_id`, `new_value`, `confirmation_token`,
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `newsletters`
+--
+
+CREATE TABLE `newsletters` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `body` text NOT NULL,
+  `level` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `newsletter_recipients`
+--
+
+CREATE TABLE `newsletter_recipients` (
+  `user_id` int(11) NOT NULL,
+  `news_level` int(11) NOT NULL,
+  `received_current_newsletter` int(11) NOT NULL,
+  `id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `orders`
 --
 
@@ -622,6 +658,18 @@ ALTER TABLE `confirmations`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `newsletters`
+--
+ALTER TABLE `newsletters`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `newsletter_recipients`
+--
+ALTER TABLE `newsletter_recipients`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `orders`
 --
 ALTER TABLE `orders`
@@ -663,10 +711,22 @@ ALTER TABLE `confirmations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
+-- AUTO_INCREMENT for table `newsletters`
+--
+ALTER TABLE `newsletters`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `newsletter_recipients`
+--
+ALTER TABLE `newsletter_recipients`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `order_items`
