@@ -1,0 +1,8 @@
+<div class="product-card">
+  <img [src]="image" alt="{{ name }}" class="product-image" />
+  <div class="product-info">
+    <h2 class="product-name">{{ name }}</h2>
+    <p class="product-description">{{ description }}</p>
+    <p class="product-price">{{ price | currency: 'HUF' : 'symbol' : '1.0-0' }}</p>
+  </div>
+</div>

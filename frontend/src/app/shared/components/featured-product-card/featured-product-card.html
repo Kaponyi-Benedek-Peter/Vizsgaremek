@@ -1,7 +1,9 @@
-<div class="product-card" (click)="onCardClick()">
-  <img *ngIf="img" [src]="img" [alt]="alt" class="product-image" />
+<div class="featured-product-card" (click)="onCardClick()">
+  <div class="featured-product-image-wrapper">
+    <img *ngIf="img" [src]="img" [alt]="alt" class="featured-product-image" />
+  </div>
 
-  <div *ngIf="!img" class="product-card-placeholder">
+  <div *ngIf="!img" class="featured-product-card-placeholder">
     <div class="placeholder-icon">?</div>
     <div class="placeholder-text">Nincs kép</div>
   </div>
