@@ -1,24 +1,41 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  inject,
+  Input,
+  Output,
+  signal,
+} from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Product } from '../../../core/models/product.model';
 
 @Component({
-  selector: 'app-product-card',
-  imports: [CommonModule, TranslateModule, RouterLink],
-  templateUrl: './product-card.html',
-  styleUrl: './product-card.css',
+  selector: 'app-product-detail-modal',
+  imports: [CommonModule, TranslateModule],
+  templateUrl: './product-detail-modal.html',
+  styleUrl: './product-detail-modal.css',
 })
-export class ProductCard {
+export class ProductDetailModal {
   @Input({ required: true }) product!: Product;
-  @Input() compact = false;
+  @Output() close = new EventEmitter<void>();
   @Output() addToCart = new EventEmitter<Product>();
-  @Output() viewDetails = new EventEmitter<Product>();
-  @Output() quantityChange = new EventEmitter<{ product: Product; quantity: number }>();
+
+  private translate = inject(TranslateService);
 
   quantity = signal(1);
-  translate = inject(TranslateService);
+  selectedImageIndex = signal(0);
+
+  get images(): string[] {
+    return this.product.images && this.product.images.length > 0
+      ? this.product.images
+      : [this.product.imageUrl];
+  }
+
+  get selectedImage(): string {
+    return this.images[this.selectedImageIndex()];
+  }
 
   get hasDiscount(): boolean {
     return !!this.product.discountPercentage && this.product.discountPercentage > 0;
@@ -35,6 +52,14 @@ export class ProductCard {
 
   get formattedDiscountedPrice(): string {
     return `${this.discountedPrice.toLocaleString('hu-HU')} Ft`;
+  }
+
+  get totalPrice(): number {
+    return this.discountedPrice * this.quantity();
+  }
+
+  get formattedTotalPrice(): string {
+    return `${this.totalPrice.toLocaleString('hu-HU')} Ft`;
   }
 
   get canAddToCart(): boolean {
@@ -73,32 +98,41 @@ export class ProductCard {
     }
   }
 
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.handleClose();
+  }
+
+  selectImage(index: number): void {
+    this.selectedImageIndex.set(index);
+  }
+
   increaseQuantity(): void {
     if (this.quantity() < this.product.stockQuantity) {
       this.quantity.update((q) => q + 1);
-      this.quantityChange.emit({ product: this.product, quantity: this.quantity() });
     }
   }
 
   decreaseQuantity(): void {
     if (this.quantity() > 1) {
       this.quantity.update((q) => q - 1);
-      this.quantityChange.emit({ product: this.product, quantity: this.quantity() });
     }
   }
 
-  handleAddToCart(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-
+  handleAddToCart(): void {
     if (this.canAddToCart) {
       this.addToCart.emit(this.product);
+      this.handleClose();
     }
   }
 
-  handleViewDetails(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.viewDetails.emit(this.product);
+  handleClose(): void {
+    this.close.emit();
+  }
+
+  handleBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.handleClose();
+    }
   }
 }

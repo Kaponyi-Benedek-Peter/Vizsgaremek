@@ -1,0 +1,37 @@
+[data-theme='dark'] {
+  --color-background: var(--color-gray-very-dark);
+  --color-surface: var(--color-dark-neutral);
+  --color-surface-elevated: var(--color-gray-dark);
+
+  --color-primary: var(--color-green-primary);
+  --color-primary-hover: #088554;
+  --color-primary-light: rgba(6, 122, 69, 0.15);
+
+  --color-text-primary: var(--color-off-white);
+  --color-text-secondary: var(--color-light-gray);
+  --color-text-tertiary: var(--color-medium-light-gray);
+
+  --color-border: var(--color-medium-gray);
+  --color-border-light: var(--color-gray-dark);
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
+}

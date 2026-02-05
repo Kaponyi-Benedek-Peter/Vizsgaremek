@@ -1,0 +1,107 @@
+:root {
+  /* Pharmacy Color Palette - Light Theme */
+  --color-cream: #f5f0e1;
+  --color-green-primary: #067a45;
+  --color-green-dark: #0b5f39;
+  --color-gray-dark: #403e3e;
+  --color-black: #000000;
+  --color-purple-dark: #47373e;
+  --color-gray-very-dark: #131313;
+  --color-off-white: #fdfcf5;
+  --color-light-gray: #e5e5e5;
+  --color-white: #ffffff;
+  --color-cyan: #72e4f0;
+  --color-blue-bright: #11b9fc;
+  --color-medium-gray: #555555;
+  --color-light-gray-2: #d9d9d9;
+  --color-medium-light-gray: #9f9c9c;
+  --color-dark-neutral: #323232;
+
+  /* Semantic Colors - Light Theme */
+  --color-background: var(--color-off-white);
+  --color-surface: var(--color-white);
+  --color-surface-elevated: var(--color-cream);
+
+  --color-primary: var(--color-green-primary);
+  --color-primary-hover: var(--color-green-dark);
+  --color-primary-light: rgba(6, 122, 69, 0.1);
+
+  --color-text-primary: var(--color-black);
+  --color-text-secondary: var(--color-medium-gray);
+  --color-text-tertiary: var(--color-medium-light-gray);
+  --color-text-on-primary: var(--color-white);
+
+  --color-border: var(--color-light-gray-2);
+  --color-border-light: var(--color-light-gray);
+  --color-border-focus: var(--color-green-primary);
+
+  --color-accent: var(--color-cyan);
+  --color-accent-bright: var(--color-blue-bright);
+  --color-success: var(--color-green-primary);
+  --color-error: #dc2626;
+  --color-warning: #f59e0b;
+  --color-info: var(--color-blue-bright);
+
+  /* Spacing */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+
+  /* Typography */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  --font-mono: 'Fira Code', 'Courier New', monospace;
+
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+  --text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+  --text-3xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.5rem);
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Borders & Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-index layers */
+  --z-base: 1;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}

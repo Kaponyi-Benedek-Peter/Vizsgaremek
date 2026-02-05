@@ -50,6 +50,73 @@
     "edit": "Bearbeiten",
     "add": "Hinzufügen",
     "search": "Suchen",
-    "filter": "Filtern"
+    "filter": "Filtern",
+    "add_to_cart": "In den Warenkorb",
+    "close": "Schließen"
+  },
+  "category": {
+    "filter_by": "Nach Kategorie filtern",
+    "clear_all": "Alle löschen",
+    "select": "Kategorie auswählen",
+    "medicine": "Medikamente",
+    "vitamins": "Vitamine",
+    "supplements": "Nahrungsergänzungen",
+    "cosmetics": "Kosmetik",
+    "baby-care": "Babypflege",
+    "medical-devices": "Medizinische Geräte",
+    "personal-care": "Körperpflege",
+    "health-monitoring": "Gesundheitsüberwachung"
+  },
+  "filter": {
+    "sort_by": "Sortieren nach",
+    "filters": "Filter",
+    "advanced_filters": "Erweiterte Filter",
+    "clear_all": "Filter löschen",
+    "toggle_filters": "Filter ein-/ausblenden",
+    "price_range": "Preisspanne",
+    "min_price": "Min. Preis",
+    "max_price": "Max. Preis",
+    "in_stock_only": "Nur auf Lager",
+    "sort": {
+      "popularity": "Beliebtheit",
+      "name_asc": "Name (A-Z)",
+      "name_desc": "Name (Z-A)",
+      "price_asc": "Preis (aufsteigend)",
+      "price_desc": "Preis (absteigend)",
+      "rating": "Bewertung",
+      "newest": "Neueste"
+    }
+  },
+  "product": {
+    "out_of_stock": "Nicht auf Lager",
+    "in_stock": "Auf Lager",
+    "requires_prescription": "Rezeptpflichtig",
+    "prescription_required_notice": "Dieses Produkt ist rezeptpflichtig. Bitte laden Sie Ihr Rezept hoch, um zu bestellen.",
+    "manufacturer": "Hersteller",
+    "brand": "Marke",
+    "sku": "Artikelnummer",
+    "availability": "Verfügbarkeit",
+    "pieces": "Stk",
+    "reviews": "Bewertungen",
+    "description": "Beschreibung",
+    "pharmaceutical_details": "Pharmazeutische Informationen",
+    "active_ingredients": "Wirkstoffe",
+    "dosage": "Dosierung",
+    "packaging": "Verpackung",
+    "total": "Gesamt",
+    "view_details": "Details ansehen",
+    "decrease_quantity": "Menge verringern",
+    "increase_quantity": "Menge erhöhen",
+    "no_products_found": "Keine Produkte gefunden",
+    "try_different_filters": "Versuchen Sie andere Filter"
+  },
+  "pagination": {
+    "items_per_page": "Artikel pro Seite",
+    "showing": "Anzeigen",
+    "of": "von",
+    "navigation": "Seitennavigation",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "page": "Seite"
   }
 }

@@ -50,6 +50,73 @@
     "edit": "Szerkesztés",
     "add": "Hozzáadás",
     "search": "Keresés",
-    "filter": "Szűrés"
+    "filter": "Szűrés",
+    "add_to_cart": "Kosárba",
+    "close": "Bezár"
+  },
+  "category": {
+    "filter_by": "Szűrés kategória szerint",
+    "clear_all": "Összes törlése",
+    "select": "Kategória kiválasztása",
+    "medicine": "Gyógyszerek",
+    "vitamins": "Vitaminok",
+    "supplements": "Táplálékkiegészítők",
+    "cosmetics": "Kozmetikumok",
+    "baby-care": "Babaápolás",
+    "medical-devices": "Orvosi eszközök",
+    "personal-care": "Személyi higiénia",
+    "health-monitoring": "Egészségügyi eszközök"
+  },
+  "filter": {
+    "sort_by": "Rendezés",
+    "filters": "Szűrők",
+    "advanced_filters": "Részletes szűrés",
+    "clear_all": "Szűrők törlése",
+    "toggle_filters": "Szűrők megjelenítése/elrejtése",
+    "price_range": "Ár tartomány",
+    "min_price": "Min. ár",
+    "max_price": "Max. ár",
+    "in_stock_only": "Csak raktáron lévő termékek",
+    "sort": {
+      "popularity": "Népszerűség",
+      "name_asc": "Név (A-Z)",
+      "name_desc": "Név (Z-A)",
+      "price_asc": "Ár (növekvő)",
+      "price_desc": "Ár (csökkenő)",
+      "rating": "Értékelés",
+      "newest": "Legújabb"
+    }
+  },
+  "product": {
+    "out_of_stock": "Nincs raktáron",
+    "in_stock": "Raktáron",
+    "requires_prescription": "Vényköteles",
+    "prescription_required_notice": "Ez a termék vényköteles. Rendeléshez recept feltöltése szükséges.",
+    "manufacturer": "Gyártó",
+    "brand": "Márka",
+    "sku": "Cikkszám",
+    "availability": "Elérhetőség",
+    "pieces": "db",
+    "reviews": "értékelés",
+    "description": "Leírás",
+    "pharmaceutical_details": "Gyógyászati információk",
+    "active_ingredients": "Hatóanyag",
+    "dosage": "Adagolás",
+    "packaging": "Kiszerelés",
+    "total": "Összesen",
+    "view_details": "Részletek",
+    "decrease_quantity": "Mennyiség csökkentése",
+    "increase_quantity": "Mennyiség növelése",
+    "no_products_found": "Nem található termék",
+    "try_different_filters": "Próbáljon meg más szűrési feltételeket alkalmazni"
+  },
+  "pagination": {
+    "items_per_page": "Termék oldalanként",
+    "showing": "Megjelenítve",
+    "of": "/",
+    "navigation": "Lapozás",
+    "previous": "Előző",
+    "next": "Következő",
+    "page": "Oldal"
   }
 }

@@ -1,0 +1,85 @@
+<div class="product-filter">
+  <div class="quick-filter-bar">
+    <div class="sort-select-wrapper">
+      <label for="sort-select" class="sort-label"> {{ 'filter.sort_by' | translate }}: </label>
+      <select
+        id="sort-select"
+        class="sort-select"
+        [value]="filterState().sortBy"
+        (change)="updateSortBy($any($event.target).value)"
+      >
+        @for (option of sortOptions; track option.value) {
+          <option [value]="option.value">
+            {{ option.label | translate }}
+          </option>
+        }
+      </select>
+      <span class="select-arrow">▼</span>
+    </div>
+
+    <button
+      class="expand-button"
+      (click)="toggleExpanded()"
+      [attr.aria-expanded]="isExpanded()"
+      [attr.aria-label]="'filter.toggle_filters' | translate"
+    >
+      <span class="expand-icon">{{ isExpanded() ? '▲' : '▼' }}</span>
+      <span class="expand-text">{{ 'filter.filters' | translate }}</span>
+      @if (hasActiveFilters()) {
+        <span class="active-indicator"></span>
+      }
+    </button>
+  </div>
+
+  @if (isExpanded()) {
+    <div class="expanded-filters">
+      <div class="filters-header">
+        <h3 class="filters-title">{{ 'filter.advanced_filters' | translate }}</h3>
+        @if (hasActiveFilters()) {
+          <button class="clear-all-button" (click)="handleClearFilters()">
+            {{ 'filter.clear_all' | translate }}
+          </button>
+        }
+      </div>
+
+      <div class="filters-grid">
+        <div class="filter-section">
+          <label class="filter-label">{{ 'filter.price_range' | translate }}</label>
+          <div class="price-inputs">
+            <input
+              type="number"
+              class="price-input"
+              [value]="filterState().priceMin"
+              (input)="handlePriceMinChange($any($event.target).value)"
+              [placeholder]="'filter.min_price' | translate"
+              min="0"
+              step="100"
+            />
+            <span class="price-separator">—</span>
+            <input
+              type="number"
+              class="price-input"
+              [value]="filterState().priceMax"
+              (input)="handlePriceMaxChange($any($event.target).value)"
+              [placeholder]="'filter.max_price' | translate"
+              min="0"
+              step="100"
+            />
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              class="checkbox-input"
+              [checked]="filterState().inStockOnly"
+              (change)="updateInStockOnly()"
+            />
+            <span class="checkbox-text">{{ 'filter.in_stock_only' | translate }}</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  }
+</div>

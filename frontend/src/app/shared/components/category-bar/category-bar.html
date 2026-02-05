@@ -1,0 +1,37 @@
+<div class="category-bar">
+  <div class="category-bar-header">
+    <h3 class="category-title">{{ 'category.filter_by' | translate }}</h3>
+
+    @if (selectedCategories.length > 0) {
+      <button
+        class="clear-button"
+        (click)="handleClearAll()"
+        [attr.aria-label]="'category.clear_all' | translate"
+      >
+        {{ 'category.clear_all' | translate }}
+      </button>
+    }
+  </div>
+
+  <div class="category-bar-wrapper">
+    <button class="scroll-button scroll-left" (click)="scrollLeft()" aria-label="Scroll left">
+      ‹
+    </button>
+
+    <div class="categories-scroll">
+      <div class="categories-container">
+        @for (category of categories; track category.id) {
+          <app-category-item
+            [category]="category"
+            [isSelected]="isCategorySelected(category.id)"
+            (categoryClick)="handleCategoryClick($event)"
+          />
+        }
+      </div>
+    </div>
+
+    <button class="scroll-button scroll-right" (click)="scrollRight()" aria-label="Scroll right">
+      ›
+    </button>
+  </div>
+</div>
