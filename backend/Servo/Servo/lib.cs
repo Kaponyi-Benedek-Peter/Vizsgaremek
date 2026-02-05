@@ -33,7 +33,7 @@ namespace Servo
             cts = new CancellationTokenSource();
             var token = cts.Token;
 
-            taszkcia = Task.Factory.StartNew(() =>
+            server_main = Task.Factory.StartNew(() =>
             {
                 while (!token.IsCancellationRequested)
                 {
@@ -52,17 +52,52 @@ namespace Servo
                     catch (Exception ex)
                     {
                        
-                        service.shared.log($"Error: {ex.Message} --shared.start_server");
+                        service.shared.log($"Error: {ex.Message} --lib.shared.start_server > server");
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+
+
+
+
+            email_auth_refresh = Task.Factory.StartNew(() =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        service.shared.email_auth_address = service.shared.conf("r", "email_auth_address");
+                        service.shared.email_auth_key = service.shared.conf("r", "email_auth_key");
+                    }
+                    catch (Exception ex)
+                    {
+                        service.shared.log($"Error: {ex.Message} --lib.shared.start_server > email_auth refresh");
+                    }
+
+                    
+                    Thread.Sleep(300000);
+                }
+            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+
+
+
+
+
+
         }
 
         // conf (    Read/Write , id (pl email), val (érték)    )
 
         public Boolean isrunning = false;
         public HttpListener hallgatozo = new HttpListener();
-        public Task taszkcia;
+        public Task server_main;
+
+        public Task email_auth_refresh;
+
+        public Task newsletter_main;
+
         public CancellationTokenSource cts;
         static CancellationToken token = new CancellationTokenSource().Token; // homok a levegőben
 

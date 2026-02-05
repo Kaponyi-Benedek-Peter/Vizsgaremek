@@ -89,7 +89,8 @@ namespace Servo.service
             }
             return "application/octet-stream";
         }
-        
+        public static string email_auth_address = conf("r", "email_auth_address");
+        public static string email_auth_key = conf("r", "email_auth_key");
         public static void send_mail(string hova, string title, string body, string tipus)
         {
             try
@@ -105,7 +106,7 @@ namespace Servo.service
 
                 smtp.EnableSsl = true;
                 
-                smtp.Credentials = new NetworkCredential(conf("r", "email_auth_address"), conf("r","email_auth_key"));
+                smtp.Credentials = new NetworkCredential(email_auth_address, email_auth_key);
 
                 smtp.Send(msg);
                 Form1.Instance.log($"{tipus} email sent to {hova} || ok");

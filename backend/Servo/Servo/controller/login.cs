@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Servo.controller
 {
@@ -51,23 +52,36 @@ namespace Servo.controller
 
                 service.shared.log("Login token request: " + email + "  " + jelszo + "  (" + data.Request.RemoteEndPoint.Address.ToString());
 
+
+
+               
+                    string token = jwt_handler.generate_token(email);
+
+                    data.Response.StatusCode = 200;
+                    data.Response.ContentType = "application/json";
+                    string json = $"{{\"token\":\"{token}\",\"expires_in\":604800}}"; // 7 nap
+                    
+                
+               
+
+
                 int resp = service.login.process_login(jelszo, email); // SERVICE
                 if (resp == 200)
                 {
                     data.Response.StatusCode = 200;
-                    byte[] buffer = Encoding.UTF8.GetBytes("email_kuldve");
+                    byte[] buffer = Encoding.UTF8.GetBytes(json);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else if (resp == 401)
                 {
                     data.Response.StatusCode = 401;
-                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_jelszo");
+                    byte[] buffer = Encoding.UTF8.GetBytes(json);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else //if (resp == 500)
                 {
                     data.Response.StatusCode = 500;
-                    byte[] buffer = Encoding.UTF8.GetBytes("sze_v_felhasznalo_nem_letezik");
+                    byte[] buffer = Encoding.UTF8.GetBytes(json);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
             }

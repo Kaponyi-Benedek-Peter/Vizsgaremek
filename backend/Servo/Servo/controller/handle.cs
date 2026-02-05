@@ -6,16 +6,29 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
+
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+
+
+
 namespace Servo.controller
 {
     internal class handle
     {
+        private static readonly HashSet<string> public_apis = new HashSet<string>
+        {
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise"
+        };
+
         public static void main(HttpListenerContext data, string alap)
         {
             //Form1.Instance.updateconnections();
             service.shared.log("[new connection]");
             string kert = data.Request.Url.AbsolutePath.TrimStart('/');
-
+            
             data.Response.AddHeader("Access-Control-Allow-Origin", "*");
             data.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             data.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -28,12 +41,89 @@ namespace Servo.controller
                 data.Response.Close();
                 return;
             }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             
             //api 
             if (kert.StartsWith("api/", StringComparison.OrdinalIgnoreCase))
             {
-                
                 string lenyeg = kert.Replace("api/", "");
+
+
+
+
+
+
+
+
+
+
+
+                bool api_is_public = false;
+                foreach (var endpoint in public_apis)
+                {
+                    if (lenyeg.Contains(endpoint))
+                    {
+                        api_is_public = true;
+                        break;
+                    }
+                }
+
+
+                if (!api_is_public)
+                {
+                    //kell jwt
+                    string authorization_header = data.Request.Headers["Authorization"];
+                    if (authorization_header.StartsWith("Bearer ") != true)
+                    {
+                        data.Response.StatusCode = 401;
+                        byte[] buffer = Encoding.UTF8.GetBytes("missing_auth_header");
+                        data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                        return;
+                    }
+
+                    string token = authorization_header.Substring(7);
+                    var user = jwt_handler.validate_token(token);
+                    if (user == null)
+                    {
+                        data.Response.StatusCode = 401;
+                        byte[] buffer = Encoding.UTF8.GetBytes("invalid_token");
+                        data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                        return;
+                    }
+                }
+
+
+
+
+
+
+
+
+
+
+                    
                 service.shared.log(">api kérés: " +lenyeg+"");
                 // =========== GETTOKen =========== 
 
