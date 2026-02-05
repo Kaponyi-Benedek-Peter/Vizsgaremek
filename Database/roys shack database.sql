@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 03, 2026 at 10:20 AM
+-- Generation Time: Feb 05, 2026 at 09:49 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -84,7 +84,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_body` TEXT, IN 
     VALUES (p_title, p_body, p_user_id, p_image_source);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name` VARCHAR(11), IN `p_description` TEXT, IN `p_price` DECIMAL, IN `p_times_ordered` INT(11), IN `p_image_source` VARCHAR(255), IN `p_stock` INT(11), IN `p_sale_price` DECIMAL, IN `p_description_preview` TEXT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name` VARCHAR(255), IN `p_description` TEXT, IN `p_price` DECIMAL, IN `p_times_ordered` INT(11), IN `p_image_source` VARCHAR(255), IN `p_stock` INT(11), IN `p_sale_price` DECIMAL, IN `p_description_preview` TEXT)   BEGIN
 INSERT INTO roy.products(name, description, price, times_ordered, image_source, stock, sale_price, description_preview)
 VALUES(p_name, p_description, p_price, p_times_ordered, p_image_source, p_stock, p_sale_price, p_description_preview);
 END$$
