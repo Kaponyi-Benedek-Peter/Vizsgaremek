@@ -89,6 +89,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
   font-family: var(--font-primary);
 }
 

@@ -8,7 +8,6 @@ import { Forum } from './pages/forum/forum';
 import { Legal } from './pages/legal/legal';
 import { Login } from './pages/login/login';
 import { NotFound } from './pages/not-found/not-found';
-import { PasswordChange } from './pages/password-change/password-change';
 import { Products } from './pages/products/products';
 import { Profile } from './pages/profile/profile';
 import { Purchase } from './pages/purchase/purchase';
@@ -18,8 +17,6 @@ import { NgModule } from '@angular/core';
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: Home },
-  { path: 'register', component: Register },
-  { path: 'login', component: Login },
   { path: 'forum', component: Forum },
   { path: 'products', component: Products },
   { path: 'profile', component: Profile },
@@ -27,9 +24,25 @@ export const routes: Routes = [
   { path: 'legal', component: Legal },
   { path: 'bracket', component: Bracket },
   { path: 'admin', component: Admin },
-  { path: 'password-change', component: PasswordChange },
-  { path: 'email', component: Email },
   { path: 'blog', component: Blog },
+  { path: 'login', loadComponent: () => import('./pages/login/login').then((m) => m.Login) },
+  {
+    path: 'register',
+    loadComponent: () => import('./pages/register/register').then((m) => m.Register),
+  },
+  { path: 'email', loadComponent: () => import('./pages/email/email').then((m) => m.Email) },
+  {
+    path: 'password-reset-request',
+    loadComponent: () =>
+      import('./pages/password-reset-request/password-reset-request').then(
+        (m) => m.PasswordResetRequest,
+      ),
+  },
+  {
+    path: 'password-reset',
+    loadComponent: () =>
+      import('./pages/password-reset/password-reset').then((m) => m.PasswordReset),
+  },
   { path: '**', component: NotFound },
 ];
 
