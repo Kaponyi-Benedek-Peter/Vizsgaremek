@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 06, 2026 at 09:48 AM
+-- Generation Time: Feb 06, 2026 at 11:38 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -52,7 +52,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_confirmation` (IN `p_confirm
     VALUES (p_confirmation_token, NOW() + INTERVAL 1 WEEK, p_user_id, p_new_value, p_type);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(4), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(12))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(10), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(12))   BEGIN
 
 INSERT INTO roy.orders (user_id, created_at, price, city, zipcode, address, apartment_number, note, house_number, phone_number)
 VALUES(p_user_id, NOW(),'0', p_city, p_zipcode, p_address, p_apartment_number, p_note, p_house_number, p_phone_number);
@@ -85,7 +85,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_body` TEXT, IN 
     VALUES (p_title, p_body, p_user_id, p_image_source);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255))   BEGIN
 
 INSERT INTO products(
     name_de,
@@ -416,7 +416,7 @@ SET new_value = p_new_new_value,
 WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_name_by_id` (IN `p_id` VARCHAR(255), IN `p_new_first_name` VARCHAR(255), IN `p_new_last_name` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_name_by_id` (IN `p_id` VARCHAR(255), IN `p_new_first_name` VARCHAR(16), IN `p_new_last_name` VARCHAR(16))   BEGIN
 	UPDATE roy.users
     SET first_name = p_new_first_name,
     last_name = p_new_last_name
@@ -427,6 +427,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_order_item_quantity` (IN `p_
 	UPDATE roy.order_items
     SET quantity = p_new_quantity
     WHERE id = p_id;
+
+    CALL calculate_order_price(p_id);
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_password_by_id` (IN `p_id` VARCHAR(255), IN `p_new_passhash` VARCHAR(255))   BEGIN 
@@ -513,20 +515,13 @@ CREATE TABLE `orders` (
   `created_at` date NOT NULL,
   `price` decimal(10,2) NOT NULL,
   `city` varchar(255) NOT NULL,
-  `zipcode` varchar(4) NOT NULL,
+  `zipcode` varchar(10) NOT NULL,
   `address` varchar(255) NOT NULL,
   `apartment_number` int(11) NOT NULL,
   `note` varchar(255) NOT NULL,
   `house_number` int(11) NOT NULL,
   `phone_number` varchar(12) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `orders`
---
-
-INSERT INTO `orders` (`id`, `user_id`, `created_at`, `price`, `city`, `zipcode`, `address`, `apartment_number`, `note`, `house_number`, `phone_number`) VALUES
-(1, 1, '2025-11-13', '528.00', 'city', '0', 'address', 0, '--', 0, '');
 
 -- --------------------------------------------------------
 
@@ -541,14 +536,6 @@ CREATE TABLE `order_items` (
   `quantity` int(11) NOT NULL,
   `price` decimal(11,0) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `order_items`
---
-
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`) VALUES
-(9, 1, 2, 1, '300'),
-(10, 1, 1, 1, '228');
 
 -- --------------------------------------------------------
 
@@ -566,14 +553,6 @@ CREATE TABLE `posts` (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---
--- Dumping data for table `posts`
---
-
-INSERT INTO `posts` (`id`, `title`, `body`, `user_id`, `created_at`, `image_source`, `updated_at`) VALUES
-(2, 'a', 'a', 1, '2025-11-11 10:22:29', 'a', '2026-02-05 14:10:39'),
-(3, 'a', 'a', 1, '2025-11-11 10:22:29', 'a', '2026-02-05 14:10:39');
-
 -- --------------------------------------------------------
 
 --
@@ -584,7 +563,7 @@ CREATE TABLE `products` (
   `id` int(11) NOT NULL,
   `name_de` varchar(255) NOT NULL,
   `description_en` text NOT NULL,
-  `price_huf` decimal(11,0) NOT NULL,
+  `price_huf` int(11) NOT NULL,
   `times_ordered` int(11) NOT NULL,
   `stock` int(11) NOT NULL,
   `sale_percentage` decimal(10,0) NOT NULL,
@@ -606,14 +585,6 @@ CREATE TABLE `products` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `products`
---
-
-INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_percentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging`, `created_at`, `updated_at`, `name`) VALUES
-(1, 'TEST 1', 'Test 1', '300', 0, 2, '24', '--', '', '', '', '', '', '0', '', '', '', 0, '', '', '', '2026-02-05 13:41:38', '2026-02-05 12:42:46', ''),
-(2, 'TEST 2', 'Test 2', '300', 0, 0, '0', '--', '', '', '', '', '', '0', '', '', '', 0, '', '', '', '2026-02-05 13:41:38', '2026-02-05 12:42:46', '');
 
 -- --------------------------------------------------------
 
@@ -711,7 +682,8 @@ INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sess
 -- Indexes for table `confirmations`
 --
 ALTER TABLE `confirmations`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_confirmations_user` (`user_id`);
 
 --
 -- Indexes for table `newsletters`
@@ -723,25 +695,30 @@ ALTER TABLE `newsletters`
 -- Indexes for table `newsletter_recipients`
 --
 ALTER TABLE `newsletter_recipients`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_newsletter_recipients_user` (`user_id`);
 
 --
 -- Indexes for table `orders`
 --
 ALTER TABLE `orders`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_orders_user` (`user_id`);
 
 --
 -- Indexes for table `order_items`
 --
 ALTER TABLE `order_items`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_order_items_order` (`order_id`),
+  ADD KEY `fk_order_items_product` (`product_id`);
 
 --
 -- Indexes for table `posts`
 --
 ALTER TABLE `posts`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_posts_user` (`user_id`);
 
 --
 -- Indexes for table `products`
@@ -754,13 +731,15 @@ ALTER TABLE `products`
 --
 ALTER TABLE `product_images`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `image_url` (`image_url`,`sort_id`);
+  ADD UNIQUE KEY `image_url` (`image_url`),
+  ADD KEY `fk_product_images_product` (`product_id`);
 
 --
 -- Indexes for table `reviews`
 --
 ALTER TABLE `reviews`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_reviews_product` (`product_id`);
 
 --
 -- Indexes for table `users`
@@ -832,6 +811,53 @@ ALTER TABLE `reviews`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `confirmations`
+--
+ALTER TABLE `confirmations`
+  ADD CONSTRAINT `fk_confirmations_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `newsletter_recipients`
+--
+ALTER TABLE `newsletter_recipients`
+  ADD CONSTRAINT `fk_newsletter_recipients_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `orders`
+--
+ALTER TABLE `orders`
+  ADD CONSTRAINT `fk_orders_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD CONSTRAINT `fk_order_items_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_order_items_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `posts`
+--
+ALTER TABLE `posts`
+  ADD CONSTRAINT `fk_posts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `product_images`
+--
+ALTER TABLE `product_images`
+  ADD CONSTRAINT `fk_product_images_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD CONSTRAINT `fk_reviews_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
