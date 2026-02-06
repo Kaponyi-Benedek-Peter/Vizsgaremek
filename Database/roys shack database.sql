@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 05, 2026 at 09:49 AM
+-- Generation Time: Feb 05, 2026 at 01:19 PM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -553,16 +553,17 @@ CREATE TABLE `posts` (
   `body` text NOT NULL,
   `user_id` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `image_source` varchar(255) NOT NULL
+  `image_source` varchar(255) NOT NULL,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `posts`
 --
 
-INSERT INTO `posts` (`id`, `title`, `body`, `user_id`, `created_at`, `image_source`) VALUES
-(2, 'a', 'a', 1, '2025-11-11 10:22:29', 'a'),
-(3, 'a', 'a', 1, '2025-11-11 10:22:29', 'a');
+INSERT INTO `posts` (`id`, `title`, `body`, `user_id`, `created_at`, `image_source`, `updated_at`) VALUES
+(2, 'a', 'a', 1, '2025-11-11 10:22:29', 'a', '2026-02-05 14:10:39'),
+(3, 'a', 'a', 1, '2025-11-11 10:22:29', 'a', '2026-02-05 14:10:39');
 
 -- --------------------------------------------------------
 
@@ -573,22 +574,67 @@ INSERT INTO `posts` (`id`, `title`, `body`, `user_id`, `created_at`, `image_sour
 CREATE TABLE `products` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `description` text NOT NULL,
-  `price` decimal(11,0) NOT NULL,
+  `description_en` text NOT NULL,
+  `price_huf` decimal(11,0) NOT NULL,
   `times_ordered` int(11) NOT NULL,
-  `image_source` varchar(255) NOT NULL,
   `stock` int(11) NOT NULL,
-  `sale_price` decimal(10,0) NOT NULL,
-  `description_preview` text NOT NULL
+  `sale_precentage` decimal(10,0) NOT NULL,
+  `description_preview_en` text NOT NULL,
+  `name_hu` varchar(255) NOT NULL,
+  `name_en` varchar(255) NOT NULL,
+  `description_hu` text NOT NULL,
+  `description_de` text NOT NULL,
+  `description_preview_hu` text NOT NULL,
+  `description_preview_de` int(11) NOT NULL,
+  `category` varchar(255) NOT NULL,
+  `manufacturer` varchar(255) NOT NULL,
+  `brand` varchar(255) NOT NULL,
+  `rating` double(10,0) NOT NULL,
+  `sku` varchar(255) NOT NULL,
+  `active_ingredients` text NOT NULL,
+  `packaging` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `description`, `price`, `times_ordered`, `image_source`, `stock`, `sale_price`, `description_preview`) VALUES
-(1, 'TEST 1', 'Test 1', '300', 0, '--', 2, '24', '--'),
-(2, 'TEST 2', 'Test 2', '12', 0, '--', 0, '0', '--');
+INSERT INTO `products` (`id`, `name`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_precentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging`, `created_at`, `updated_at`) VALUES
+(1, 'TEST 1', 'Test 1', '300', 0, 2, '24', '--', '', '', '', '', '', 0, '', '', '', 0, '', '', '', '2026-02-05 13:41:38', '2026-02-05 12:42:46'),
+(2, 'TEST 2', 'Test 2', '12', 0, 0, '0', '--', '', '', '', '', '', 0, '', '', '', 0, '', '', '', '2026-02-05 13:41:38', '2026-02-05 12:42:46');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_images`
+--
+
+CREATE TABLE `product_images` (
+  `id` int(11) NOT NULL,
+  `alt_text_de` varchar(255) NOT NULL,
+  `alt_text_hu` varchar(255) NOT NULL,
+  `alt_text_en` varchar(255) NOT NULL,
+  `image_url` varchar(255) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `sort_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reviews`
+--
+
+CREATE TABLE `reviews` (
+  `product_id` int(11) NOT NULL,
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `body` text NOT NULL,
+  `rating` decimal(10,0) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -694,6 +740,19 @@ ALTER TABLE `products`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `product_images`
+--
+ALTER TABLE `product_images`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `image_url` (`image_url`,`sort_id`);
+
+--
+-- Indexes for table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -745,6 +804,18 @@ ALTER TABLE `posts`
 --
 ALTER TABLE `products`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `product_images`
+--
+ALTER TABLE `product_images`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `reviews`
+--
+ALTER TABLE `reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`
