@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 06, 2026 at 11:38 AM
+-- Generation Time: Feb 07, 2026 at 12:40 PM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -69,7 +69,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order_item` (IN `p_order_id`
             ELSE price_huf
         END
     INTO product_price
-    FROM products
+    FROM roy.products
     WHERE id = p_product_id;
 
 
@@ -87,7 +87,7 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255))   BEGIN
 
-INSERT INTO products(
+INSERT INTO roy.products(
     name_de,
     description_en,
     price_huf,
@@ -137,59 +137,59 @@ VALUES(
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_account_by_id` (IN `p_id` INT)   BEGIN
-    DELETE FROM users WHERE id = p_id;
+    DELETE FROM roy.users WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_confirmations` ()   BEGIN
-DELETE FROM confirmations;
+DELETE FROM roy.confirmations;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_orders` ()   BEGIN
-DELETE FROM orders;
+DELETE FROM roy.orders;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_order_items` ()   BEGIN
-DELETE FROM order_items;
+DELETE FROM roy.order_items;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_posts` ()   BEGIN
-DELETE FROM posts;
+DELETE FROM roy.posts;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_products` ()   BEGIN
-DELETE FROM products;
+DELETE FROM roy.products;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_users` ()   BEGIN
-DELETE FROM users;
+DELETE FROM roy.users;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmations_by_user_id_and_type` (IN `p_user_id` INT, IN `p_confirmation_type` VARCHAR(255))   BEGIN
-DELETE from confirmations
+DELETE from roy.confirmations
 where confirmations.user_id = p_user_id AND confirmations.confirmation_type = p_confirmation_type;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_id` (IN `p_id` INT)   BEGIN
-    DELETE FROM confirmations WHERE id = p_id;
+    DELETE FROM roy.confirmations WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_user_id` (IN `p_user_id` INT(255))   BEGIN
-    DELETE FROM confirmations WHERE user_id = p_user_id;
+    DELETE FROM roy.confirmations WHERE user_id = p_user_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_expired_confirmations` ()   DELETE FROM confirmations
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_expired_confirmations` ()   DELETE FROM roy.confirmations
     WHERE confirmation_token_expire < NOW()$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_order_by_id` (IN `p_id` INT)   BEGIN
-    DELETE FROM orders WHERE id = p_id;
+    DELETE FROM roy.orders WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_order_item_by_id` (IN `p_id` INT)   BEGIN
-    DELETE FROM order_items WHERE id = p_id;
+    DELETE FROM roy.order_items WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_post_by_id` (IN `p_id` INT)   BEGIN
-    DELETE FROM posts WHERE id = p_id;
+    DELETE FROM roy.posts WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `disable_account_by_id` (IN `p_id` INT)   BEGIN
@@ -200,11 +200,11 @@ sesstoken = 'deleted field',
 sesstoken_expire = NOW(),
 account_state = 'deleted'
 WHERE id = p_id;
-end$$
+END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_confirmations` ()   BEGIN
 SELECT *
-    FROM confirmations;
+    FROM roy.confirmations;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_confirmations_page` (IN `p_page` INT(11), IN `p_amount` INT(11), OUT `p_count_out` INT(11))   BEGIN
@@ -224,17 +224,17 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_newsletters` ()   BEGIN
 SELECT *
-    FROM newsletters;
+    FROM roy.newsletters;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_newsletter_recipients` ()   BEGIN
 SELECT *
-    FROM newsletter_recipients;
+    FROM roy.newsletter_recipients;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_orders` ()   BEGIN
 SELECT *
-    FROM orders;
+    FROM roy.orders;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_orders_page` (IN `p_page` INT(11), IN `p_amount` INT(11), OUT `p_count_out` INT(11))   BEGIN
@@ -254,7 +254,7 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_order_items` ()   BEGIN
 SELECT *
-    FROM order_items;
+    FROM roy.order_items;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_order_items_page` (IN `p_page` INT(11), IN `p_amount` INT(11), OUT `p_count_out` INT(11))   BEGIN
@@ -274,7 +274,7 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_posts` ()   BEGIN
 SELECT *
-    FROM posts;
+    FROM roy.posts;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_posts_page` (IN `p_page` INT(11), IN `p_amount` INT(11), OUT `p_count_out` INT(11))   BEGIN
@@ -294,7 +294,7 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_products` ()   BEGIN
 SELECT *
-    FROM products;
+    FROM roy.products;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_products_page` (IN `p_page` INT(11), IN `p_amount` INT(11), OUT `p_count_out` INT(11))   BEGIN
@@ -314,7 +314,7 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_users` ()   BEGIN
 SELECT *
-    FROM users;
+    FROM roy.users;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_users_page` (IN `p_page` INT(11), IN `p_amount` INT(11), OUT `p_count_out` INT(11))   BEGIN
@@ -334,38 +334,38 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_verified_users` ()   BEGIN
 SELECT *
-    FROM users
+    FROM roy.users
     WHERE account_state = 'verified'
     ORDER BY id ASC;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_user_id` (IN `p_user_id` INT(255))   BEGIN
-SELECT * from confirmations
+SELECT * from roy.confirmations
 where confirmations.user_id = p_user_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_user_id_and_type` (IN `p_user_id` INT(255), IN `p_confirmation_type` VARCHAR(255))   BEGIN
-SELECT * from confirmations
+SELECT * from roy.confirmations
 where confirmations.user_id = p_user_id AND confirmations.confirmation_type = p_confirmation_type;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmation_by_id` (IN `p_id` INT)   BEGIN
-SELECT * from confirmations
+SELECT * from roy.confirmations
 where confirmations.id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_order_by_id` (IN `p_id` INT)   BEGIN
-SELECT * from orders
+SELECT * from roy.orders
 where orders.id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_order_items_by_order_id` (IN `p_order_id` INT)   BEGIN
-SELECT * from order_items
+SELECT * from roy.order_items
 where order_items.order_id = p_order_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_order_item_by_id` (IN `p_id` INT)   BEGIN
-SELECT * from order_items
+SELECT * from roy.order_items
 where order_items.id = p_id;
 END$$
 
@@ -375,22 +375,22 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_posts_by_user` (IN `p_user_id` 
     ORDER BY created_at DESC$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_post_by_id` (IN `p_id` INT)   BEGIN
-SELECT * from posts
+SELECT * from roy.posts
 where posts.id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_product_by_id` (IN `p_id` INT)   BEGIN
-SELECT * from products
+SELECT * from roy.products
 where products.id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_email` (IN `p_email` VARCHAR(255))   BEGIN
-SELECT * from users
+SELECT * from roy.users
 where users.email = p_email;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_id` (IN `p_id` INT)   BEGIN
-SELECT * from users
+SELECT * from roy.users
 where users.id = p_id;
 END$$
 
@@ -408,7 +408,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_account_state_by_id` (IN `p_
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_confirmation_by_id` (IN `p_id` INT, IN `p_new_new_value` VARCHAR(255), IN `p_new_confirmation_token` VARCHAR(255), IN `p_new_confirmation_token_expire` DATETIME, IN `p_new_confirmation_type` VARCHAR(255))   BEGIN
-UPDATE confirmations
+UPDATE roy.confirmations
 SET new_value = p_new_new_value,
     confirmation_token = p_new_confirmation_token,
     confirmation_token_expire = p_new_confirmation_token_expire,
@@ -424,11 +424,17 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_name_by_id` (IN `p_id` VARCH
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_order_item_quantity` (IN `p_id` INT, IN `p_new_quantity` INT)   BEGIN
-	UPDATE roy.order_items
-    SET quantity = p_new_quantity
-    WHERE id = p_id;
+DECLARE v_order_id INT;
 
-    CALL calculate_order_price(p_id);
+SELECT order_id INTO v_order_id
+FROM order_items
+WHERE id = p_id;
+
+UPDATE order_items
+SET quantity = p_new_quantity
+WHERE id = p_id;
+
+CALL calculate_order_price(v_order_id);
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_password_by_id` (IN `p_id` VARCHAR(255), IN `p_new_passhash` VARCHAR(255))   BEGIN 
@@ -512,7 +518,7 @@ CREATE TABLE `newsletter_recipients` (
 CREATE TABLE `orders` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `created_at` date NOT NULL,
+  `created_at` datetime NOT NULL,
   `price` decimal(10,2) NOT NULL,
   `city` varchar(255) NOT NULL,
   `zipcode` varchar(10) NOT NULL,
@@ -577,7 +583,7 @@ CREATE TABLE `products` (
   `category` varchar(255) NOT NULL,
   `manufacturer` varchar(255) NOT NULL,
   `brand` varchar(255) NOT NULL,
-  `rating` double(10,0) NOT NULL,
+  `rating` double(3,2) NOT NULL,
   `sku` varchar(255) NOT NULL,
   `active_ingredients` text NOT NULL,
   `packaging` varchar(255) NOT NULL,
@@ -613,7 +619,7 @@ CREATE TABLE `reviews` (
   `id` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
   `body` text NOT NULL,
-  `rating` decimal(10,0) NOT NULL,
+  `rating` decimal(3,2) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -756,7 +762,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `confirmations`
 --
 ALTER TABLE `confirmations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `newsletters`
@@ -774,25 +780,25 @@ ALTER TABLE `newsletter_recipients`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `product_images`
