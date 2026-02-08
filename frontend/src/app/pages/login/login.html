@@ -1,1 +1,106 @@
-<p>login works!</p>
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>{{ 'auth.login.title' | translate }}</h1>
+      <p class="auth-subtitle">{{ 'auth.login.subtitle' | translate }}</p>
+    </div>
+
+    <form class="auth-form" (ngSubmit)="onSubmit()">
+      <!-- Email Input -->
+      <div class="form-group">
+        <label for="email" class="form-label">
+          {{ 'auth.fields.email' | translate }}
+        </label>
+        <input
+          type="email"
+          id="email"
+          class="form-input"
+          [placeholder]="'auth.placeholders.email' | translate"
+          [(ngModel)]="email"
+          name="email"
+          [disabled]="isLoading()"
+          required
+          autocomplete="email"
+        />
+      </div>
+
+      <!-- Password Input -->
+      <div class="form-group">
+        <label for="password" class="form-label">
+          {{ 'auth.fields.password' | translate }}
+        </label>
+        <div class="password-input-wrapper">
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            id="password"
+            class="form-input"
+            [placeholder]="'auth.placeholders.password' | translate"
+            [(ngModel)]="password"
+            name="password"
+            [disabled]="isLoading()"
+            required
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="'auth.show_password' | translate"
+          >
+            {{ showPassword() ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Stay Logged In Checkbox -->
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            [(ngModel)]="stayLoggedIn"
+            name="stayLoggedIn"
+            [disabled]="isLoading()"
+          />
+          <span>{{ 'auth.login.stay_logged_in' | translate }}</span>
+        </label>
+      </div>
+
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div class="error-message">
+          {{ errorMessage() | translate }}
+        </div>
+      }
+
+      <!-- Submit Button -->
+      <button type="submit" class="submit-btn" [disabled]="isLoading()">
+        @if (isLoading()) {
+          <span class="spinner"></span>
+          {{ 'auth.login.logging_in' | translate }}
+        } @else {
+          {{ 'auth.login.button' | translate }}
+        }
+      </button>
+
+      <!-- Additional Links -->
+      <div class="auth-links">
+        <a routerLink="/password-reset-request" class="link">
+          {{ 'auth.login.forgot_password' | translate }}
+        </a>
+      </div>
+
+      <div class="auth-divider">
+        <span>{{ 'auth.or' | translate }}</span>
+      </div>
+
+      <div class="auth-footer">
+        <p>
+          {{ 'auth.login.no_account' | translate }}
+          <a routerLink="/register" class="link-primary">
+            {{ 'auth.login.sign_up' | translate }}
+          </a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

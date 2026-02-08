@@ -25,9 +25,10 @@ export class Header implements OnInit {
   isAuthenticated = false;
   currentUser: User | null = null;
 
-  constructor(private authService: AuthService) {}
-
-  constructor(private themeService: ThemeService) {}
+  constructor(
+    private themeService: ThemeService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.themeService.currentTheme$.subscribe((theme) => {
@@ -42,7 +43,8 @@ export class Header implements OnInit {
   toggleTheme(): void {
     this.themeService.toggleTheme();
   }
-  logout() {
+
+  logout(): void {
     this.authService.logout();
   }
 }

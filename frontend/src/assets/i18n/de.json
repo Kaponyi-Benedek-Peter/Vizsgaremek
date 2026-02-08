@@ -118,5 +118,103 @@
     "previous": "Zurück",
     "next": "Weiter",
     "page": "Seite"
+  },
+  "auth": {
+    "or": "oder",
+    "show_password": "Passwort anzeigen",
+    "fields": {
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "new_password": "Neues Passwort",
+      "confirm_password": "Passwort bestätigen",
+      "firstname": "Vorname",
+      "lastname": "Nachname"
+    },
+    "placeholders": {
+      "email": "beispiel@email.de",
+      "password": "••••••••",
+      "new_password": "Neues Passwort",
+      "confirm_password": "Passwort bestätigen",
+      "firstname": "Max",
+      "lastname": "Mustermann"
+    },
+    "login": {
+      "title": "Anmelden",
+      "subtitle": "Willkommen zurück!",
+      "stay_logged_in": "Angemeldet bleiben",
+      "button": "Anmelden",
+      "logging_in": "Anmeldung läuft...",
+      "forgot_password": "Passwort vergessen?",
+      "no_account": "Noch kein Konto?",
+      "sign_up": "Registrieren"
+    },
+    "register": {
+      "title": "Konto erstellen",
+      "subtitle": "Erstellen Sie ein neues Konto",
+      "password_hint": "Passwort muss mindestens 8 Zeichen lang sein",
+      "button": "Konto erstellen",
+      "creating_account": "Konto wird erstellt...",
+      "have_account": "Bereits ein Konto?",
+      "sign_in": "Anmelden",
+      "success_message": "Registrierung erfolgreich! Bitte überprüfen Sie Ihre E-Mail zur Bestätigung."
+    },
+    "email": {
+      "check_inbox": "Überprüfen Sie Ihr Postfach",
+      "sent_message": "Wir haben eine Bestätigungs-E-Mail an Ihre Adresse gesendet.",
+      "step_1": "Öffnen Sie die gesendete E-Mail",
+      "step_2": "Klicken Sie auf den Bestätigungslink",
+      "step_3": "Sie werden automatisch angemeldet",
+      "no_email": "E-Mail nicht erhalten?",
+      "resend": "Erneut senden",
+      "back_to_login": "Zurück zur Anmeldung",
+      "verifying": "Überprüfung läuft",
+      "verifying_message": "Bitte warten Sie, während wir Ihre E-Mail-Adresse überprüfen...",
+      "verified": "E-Mail bestätigt!",
+      "verified_message": "Ihre E-Mail wurde erfolgreich bestätigt. Sie werden automatisch angemeldet.",
+      "redirecting": "Weiterleitung zur Startseite...",
+      "verification_failed": "Überprüfung fehlgeschlagen",
+      "try_again": "Erneut versuchen",
+      "back_to_register": "Zurück zur Registrierung"
+    },
+    "password_reset": {
+      "title": "Passwort zurücksetzen",
+      "subtitle": "Geben Sie Ihre E-Mail ein, um einen Reset-Link zu erhalten",
+      "button": "Reset-Link senden",
+      "sending": "Wird gesendet...",
+      "back_to_login": "Zurück zur Anmeldung",
+      "email_sent": "E-Mail gesendet",
+      "email_sent_message": "Wir haben einen Passwort-Reset-Link an Ihre E-Mail gesendet.",
+      "step_1": "Überprüfen Sie Ihr E-Mail-Postfach",
+      "step_2": "Klicken Sie auf den Reset-Link",
+      "step_3": "Legen Sie Ihr neues Passwort fest"
+    },
+    "password_change": {
+      "title": "Neues Passwort festlegen",
+      "subtitle": "Geben Sie Ihr neues Passwort ein",
+      "button": "Passwort ändern",
+      "updating": "Aktualisierung läuft...",
+      "back_to_login": "Zurück zur Anmeldung",
+      "success": "Passwort geändert!",
+      "success_message": "Ihr Passwort wurde erfolgreich geändert. Sie können sich nun mit Ihrem neuen Passwort anmelden.",
+      "redirecting": "Weiterleitung zur Anmeldung..."
+    },
+    "errors": {
+      "empty_fields": "Bitte füllen Sie alle Felder aus",
+      "invalid_email": "Ungültige E-Mail-Adresse",
+      "email_required": "E-Mail-Adresse ist erforderlich",
+      "password_too_short": "Passwort muss mindestens 8 Zeichen lang sein",
+      "passwords_dont_match": "Passwörter stimmen nicht überein",
+      "bad_request": "Ungültige Anfrage",
+      "invalid_credentials": "Ungültige E-Mail oder Passwort",
+      "not_found": "Nicht gefunden",
+      "email_exists": "Diese E-Mail-Adresse ist bereits registriert",
+      "server_error": "Serverfehler. Bitte versuchen Sie es später erneut.",
+      "login_failed": "Anmeldung fehlgeschlagen",
+      "registration_failed": "Registrierung fehlgeschlagen",
+      "verification_failed": "E-Mail-Überprüfung fehlgeschlagen",
+      "request_failed": "Anfrage fehlgeschlagen",
+      "password_reset_failed": "Passwort-Reset fehlgeschlagen",
+      "invalid_reset_link": "Ungültiger oder abgelaufener Reset-Link"
+    }
   }
 }

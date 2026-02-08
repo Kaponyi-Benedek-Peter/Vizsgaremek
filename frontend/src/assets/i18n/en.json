@@ -118,5 +118,103 @@
     "previous": "Previous",
     "next": "Next",
     "page": "Page"
+  },
+  "auth": {
+    "or": "or",
+    "show_password": "Show password",
+    "fields": {
+      "email": "Email address",
+      "password": "Password",
+      "new_password": "New password",
+      "confirm_password": "Confirm password",
+      "firstname": "First name",
+      "lastname": "Last name"
+    },
+    "placeholders": {
+      "email": "example@email.com",
+      "password": "••••••••",
+      "new_password": "New password",
+      "confirm_password": "Confirm password",
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "login": {
+      "title": "Sign In",
+      "subtitle": "Welcome back!",
+      "stay_logged_in": "Stay logged in",
+      "button": "Sign In",
+      "logging_in": "Signing in...",
+      "forgot_password": "Forgot your password?",
+      "no_account": "Don't have an account?",
+      "sign_up": "Sign up"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Create a new account",
+      "password_hint": "Password must be at least 8 characters long",
+      "button": "Create Account",
+      "creating_account": "Creating account...",
+      "have_account": "Already have an account?",
+      "sign_in": "Sign in",
+      "success_message": "Registration successful! Please check your email to verify your account."
+    },
+    "email": {
+      "check_inbox": "Check your inbox",
+      "sent_message": "We've sent a verification email to your address.",
+      "step_1": "Open the email we sent you",
+      "step_2": "Click the verification link",
+      "step_3": "You'll be automatically logged in",
+      "no_email": "Didn't receive the email?",
+      "resend": "Resend",
+      "back_to_login": "Back to login",
+      "verifying": "Verifying",
+      "verifying_message": "Please wait while we verify your email address...",
+      "verified": "Email Verified!",
+      "verified_message": "Your email has been successfully verified. You will be automatically logged in.",
+      "redirecting": "Redirecting to homepage...",
+      "verification_failed": "Verification Failed",
+      "try_again": "Try Again",
+      "back_to_register": "Back to registration"
+    },
+    "password_reset": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email to receive a reset link",
+      "button": "Send Reset Link",
+      "sending": "Sending...",
+      "back_to_login": "Back to login",
+      "email_sent": "Email Sent",
+      "email_sent_message": "We've sent a password reset link to your email.",
+      "step_1": "Check your email inbox",
+      "step_2": "Click the reset link",
+      "step_3": "Set your new password"
+    },
+    "password_change": {
+      "title": "Set New Password",
+      "subtitle": "Enter your new password",
+      "button": "Change Password",
+      "updating": "Updating...",
+      "back_to_login": "Back to login",
+      "success": "Password Changed!",
+      "success_message": "Your password has been successfully changed. You can now log in with your new password.",
+      "redirecting": "Redirecting to login..."
+    },
+    "errors": {
+      "empty_fields": "Please fill in all fields",
+      "invalid_email": "Invalid email address",
+      "email_required": "Email address is required",
+      "password_too_short": "Password must be at least 8 characters long",
+      "passwords_dont_match": "Passwords do not match",
+      "bad_request": "Bad request",
+      "invalid_credentials": "Invalid email or password",
+      "not_found": "Not found",
+      "email_exists": "This email address is already registered",
+      "server_error": "Server error. Please try again later.",
+      "login_failed": "Login failed",
+      "registration_failed": "Registration failed",
+      "verification_failed": "Email verification failed",
+      "request_failed": "Request failed",
+      "password_reset_failed": "Password reset failed",
+      "invalid_reset_link": "Invalid or expired reset link"
+    }
   }
 }

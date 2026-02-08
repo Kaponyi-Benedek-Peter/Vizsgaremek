@@ -118,5 +118,103 @@
     "previous": "Előző",
     "next": "Következő",
     "page": "Oldal"
+  },
+  "auth": {
+    "or": "vagy",
+    "show_password": "Jelszó megjelenítése",
+    "fields": {
+      "email": "E-mail cím",
+      "password": "Jelszó",
+      "new_password": "Új jelszó",
+      "confirm_password": "Jelszó megerősítése",
+      "firstname": "Keresztnév",
+      "lastname": "Vezetéknév"
+    },
+    "placeholders": {
+      "email": "pelda@email.hu",
+      "password": "••••••••",
+      "new_password": "Új jelszó",
+      "confirm_password": "Jelszó újra",
+      "firstname": "János",
+      "lastname": "Kiss"
+    },
+    "login": {
+      "title": "Bejelentkezés",
+      "subtitle": "Üdvözöljük újra!",
+      "stay_logged_in": "Maradjak bejelentkezve",
+      "button": "Bejelentkezés",
+      "logging_in": "Bejelentkezés...",
+      "forgot_password": "Elfelejtette jelszavát?",
+      "no_account": "Nincs még fiókja?",
+      "sign_up": "Regisztráció"
+    },
+    "register": {
+      "title": "Regisztráció",
+      "subtitle": "Hozzon létre egy új fiókot",
+      "password_hint": "Minimum 8 karakter hosszú jelszó szükséges",
+      "button": "Fiók létrehozása",
+      "creating_account": "Fiók létrehozása...",
+      "have_account": "Már van fiókja?",
+      "sign_in": "Bejelentkezés",
+      "success_message": "Regisztráció sikeres! Ellenőrizze e-mail fiókját a megerősítéshez."
+    },
+    "email": {
+      "check_inbox": "Ellenőrizze a postafiókját",
+      "sent_message": "E-mail megerősítő linket küldtünk a megadott címre.",
+      "step_1": "Nyissa meg az elküldött e-mailt",
+      "step_2": "Kattintson a megerősítő linkre",
+      "step_3": "Automatikusan bejelentkezik",
+      "no_email": "Nem kapta meg az e-mailt?",
+      "resend": "Újraküldés",
+      "back_to_login": "Vissza a bejelentkezéshez",
+      "verifying": "Ellenőrzés folyamatban",
+      "verifying_message": "Kérjük várjon, amíg megerősítjük e-mail címét...",
+      "verified": "E-mail megerősítve!",
+      "verified_message": "E-mail címe sikeresen megerősítve. Automatikusan bejelentkezik.",
+      "redirecting": "Átirányítás a főoldalra...",
+      "verification_failed": "Ellenőrzés sikertelen",
+      "try_again": "Próbálja újra",
+      "back_to_register": "Vissza a regisztrációhoz"
+    },
+    "password_reset": {
+      "title": "Jelszó visszaállítása",
+      "subtitle": "Adja meg e-mail címét a visszaállítási linkért",
+      "button": "Visszaállítási link küldése",
+      "sending": "Küldés...",
+      "back_to_login": "Vissza a bejelentkezéshez",
+      "email_sent": "E-mail elküldve",
+      "email_sent_message": "Jelszó visszaállítási linket küldtünk e-mail címére.",
+      "step_1": "Ellenőrizze e-mail fiókját",
+      "step_2": "Kattintson a visszaállítási linkre",
+      "step_3": "Állítson be új jelszót"
+    },
+    "password_change": {
+      "title": "Új jelszó beállítása",
+      "subtitle": "Adja meg új jelszavát",
+      "button": "Jelszó megváltoztatása",
+      "updating": "Frissítés...",
+      "back_to_login": "Vissza a bejelentkezéshez",
+      "success": "Jelszó megváltoztatva!",
+      "success_message": "Jelszava sikeresen megváltoztatva. Most már bejelentkezhet az új jelszavával.",
+      "redirecting": "Átirányítás a bejelentkezéshez..."
+    },
+    "errors": {
+      "empty_fields": "Kérjük töltse ki az összes mezőt",
+      "invalid_email": "Érvénytelen e-mail cím",
+      "email_required": "E-mail cím megadása kötelező",
+      "password_too_short": "A jelszónak legalább 8 karakter hosszúnak kell lennie",
+      "passwords_dont_match": "A jelszavak nem egyeznek",
+      "bad_request": "Hibás kérés",
+      "invalid_credentials": "Hibás e-mail cím vagy jelszó",
+      "not_found": "Nem található",
+      "email_exists": "Ez az e-mail cím már regisztrálva van",
+      "server_error": "Szerver hiba. Kérjük próbálja újra később.",
+      "login_failed": "Bejelentkezés sikertelen",
+      "registration_failed": "Regisztráció sikertelen",
+      "verification_failed": "E-mail megerősítés sikertelen",
+      "request_failed": "Kérés sikertelen",
+      "password_reset_failed": "Jelszó visszaállítás sikertelen",
+      "invalid_reset_link": "Érvénytelen vagy lejárt visszaállítási link"
+    }
   }
 }
