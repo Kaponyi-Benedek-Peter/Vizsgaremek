@@ -89,6 +89,21 @@ namespace Servo.service
             }
             return "application/octet-stream";
         }
+
+
+        public static double usd=0.0027;
+        public static double eur=0.0025;
+
+
+        public static List<double> exchange(double inn)
+        {
+            
+
+            return new List<double> { Math.Round(inn * usd), Math.Round(inn * eur)};
+        }
+
+
+
         public static string email_auth_address = conf("r", "email_auth_address");
         public static string email_auth_key = conf("r", "email_auth_key");
         public static void send_mail(string hova, string title, string body, string tipus)

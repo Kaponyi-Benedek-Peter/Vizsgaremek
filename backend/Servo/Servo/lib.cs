@@ -1,10 +1,12 @@
 ﻿using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,7 +17,7 @@ namespace Servo
 {
     public class shared
     {
-       
+
         public void start_server(int port)
         {
             isrunning = true;
@@ -23,13 +25,13 @@ namespace Servo
 
 
             hallgatozo.Prefixes.Add($"http://+:{port.ToString()}/");
-            
+
             hallgatozo.Start();
             service.shared.log("[server started 1/1]");
             service.shared.log($"hosting at: http://localhost:{port}/");
-            service.shared.log($"hosting from: { service.shared.baseDir}\n");
+            service.shared.log($"hosting from: {service.shared.baseDir}\n");
 
-            
+
             cts = new CancellationTokenSource();
             var token = cts.Token;
 
@@ -51,7 +53,7 @@ namespace Servo
                     }
                     catch (Exception ex)
                     {
-                       
+
                         service.shared.log($"Error: {ex.Message} --lib.shared.start_server > server");
                     }
                 }
@@ -75,11 +77,40 @@ namespace Servo
                         service.shared.log($"Error: {ex.Message} --lib.shared.start_server > email_auth refresh");
                     }
 
-                    
+
                     Thread.Sleep(300000);
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
+
+
+
+            exchange_rates = Task.Factory.StartNew(() =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        using (HttpClient client = new HttpClient())
+                        {
+                           
+                            string json = client.GetStringAsync("https://api.frankfurter.app/latest?from=HUF&to=EUR,USD").Result;
+
+                            dynamic data = JsonConvert.DeserializeObject(json);
+
+                            service.shared.eur = (double)data.rates.EUR;
+                            service.shared.usd = (double)data.rates.USD;
+                            service.shared.log($"[exchange rate fetched succesfully]");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        service.shared.log($"Error: {ex.Message} --lib.exchange_rates");
+                    }
+
+                    Thread.Sleep(300000);
+                }
+            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
 
 
@@ -97,6 +128,9 @@ namespace Servo
         public Task email_auth_refresh;
 
         public Task newsletter_main;
+
+        public Task exchange_rates;
+
 
         public CancellationTokenSource cts;
         static CancellationToken token = new CancellationTokenSource().Token; // homok a levegőben

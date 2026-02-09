@@ -55,11 +55,6 @@ namespace Servo.controller
 
 
                
-                    string token = jwt_handler.generate_token(email);
-
-                    data.Response.StatusCode = 200;
-                    data.Response.ContentType = "application/json";
-                    string json = $"{{\"token\":\"{token}\",\"expires_in\":604800}}"; // 7 nap
                     
                 
                
@@ -68,6 +63,14 @@ namespace Servo.controller
                 int resp = service.login.process_login(jelszo, email); // SERVICE
                 if (resp == 200)
                 {
+
+                    string token = jwt_handler.generate_token(email);
+
+                    
+                    data.Response.ContentType = "application/json";
+                    string json = $"{{\"token\":\"{token}\",\"expires_in\":604800}}"; // 7 nap
+
+
                     data.Response.StatusCode = 200;
                     byte[] buffer = Encoding.UTF8.GetBytes(json);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
@@ -75,13 +78,13 @@ namespace Servo.controller
                 else if (resp == 401)
                 {
                     data.Response.StatusCode = 401;
-                    byte[] buffer = Encoding.UTF8.GetBytes(json);
+                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_jelszo");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else //if (resp == 500)
                 {
                     data.Response.StatusCode = 500;
-                    byte[] buffer = Encoding.UTF8.GetBytes(json);
+                    byte[] buffer = Encoding.UTF8.GetBytes("felhasznalo_nem_letezik");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
             }

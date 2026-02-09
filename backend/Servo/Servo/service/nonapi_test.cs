@@ -55,7 +55,33 @@ namespace Servo.service
 
             for (int i = 0; i < 33; i++)
             {
-                model.shared.add_product($"product name","description",i,10,"a/a.png",999,Convert.ToInt32((double)i/2),"desc preview");
+
+                model.shared.product prod = new model.shared.product
+                {
+                      name="product"+i,
+  description_en     = "product" + i+"_en",
+  description_hu     = "product" + i + "_hu",
+  description_de     = "product" + i + "_de",
+  price     = i,
+  times_ordered     = 0,
+  stock     = 10,
+  sale_percentage     = 0,
+  description_preview_en     = "description_preview_en",
+  description_preview_de     = "description_preview_de",
+  description_preview_hu     = "description_preview_hu",
+                    category = "category",
+                    name_hu     = "name_hu",
+  name_de     = "name_de",
+  name_en     = "name_en",
+  manufacturer     = "manufacturer",
+  brand     = "brand",
+  rating     = 0.0,
+  sku     = "sku",
+  active_ingredient     = "active_ingredient",
+  packaging     = "valami",
+                };
+
+                model.shared.add_product(prod);
             }
 
 

@@ -20,7 +20,7 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products"
         };
 
         public static void main(HttpListenerContext data, string alap)
@@ -95,7 +95,14 @@ namespace Servo.controller
                 {
                     //kell jwt
                     string authorization_header = data.Request.Headers["Authorization"];
-                    if (authorization_header.StartsWith("Bearer ") != true)
+                    if(authorization_header.Equals("") || authorization_header == null)
+                    {
+                        data.Response.StatusCode = 401;
+                        byte[] buffer = Encoding.UTF8.GetBytes("missing_auth_header");
+                        data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                        return;
+                    }
+                    else if (authorization_header.StartsWith("Bearer ") != true)
                     {
                         data.Response.StatusCode = 401;
                         byte[] buffer = Encoding.UTF8.GetBytes("missing_auth_header");
@@ -196,6 +203,16 @@ namespace Servo.controller
                     controller.login.main(data, lenyeg);
 
                    
+
+
+                }
+
+                else if (lenyeg.Contains("get_all_products"))
+                {
+
+                    controller.get_all_products.main(data, lenyeg);
+
+
 
 
                 }

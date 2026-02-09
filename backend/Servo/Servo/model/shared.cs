@@ -7,12 +7,45 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace Servo.model
 {
     internal class shared
     {
        
+
+
+        public class product
+        {
+            public string name;
+            public string description_en { get; set; } = "";
+            public string description_hu { get; set; } = "";
+            public string description_de { get; set; } = "";
+            public int price { get; set; } = 0;
+            public int times_ordered { get; set; } = 0;
+            public int stock { get; set; } = 0;
+            public int sale_percentage { get; set; } = 0;
+            public string description_preview_en { get; set; } = "";
+            public string description_preview_de { get; set; } = "";
+            public string description_preview_hu { get; set; } = "";
+
+            public string category { get; set; } = "";
+            public string name_hu { get; set; } = "";
+            public string name_de { get; set; } = "";
+            public string name_en { get; set; } = "";
+            public string manufacturer { get; set; } = "";
+            public string brand { get; set; } = "";
+            public double rating { get; set; } = 0.0;
+            public string sku { get; set; } = "";
+            public string active_ingredient { get; set; } = "";
+            public string created_at { get; set; } = "";
+            public string updated_at { get; set; } = "";
+            public string packaging { get; set; } = "";
+        }
+
+
+
         public static void init()
         {
             conn= new MySqlConnection(connStr);
@@ -481,26 +514,52 @@ namespace Servo.model
         }
 
 
-        public static int add_product(string name, string description, int price, int times_ordered, string image_source, int stock, int sale_price, string description_preview)
+        public static int add_product(product prod)
         {
 
             try
-            {
+            {//id name_de description_en price_huf times_ordered stock sale_percentage description_preview_en name_hu
+             //name_en description_hu description_de description_preview_hu description_preview_de
+             //category manufacturer brand rating sku active_ingredients packaging created_at updated_at name
                 using (MySqlCommand cmd = new MySqlCommand("create_product", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.AddWithValue("@p_name", name);
-                    cmd.Parameters.AddWithValue("@p_description", description);
 
-                    cmd.Parameters.AddWithValue("@p_price", price);
+                    
+                    
+                    cmd.Parameters.AddWithValue("@p_price_huf", prod.price);
+                    cmd.Parameters.AddWithValue("@p_times_ordered", prod.times_ordered);
+                    cmd.Parameters.AddWithValue("@p_stock", prod.stock);
+                    cmd.Parameters.AddWithValue("@p_sale_percentage", prod.sale_percentage);
 
 
-                    cmd.Parameters.AddWithValue("@p_times_ordered", times_ordered);
-                    cmd.Parameters.AddWithValue("@p_image_source", image_source);
-                    cmd.Parameters.AddWithValue("@p_stock", stock);
-                    cmd.Parameters.AddWithValue("@p_sale_price", sale_price);
-                    cmd.Parameters.AddWithValue("@p_description_preview", description_preview);
+                    cmd.Parameters.AddWithValue("@p_description_preview_hu", prod.description_preview_hu);
+                    cmd.Parameters.AddWithValue("@p_description_preview_en", prod.description_preview_en);
+                    cmd.Parameters.AddWithValue("@p_description_preview_de", prod.description_preview_en);
+
+
+                    cmd.Parameters.AddWithValue("@p_category", prod.category);
+
+                    cmd.Parameters.AddWithValue("@p_name", prod.name);
+                    cmd.Parameters.AddWithValue("@p_name_hu", prod.name_hu);
+                    cmd.Parameters.AddWithValue("@p_name_en", prod.name_en);
+                    cmd.Parameters.AddWithValue("@p_name_de", prod.name_de);
+
+                    cmd.Parameters.AddWithValue("@p_description_hu", prod.description_hu);
+                    cmd.Parameters.AddWithValue("@p_description_en", prod.description_en);
+                    cmd.Parameters.AddWithValue("@p_description_de", prod.description_de);
+
+                    cmd.Parameters.AddWithValue("@p_manufacturer", prod.manufacturer);
+                    cmd.Parameters.AddWithValue("@p_brand", prod.brand);
+                    cmd.Parameters.AddWithValue("@p_rating", prod.rating);
+                    cmd.Parameters.AddWithValue("@p_sku", prod.sku);
+                    cmd.Parameters.AddWithValue("@p_active_ingredients", prod.active_ingredient);
+                    cmd.Parameters.AddWithValue("@p_packaging", prod.packaging);
+                    cmd.Parameters.AddWithValue("@p_created_at", prod.created_at);
+                    cmd.Parameters.AddWithValue("@p_updated_at", prod.updated_at);
+
+
 
                     cmd.ExecuteNonQuery();
 
