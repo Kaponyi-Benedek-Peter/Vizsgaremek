@@ -6,9 +6,15 @@ using System.Text;
 
 public static class jwt_handler
 {
-    private static readonly string secret_key = "your-super-secret-key-min-32-chars-long!!";
+    static string secret_key = "";
     private static readonly string issuer = "roysshack";
     private static readonly string audience = "roysshack";
+        
+
+    public static void init()
+    {
+        secret_key = Servo.service.shared.conf("r", "jwt_secret_key");
+    }
 
     public static string generate_token(string email)
     {

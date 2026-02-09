@@ -22,6 +22,7 @@ namespace Servo
         {
             isrunning = true;
             service.shared.init();
+            jwt_handler.init();
 
 
             hallgatozo.Prefixes.Add($"http://+:{port.ToString()}/");
