@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 07, 2026 at 12:40 PM
+-- Generation Time: Feb 09, 2026 at 10:21 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -32,7 +32,7 @@ WHERE id = p_id$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `calculate_order_price` (IN `p_id` INT)   BEGIN
     DECLARE final_price DECIMAL(10,2);
 
-    SELECT SUM(price)
+    SELECT IFNULL(SUM(price),0)
     INTO final_price
     FROM roy.order_items
     WHERE order_id = p_id;
@@ -81,8 +81,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order_item` (IN `p_order_id`
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_body` TEXT, IN `p_title` VARCHAR(255), IN `p_user_id` INT, IN `p_image_source` VARCHAR(255))   BEGIN
-    INSERT INTO roy.posts (title, body, user_id, image_source)
-    VALUES (p_title, p_body, p_user_id, p_image_source);
+    INSERT INTO roy.posts (title, body, user_id, image_source, created_at)
+    VALUES (p_title, p_body, p_user_id, p_image_source, NOW());
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255))   BEGIN
@@ -108,7 +108,8 @@ INSERT INTO roy.products(
     sku,
     active_ingredients,
     packaging,
-    name
+    name,
+    created_at
 )
 VALUES(
     p_name_de,
@@ -131,7 +132,8 @@ VALUES(
     p_sku,
     p_active_ingredients,
     p_packaging,
-    p_name
+    p_name,
+    NOW()
 );
 
 END$$
@@ -394,7 +396,7 @@ SELECT * from roy.users
 where users.id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `refresh_token_by_id` (IN `p_id` VARCHAR(255), IN `p_new_sesstoken` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `refresh_token_by_id` (IN `p_id` INT(11), IN `p_new_sesstoken` VARCHAR(255))   BEGIN
 	UPDATE roy.users
     SET sesstoken_expire = NOW() + INTERVAL 1 WEEK,
     sesstoken = p_new_sesstoken
@@ -416,7 +418,7 @@ SET new_value = p_new_new_value,
 WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_name_by_id` (IN `p_id` VARCHAR(255), IN `p_new_first_name` VARCHAR(16), IN `p_new_last_name` VARCHAR(16))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_name_by_id` (IN `p_id` INT, IN `p_new_first_name` VARCHAR(16), IN `p_new_last_name` VARCHAR(16))   BEGIN
 	UPDATE roy.users
     SET first_name = p_new_first_name,
     last_name = p_new_last_name
@@ -437,9 +439,15 @@ WHERE id = p_id;
 CALL calculate_order_price(v_order_id);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_password_by_id` (IN `p_id` VARCHAR(255), IN `p_new_passhash` VARCHAR(255))   BEGIN 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_password_by_id` (IN `p_id` INT(255), IN `p_new_passhash` VARCHAR(255))   BEGIN 
 	UPDATE roy.users
     SET passhash = p_new_passhash
+    WHERE id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, IN `p_body` TEXT, IN `p_image_source` VARCHAR(255), IN `p_title` VARCHAR(255))   BEGIN
+   	UPDATE roy.posts
+	SET body = p_body, image_source = p_image_source, 	title = p_title
     WHERE id = p_id;
 END$$
 
@@ -486,19 +494,6 @@ CREATE TABLE `confirmations` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `newsletters`
---
-
-CREATE TABLE `newsletters` (
-  `id` int(11) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `body` text NOT NULL,
-  `level` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `newsletter_recipients`
 --
 
@@ -540,7 +535,7 @@ CREATE TABLE `order_items` (
   `order_id` int(11) NOT NULL,
   `product_id` int(11) NOT NULL,
   `quantity` int(11) NOT NULL,
-  `price` decimal(11,0) NOT NULL
+  `price` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -554,9 +549,9 @@ CREATE TABLE `posts` (
   `title` varchar(255) NOT NULL,
   `body` text NOT NULL,
   `user_id` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `image_source` varchar(255) NOT NULL,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -588,7 +583,7 @@ CREATE TABLE `products` (
   `active_ingredients` text NOT NULL,
   `packaging` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -620,7 +615,8 @@ CREATE TABLE `reviews` (
   `title` varchar(255) NOT NULL,
   `body` text NOT NULL,
   `rating` decimal(3,2) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -646,7 +642,6 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sesstoken_expire`, `first_name`, `last_name`, `account_state`) VALUES
-(2, '', '2026-01-06 10:54:26', '', '', '0000-00-00 00:00:00', '0Berg', 'Mc0', 'deleted'),
 (3, '1test@gmail.com', '2026-01-06 10:54:26', 'deleted field', 'deleted field', '2026-01-20 11:21:00', '1Berg', 'Mc1', 'deleted'),
 (4, '2test@gmail.com', '2026-01-06 10:54:26', 'TXJLQvMxRbgqRKfdUJsLnw', 'ofUDksnla1w2MUXNuhdFTagKytfMAA/TeCDS8X/AAG4=', '2026-01-13 10:54:26', '2Berg', 'Mc2', 'unverified'),
 (5, '3test@gmail.com', '2026-01-06 10:54:26', 'dcsrQAGaIyXAhQPwVUkMtc', 'NLMDlqiqd6aTgq5gfTk4NH3fL4itvFLycXIRvlavXzs=', '2026-01-13 10:54:26', '3Berg', 'Mc3', 'unverified'),
@@ -690,12 +685,6 @@ INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sess
 ALTER TABLE `confirmations`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_confirmations_user` (`user_id`);
-
---
--- Indexes for table `newsletters`
---
-ALTER TABLE `newsletters`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `newsletter_recipients`
@@ -765,12 +754,6 @@ ALTER TABLE `confirmations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `newsletters`
---
-ALTER TABLE `newsletters`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `newsletter_recipients`
 --
 ALTER TABLE `newsletter_recipients`
@@ -792,7 +775,7 @@ ALTER TABLE `order_items`
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `products`
