@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 10, 2026 at 08:17 AM
+-- Generation Time: Feb 10, 2026 at 08:22 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -181,6 +181,10 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_products` ()   BEGIN
 DELETE FROM roy.products;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_reviews` ()   BEGIN
+DELETE FROM roy.reviews;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_users` ()   BEGIN
 DELETE FROM roy.users;
 END$$
@@ -211,6 +215,10 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_post_by_id` (IN `p_id` INT)   BEGIN
     DELETE FROM roy.posts WHERE id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_review_by_id` (IN `p_id` INT(11))   BEGIN
+    DELETE FROM roy.reviews WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `disable_account_by_id` (IN `p_id` INT)   BEGIN
@@ -858,7 +866,7 @@ ALTER TABLE `product_images`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
