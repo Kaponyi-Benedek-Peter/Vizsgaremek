@@ -77,8 +77,18 @@ namespace Servo.service
                             sendaccdeletion(controller_email,confirmation_token);
                             try
                             {
-                               
-                                int result = model.shared.add_confirmation(confirmation_token, controller_id, "-", "account_deletion");
+
+                                model.shared.confirmation con = new model.shared.confirmation
+                                {
+                                    confirmation_token = confirmation_token,
+                                    value = "-",
+                                    type = "account_deletion",
+                                    user_id = controller_id,
+
+
+                                };
+
+                                int result = model.shared.add_confirmation(con);
                             }
                             catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.delacc_request.process_delacc_request 5"); }
 

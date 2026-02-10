@@ -109,7 +109,7 @@ namespace Servo
                         service.shared.log($"Error: {ex.Message} --lib.exchange_rates");
                     }
 
-                    Thread.Sleep(300000);
+                    Thread.Sleep(3000000);
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 

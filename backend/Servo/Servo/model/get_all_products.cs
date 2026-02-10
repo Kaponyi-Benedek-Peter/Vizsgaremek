@@ -20,10 +20,11 @@ namespace Servo.model
         public static Dictionary<string, object> communicate_get_all_products()
         {
             var result = new Dictionary<string, object>
-    {
-        { "error", "false" },
-        { "products", new List<Dictionary<string, string>>() }
-    };
+            {
+                { "statuscode", "200" },
+                { "status", "no error" },
+                { "products", new List<Dictionary<string, string>>() }
+            };
 
             try
             {
@@ -58,13 +59,18 @@ namespace Servo.model
 
                             products.Add(product);
                         }
+
                     }
+
+
                 }
             }
             catch (Exception ex)
             {
                 service.shared.log($"Error: {ex.Message} --model.get_all_products.communicate_get_all_products");
-                result["error"] = "true";
+                result["statuscode"] = "500";
+                result["status"] = "unknown error";
+
             }
 
             return result;

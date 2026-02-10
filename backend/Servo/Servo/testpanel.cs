@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static Servo.model.shared;
 
 namespace Servo
 {
@@ -35,7 +36,7 @@ namespace Servo
         private void button4_Click(object sender, EventArgs e)
         {
             service.shared.send_mail(textBox1.Text, DateTime.Now.ToString(), "teszt email", "test");
-
+            service.shared.log("[Test email sent]");
         }
 
       
@@ -44,50 +45,78 @@ namespace Servo
 
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            
-            
-        }
 
         private void button2_Click(object sender, EventArgs e)
         {
             service.nonapi_test.addtestusers();
+            service.shared.log("[Add test users]");
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
             model.shared.delete_all_users();
+            service.shared.log("[Delete all users]");
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
             model.shared.delete_all_products();
+            service.shared.log("[Delete all products]");
         }
 
         private void button8_Click(object sender, EventArgs e)
         {
             service.nonapi_test.addtestproducts();
+            service.shared.log("[Add test products]");
         }
 
         private void button12_Click(object sender, EventArgs e)
         {
-            service.nonapi_test.addtestconfirmations();
+           service.nonapi_test.addtestconfirmations(Convert.ToInt32(confirmations_tbox.Text));
+            service.shared.log("[Add test confirmations]");
         }
 
         private void button11_Click(object sender, EventArgs e)
         {
             service.nonapi_test.deleteallconfirmations();
+            service.shared.log("[Delete all confirmations]");
         }
 
         private void button10_Click(object sender, EventArgs e)
         {
-            service.nonapi_test.addtestorders();
+            service.nonapi_test.addtestorders(Convert.ToInt32(orders_tbox.Text));
+            service.shared.log("[Add test orders]");
+
+           
         }
 
         private void button9_Click(object sender, EventArgs e)
         {
             service.nonapi_test.deleteallorders();
+            service.shared.log("[Delete all orders]");
+        }
+
+        private void button14_Click(object sender, EventArgs e)
+        {
+            service.nonapi_test.deleteallreviews();
+            service.shared.log("[Delete all reviews]");
+        }
+
+        private void button13_Click(object sender, EventArgs e)
+        {
+            service.nonapi_test.addtestreviews(product_id_tbox.Text);
+            service.shared.log("[Add test reviews]");
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            service.nonapi_test.deleteallreviews();
+            service.nonapi_test.deleteallorders();
+            service.nonapi_test.deleteallconfirmations();
+            model.shared.delete_all_users();
+            model.shared.delete_all_products();
+
+            service.shared.log("[Delete all]");
         }
     }
 }

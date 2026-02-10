@@ -13,7 +13,50 @@ namespace Servo.model
 {
     internal class shared
     {
-       
+
+
+        public class confirmation
+        {
+
+
+            public string confirmation_token { get; set; } = "";
+            public string user_id { get; set; } = "";
+            public string value { get; set; } = "";
+            public string type { get; set; } = "";
+
+        }
+
+
+        public class order
+        {
+            public string user_id { get; set; } = "";
+            public string city { get; set; } = "";
+            public int zipcode { get; set; } = 0;
+            public int price { get; set; } = 0;
+            public string address { get; set; } = "";
+            public string apartment_number { get; set; } = "";
+            public string note { get; set; } = "";
+            public string house_number { get; set; } = "";
+            public string phone_number { get; set; } = "";
+
+        }
+
+
+        public class user
+        {
+
+            public string email { get; set; } = "";
+            public string sesstoken { get; set; } = "";
+            public string passhash { get; set; } = "";
+            public string sesstoken_expire { get; set; } = "";
+            public string first_name { get; set; } = "";
+            public string last_name { get; set; } = "";
+            public string p_account_state { get; set; } = "";
+
+
+        }
+
+
 
 
         public class product
@@ -45,8 +88,20 @@ namespace Servo.model
         }
 
 
+            public class review
+            {
+                public string product_id;
+                public string title { get; set; } = "";
+                public string body { get; set; } = "";
+                public string rating { get; set; } = "";
+                public int created_at { get; set; } = 0;
+                public int user_id { get; set; } = 0;
+                
+            }
 
-        public static void init()
+
+
+            public static void init()
         {
             conn= new MySqlConnection(connStr);
             conn.Open();
@@ -462,7 +517,7 @@ namespace Servo.model
         }
 
 
-        public static int add_confirmation(string confirmation_token, string user_id, string value, string type)
+        public static int add_confirmation(confirmation con)
         {
 
             try
@@ -471,10 +526,10 @@ namespace Servo.model
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.AddWithValue("@p_confirmation_token", confirmation_token);
-                    cmd.Parameters.AddWithValue("@p_user_id", user_id);
-                    cmd.Parameters.AddWithValue("@p_new_value", value);
-                    cmd.Parameters.AddWithValue("@p_type", type);
+                    cmd.Parameters.AddWithValue("@p_confirmation_token", con.confirmation_token);
+                    cmd.Parameters.AddWithValue("@p_user_id", con.user_id);
+                    cmd.Parameters.AddWithValue("@p_new_value", con.value);
+                    cmd.Parameters.AddWithValue("@p_type", con.type);
                     cmd.ExecuteNonQuery();
 
                     return 200;
@@ -573,8 +628,102 @@ namespace Servo.model
             }
         }
 
-        public static int add_order(int user_id, string city, int zipcode, int price, string address, int apartment_number, string note, int house_number, string phone_number)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public static int add_review(review rev)
         {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("create_review", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+
+                    cmd.Parameters.AddWithValue("@p_product_id", rev.product_id);
+                    cmd.Parameters.AddWithValue("@p_title", rev.title);
+                    cmd.Parameters.AddWithValue("@p_body", rev.body);
+                    cmd.Parameters.AddWithValue("@p_rating", rev.rating);
+
+
+                    cmd.Parameters.AddWithValue("@p_user_id", rev.user_id);
+                    
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error: {ex.Message} --model.shared.add_review");
+                return 500;
+            }
+        }
+
+        public static int delete_all_reviews()
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("delete_all_reviews", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_reviews");
+                return 500;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public static int add_order(order ord)
+        {
+
+
+
 
             try
             {
@@ -582,15 +731,17 @@ namespace Servo.model
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.AddWithValue("@p_user_id", user_id);
-                    cmd.Parameters.AddWithValue("@p_city", city);
-                    cmd.Parameters.AddWithValue("@p_zipcode", zipcode);
-                    cmd.Parameters.AddWithValue("@p_price", price);
-                    cmd.Parameters.AddWithValue("@p_address", address);
-                    cmd.Parameters.AddWithValue("@p_apartment_number", apartment_number);
-                    cmd.Parameters.AddWithValue("@p_note", note);
-                    cmd.Parameters.AddWithValue("@p_house_number", house_number);
-                    cmd.Parameters.AddWithValue("@p_phone_number", phone_number);
+
+                    cmd.Parameters.AddWithValue("@p_user_id", ord.user_id);
+                    cmd.Parameters.AddWithValue("@p_city", ord.city);
+                    cmd.Parameters.AddWithValue("@p_zipcode", ord.zipcode);
+                    cmd.Parameters.AddWithValue("@p_price", ord.price);
+                    cmd.Parameters.AddWithValue("@p_address", ord.address);
+                    cmd.Parameters.AddWithValue("@p_apartment_number", ord.apartment_number);
+                    cmd.Parameters.AddWithValue("@p_note", ord.note);
+                    cmd.Parameters.AddWithValue("@p_house_number", ord.house_number);
+                    cmd.Parameters.AddWithValue("@p_phone_number", ord.phone_number);
+
 
                     cmd.ExecuteNonQuery();
 

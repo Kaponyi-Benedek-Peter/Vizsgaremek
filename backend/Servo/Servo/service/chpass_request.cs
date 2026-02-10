@@ -15,8 +15,20 @@ namespace Servo.service
         {
             string confirmation_token = service.shared.gen_code(false);
 
-            
-            int result = model.shared.add_confirmation(confirmation_token,id,newpasshash,"password_change");
+
+
+            model.shared.confirmation con = new model.shared.confirmation
+            {
+                confirmation_token = confirmation_token,
+                value = newpasshash,
+                type = "password_change",
+                user_id =id,
+
+
+            };
+
+
+            int result = model.shared.add_confirmation(con);
 
             if (result == 200)
             {

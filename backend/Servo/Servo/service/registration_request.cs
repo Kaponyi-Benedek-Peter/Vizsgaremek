@@ -29,19 +29,22 @@ namespace Servo.service
                 {
                    
                     string session_token = service.shared.gen_code(false);
-                    Dictionary<string, string> lista = new Dictionary<string, string>
-            {
-                { "p_email", controller_email },
-                { "p_passhash", service.shared.hashpass(controller_jelszo) },
-                { "p_last_name", controller_lastname },
-                { "p_first_name", controller_firstname },
-                { "p_account_state", "unverified" }, 
-                { "p_sesstoken", session_token },
-                { "p_sesstoken_expire", DateTime.Now.AddDays(7).ToString("yyyy-MM-dd HH:mm:ss") }
-            };
+       
+                    model.shared.user usr = new model.shared.user
+                    {
+                        email = controller_email,
+                        sesstoken = session_token,
+                        sesstoken_expire = DateTime.Now.AddDays(7).ToString("yyyy-MM-dd HH:mm:ss"),
+                        passhash = service.shared.hashpass(controller_jelszo),
+                        first_name = controller_firstname,
+                        last_name = controller_lastname,
+                        p_account_state = "unverified",
+
+                    };
 
 
-                        if(model.registration_request.communicate_registration_request(lista) == true){
+
+                    if (model.registration_request.communicate_registration_request(usr) == true){
                             string controller_id = model.shared.get_id_by_email(controller_email);
                             sendregistration(controller_email, controller_id, session_token);
 

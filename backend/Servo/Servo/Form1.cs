@@ -139,6 +139,7 @@ namespace Servo
 
         private void button3_Click(object sender, EventArgs e)
         {
+            richTextBox1.Clear();
             items_textbox.Text = "";
             conn_textbox.Text = "";
             files_textbox.Text = "";

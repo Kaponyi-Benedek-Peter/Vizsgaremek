@@ -16,20 +16,36 @@ namespace Servo.service
 
             for (int i = 0; i < 33; i++)
             {
+
                 string session_token = service.shared.gen_code(false);
-                Dictionary<string, string> lista = new Dictionary<string, string>
-            {
-                { "p_email", i+"test@gmail.com" },
-                { "p_passhash", service.shared.hashpass(i.ToString()) },
-                { "p_last_name", "Mc"+i },
-                { "p_first_name", "Berg" },
-                { "p_account_state", "unverified" },
-                { "p_sesstoken", session_token },
-                { "p_sesstoken_expire", DateTime.Now.AddDays(7).ToString("yyyy-MM-dd HH:mm:ss") }
-            };
+
+                /*
+                 
+
+                
+                cmd.Parameters.AddWithValue("@p_email", usr.email);
+                cmd.Parameters.AddWithValue("@p_sesstoken", usr.sesstoken);
+                cmd.Parameters.AddWithValue("@p_passhash", usr.passhash);
+                cmd.Parameters.AddWithValue("@p_sesstoken_expire", usr.sesstoken_expire);
+                cmd.Parameters.AddWithValue("@p_first_name", usr.first_name);
+                cmd.Parameters.AddWithValue("@p_last_name", usr.last_name);
+                cmd.Parameters.AddWithValue("@p_account_state", usr.p_account_state);              */
+
+                model.shared.user usr = new model.shared.user
+                {
+                    email = i + "test@gmail.com",
+                    sesstoken = session_token,
+                    sesstoken_expire = DateTime.Now.AddDays(7).ToString("yyyy-MM-dd HH:mm:ss"),
+                    passhash = service.shared.hashpass(i.ToString()),
+                    first_name = "Berg",
+                    last_name = "Mc" + i,
+                    p_account_state = "unverified",
+                   
+                };
 
 
-                model.registration_request.communicate_registration_request(lista);
+
+                model.registration_request.communicate_registration_request(usr);
                
             }
 
@@ -38,12 +54,24 @@ namespace Servo.service
       
 
 
-        public static void addtestconfirmations()
+        public static void addtestconfirmations(int start_id)
         {
 
             for (int i = 0; i < 33; i++)
             {
-                model.shared.add_confirmation(service.shared.gen_code(false), i.ToString(),i.ToString(), "account_deletion");
+
+                model.shared.confirmation con = new model.shared.confirmation
+                {
+                    confirmation_token = service.shared.gen_code(false),
+                     value = (i).ToString(),
+                     type = "account_deletion",
+                     user_id = (i+start_id).ToString(),
+
+
+                };
+                
+
+                model.shared.add_confirmation(con);
             }
 
 
@@ -58,27 +86,27 @@ namespace Servo.service
 
                 model.shared.product prod = new model.shared.product
                 {
-                      name="product"+i,
-  description_en     = "product" + i+"_en",
-  description_hu     = "product" + i + "_hu",
-  description_de     = "product" + i + "_de",
-  price     = i,
-  times_ordered     = 0,
-  stock     = 10,
-  sale_percentage     = 0,
-  description_preview_en     = "description_preview_en",
-  description_preview_de     = "description_preview_de",
-  description_preview_hu     = "description_preview_hu",
-                    category = "category",
-                    name_hu     = "name_hu",
-  name_de     = "name_de",
-  name_en     = "name_en",
-  manufacturer     = "manufacturer",
-  brand     = "brand",
-  rating     = 0.0,
-  sku     = "sku",
-  active_ingredient     = "active_ingredient",
-  packaging     = "valami",
+                                      name="product"+i,
+                  description_en     = "product" + i+"_en",
+                  description_hu     = "product" + i + "_hu",
+                  description_de     = "product" + i + "_de",
+                  price     = i,
+                  times_ordered     = 0,
+                  stock     = 10,
+                  sale_percentage     = 0,
+                  description_preview_en     = "description_preview_en",
+                  description_preview_de     = "description_preview_de",
+                  description_preview_hu     = "description_preview_hu",
+                                    category = "category",
+                                    name_hu     = "name_hu",
+                  name_de     = "name_de",
+                  name_en     = "name_en",
+                  manufacturer     = "manufacturer",
+                  brand     = "brand",
+                  rating     = 0.0,
+                  sku     = "sku",
+                  active_ingredient     = "active_ingredient",
+                  packaging     = "valami",
                 };
 
                 model.shared.add_product(prod);
@@ -87,12 +115,56 @@ namespace Servo.service
 
 
         }
-        public static void addtestorders()
+
+
+        public static void addtestreviews(string product_id_in)
         {
 
             for (int i = 0; i < 33; i++)
             {
-                model.shared.add_order(i, "city", i*100, i*1000, "utca", 1,"használd a csengőt",i,"112");
+
+                model.shared.review rev = new model.shared.review
+                {
+                    product_id=product_id_in,
+                     title = "title",
+                     body = "body",
+                     rating = "1",
+                     user_id = i,
+
+                };
+
+                model.shared.add_review(rev);
+            }
+
+
+
+        }
+
+
+        public static void addtestorders(int user_id)
+        {
+
+            for (int i = 0; i < 33; i++)
+            {
+
+
+                model.shared.order ord = new model.shared.order
+                {
+                    user_id  = (user_id).ToString(),
+                    city = "city",
+                    zipcode  = i*100,
+                    price = i*1000,
+                    address  = "utca",
+                    apartment_number = "1",
+                    note = "használd a csengőt!!",
+                    house_number = i.ToString(),
+                    phone_number  = "112",
+
+                };
+
+               
+
+                model.shared.add_order(ord);
             }
 
 
@@ -113,6 +185,11 @@ namespace Servo.service
         public static void deleteallorders()
         {
             model.shared.delete_all_orders();
+        }
+
+        public static void deleteallreviews()
+        {
+            model.shared.delete_all_reviews();
         }
 
 

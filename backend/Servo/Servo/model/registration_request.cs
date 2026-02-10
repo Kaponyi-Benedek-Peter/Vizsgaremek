@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Ocsp;
 using System;
 using System.Collections.Generic;
@@ -13,20 +14,20 @@ namespace Servo.model
     {
         static string connStr = model.shared.connStr;
         static MySqlConnection conn = model.shared.conn;
-        public static Boolean communicate_registration_request(Dictionary<string, string> lista = null)
+        public static Boolean communicate_registration_request(model.shared.user usr)
         {
             Boolean ret = false;
             using (MySqlCommand cmd = new MySqlCommand("create_account", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@p_email", lista["p_email"]);
-                cmd.Parameters.AddWithValue("@p_sesstoken", lista["p_sesstoken"]);
-                cmd.Parameters.AddWithValue("@p_passhash", lista["p_passhash"]);
-                cmd.Parameters.AddWithValue("@p_sesstoken_expire", lista["p_sesstoken_expire"]);
-                cmd.Parameters.AddWithValue("@p_first_name", lista["p_first_name"]);
-                cmd.Parameters.AddWithValue("@p_last_name", lista["p_last_name"]);
-                cmd.Parameters.AddWithValue("@p_account_state", lista["p_account_state"]);
+                cmd.Parameters.AddWithValue("@p_email", usr.email);
+                cmd.Parameters.AddWithValue("@p_sesstoken", usr.sesstoken);
+                cmd.Parameters.AddWithValue("@p_passhash", usr.passhash);
+                cmd.Parameters.AddWithValue("@p_sesstoken_expire", usr.sesstoken_expire);
+                cmd.Parameters.AddWithValue("@p_first_name", usr.first_name);
+                cmd.Parameters.AddWithValue("@p_last_name", usr.last_name);
+                cmd.Parameters.AddWithValue("@p_account_state", usr.p_account_state);
                 cmd.ExecuteNonQuery();
 
                 ret = true;

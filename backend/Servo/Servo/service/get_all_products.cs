@@ -46,9 +46,9 @@ namespace Servo.service
 
             //exchange rate
 
-            if (resp["error"].ToString() == "true")
+            if (resp["statuscode"].ToString() == "500")
             {
-                shared.log($"Debug: {resp["type"]} --service.chpass_promise.process_chpass_promise");
+                shared.log($"Debug: {resp["status"]} --service.chpass_promise.process_chpass_promise");
                 return "error";
             }
             else
@@ -60,7 +60,7 @@ namespace Servo.service
                     {
 
                     //calculate exchange rate
-                    return JsonConvert.SerializeObject(resp["products"]);
+                    return JsonConvert.SerializeObject(resp);
                 }
                     
 
