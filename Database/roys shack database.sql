@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 10, 2026 at 08:22 AM
+-- Generation Time: Feb 10, 2026 at 08:36 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -138,7 +138,7 @@ VALUES(
 
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_review` (IN `p_body` TEXT, IN `p_product_id` INT, IN `p_rating` DECIMAL(3,2), IN `p_title` INT, IN `p_user_id` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_review` (IN `p_body` TEXT, IN `p_product_id` INT, IN `p_rating` DECIMAL(3,2), IN `p_title` VARCHAR(255), IN `p_user_id` INT)   BEGIN
 INSERT INTO roy.reviews(
 	body,
     product_id,
