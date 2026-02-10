@@ -1,4 +1,4 @@
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
 import { Admin } from './pages/admin/admin';
 import { Blog } from './pages/blog/blog';
@@ -12,7 +12,6 @@ import { Products } from './pages/products/products';
 import { Profile } from './pages/profile/profile';
 import { Purchase } from './pages/purchase/purchase';
 import { Register } from './pages/register/register';
-import { NgModule } from '@angular/core';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -45,9 +44,3 @@ export const routes: Routes = [
   },
   { path: '**', component: NotFound },
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule],
-})
-export class AppRoutingModule {}

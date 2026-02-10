@@ -1,82 +1,40 @@
 export interface Product {
   id: string;
-  name: string;
-  nameHu: string;
-  nameEn: string;
-  nameDe: string;
-  description: string;
-  descriptionHu: string;
-  descriptionEn: string;
-  descriptionDe: string;
-  price: number;
-  imageUrl: string;
-  images?: string[];
-  category: ProductCategory;
-  categoryName?: string;
+  name_de: string;
+  name_hu: string;
+  name_en: string;
+  description_de: string;
+  description_hu: string;
+  description_en: string;
+  description_preview_de: string;
+  description_preview_hu: string;
+  description_preview_en: string;
+  price_huf: string;
+  price_usd: string;
+  price_eur: string;
+  times_ordered: string;
+  stock: string;
+  sale_percentage: string;
+  category: string;
   manufacturer: string;
   brand: string;
-  inStock: boolean;
-  stockQuantity: number;
-  requiresPrescription: boolean;
-  discountPercentage?: number;
-  rating?: number;
-  reviewCount?: number;
+  rating: string;
   sku: string;
-
-  // Pharmaceutical details
-  activeIngredients?: string;
-  dosage?: string;
-  packaging?: string;
-  storageConditions?: string;
-  sideEffects?: string;
-  contraindications?: string;
-  expirationMonths?: number;
+  active_ingredients: string;
+  packaging: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export type ProductCategory =
-  | 'medicine'
-  | 'vitamins'
-  | 'supplements'
-  | 'cosmetics'
-  | 'baby-care'
-  | 'medical-devices'
-  | 'personal-care'
-  | 'health-monitoring';
-
-export interface Category {
-  id: string;
-  name: string;
-  nameHu: string;
-  nameEn: string;
-  nameDe: string;
-  icon?: string;
-  count?: number;
-  slug: ProductCategory;
+export interface ProductsApiResponse {
+  statuscode: string;
+  status: string;
+  products: Product[];
 }
 
-export interface ProductFilterOptions {
-  categories: string[];
-  priceRange: { min: number; max: number } | null;
-  inStockOnly: boolean;
-  requiresPrescription?: boolean;
-  brands?: string[];
-  manufacturers?: string[];
-  minRating?: number;
-  sortBy: SortOption;
-}
-
-export type SortOption =
-  | 'popularity'
-  | 'name-asc'
-  | 'name-desc'
-  | 'price-asc'
-  | 'price-desc'
-  | 'rating'
-  | 'newest';
-
-export interface PaginationConfig {
-  currentPage: number;
-  itemsPerPage: number;
-  totalItems: number;
-  totalPages: number;
+export interface ProductWithHelpers extends Product {
+  priceNumber: number;
+  stockNumber: number;
+  salePercentageNumber: number;
+  imageUrl: string;
 }

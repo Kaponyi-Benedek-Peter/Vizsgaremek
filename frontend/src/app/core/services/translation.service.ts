@@ -8,7 +8,7 @@ export type SupportedLanguage = 'hu' | 'en' | 'de';
   providedIn: 'root',
 })
 export class TranslationService {
-  private currentLangSubject = new BehaviorSubject<SupportedLanguage>('hu');
+  private currentLangSubject = new BehaviorSubject<SupportedLanguage>('en');
   public currentLang$ = this.currentLangSubject.asObservable();
 
   constructor(private translate: TranslateService) {
@@ -16,14 +16,12 @@ export class TranslationService {
   }
 
   private initLanguage(): void {
-    // Alapértelmezett és támogatott nyelvek
-    const defaultLang: SupportedLanguage = 'hu';
+    const defaultLang: SupportedLanguage = 'en';
     const supportedLangs: SupportedLanguage[] = ['hu', 'en', 'de'];
 
     this.translate.addLangs(supportedLangs);
     this.translate.setDefaultLang(defaultLang);
 
-    // Elmentett nyelv betöltése localStorage-ból
     const savedLang = this.getSavedLanguage();
     const langToUse = savedLang || defaultLang;
 
@@ -49,7 +47,6 @@ export class TranslationService {
     return saved as SupportedLanguage | null;
   }
 
-  // Fordítás lekérése (opcionális, közvetlen használatra)
   public instant(key: string): string {
     return this.translate.instant(key);
   }

@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { Product, Category, ProductFilterOptions } from '../../../core/models/product.model';
+import { Product, Category } from '../../../core/models/product.model';
 import { ProductService } from '../../../services/product.service';
+import { CartService } from '../../../core/services/cart.service';
 import { CategoryBar } from '../category-bar/category-bar';
 import { ProductCard } from '../product-card/product-card';
 import { ProductFilter } from '../product-filter/product-filter';
@@ -25,8 +26,8 @@ import { ProductDetailModal } from '../product-detail-modal/product-detail-modal
 })
 export class ProductList {
   private productService = inject(ProductService);
+  private cartService = inject(CartService);
 
-  // Signal accessors from service
   products = this.productService.paginatedProducts;
   pagination = this.productService.paginationState;
   filters = this.productService.currentFilters;
@@ -35,7 +36,6 @@ export class ProductList {
   selectedProduct: Product | null = null;
   showModal = false;
 
-  // Mock categories (replace with service call)
   categories: Category[] = [
     {
       id: 'medicine',
@@ -110,7 +110,7 @@ export class ProductList {
     this.productService.setFilters({ categories: [] });
   }
 
-  handleFilterChanged(filters: ProductFilterOptions): void {
+  handleFilterChanged(filters: any): void {
     this.productService.setFilters(filters);
   }
 
@@ -129,18 +129,25 @@ export class ProductList {
   }
 
   handleAddToCart(product: Product): void {
-    // TODO: Implement cart service
-    console.log('Add to cart:', product);
+    this.cartService.addToCart(product, 1);
+    console.log('Added to cart:', product.name);
+  }
+
+  handleAddToCartFromModal(event: { product: Product; quantity: number }): void {
+    this.cartService.addToCart(event.product, event.quantity);
+    console.log(`Added ${event.quantity}x ${event.product.name} to cart`);
   }
 
   handleViewDetails(product: Product): void {
     this.selectedProduct = product;
     this.showModal = true;
+    document.body.style.overflow = 'hidden';
   }
 
   handleCloseModal(): void {
     this.showModal = false;
     this.selectedProduct = null;
+    document.body.style.overflow = '';
   }
 
   private scrollToTop(): void {

@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Product } from '../../../core/models/product.model';
+import { CurrencyService } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-product-card',
@@ -18,7 +19,9 @@ export class ProductCard {
   @Output() quantityChange = new EventEmitter<{ product: Product; quantity: number }>();
 
   quantity = signal(1);
-  translate = inject(TranslateService);
+
+  private translate = inject(TranslateService);
+  private currencyService = inject(CurrencyService);
 
   get hasDiscount(): boolean {
     return !!this.product.discountPercentage && this.product.discountPercentage > 0;
@@ -30,11 +33,11 @@ export class ProductCard {
   }
 
   get formattedPrice(): string {
-    return `${this.product.price.toLocaleString('hu-HU')} Ft`;
+    return this.currencyService.formatPrice(this.product.price);
   }
 
   get formattedDiscountedPrice(): string {
-    return `${this.discountedPrice.toLocaleString('hu-HU')} Ft`;
+    return this.currencyService.formatPrice(this.discountedPrice);
   }
 
   get canAddToCart(): boolean {

@@ -7,9 +7,11 @@ import {
   Input,
   Output,
   signal,
+  computed,
 } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Product } from '../../../core/models/product.model';
+import { CurrencyService } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-product-detail-modal',
@@ -20,9 +22,10 @@ import { Product } from '../../../core/models/product.model';
 export class ProductDetailModal {
   @Input({ required: true }) product!: Product;
   @Output() close = new EventEmitter<void>();
-  @Output() addToCart = new EventEmitter<Product>();
+  @Output() addToCart = new EventEmitter<{ product: Product; quantity: number }>();
 
   private translate = inject(TranslateService);
+  private currencyService = inject(CurrencyService);
 
   quantity = signal(1);
   selectedImageIndex = signal(0);
@@ -37,6 +40,9 @@ export class ProductDetailModal {
     return this.images[this.selectedImageIndex()];
   }
 
+  canGoPrevious = computed(() => this.selectedImageIndex() > 0);
+  canGoNext = computed(() => this.selectedImageIndex() < this.images.length - 1);
+
   get hasDiscount(): boolean {
     return !!this.product.discountPercentage && this.product.discountPercentage > 0;
   }
@@ -47,11 +53,11 @@ export class ProductDetailModal {
   }
 
   get formattedPrice(): string {
-    return `${this.product.price.toLocaleString('hu-HU')} Ft`;
+    return this.currencyService.formatPrice(this.product.price);
   }
 
   get formattedDiscountedPrice(): string {
-    return `${this.discountedPrice.toLocaleString('hu-HU')} Ft`;
+    return this.currencyService.formatPrice(this.discountedPrice);
   }
 
   get totalPrice(): number {
@@ -59,7 +65,7 @@ export class ProductDetailModal {
   }
 
   get formattedTotalPrice(): string {
-    return `${this.totalPrice.toLocaleString('hu-HU')} Ft`;
+    return this.currencyService.formatPrice(this.totalPrice);
   }
 
   get canAddToCart(): boolean {
@@ -98,13 +104,20 @@ export class ProductDetailModal {
     }
   }
 
-  @HostListener('document:keydown.escape')
-  onEscapeKey(): void {
-    this.handleClose();
-  }
-
   selectImage(index: number): void {
     this.selectedImageIndex.set(index);
+  }
+
+  nextImage(): void {
+    if (this.canGoNext()) {
+      this.selectedImageIndex.update((i) => i + 1);
+    }
+  }
+
+  previousImage(): void {
+    if (this.canGoPrevious()) {
+      this.selectedImageIndex.update((i) => i - 1);
+    }
   }
 
   increaseQuantity(): void {
@@ -119,9 +132,19 @@ export class ProductDetailModal {
     }
   }
 
+  getRatingStars(): string {
+    if (!this.product.rating) return '';
+
+    const fullStars = Math.floor(this.product.rating);
+    const hasHalfStar = this.product.rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    return '★'.repeat(fullStars) + (hasHalfStar ? '⯨' : '') + '☆'.repeat(emptyStars);
+  }
+
   handleAddToCart(): void {
     if (this.canAddToCart) {
-      this.addToCart.emit(this.product);
+      this.addToCart.emit({ product: this.product, quantity: this.quantity() });
       this.handleClose();
     }
   }
@@ -134,5 +157,20 @@ export class ProductDetailModal {
     if (event.target === event.currentTarget) {
       this.handleClose();
     }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.handleClose();
+  }
+
+  @HostListener('document:keydown.arrowleft')
+  onArrowLeft(): void {
+    this.previousImage();
+  }
+
+  @HostListener('document:keydown.arrowright')
+  onArrowRight(): void {
+    this.nextImage();
   }
 }

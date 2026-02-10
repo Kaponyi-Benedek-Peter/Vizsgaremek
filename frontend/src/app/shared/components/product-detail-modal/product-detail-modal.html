@@ -11,6 +11,18 @@
     <div class="modal-content">
       <div class="modal-images">
         <div class="main-image-wrapper">
+          @if (images.length > 1) {
+            <button
+              class="image-nav-btn prev"
+              [class.disabled]="!canGoPrevious()"
+              [disabled]="!canGoPrevious()"
+              (click)="previousImage()"
+              [attr.aria-label]="'product.previous_image' | translate"
+            >
+              ‹
+            </button>
+          }
+
           <img [src]="selectedImage" [alt]="localizedName" class="main-image" />
 
           @if (product.requiresPrescription) {
@@ -22,6 +34,22 @@
           @if (hasDiscount) {
             <span class="discount-badge"> -{{ product.discountPercentage }}% </span>
           }
+
+          @if (images.length > 1) {
+            <button
+              class="image-nav-btn next"
+              [class.disabled]="!canGoNext()"
+              [disabled]="!canGoNext()"
+              (click)="nextImage()"
+              [attr.aria-label]="'product.next_image' | translate"
+            >
+              ›
+            </button>
+          }
+
+          @if (images.length > 1) {
+            <div class="image-counter">{{ selectedImageIndex() + 1 }} / {{ images.length }}</div>
+          }
         </div>
 
         @if (images.length > 1) {
@@ -31,6 +59,7 @@
                 class="thumbnail"
                 [class.active]="selectedImageIndex() === $index"
                 (click)="selectImage($index)"
+                [attr.aria-label]="'product.view_image' | translate: { number: $index + 1 }"
               >
                 <img [src]="image" [alt]="localizedName + ' - ' + ($index + 1)" />
               </button>
@@ -49,7 +78,7 @@
 
           @if (product.rating) {
             <div class="product-rating">
-              <span class="rating-stars">★★★★☆</span>
+              <span class="rating-stars">{{ getRatingStars() }}</span>
               <span class="rating-value">{{ product.rating }}</span>
               <span class="rating-count"
                 >({{ product.reviewCount }} {{ 'product.reviews' | translate }})</span

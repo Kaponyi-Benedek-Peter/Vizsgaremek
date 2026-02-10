@@ -4,7 +4,19 @@
     "forum": "Forum",
     "products": "Products",
     "login": "Login",
-    "cart": "Cart"
+    "cart": "Shopping Cart",
+    "profile": "Profile",
+    "my_profile": "My Profile",
+    "my_orders": "My Orders",
+    "logout": "Logout"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "items": "items",
+    "empty": "Your cart is empty",
+    "remove": "Remove",
+    "total": "Total",
+    "checkout": "Go to Checkout"
   },
   "footer": {
     "copyright": "Copyright © 2025 Roy's shack",
@@ -42,7 +54,7 @@
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",
-    "success": "Successful operation",
+    "success": "Operation successful",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "save": "Save",
@@ -88,10 +100,10 @@
     }
   },
   "product": {
-    "out_of_stock": "Out of stock",
-    "in_stock": "In stock",
-    "requires_prescription": "Prescription required",
-    "prescription_required_notice": "This product requires a prescription. Please upload your prescription to order.",
+    "out_of_stock": "Out of Stock",
+    "in_stock": "In Stock",
+    "requires_prescription": "Prescription Required",
+    "prescription_required_notice": "This product requires a prescription. Please upload your prescription when ordering.",
     "manufacturer": "Manufacturer",
     "brand": "Brand",
     "sku": "SKU",
@@ -99,7 +111,7 @@
     "pieces": "pcs",
     "reviews": "reviews",
     "description": "Description",
-    "pharmaceutical_details": "Pharmaceutical Information",
+    "pharmaceutical_details": "Pharmaceutical Details",
     "active_ingredients": "Active Ingredients",
     "dosage": "Dosage",
     "packaging": "Packaging",
@@ -107,6 +119,9 @@
     "view_details": "View Details",
     "decrease_quantity": "Decrease quantity",
     "increase_quantity": "Increase quantity",
+    "previous_image": "Previous image",
+    "next_image": "Next image",
+    "view_image": "View image {{number}}",
     "no_products_found": "No products found",
     "try_different_filters": "Try adjusting your filters"
   },
@@ -216,5 +231,36 @@
       "password_reset_failed": "Password reset failed",
       "invalid_reset_link": "Invalid or expired reset link"
     }
+  },
+  "checkout": {
+    "title": "Checkout",
+    "order_summary": "Order Summary",
+    "shipping_info": "Shipping Information",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "free_shipping": "Free",
+    "total": "Total",
+    "city": "City",
+    "city_placeholder": "Enter your city",
+    "zipcode": "Zip Code",
+    "zipcode_placeholder": "e.g. 7600",
+    "address": "Street Address",
+    "address_placeholder": "Enter your street address",
+    "house_number": "House Number",
+    "house_number_placeholder": "e.g. 42",
+    "apartment_number": "Apartment",
+    "apartment_placeholder": "Optional",
+    "phone": "Phone Number",
+    "phone_placeholder": "+36 30 123 4567",
+    "note": "Order Notes",
+    "note_placeholder": "Any special instructions? (optional)",
+    "continue_shopping": "Continue Shopping",
+    "place_order": "Place Order",
+    "processing": "Processing...",
+    "success": "Order placed successfully! Redirecting...",
+    "error": "Failed to place order. Please try again.",
+    "validation_error": "Please fill in all required fields.",
+    "invalid_zipcode": "Please enter a valid zip code.",
+    "invalid_phone": "Please enter a valid phone number."
   }
 }
