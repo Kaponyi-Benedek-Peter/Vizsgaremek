@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 10, 2026 at 08:36 AM
+-- Generation Time: Feb 10, 2026 at 10:13 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -29,6 +29,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `ban_user_by_id` (IN `p_id` INT)   U
 SET account_state = 'banned'
 WHERE id = p_id$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `calculate_average_product_rating` (IN `p_product_id` INT)   UPDATE roy.products
+SET rating = (
+    SELECT AVG(rating)
+    FROM reviews
+    WHERE product_id = p_product_id
+)
+WHERE id = p_product_id$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `calculate_order_price` (IN `p_id` INT)   BEGIN
     DECLARE final_price DECIMAL(10,2);
 
@@ -50,6 +58,11 @@ END$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_confirmation` (IN `p_confirmation_token` VARCHAR(255), IN `p_user_id` INT(255), IN `p_new_value` VARCHAR(255), IN `p_type` VARCHAR(255))   BEGIN
     INSERT INTO roy.confirmations (confirmation_token, confirmation_token_expire, user_id, new_value, confirmation_type)
     VALUES (p_confirmation_token, NOW() + INTERVAL 1 WEEK, p_user_id, p_new_value, p_type);
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_newsletter_recipient` (IN `p_news_level` INT, IN `p_user_id` INT)   BEGIN
+INSERT INTO roy.newsletter_recipients (news_level, user_id, received_current_newsletter)
+VALUES (p_news_level, p_user_id, '0');
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(10), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(12))   BEGIN
@@ -85,7 +98,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_body` TEXT, IN 
     VALUES (p_title, p_body, p_user_id, p_image_source, NOW());
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_image_url` INT)   BEGIN
 
 INSERT INTO roy.products(
     name_de,
@@ -109,7 +122,8 @@ INSERT INTO roy.products(
     active_ingredients,
     packaging,
     name,
-    created_at
+    created_at,
+    image_url
 )
 VALUES(
     p_name_de,
@@ -128,12 +142,13 @@ VALUES(
     p_category,
     p_manufacturer,
     p_brand,
-    p_rating,
+    '0',
     p_sku,
     p_active_ingredients,
     p_packaging,
     p_name,
-    NOW()
+    NOW(),
+    p_image_url
 );
 
 END$$
@@ -356,6 +371,11 @@ SET p_count_out = (
 
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_product_images` ()   BEGIN
+SELECT *
+    FROM roy.product_images;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_reviews_page` (IN `p_page` INT(11), IN `p_amount` INT(11), OUT `p_count_out` INT(11))   BEGIN
 
 DECLARE page INT DEFAULT 0;
@@ -469,6 +489,12 @@ SELECT * from roy.users
 where users.id = p_id;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `received_current_newsletter_true_by_id` (IN `p_id` INT)   BEGIN
+	UPDATE roy.newsletter_recipients
+    SET received_current_newsletter = '1'
+    WHERE id = p_id;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `refresh_token_by_id` (IN `p_id` INT(11), IN `p_new_sesstoken` VARCHAR(255))   BEGIN
 	UPDATE roy.users
     SET sesstoken_expire = NOW() + INTERVAL 1 WEEK,
@@ -522,6 +548,35 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, 
    	UPDATE roy.posts
 	SET body = p_body, image_source = p_image_source, 	title = p_title
     WHERE id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_by_id` (IN `p_id` INT, IN `name_de` VARCHAR(255), IN `description_en` TEXT, IN `price_huf` INT, IN `times_ordered` INT, IN `stock` INT, IN `sale_percentage` DECIMAL(10,0), IN `description_preview_en` TEXT, IN `name_hu` VARCHAR(255), IN `name_en` VARCHAR(255), IN `description_hu` TEXT, IN `description_de` TEXT, IN `description_preview_hu` TEXT, IN `description_preview_de` TEXT, IN `category` VARCHAR(255), IN `manufacturer` VARCHAR(255), IN `brand` VARCHAR(255), IN `sku` VARCHAR(255), IN `active_ingredients` TEXT, IN `packaging` VARCHAR(255), IN `name` VARCHAR(255), IN `thumbnail_url` VARCHAR(255))   BEGIN
+
+UPDATE roy.products
+SET
+    name_de = p_name_de,
+    description_en = p_description_en,
+    price_huf = p_price_huf,
+    times_ordered = p_times_ordered,
+    stock = p_stock,
+    sale_percentage = p_sale_percentage,
+    description_preview_en = p_description_preview_en,
+    name_hu = p_name_hu,
+    name_en = p_name_en,
+    description_hu = p_description_hu,
+    description_de = p_description_de,
+    description_preview_hu = p_description_preview_hu,
+    description_preview_de = p_description_preview_de,
+    category = p_category,
+    manufacturer = p_manufacturer,
+    brand = p_brand,
+    sku = p_sku,
+    active_ingredients = p_active_ingredients,
+    packaging = p_packaging,
+    name = p_name,
+    thumbnail_url = p_thumbnail_url
+WHERE id = p_id;
+
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_stock_by_id` (IN `p_id` INT, IN `p_new_stock` INT)   BEGIN
@@ -657,8 +712,48 @@ CREATE TABLE `products` (
   `packaging` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `name` varchar(255) NOT NULL
+  `name` varchar(255) NOT NULL,
+  `thumbnail_url` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `products`
+--
+
+INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_percentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging`, `created_at`, `updated_at`, `name`, `thumbnail_url`) VALUES
+(1, 'name_de', 'product0_en', 0, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product0_hu', 'product0_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 4.17, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 09:18:12', 'product0', ''),
+(2, 'name_de', 'product1_en', 1, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product1_hu', 'product1_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product1', ''),
+(3, 'name_de', 'product2_en', 2, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product2_hu', 'product2_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product2', ''),
+(4, 'name_de', 'product3_en', 3, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product3_hu', 'product3_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product3', ''),
+(5, 'name_de', 'product4_en', 4, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product4_hu', 'product4_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product4', ''),
+(6, 'name_de', 'product5_en', 5, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product5_hu', 'product5_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product5', ''),
+(7, 'name_de', 'product6_en', 6, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product6_hu', 'product6_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product6', ''),
+(8, 'name_de', 'product7_en', 7, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product7_hu', 'product7_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product7', ''),
+(9, 'name_de', 'product8_en', 8, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product8_hu', 'product8_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product8', ''),
+(10, 'name_de', 'product9_en', 9, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product9_hu', 'product9_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product9', ''),
+(11, 'name_de', 'product10_en', 10, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product10_hu', 'product10_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product10', ''),
+(12, 'name_de', 'product11_en', 11, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product11_hu', 'product11_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product11', ''),
+(13, 'name_de', 'product12_en', 12, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product12_hu', 'product12_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product12', ''),
+(14, 'name_de', 'product13_en', 13, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product13_hu', 'product13_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product13', ''),
+(15, 'name_de', 'product14_en', 14, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product14_hu', 'product14_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product14', ''),
+(16, 'name_de', 'product15_en', 15, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product15_hu', 'product15_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product15', ''),
+(17, 'name_de', 'product16_en', 16, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product16_hu', 'product16_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product16', ''),
+(18, 'name_de', 'product17_en', 17, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product17_hu', 'product17_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product17', ''),
+(19, 'name_de', 'product18_en', 18, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product18_hu', 'product18_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product18', ''),
+(20, 'name_de', 'product19_en', 19, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product19_hu', 'product19_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product19', ''),
+(21, 'name_de', 'product20_en', 20, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product20_hu', 'product20_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product20', ''),
+(22, 'name_de', 'product21_en', 21, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product21_hu', 'product21_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product21', ''),
+(23, 'name_de', 'product22_en', 22, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product22_hu', 'product22_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product22', ''),
+(24, 'name_de', 'product23_en', 23, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product23_hu', 'product23_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product23', ''),
+(25, 'name_de', 'product24_en', 24, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product24_hu', 'product24_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product24', ''),
+(26, 'name_de', 'product25_en', 25, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product25_hu', 'product25_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product25', ''),
+(27, 'name_de', 'product26_en', 26, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product26_hu', 'product26_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product26', ''),
+(28, 'name_de', 'product27_en', 27, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product27_hu', 'product27_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product27', ''),
+(29, 'name_de', 'product28_en', 28, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product28_hu', 'product28_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product28', ''),
+(30, 'name_de', 'product29_en', 29, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product29_hu', 'product29_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product29', ''),
+(31, 'name_de', 'product30_en', 30, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product30_hu', 'product30_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product30', ''),
+(32, 'name_de', 'product31_en', 31, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product31_hu', 'product31_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product31', ''),
+(33, 'name_de', 'product32_en', 32, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product32_hu', 'product32_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product32', '');
 
 -- --------------------------------------------------------
 
@@ -692,6 +787,15 @@ CREATE TABLE `reviews` (
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Dumping data for table `reviews`
+--
+
+INSERT INTO `reviews` (`product_id`, `id`, `title`, `body`, `rating`, `created_at`, `user_id`) VALUES
+(1, 3, 'title', 'body', '2.50', '2026-02-10 09:37:44', 0),
+(1, 4, 'title', 'body', '5.00', '2026-02-10 09:37:44', 1),
+(1, 5, 'title', 'body', '5.00', '2026-02-10 09:37:44', 2);
+
 -- --------------------------------------------------------
 
 --
@@ -715,38 +819,39 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sesstoken_expire`, `first_name`, `last_name`, `account_state`) VALUES
-(3, '1test@gmail.com', '2026-01-06 10:54:26', 'deleted field', 'deleted field', '2026-01-20 11:21:00', '1Berg', 'Mc1', 'deleted'),
-(4, '2test@gmail.com', '2026-01-06 10:54:26', 'TXJLQvMxRbgqRKfdUJsLnw', 'ofUDksnla1w2MUXNuhdFTagKytfMAA/TeCDS8X/AAG4=', '2026-01-13 10:54:26', '2Berg', 'Mc2', 'unverified'),
-(5, '3test@gmail.com', '2026-01-06 10:54:26', 'dcsrQAGaIyXAhQPwVUkMtc', 'NLMDlqiqd6aTgq5gfTk4NH3fL4itvFLycXIRvlavXzs=', '2026-01-13 10:54:26', '3Berg', 'Mc3', 'unverified'),
-(6, '4test@gmail.com', '2026-01-06 10:54:26', 'nhbXQFBDzUPLxXzPXgcMzH', 'QEloqA0im9fq7vDG+KsG/G9EDTTmeWnhsTLejphFxgs=', '2026-01-13 10:54:26', '4Berg', 'Mc4', 'unverified'),
-(7, '5test@gmail.com', '2026-01-06 10:54:26', 'GRktbEJEyPElxoKOJcyWGE', 'D3rfr69Zyi12gShMhOtLxq3+7iYGIJrXv9c/ogWKoxs=', '2026-01-13 10:54:26', '5Berg', 'Mc5', 'unverified'),
-(8, '6test@gmail.com', '2026-01-06 10:54:26', 'QWTZbIEhqmvvNuuhKnqWMj', 'vXqdsjwBBmo+a6EFTmGGQ1kNabEkuHke3kpqkRkHJ1k=', '2026-01-13 10:54:26', '6Berg', 'Mc6', 'unverified'),
-(9, '7test@gmail.com', '2026-01-06 10:54:26', 'abCFbNyKhInGeBfAMyhWSP', 'gcPQxE8/tVzEkb9CD57CthsMKmMl2+rCGSOopiz7H0I=', '2026-01-13 10:54:26', '7Berg', 'Mc7', 'unverified'),
-(10, '8test@gmail.com', '2026-01-06 10:54:26', 'kgklbSsmZefQuIPSNKZWYu', 'bGJ5I4fpsXKyeY+jKFbwsd0SET7hEwo5IFSSvfGwHJQ=', '2026-01-13 10:54:26', '8Berg', 'Mc8', 'unverified'),
-(11, '9test@gmail.com', '2026-01-06 10:54:26', 'DQuHmRBoYZUquYZSzGwhfq', 'pRBkeZbdTINu1K85rJMMmEt/GK94Diqhaqw/vwbBzNU=', '2026-01-13 10:54:26', '9Berg', 'Mc9', 'unverified'),
-(12, '10test@gmail.com', '2026-01-06 10:54:26', 'WAEcyQKpWUJPupkSlCSrlm', 'sDWvnhGPFPDvUtpJOgAT++KjcErP/RjhiFiAvtugv/0=', '2026-01-13 10:54:26', '10Berg', 'Mc10', 'unverified'),
-(13, '11test@gmail.com', '2026-01-06 10:54:26', 'gFmIyVESOqAaKwUknNKrrS', 'LF0Gp8IN1+MM95BtHFQ3AVLog+2n8S7Z7c9qPtiVXD8=', '2026-01-13 10:54:26', '11Berg', 'Mc11', 'unverified'),
-(14, '12test@gmail.com', '2026-01-06 10:54:26', 'ypweKUNTNlpzKNekYJgByO', '/OKh7OI8un0HzJsOkxlfnk3D/Ln5J/ymJ1GgFpI1Jzs=', '2026-01-13 10:54:26', '12Berg', 'Mc12', 'unverified'),
-(15, '13test@gmail.com', '2026-01-06 10:54:26', 'JufKJZHwEIhKaUPDaUYBEt', 'iLb2qfCCi80rHTBuVQPmL6F4lWnrl8p6F7UpijQcyPg=', '2026-01-13 10:54:26', '13Berg', 'Mc13', 'unverified'),
-(16, '14test@gmail.com', '2026-01-06 10:54:26', 'APEUyesXxjjvqJpWqktrEd', 'kH6mHjvkxwdQG5d4yqv+c7gyRZTO4uluqnITiMRxDeA=', '2026-01-13 10:54:26', '14Berg', 'Mc14', 'unverified'),
-(17, '15test@gmail.com', '2026-01-06 10:54:26', 'ljXMVcKavZNuqrJVNcmMRV', 'EWYcKfP6HxwcPD2Xx13TEP66626fzmlmxKsVsopg1Tg=', '2026-01-13 10:54:26', '15Berg', 'Mc15', 'unverified'),
-(18, '16test@gmail.com', '2026-01-06 10:54:26', 'dEwWJiwBnAQfGhjodrHCRE', 'UztddA9+0GzyzWhyzAA61ZGg/PaPv9P197nlUW70ieA=', '2026-01-13 10:54:26', '16Berg', 'Mc16', 'unverified'),
-(19, '17test@gmail.com', '2026-01-06 10:54:26', 'OZPNggNElqueGPEnBjAWex', 'phE7LiB3r+Fs7pRCbLt3Mc6nIQK7Ffo7kl8IzfDVR+E=', '2026-01-13 10:54:26', '17Berg', 'Mc17', 'unverified'),
-(20, '18test@gmail.com', '2026-01-06 10:54:26', 'GtpYUmzgdSxPWEeGQyVMdg', 'nh6KQpjHIlkzUDZgz0qI960dXeVuA1Dozp9C5FigLi4=', '2026-01-13 10:54:26', '18Berg', 'Mc18', 'unverified'),
-(21, '19test@gmail.com', '2026-01-06 10:54:26', 'QyXEUqtIVooZnLPZSKNMjL', 'vtvL7CkKn80zf2AIaideN3eSC1zF8KY3bxuLI2Gtd+w=', '2026-01-13 10:54:26', '19Berg', 'Mc19', 'unverified'),
-(22, '20test@gmail.com', '2026-01-06 10:54:26', 'ijhZgqCKUjdzncZZEGkWqI', 'iKHLhQBaNKP8to7on4qgx/Kv1WkpHXTQYScXU3lI50o=', '2026-01-13 10:54:26', '20Berg', 'Mc20', 'unverified'),
-(23, '21test@gmail.com', '2026-01-06 10:54:26', 'toQFguwmLFVJDiJrFRbWwn', 'SXfjAghxWSb/raupHYdPvlCsWeXswsQdAlMeHZN3MXY=', '2026-01-13 10:54:26', '21Berg', 'Mc21', 'unverified'),
-(24, '22test@gmail.com', '2026-01-06 10:54:26', 'LYZbrtFoKAKjDzUrrNyhDj', 'ojrrCXDIT22+jjD6kxHhDINN1U8tk8yWmcWJZeYeDuw=', '2026-01-13 10:54:26', '22Berg', 'Mc22', 'unverified'),
-(25, '23test@gmail.com', '2026-01-06 10:54:26', 'VdIHryzRCXBtTGEKtYphJP', 'kFCPy2GeCs1sectKG6z2FmIZlLpVvB/sKA1+rbvIvlo=', '2026-01-13 10:54:26', '23Berg', 'Mc23', 'unverified'),
-(26, '24test@gmail.com', '2026-01-06 10:54:27', 'girnrDtttttEjNodukhhPu', 'EvLmZdNzVceffVAS60pIAn2H1HnU47VpRTreW04ZXAI=', '2026-01-13 10:54:27', '24Berg', 'Mc24', 'unverified'),
-(27, '25test@gmail.com', '2026-01-06 10:54:27', 'ySAJCCCvsoiejdzcggDrWq', 'CPoKaw5u9OM21A09nVnleoomXxRSegplD6pfEaesJxQ=', '2026-01-13 10:54:27', '25Berg', 'Mc25', 'unverified'),
-(28, '26test@gmail.com', '2026-01-06 10:54:27', 'IXjpCHwXjKZozkjvirvrcW', 'ZCOnLANSiRGbII7xypKmc+ykgdsqRYKP9MeW7RNnM84=', '2026-01-13 10:54:27', '26Berg', 'Mc26', 'unverified'),
-(29, '27test@gmail.com', '2026-01-06 10:54:27', 'urCgaFOahADnzSEuFjoMpO', 'wuk/MrTPeWQuiyMaEwSAEesrZI7isvBrWBRA8r5jRJo=', '2026-01-13 10:54:27', '27Berg', 'Mc27', 'unverified'),
-(30, '28test@gmail.com', '2026-01-06 10:54:27', 'EwlMZKIDZWvyPYoNHugMvt', 'n7wVFYMIkPdmghMYFmOEaZD28i4ACdSSKSG9A2d0nXI=', '2026-01-13 10:54:27', '28Berg', 'Mc28', 'unverified'),
-(31, '29test@gmail.com', '2026-01-06 10:54:27', 'OBUsZOCgQtnIffZgJGXMBZ', '7K2T1sy/0UEnlXUc5RKwnxvApu/Pv/OFRwavBrsid5Q=', '2026-01-13 10:54:27', '29Berg', 'Mc29', 'unverified'),
-(32, '30test@gmail.com', '2026-01-06 10:54:27', 'hldOlNLhPocifwjfuCuWIV', '2+oUXh8mNGOdFTYR/mtBKfIVQwDBPawSyO8yhTmPl/M=', '2026-01-13 10:54:27', '30Berg', 'Mc30', 'unverified'),
-(33, '31test@gmail.com', '2026-01-06 10:54:27', 'rqMulSFKHKTswDTywNmWOA', 'mnIHj46fZmPoeEdSCmPqwZIOskat0UaqZiWuxoLH6mU=', '2026-01-13 10:54:27', '31Berg', 'Mc31', 'unverified'),
-(34, '32test@gmail.com', '2026-01-06 10:54:27', 'BvvakXAmygLDMJERxYdWUg', 'aGnLYadNZXU73keC2+WPlfdp3dPUw6SGLUaiB2uaBz8=', '2026-01-13 10:54:27', '32Berg', 'Mc32', 'unverified');
+(38, '0test@gmail.com', '2026-02-10 09:39:40', 'friMJMAGQgfFKAwlcREtoa', 'D8sOKkFGFGDyq3Y11oRgOKzLJD+F0RcMauZTcYYsx0c=', '2026-02-17 09:39:40', 'Berg', 'Mc0', 'unverified'),
+(39, '1test@gmail.com', '2026-02-10 09:39:40', 'WMHWxRlhJIhqaqWEshZjnK', 'aU8GLJRZi8O2AlMPf7/NbMO4Wi2OAP1tTQQeEMJxFKU=', '2026-02-17 09:39:40', 'Berg', 'Mc1', 'unverified'),
+(40, '2test@gmail.com', '2026-02-10 09:39:40', 'pwRsIQujHDWQaHgEedwtuG', 'ofUDksnla1w2MUXNuhdFTagKytfMAA/TeCDS8X/AAG4=', '2026-02-17 09:39:40', 'Berg', 'Mc2', 'unverified'),
+(41, '3test@gmail.com', '2026-02-10 09:39:40', 'pwRsIQujHDWQaHgEedwtuG', 'NLMDlqiqd6aTgq5gfTk4NH3fL4itvFLycXIRvlavXzs=', '2026-02-17 09:39:40', 'Berg', 'Mc3', 'unverified'),
+(42, '4test@gmail.com', '2026-02-10 09:39:40', 'HgbOUPDkGxLpaYqEQYSDAC', 'QEloqA0im9fq7vDG+KsG/G9EDTTmeWnhsTLejphFxgs=', '2026-02-17 09:39:40', 'Berg', 'Mc4', 'unverified'),
+(43, '5test@gmail.com', '2026-02-10 09:39:40', 'zBAYIVoMzZOaqOQXgontAl', 'D3rfr69Zyi12gShMhOtLxq3+7iYGIJrXv9c/ogWKoxs=', '2026-02-17 09:39:40', 'Berg', 'Mc5', 'unverified'),
+(44, '6test@gmail.com', '2026-02-10 09:39:40', 'SlJuUUxNyUDAqebWRkKDGh', 'vXqdsjwBBmo+a6EFTmGGQ1kNabEkuHke3kpqkRkHJ1k=', '2026-02-17 09:39:40', 'Berg', 'Mc6', 'unverified'),
+(45, '7test@gmail.com', '2026-02-10 09:39:40', 'JGjEIajoqvFlGUBphAftGR', 'gcPQxE8/tVzEkb9CD57CthsMKmMl2+rCGSOopiz7H0I=', '2026-02-17 09:39:40', 'Berg', 'Mc7', 'unverified'),
+(46, '8test@gmail.com', '2026-02-10 09:39:40', 'JGjEIajoqvFlGUBphAftGR', 'bGJ5I4fpsXKyeY+jKFbwsd0SET7hEwo5IFSSvfGwHJQ=', '2026-02-17 09:39:40', 'Berg', 'Mc8', 'unverified'),
+(47, '9test@gmail.com', '2026-02-10 09:39:40', 'cqsaUZsqpquKGlLpTvBENN', 'pRBkeZbdTINu1K85rJMMmEt/GK94Diqhaqw/vwbBzNU=', '2026-02-17 09:39:40', 'Berg', 'Mc9', 'unverified'),
+(48, '10test@gmail.com', '2026-02-10 09:39:40', 'uaCvfYAroljkGCWpFrYOTJ', 'sDWvnhGPFPDvUtpJOgAT++KjcErP/RjhiFiAvtugv/0=', '2026-02-17 09:39:40', 'Berg', 'Mc10', 'unverified'),
+(49, '11test@gmail.com', '2026-02-10 09:39:40', 'mvbGTemShNmVWswIVHtETs', 'LF0Gp8IN1+MM95BtHFQ3AVLog+2n8S7Z7c9qPtiVXD8=', '2026-02-17 09:39:40', 'Berg', 'Mc11', 'unverified'),
+(50, '12test@gmail.com', '2026-02-10 09:39:40', 'mvbGTemShNmVWswIVHtETs', '/OKh7OI8un0HzJsOkxlfnk3D/Ln5J/ymJ1GgFpI1Jzs=', '2026-02-17 09:39:40', 'Berg', 'Mc12', 'unverified'),
+(51, '13test@gmail.com', '2026-02-10 09:39:40', 'FfkbfdvUgHbuWJGHGDQOZo', 'iLb2qfCCi80rHTBuVQPmL6F4lWnrl8p6F7UpijQcyPg=', '2026-02-17 09:39:40', 'Berg', 'Mc13', 'unverified'),
+(52, '14test@gmail.com', '2026-02-10 09:39:40', 'XPuxrcDVfCQUWZQHsymYgl', 'kH6mHjvkxwdQG5d4yqv+c7gyRZTO4uluqnITiMRxDeA=', '2026-02-17 09:39:40', 'Berg', 'Mc14', 'unverified'),
+(53, '15test@gmail.com', '2026-02-10 09:39:40', 'PkTHfhpxXeTFmPqaIOHOgU', 'EWYcKfP6HxwcPD2Xx13TEP66626fzmlmxKsVsopg1Tg=', '2026-02-17 09:39:40', 'Berg', 'Mc15', 'unverified'),
+(54, '16test@gmail.com', '2026-02-10 09:39:40', 'hUddqhyyWZHemgBauKeYmQ', 'UztddA9+0GzyzWhyzAA61ZGg/PaPv9P197nlUW70ieA=', '2026-02-17 09:39:40', 'Berg', 'Mc16', 'unverified'),
+(55, '17test@gmail.com', '2026-02-10 09:39:40', 'hUddqhyyWZHemgBauKeYmQ', 'phE7LiB3r+Fs7pRCbLt3Mc6nIQK7Ffo7kl8IzfDVR+E=', '2026-02-17 09:39:40', 'Berg', 'Mc17', 'unverified'),
+(56, '18test@gmail.com', '2026-02-10 09:39:40', 'ZpCnfmjZOAKPDWbtKazOmz', 'nh6KQpjHIlkzUDZgz0qI960dXeVuA1Dozp9C5FigLi4=', '2026-02-17 09:39:40', 'Berg', 'Mc18', 'unverified'),
+(57, '19test@gmail.com', '2026-02-10 09:39:40', 'rZMJqlsbNvzpDnlsvVVYsw', 'vtvL7CkKn80zf2AIaideN3eSC1zF8KY3bxuLI2Gtd+w=', '2026-02-17 09:39:40', 'Berg', 'Mc19', 'unverified'),
+(58, '20test@gmail.com', '2026-02-10 09:39:40', 'KKVfCkBcMqoODEvshRsjzs', 'iKHLhQBaNKP8to7on4qgx/Kv1WkpHXTQYScXU3lI50o=', '2026-02-17 09:39:40', 'Berg', 'Mc20', 'unverified'),
+(59, '21test@gmail.com', '2026-02-10 09:39:40', 'CeupqqmDFRrzTtVLxhNZyb', 'SXfjAghxWSb/raupHYdPvlCsWeXswsQdAlMeHZN3MXY=', '2026-02-17 09:39:40', 'Berg', 'Mc21', 'unverified'),
+(60, '22test@gmail.com', '2026-02-10 09:39:40', 'UPELCpvFEMgZTKgLjdjjFX', 'ojrrCXDIT22+jjD6kxHhDINN1U8tk8yWmcWJZeYeDuw=', '2026-02-17 09:39:40', 'Berg', 'Mc22', 'unverified'),
+(61, '23test@gmail.com', '2026-02-10 09:39:40', 'UPELCpvFEMgZTKgLjdjjFX', 'kFCPy2GeCs1sectKG6z2FmIZlLpVvB/sKA1+rbvIvlo=', '2026-02-17 09:39:40', 'Berg', 'Mc23', 'unverified'),
+(62, '24test@gmail.com', '2026-02-10 09:39:40', 'nzNgNoEGDHVyTbqKUYGtMT', 'EvLmZdNzVceffVAS60pIAn2H1HnU47VpRTreW04ZXAI=', '2026-02-17 09:39:40', 'Berg', 'Mc24', 'unverified'),
+(63, '25test@gmail.com', '2026-02-10 09:39:40', 'eTnrBuphvjXjjRQdkobjLD', 'CPoKaw5u9OM21A09nVnleoomXxRSegplD6pfEaesJxQ=', '2026-02-17 09:39:40', 'Berg', 'Mc25', 'unverified'),
+(64, '26test@gmail.com', '2026-02-10 09:39:40', 'xEwMNtyjueMJjiadWkytSz', 'ZCOnLANSiRGbII7xypKmc+ykgdsqRYKP9MeW7RNnM84=', '2026-02-17 09:39:40', 'Berg', 'Mc26', 'unverified'),
+(65, '27test@gmail.com', '2026-02-10 09:39:40', 'pYVXByjKnFPuzYAwmATjRi', 'wuk/MrTPeWQuiyMaEwSAEesrZI7isvBrWBRA8r5jRJo=', '2026-02-17 09:39:40', 'Berg', 'Mc27', 'unverified'),
+(66, '28test@gmail.com', '2026-02-10 09:39:40', 'pYVXByjKnFPuzYAwmATjRi', 'n7wVFYMIkPdmghMYFmOEaZD28i4ACdSSKSG9A2d0nXI=', '2026-02-17 09:39:40', 'Berg', 'Mc28', 'unverified'),
+(67, '29test@gmail.com', '2026-02-10 09:39:40', 'HJfsNysMmAETzoLwYvptYe', '7K2T1sy/0UEnlXUc5RKwnxvApu/Pv/OFRwavBrsid5Q=', '2026-02-17 09:39:40', 'Berg', 'Mc29', 'unverified'),
+(68, '30test@gmail.com', '2026-02-10 09:39:40', 'atoOYxBNlvttzFVvJrMDfa', '2+oUXh8mNGOdFTYR/mtBKfIVQwDBPawSyO8yhTmPl/M=', '2026-02-17 09:39:40', 'Berg', 'Mc30', 'unverified'),
+(69, '31test@gmail.com', '2026-02-10 09:39:40', 'ROOYNCnodWvePvvPZHhteK', 'mnIHj46fZmPoeEdSCmPqwZIOskat0UaqZiWuxoLH6mU=', '2026-02-17 09:39:40', 'Berg', 'Mc31', 'unverified'),
+(70, '32test@gmail.com', '2026-02-10 09:39:40', 'ROOYNCnodWvePvvPZHhteK', 'aGnLYadNZXU73keC2+WPlfdp3dPUw6SGLUaiB2uaBz8=', '2026-02-17 09:39:40', 'Berg', 'Mc32', 'unverified');
 
 --
 -- Indexes for dumped tables
@@ -824,7 +929,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `confirmations`
 --
 ALTER TABLE `confirmations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `newsletter_recipients`
@@ -836,7 +941,7 @@ ALTER TABLE `newsletter_recipients`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT for table `order_items`
@@ -854,7 +959,7 @@ ALTER TABLE `posts`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `product_images`
@@ -866,13 +971,13 @@ ALTER TABLE `product_images`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- Constraints for dumped tables
