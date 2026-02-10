@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 09, 2026 at 10:21 AM
+-- Generation Time: Feb 10, 2026 at 08:09 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -234,6 +234,21 @@ SELECT *
     FROM roy.newsletter_recipients;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_newsletter_recipients_page` (IN `p_page` INT(11), IN `p_amount` INT(11), OUT `p_count_out` INT(11))   BEGIN
+
+DECLARE page INT DEFAULT 0;
+
+SET page = (p_page - 1) * p_amount;
+
+SELECT * FROM `newsletter_recipients`
+LIMIT p_amount OFFSET page;
+
+SET p_count_out = (
+    SELECT COUNT(*) FROM `newsletter_recipients`
+);
+
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_orders` ()   BEGIN
 SELECT *
     FROM roy.orders;
@@ -310,6 +325,37 @@ LIMIT p_amount OFFSET page;
 
 SET p_count_out = (
     SELECT COUNT(*) FROM `products`
+);
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_reviews_page` (IN `p_page` INT(11), IN `p_amount` INT(11), OUT `p_count_out` INT(11))   BEGIN
+
+DECLARE page INT DEFAULT 0;
+
+SET page = (p_page - 1) * p_amount;
+
+SELECT * FROM `reviews`
+LIMIT p_amount OFFSET page;
+
+SET p_count_out = (
+    SELECT COUNT(*) FROM `reviews`
+);
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_reviews_page_by_product` (IN `p_page` INT, IN `p_amount` INT, OUT `p_count_out` INT, IN `p_product_id` INT)   BEGIN
+
+DECLARE page INT DEFAULT 0;
+
+SET page = (p_page - 1) * p_amount;
+
+SELECT * FROM `reviews`
+LIMIT p_amount OFFSET page;
+
+SET p_count_out = (
+    SELECT COUNT(*) FROM `reviews` 
+	WHERE product_id = p_product_id
 );
 
 END$$
@@ -775,7 +821,7 @@ ALTER TABLE `order_items`
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `products`
