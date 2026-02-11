@@ -23,6 +23,14 @@ namespace Servo.controller
             "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products"
         };
 
+
+        private static HttpListenerContext endconnection(HttpListenerContext data)
+        {
+            data.Response.OutputStream.Close();
+            data.Response.Close();
+            service.shared.log("[connection end]\n");
+            return data;
+        }
         public static void main(HttpListenerContext data, string alap)
         {
             //Form1.Instance.updateconnections();
@@ -95,11 +103,16 @@ namespace Servo.controller
                 {
                     //kell jwt
                     string authorization_header = data.Request.Headers["Authorization"];
-                    if(authorization_header.Equals("") || authorization_header == null)
+                    if(string.IsNullOrEmpty(authorization_header))
                     {
                         data.Response.StatusCode = 401;
                         byte[] buffer = Encoding.UTF8.GetBytes("missing_auth_header");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+
+
+                        data= endconnection(data);
+
+
                         return;
                     }
                     else if (authorization_header.StartsWith("Bearer ") != true)
@@ -107,6 +120,9 @@ namespace Servo.controller
                         data.Response.StatusCode = 401;
                         byte[] buffer = Encoding.UTF8.GetBytes("missing_auth_header");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+
+                        data = endconnection(data);
+
                         return;
                     }
 
@@ -117,6 +133,9 @@ namespace Servo.controller
                         data.Response.StatusCode = 401;
                         byte[] buffer = Encoding.UTF8.GetBytes("invalid_token");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+
+                        data = endconnection(data);
+
                         return;
                     }
                 }
@@ -261,9 +280,7 @@ namespace Servo.controller
                     }
                 }
 
-                data.Response.OutputStream.Close();
-                data.Response.Close();
-            service.shared.log("[connection end]\n");
+            data = endconnection(data);
         }
 
             

@@ -47,9 +47,10 @@ namespace Servo.service
                     if (model.registration_request.communicate_registration_request(usr) == true){
                             string controller_id = model.shared.get_id_by_email(controller_email);
                             sendregistration(controller_email, controller_id, session_token);
+                        service.shared.log($"Debug: {session_token} --service.registration_request.process_registration_request 1");
 
 
-                            return 200;
+                        return 200;
                         }
                         else
                         {

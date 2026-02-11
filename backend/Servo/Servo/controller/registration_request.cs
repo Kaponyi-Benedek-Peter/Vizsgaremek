@@ -33,7 +33,7 @@ namespace Servo.controller
                     JObject jsonObj = JObject.Parse(lenyeg);
                     email = service.shared.b64dec(jsonObj["email"].ToString());
                     jelszo = service.shared.b64dec(jsonObj["password"].ToString());
-                    lastname = service.shared.b64dec(jsonObj["lastname"].ToString()); // <--- this line fails: error:  System.NullReferenceException: 'Az objektumhivatkozás nincs beállítva semmilyen objektumpéldányra.'   // Newtonsoft.Json.Linq.JObject.this[string].get returned null.
+                    lastname = service.shared.b64dec(jsonObj["lastname"].ToString());
                                         firstname = service.shared.b64dec(jsonObj["firstname"].ToString());
                 }
                 catch {
