@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 10, 2026 at 10:13 AM
+-- Generation Time: Feb 11, 2026 at 10:55 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -170,6 +170,7 @@ VALUES (
     p_user_id,
     NOW()
 );
+CALL calculate_average_product_rating(p_product_id);
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_account_by_id` (IN `p_id` INT)   BEGIN
@@ -721,8 +722,8 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_percentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging`, `created_at`, `updated_at`, `name`, `thumbnail_url`) VALUES
-(1, 'name_de', 'product0_en', 0, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product0_hu', 'product0_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 4.17, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 09:18:12', 'product0', ''),
-(2, 'name_de', 'product1_en', 1, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product1_hu', 'product1_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product1', ''),
+(1, 'name_de', 'product0_en', 0, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product0_hu', 'product0_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 2.90, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-11 10:47:42', 'product0', ''),
+(2, 'name_de', 'product1_en', 1, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product1_hu', 'product1_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 2.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-11 10:48:06', 'product1', ''),
 (3, 'name_de', 'product2_en', 2, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product2_hu', 'product2_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product2', ''),
 (4, 'name_de', 'product3_en', 3, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product3_hu', 'product3_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product3', ''),
 (5, 'name_de', 'product4_en', 4, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product4_hu', 'product4_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product4', ''),
@@ -794,7 +795,10 @@ CREATE TABLE `reviews` (
 INSERT INTO `reviews` (`product_id`, `id`, `title`, `body`, `rating`, `created_at`, `user_id`) VALUES
 (1, 3, 'title', 'body', '2.50', '2026-02-10 09:37:44', 0),
 (1, 4, 'title', 'body', '5.00', '2026-02-10 09:37:44', 1),
-(1, 5, 'title', 'body', '5.00', '2026-02-10 09:37:44', 2);
+(1, 5, 'title', 'body', '5.00', '2026-02-10 09:37:44', 2),
+(1, 6, '1', '1', '1.00', '2026-02-11 11:47:21', 1),
+(1, 7, '1', '1', '1.00', '2026-02-11 11:47:42', 1),
+(2, 8, '2', '2', '2.00', '2026-02-11 11:48:06', 2);
 
 -- --------------------------------------------------------
 
@@ -929,7 +933,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `confirmations`
 --
 ALTER TABLE `confirmations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `newsletter_recipients`
@@ -941,7 +945,7 @@ ALTER TABLE `newsletter_recipients`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `order_items`
@@ -971,7 +975,7 @@ ALTER TABLE `product_images`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `users`
