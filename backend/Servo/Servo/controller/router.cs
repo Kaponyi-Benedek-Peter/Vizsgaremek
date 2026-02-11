@@ -16,7 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Servo.controller
 {
-    internal class handle
+    internal class router
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
@@ -51,39 +51,11 @@ namespace Servo.controller
             }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             
             //api 
             if (kert.StartsWith("api/", StringComparison.OrdinalIgnoreCase))
             {
                 string lenyeg = kert.Replace("api/", "");
-
-
-
-
-
-
-
 
 
 
@@ -106,7 +78,7 @@ namespace Servo.controller
                     if(string.IsNullOrEmpty(authorization_header))
                     {
                         data.Response.StatusCode = 401;
-                        byte[] buffer = Encoding.UTF8.GetBytes("missing_auth_header");
+                        byte[] buffer = Encoding.UTF8.GetBytes("hianyzo_auth_header");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
 
@@ -118,7 +90,7 @@ namespace Servo.controller
                     else if (authorization_header.StartsWith("Bearer ") != true)
                     {
                         data.Response.StatusCode = 401;
-                        byte[] buffer = Encoding.UTF8.GetBytes("missing_auth_header");
+                        byte[] buffer = Encoding.UTF8.GetBytes("hianyzo_auth_header");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
                         data = endconnection(data);
@@ -131,7 +103,7 @@ namespace Servo.controller
                     if (user == null)
                     {
                         data.Response.StatusCode = 401;
-                        byte[] buffer = Encoding.UTF8.GetBytes("invalid_token");
+                        byte[] buffer = Encoding.UTF8.GetBytes("hibas_token");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
                         data = endconnection(data);
@@ -139,12 +111,6 @@ namespace Servo.controller
                         return;
                     }
                 }
-
-
-
-
-
-
 
 
 

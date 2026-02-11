@@ -43,7 +43,7 @@ namespace Servo
                     try
                     {
                         HttpListenerContext context = hallgatozo.GetContext();
-                        ThreadPool.QueueUserWorkItem(o => controller.handle.main(context, service.shared.baseDir));
+                        ThreadPool.QueueUserWorkItem(o => controller.router.main(context, service.shared.baseDir));
 
                         Form1.Instance.updateconnections();
                     }
