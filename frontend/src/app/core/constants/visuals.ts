@@ -1,63 +1,365 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * Central visual config - Roy's Shack
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Everything stored here centrally
+ *
+ * Placeholder until we have our own
+ *
+ * Type-safe
+ */
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Types
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface SlideData {
+  image: string;
+  title: string;
+  subtitle: string;
+  cta: string;
+  link: string;
+}
+
+export interface LanguageOption {
+  code: string;
+  name: string;
+  flag: string; // emoji or IMG url
+  flagImage?: string; // image url if there is
+}
+
+export interface CategoryVisual {
+  id: string;
+  icon: string; // emoji
+  image: string; // emoji or IMG url
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PLACEHOLDER system
+// ═══════════════════════════════════════════════════════════════════════════
+
+const PLACEHOLDER_BASE = 'https://via.placeholder.com';
+const PRIMARY_COLOR = '067a45'; // green
+const SECONDARY_COLOR = '0b5f39'; // dark green
+
+/**
+ * Placeholder generator functions
+ */
+export const PLACEHOLDERS = {
+  /** Products pic placeholder */
+  product: (width = 400, height = 400, text = 'Product') =>
+    `${PLACEHOLDER_BASE}/${width}x${height}/${PRIMARY_COLOR}/ffffff?text=${encodeURIComponent(text)}`,
+
+  /** Hero/Slide pic placeholder */
+  hero: (width = 1920, height = 600, text = 'Hero') =>
+    `${PLACEHOLDER_BASE}/${width}x${height}/${PRIMARY_COLOR}/ffffff?text=${encodeURIComponent(text)}`,
+
+  /** Category pic placeholder */
+  category: (width = 300, height = 300, text = 'Category') =>
+    `${PLACEHOLDER_BASE}/${width}x${height}/${SECONDARY_COLOR}/ffffff?text=${encodeURIComponent(text)}`,
+
+  /** Avatar/profil pic placeholder */
+  avatar: (width = 100, height = 100) =>
+    `${PLACEHOLDER_BASE}/${width}x${height}/cccccc/666666?text=User`,
+
+  /** Logo placeholder */
+  logo: (width = 200, height = 60) =>
+    `${PLACEHOLDER_BASE}/${width}x${height}/${PRIMARY_COLOR}/ffffff?text=Roy's+Shack`,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ICONS (Current)
+// ═══════════════════════════════════════════════════════════════════════════
+
 export const ICONS = {
-  user: 'assets/icons/userwhite.png',
-  login: 'assets/icons/loginwhite.png',
+  // User & Auth
+  user: 'assets/icons/userwhite.webp',
+  login: 'assets/icons/loginwhite.webp',
 
-  basket: 'assets/icons/basketwhite.png',
-  buy: 'assets/icons/buywhite.png',
+  // Shopping
+  basket: 'assets/icons/basketwhite.webp',
+  buy: 'assets/icons/buywhite.webp',
 
-  facebook: 'assets/icons/facebookwhite.png',
-  instagram: 'assets/icons/instagramwhite.png',
-  x: 'assets/icons/xwhite.png',
+  // Social Media
+  facebook: 'assets/icons/facebookwhite.webp',
+  instagram: 'assets/icons/instagramwhite.webp',
+  x: 'assets/icons/xwhite.webp',
 
-  support: 'assets/icons/supportwhite.png',
-  language: 'assets/icons/languagewhite.png',
-  arrow: 'assets/icons/arrowwhite.png',
-  search: 'assets/icons/searchwhite.png',
-  filter: 'assets/icons/filterwhite.png',
+  // Navigation & UI
+  support: 'assets/icons/supportwhite.webp',
+  language: 'assets/icons/languagewhite.webp',
+  arrow: 'assets/icons/arrowwhite.webp',
+  search: 'assets/icons/searchwhite.webp',
+  filter: 'assets/icons/filterwhite.webp',
 
-  sun: 'assets/icons/sun.png',
-  moon: 'assets/icons/moon.png',
+  // Theme
+  sun: 'assets/icons/sun.webp',
+  moon: 'assets/icons/moon.webp',
 
-  add: 'assets/icons/add.png',
-  delete: 'assets/icons/deletewhite.png',
-  edit: 'assets/icons/rename.png',
+  // Actions
+  add: 'assets/icons/add.webp',
+  delete: 'assets/icons/deletewhite.webp',
+  edit: 'assets/icons/rename.webp',
 
-  info: 'assets/icons/infowhite.png',
-  calendar: 'assets/icons/calendarwhite.png',
-  location: 'assets/icons/locationwhite.png',
+  // Info
+  info: 'assets/icons/infowhite.webp',
+  calendar: 'assets/icons/calendarwhite.webp',
+  location: 'assets/icons/locationwhite.webp',
 
-  favorites: 'assets/icons/favoriteswhite.png',
-  order: 'assets/icons/orderwhite.png',
-  payment: 'assets/icons/paymentwhite.png',
-  shipping: 'assets/icons/shippingwhite.png',
+  // E-commerce
+  favorites: 'assets/icons/favoriteswhite.webp',
+  order: 'assets/icons/orderwhite.webp',
+  payment: 'assets/icons/paymentwhite.webp',
+  shipping: 'assets/icons/shippingwhite.webp',
 
-  natural: 'assets/icons/naturalwhite.png',
-  mail: 'assets/icons/mailwhite.png',
-  phone: 'assets/icons/phonewhite.png',
-  sale: 'assets/icons/salewhite.png',
-  customers: 'assets/icons/customerswhite.png',
-  reports: 'assets/icons/reportwhite.png',
-  safetypay: 'assets/icons/safetypaywhite.png',
-  select: 'assets/icons/selectwhite.png',
-  share: 'assets/icons/sharewhite.png',
-  ship: 'assets/icons/shipwhite.png',
-  sort: 'assets/icons/sortwhite.png',
-  support247: 'assets/icons/247white.png',
+  // Other
+  natural: 'assets/icons/naturalwhite.webp',
+  mail: 'assets/icons/mailwhite.webp',
+  phone: 'assets/icons/phonewhite.webp',
+  sale: 'assets/icons/salewhite.webp',
+  customers: 'assets/icons/customerswhite.webp',
+  reports: 'assets/icons/reportwhite.webp',
+  safetypay: 'assets/icons/safetypaywhite.webp',
+  select: 'assets/icons/selectwhite.webp',
+  share: 'assets/icons/sharewhite.webp',
+  ship: 'assets/icons/shipwhite.webp',
+  sort: 'assets/icons/sortwhite.webp',
+  support247: 'assets/icons/247white.webp',
 } as const;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PICS (Current + Placeholders)
+// ═══════════════════════════════════════════════════════════════════════════
 
 export const IMAGES = {
-  logo: 'assets/images/ROYS_SHACK_WHITE.png',
-  heroBg: 'assets/images/herobg.jpg',
+  // Logo
+  logo: 'assets/images/ROYS_SHACK_WHITE.webp', // vagy: PLACEHOLDERS.logo()
 
-  hero1: 'assets/images/hero1.png',
-  hero2: 'assets/images/hero2.png',
-  hero3: 'assets/images/hero3.png',
-  hero4: 'assets/images/hero4.png',
+  // Hero background
+  heroBg: 'assets/images/herobg.jpg', // vagy: PLACEHOLDERS.hero(1920, 600, 'Background')
 
-  flagHungary: 'assets/images/Hungary.png',
-  flagEnglish: 'assets/images/English.png',
-  flagGerman: 'assets/images/German.png',
+  // Hero slides - PLACEHOLDER version
+  hero1: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Egészségügyi Termékek"),
+  hero2: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Prémium Minőség"),
+  hero3: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Gyors Szállítás"),
+  hero4: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Kedvező Árak"),
+
+  // IF we will have our own:
+  // hero1: 'assets/images/hero1.webp',
+  // hero2: 'assets/images/hero2.webp',
+  // hero3: 'assets/images/hero3.webp',
+  // hero4: 'assets/images/hero4.webp',
+
+  // Language flags - emoji version
+  flagHungary: '🇭🇺',
+  flagEnglish: '🇬🇧',
+  flagGerman: '🇩🇪',
+
+  // Flag pics:
+  // flagHungary: 'assets/images/Hungary.webp',
+  // flagEnglish: 'assets/images/English.webp',
+  // flagGerman: 'assets/images/German.webp',
+
+  productDefault: PLACEHOLDERS.product(400, 400, 'Termék'),
 } as const;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SLIDE CONFIG
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const HERO_SLIDES: SlideData[] = [
+  {
+    image: IMAGES.hero1,
+    title: 'hero.slide1.title',
+    subtitle: 'hero.slide1.subtitle',
+    cta: 'hero.cta',
+    link: '/products',
+  },
+  {
+    image: IMAGES.hero2,
+    title: 'hero.slide2.title',
+    subtitle: 'hero.slide2.subtitle',
+    cta: 'hero.cta',
+    link: '/products',
+  },
+  {
+    image: IMAGES.hero3,
+    title: 'hero.slide3.title',
+    subtitle: 'hero.slide3.subtitle',
+    cta: 'hero.cta',
+    link: '/products',
+  },
+  {
+    image: IMAGES.hero4,
+    title: 'hero.slide4.title',
+    subtitle: 'hero.slide4.subtitle',
+    cta: 'hero.cta',
+    link: '/products',
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LANGUAGE OPTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const LANGUAGE_OPTIONS: LanguageOption[] = [
+  {
+    code: 'hu',
+    name: 'Magyar',
+    flag: IMAGES.flagHungary,
+  },
+  {
+    code: 'en',
+    name: 'English',
+    flag: IMAGES.flagEnglish,
+  },
+  {
+    code: 'de',
+    name: 'Deutsch',
+    flag: IMAGES.flagGerman,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAVIGATION ICONS (Unicode)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const NAV_ICONS = {
+  arrowLeft: '‹',
+  arrowRight: '›',
+  arrowUp: '▴',
+  arrowDown: '▾',
+
+  close: '✕',
+  check: '✓',
+  menu: '☰',
+
+  star: '★',
+  starEmpty: '☆',
+  heart: '♥',
+  heartEmpty: '♡',
+} as const;
+
+export const NAV_SVG = {
+  arrowLeft: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M15 18l-6-6 6-6"/>
+  </svg>`,
+
+  arrowRight: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M9 18l6-6-6-6"/>
+  </svg>`,
+
+  close: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M18 6L6 18M6 6l12 12"/>
+  </svg>`,
+
+  check: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M20 6L9 17l-5-5"/>
+  </svg>`,
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CATEGORY VISUALS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const CATEGORY_VISUALS: Record<string, CategoryVisual> = {
+  medicine: {
+    id: 'medicine',
+    icon: '💊',
+    image: PLACEHOLDERS.category(300, 300, 'Gyógyszerek'),
+  },
+  vitamins: {
+    id: 'vitamins',
+    icon: '🍊',
+    image: PLACEHOLDERS.category(300, 300, 'Vitaminok'),
+  },
+  supplements: {
+    id: 'supplements',
+    icon: '💪',
+    image: PLACEHOLDERS.category(300, 300, 'Táplálékkiegészítők'),
+  },
+  cosmetics: {
+    id: 'cosmetics',
+    icon: '💄',
+    image: PLACEHOLDERS.category(300, 300, 'Kozmetikumok'),
+  },
+  'baby-care': {
+    id: 'baby-care',
+    icon: '👶',
+    image: PLACEHOLDERS.category(300, 300, 'Babaápolás'),
+  },
+  'medical-devices': {
+    id: 'medical-devices',
+    icon: '🩺',
+    image: PLACEHOLDERS.category(300, 300, 'Orvosi eszközök'),
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPER Functions
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function getImageUrl(path: string | undefined | null, fallback?: string): string {
+  if (!path || path === '') {
+    return fallback || IMAGES.productDefault;
+  }
+  return path;
+}
+
+export function getCategoryIcon(categoryId: string): string {
+  return CATEGORY_VISUALS[categoryId]?.icon || '📦';
+}
+
+export function getCategoryImage(categoryId: string): string {
+  return CATEGORY_VISUALS[categoryId]?.image || IMAGES.productDefault;
+}
+
+export function getHeroSlide(index: number): SlideData {
+  return HERO_SLIDES[index] || HERO_SLIDES[0];
+}
+
+export function getLanguageOption(code: string): LanguageOption | undefined {
+  return LANGUAGE_OPTIONS.find((lang) => lang.code === code);
+}
+
+export function getIconUrl(iconKey: keyof typeof ICONS): string {
+  return ICONS[iconKey] || '';
+}
+
+export function isEmoji(value: string): boolean {
+  return value.length <= 4 && /[\u{1F300}-\u{1F9FF}]/u.test(value);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TYPE EXPORTS
+// ═══════════════════════════════════════════════════════════════════════════
 
 export type IconKey = keyof typeof ICONS;
 export type ImageKey = keyof typeof IMAGES;
+export type NavIconKey = keyof typeof NAV_ICONS;
+export type CategoryId = keyof typeof CATEGORY_VISUALS;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DEFAULT EXPORT
+// ═══════════════════════════════════════════════════════════════════════════
+
+export default {
+  PLACEHOLDERS,
+  ICONS,
+  IMAGES,
+  HERO_SLIDES,
+  LANGUAGE_OPTIONS,
+  NAV_ICONS,
+  NAV_SVG,
+  CATEGORY_VISUALS,
+
+  // Helpers
+  getImageUrl,
+  getCategoryIcon,
+  getCategoryImage,
+  getHeroSlide,
+  getLanguageOption,
+  getIconUrl,
+  isEmoji,
+};

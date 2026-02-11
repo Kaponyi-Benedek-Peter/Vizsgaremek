@@ -1,7 +1,7 @@
 <div class="product-list-page">
   <app-category-bar
     [categories]="categories"
-    [selectedCategories]="filters().categories"
+    [selectedCategories]="filters().categories || []"
     (categorySelected)="handleCategorySelected($event)"
     (clearCategories)="handleClearCategories()"
   />

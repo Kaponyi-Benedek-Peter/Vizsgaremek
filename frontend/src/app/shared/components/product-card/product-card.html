@@ -114,7 +114,7 @@
       class="add-to-cart-button"
       [class.compact]="compact"
       [disabled]="!canAddToCart"
-      (click)="handleAddToCart($event)"
+      (click)="onAddToCart()"
       [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName"
     >
       <span class="button-icon">🛒</span>
@@ -124,7 +124,7 @@
     @if (!compact) {
       <button
         class="details-button"
-        (click)="handleViewDetails($event)"
+        (click)="onViewDetails()"
         [attr.aria-label]="('product.view_details' | translate) + ': ' + localizedName"
       >
         {{ 'product.view_details' | translate }}

@@ -1,5 +1,6 @@
 import { NgFor } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { HERO_SLIDES, NAV_ICONS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-slide',
@@ -8,35 +9,48 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
   styleUrl: './slide.css',
 })
 export class Slide implements OnInit, OnDestroy {
-  slides = [
-    { image: 'assets/images/hero1.png' },
-    { image: 'assets/images/hero2.png' },
-    { image: 'assets/images/hero3.png' },
-    { image: 'assets/images/hero4.png' },
-  ];
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SLIDES - central config
+  // ═══════════════════════════════════════════════════════════════════════════
+  slides = HERO_SLIDES; // visuals.ts
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // NAVIGATION ICONS - (Unicode)
+  // ═══════════════════════════════════════════════════════════════════════════
+  prevIcon = NAV_ICONS.arrowLeft; // '‹'
+  nextIcon = NAV_ICONS.arrowRight; // '›'
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // STATE
+  // ═══════════════════════════════════════════════════════════════════════════
   currentIndex = 0;
   isPaused = false;
-  intervalId: any;
+  private intervalId: any = null;
 
-  ngOnInit() {
-    console.log('=== SLIDE COMPONENT DEBUG ===');
-    console.log('Slides array:', this.slides);
-    console.log('Current index:', this.currentIndex);
-    console.log('Current slide:', this.slides[this.currentIndex]);
-    console.log('Current image URL:', this.slides[this.currentIndex]?.image);
-    console.log('Background image string:', `url(${this.slides[this.currentIndex]?.image})`);
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  ngOnInit(): void {
+    console.log('🎬 Slide component initialized');
+    console.log('   Total slides:', this.slides.length);
+    console.log('   First slide:', this.slides[0]);
 
     this.startAutoplay();
   }
 
-  ngOnDestroy() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-    }
+  ngOnDestroy(): void {
+    this.stopAutoplay();
+    console.log('🎬 Slide component destroyed');
   }
 
-  startAutoplay() {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AUTOPLAY CONTROL
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private startAutoplay(): void {
+    this.stopAutoplay();
+
     this.intervalId = setInterval(() => {
       if (!this.isPaused) {
         this.next();
@@ -44,30 +58,49 @@ export class Slide implements OnInit, OnDestroy {
     }, 5000);
   }
 
-  pause() {
+  private stopAutoplay(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+  }
+
+  pause(): void {
     this.isPaused = true;
   }
 
-  resume() {
+  resume(): void {
     this.isPaused = false;
   }
 
-  next() {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // NAVIGATION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  next(): void {
     this.currentIndex = (this.currentIndex + 1) % this.slides.length;
-    console.log('Moved to slide:', this.currentIndex);
+    // console.log('→ Slide', this.currentIndex);
   }
 
-  prev() {
+  prev(): void {
     this.currentIndex = (this.currentIndex - 1 + this.slides.length) % this.slides.length;
-    console.log('Moved to slide:', this.currentIndex);
+    // console.log('← Slide', this.currentIndex);
   }
 
-  goTo(index: number) {
+  goTo(index: number): void {
     this.currentIndex = index;
-    console.log('Jumped to slide:', this.currentIndex);
+    // console.log('◎ Jumped to slide', this.currentIndex);
   }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════════════════════════════════════
 
   getBackgroundImageUrl(): string {
     return `url(${this.slides[this.currentIndex].image})`;
+  }
+
+  isActive(index: number): boolean {
+    return this.currentIndex === index;
   }
 }

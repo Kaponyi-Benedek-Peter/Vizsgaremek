@@ -12,7 +12,8 @@ export interface UpdateProfileRequest {
 }
 
 export interface DeleteAccountRequest {
-  password: string;
+  id: string; // Base64 encoded user ID
+  password: string; // Base64 encoded password
 }
 
 export interface ApiResponse<T = any> {
@@ -26,19 +27,17 @@ export interface ApiResponse<T = any> {
   providedIn: 'root',
 })
 export class AccountService {
-  private readonly API_URL = 'https://api.roysshack.hu';
+  private readonly API_URL = 'https://api.roysshack.hu/api';
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 
-  /**
-   * Get current user profile information
-   */
   getProfile(): Observable<User> {
     return this.http.get<User>(`${this.API_URL}/profile`).pipe(catchError(this.handleError));
   }
 
   /**
    * Update user profile
+   * Requires JWT authentication
    * @param updates Profile fields to update
    */
   updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
@@ -64,27 +63,38 @@ export class AccountService {
 
   /**
    * Request account deletion
+   * Requires JWT authentication
+   * Sends confirmation email
+   * @param userId User's ID
    * @param password User's password for confirmation
    */
-  deleteAccount(password: string): Observable<ApiResponse> {
+  deleteAccountRequest(userId: string, password: string): Observable<ApiResponse> {
     const request: DeleteAccountRequest = {
+      id: this.encodeBase64(userId),
       password: this.encodeBase64(password),
     };
 
     return this.http.post<ApiResponse>(`${this.API_URL}/delacc_request`, request).pipe(
       tap(() => {
-        console.log('Account deletion requested');
+        console.log('Account deletion requested - confirmation email sent');
       }),
       catchError(this.handleError),
     );
   }
 
   /**
-   * Confirm account deletion with token
+   * Confirm account deletion with token from email
+   * Requires JWT authentication
+   * @param userId User's ID
    * @param token Confirmation token from email
    */
-  confirmAccountDeletion(token: string): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.API_URL}/delacc_promise`, { token }).pipe(
+  confirmAccountDeletion(userId: string, token: string): Observable<ApiResponse> {
+    const request = {
+      id: this.encodeBase64(userId),
+      token: this.encodeBase64(token),
+    };
+
+    return this.http.post<ApiResponse>(`${this.API_URL}/delacc_promise`, request).pipe(
       tap(() => {
         console.log('Account deleted successfully');
         this.authService.logout();
@@ -95,11 +105,18 @@ export class AccountService {
 
   /**
    * Change user password
+   * Requires JWT authentication
+   * @param userId User's ID
    * @param currentPassword Current password for verification
    * @param newPassword New password
    */
-  changePassword(currentPassword: string, newPassword: string): Observable<ApiResponse> {
+  changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Observable<ApiResponse> {
     const request = {
+      id: this.encodeBase64(userId),
       currentPassword: this.encodeBase64(currentPassword),
       newPassword: this.encodeBase64(newPassword),
     };
@@ -112,21 +129,21 @@ export class AccountService {
     );
   }
 
-  /**
-   * Get user order history
-   */
   getOrderHistory(): Observable<ApiResponse<any[]>> {
     return this.http
       .get<ApiResponse<any[]>>(`${this.API_URL}/orders`)
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Get user's saved addresses
-   */
   getSavedAddresses(): Observable<ApiResponse<any[]>> {
     return this.http
       .get<ApiResponse<any[]>>(`${this.API_URL}/addresses`)
+      .pipe(catchError(this.handleError));
+  }
+
+  exampleAuthenticatedRequest(): Observable<any> {
+    return this.http
+      .get(`${this.API_URL}/some-protected-endpoint`)
       .pipe(catchError(this.handleError));
   }
 
@@ -154,30 +171,26 @@ export class AccountService {
     let errorMessage = 'An unknown error occurred';
 
     if (error.error instanceof ErrorEvent) {
-      // Client-side error
       errorMessage = `Error: ${error.error.message}`;
     } else {
-      // Server-side error
-      const apiError = error.error as ApiResponse;
-
       switch (error.status) {
         case 400:
-          errorMessage = apiError?.message || 'Bad request';
+          errorMessage = 'account.errors.bad_request';
           break;
         case 401:
-          errorMessage = 'Unauthorized - please log in';
+          errorMessage = 'account.errors.unauthorized';
           break;
         case 403:
-          errorMessage = 'Forbidden - you do not have permission';
+          errorMessage = 'account.errors.forbidden';
           break;
         case 404:
-          errorMessage = apiError?.message || 'Resource not found';
+          errorMessage = 'account.errors.not_found';
           break;
         case 500:
-          errorMessage = 'Server error - please try again later';
+          errorMessage = 'account.errors.server_error';
           break;
         default:
-          errorMessage = apiError?.message || errorMessage;
+          errorMessage = error.error?.message || error.message || errorMessage;
       }
     }
 

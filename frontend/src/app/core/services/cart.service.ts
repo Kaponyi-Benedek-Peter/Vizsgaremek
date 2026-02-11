@@ -1,10 +1,10 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { Product } from '../models/product.model';
+import { Product, ProductWithHelpers } from '../models/product.model';
 import { TranslationService } from './translation.service';
 import { CurrencyService } from './currency.service';
 
 export interface CartItem {
-  product: Product;
+  product: ProductWithHelpers;
   quantity: number;
 }
 
@@ -92,7 +92,7 @@ export class CartService {
     }
   }
 
-  addToCart(product: Product, quantity: number = 1): void {
+  addToCart(product: ProductWithHelpers, quantity: number = 1): void {
     const existingItem = this.cartItems().find((item) => item.product.id === product.id);
 
     if (existingItem) {

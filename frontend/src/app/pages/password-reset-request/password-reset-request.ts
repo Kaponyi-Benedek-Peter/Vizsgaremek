@@ -38,7 +38,7 @@ export class PasswordResetRequest {
 
     this.isLoading.set(true);
 
-    this.authService.requestPasswordChange(this.email()).subscribe({
+    this.authService.requestPasswordChange('', this.email(), '').subscribe({
       next: () => {
         this.isLoading.set(false);
         this.isEmailSent.set(true);

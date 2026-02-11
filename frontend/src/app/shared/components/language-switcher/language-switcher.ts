@@ -1,6 +1,7 @@
 import { NgFor, NgIf } from '@angular/common';
 import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
 import { TranslationService, SupportedLanguage } from '../../../core/services/translation.service';
+import { isEmoji, LANGUAGE_OPTIONS } from '../../../core/constants/visuals';
 
 interface Language {
   code: SupportedLanguage;
@@ -19,40 +20,22 @@ export class LanguageSwitcher implements OnInit {
   isOpen = false;
   currentLanguage: SupportedLanguage = 'hu';
 
-  languages: Language[] = [
-    {
-      code: 'en',
-      name: 'English',
-      flagImage: 'assets/images/English.png',
-    },
-    {
-      code: 'hu',
-      name: 'Magyar',
-      flagImage: 'assets/images/Hungary.png',
-    },
-    {
-      code: 'de',
-      name: 'Deutsch',
-      flagImage: 'assets/images/German.png',
-    },
-  ];
+  languages = LANGUAGE_OPTIONS;
+  isEmoji = isEmoji;
 
   constructor(
     private elementRef: ElementRef,
-    private translationService: TranslationService
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
-    // Feliratkozás a nyelv változásaira
     this.translationService.currentLang$.subscribe((lang) => {
       this.currentLanguage = lang;
     });
   }
 
   get currentLang(): Language {
-    return (
-      this.languages.find((lang) => lang.code === this.currentLanguage) || this.languages[1]
-    );
+    return this.languages.find((lang) => lang.code === this.currentLanguage) || this.languages[1];
   }
 
   toggleDropdown(): void {

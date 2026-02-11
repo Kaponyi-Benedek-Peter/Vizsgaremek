@@ -37,7 +37,9 @@ export class Email implements OnInit {
     this.isVerifying.set(true);
     this.errorMessage.set('');
 
-    this.authService.completeRegistration(token, true).subscribe({
+    const userId = this.route.snapshot.queryParams['id'] || '';
+
+    this.authService.completeRegistration(userId, token).subscribe({
       next: () => {
         this.isVerifying.set(false);
         this.isVerified.set(true);

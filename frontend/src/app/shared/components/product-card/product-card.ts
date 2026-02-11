@@ -1,43 +1,47 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, Output, signal, computed } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Product } from '../../../core/models/product.model';
+import { TranslateModule } from '@ngx-translate/core';
+import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
+import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-card',
+  standalone: true,
   imports: [CommonModule, TranslateModule, RouterLink],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
 })
 export class ProductCard {
-  @Input({ required: true }) product!: Product;
+  @Input({ required: true }) product!: ProductWithHelpers;
   @Input() compact = false;
-  @Output() addToCart = new EventEmitter<Product>();
-  @Output() viewDetails = new EventEmitter<Product>();
-  @Output() quantityChange = new EventEmitter<{ product: Product; quantity: number }>();
+  @Output() addToCart = new EventEmitter<ProductWithHelpers>();
+  @Output() viewDetails = new EventEmitter<ProductWithHelpers>();
+  @Output() quantityChange = new EventEmitter<{ product: ProductWithHelpers; quantity: number }>();
+
+  // Helpers
+  getImageUrl = getImageUrl;
+  getCategoryIcon = getCategoryIcon;
 
   quantity = signal(1);
 
-  private translate = inject(TranslateService);
   private currencyService = inject(CurrencyService);
 
   get hasDiscount(): boolean {
-    return !!this.product.discountPercentage && this.product.discountPercentage > 0;
+    return this.product.hasDiscount;
   }
 
   get discountedPrice(): number {
-    if (!this.hasDiscount) return this.product.price;
-    return this.product.price * (1 - this.product.discountPercentage! / 100);
+    return this.product.price;
   }
 
   get formattedPrice(): string {
-    return this.currencyService.formatPrice(this.product.price);
+    return this.currencyService.formatPrice(this.product.priceNumber);
   }
 
   get formattedDiscountedPrice(): string {
-    return this.currencyService.formatPrice(this.discountedPrice);
+    return this.currencyService.formatPrice(this.product.price);
   }
 
   get canAddToCart(): boolean {
@@ -49,31 +53,11 @@ export class ProductCard {
   }
 
   get localizedName(): string {
-    const lang = this.translate.currentLang;
-    switch (lang) {
-      case 'hu':
-        return this.product.nameHu || this.product.name;
-      case 'en':
-        return this.product.nameEn || this.product.name;
-      case 'de':
-        return this.product.nameDe || this.product.name;
-      default:
-        return this.product.name;
-    }
+    return this.product.name;
   }
 
   get localizedDescription(): string {
-    const lang = this.translate.currentLang;
-    switch (lang) {
-      case 'hu':
-        return this.product.descriptionHu || this.product.description;
-      case 'en':
-        return this.product.descriptionEn || this.product.description;
-      case 'de':
-        return this.product.descriptionDe || this.product.description;
-      default:
-        return this.product.description;
-    }
+    return this.product.description;
   }
 
   increaseQuantity(): void {
@@ -90,18 +74,13 @@ export class ProductCard {
     }
   }
 
-  handleAddToCart(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-
+  onAddToCart(): void {
     if (this.canAddToCart) {
       this.addToCart.emit(this.product);
     }
   }
 
-  handleViewDetails(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
+  onViewDetails(): void {
     this.viewDetails.emit(this.product);
   }
 }

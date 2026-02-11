@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { Product, Category } from '../../../core/models/product.model';
+import { Product, Category, ProductWithHelpers } from '../../../core/models/product.model';
 import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { CategoryBar } from '../category-bar/category-bar';
@@ -9,6 +9,7 @@ import { ProductCard } from '../product-card/product-card';
 import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
 import { ProductDetailModal } from '../product-detail-modal/product-detail-modal';
+import { CATEGORY_VISUALS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-list',
@@ -33,72 +34,17 @@ export class ProductList {
   filters = this.productService.currentFilters;
   allProducts = this.productService.products;
 
-  selectedProduct: Product | null = null;
+  selectedProduct: ProductWithHelpers | null = null;
   showModal = false;
 
-  categories: Category[] = [
-    {
-      id: 'medicine',
-      slug: 'medicine',
-      name: 'Gyógyszerek',
-      nameHu: 'Gyógyszerek',
-      nameEn: 'Medicines',
-      nameDe: 'Medizin',
-      icon: '💊',
-    },
-    {
-      id: 'vitamins',
-      slug: 'vitamins',
-      name: 'Vitaminok',
-      nameHu: 'Vitaminok',
-      nameEn: 'Vitamins',
-      nameDe: 'Vitamine',
-      icon: '🍊',
-    },
-    {
-      id: 'supplements',
-      slug: 'supplements',
-      name: 'Táplálékkiegészítők',
-      nameHu: 'Táplálékkiegészítők',
-      nameEn: 'Supplements',
-      nameDe: 'Nahrungsergänzungen',
-      icon: '💪',
-    },
-    {
-      id: 'cosmetics',
-      slug: 'cosmetics',
-      name: 'Kozmetikumok',
-      nameHu: 'Kozmetikumok',
-      nameEn: 'Cosmetics',
-      nameDe: 'Kosmetik',
-      icon: '💄',
-    },
-    {
-      id: 'baby-care',
-      slug: 'baby-care',
-      name: 'Babaápolás',
-      nameHu: 'Babaápolás',
-      nameEn: 'Baby Care',
-      nameDe: 'Babypflege',
-      icon: '👶',
-    },
-    {
-      id: 'medical-devices',
-      slug: 'medical-devices',
-      name: 'Orvosi eszközök',
-      nameHu: 'Orvosi eszközök',
-      nameEn: 'Medical Devices',
-      nameDe: 'Medizinische Geräte',
-      icon: '🩺',
-    },
-  ];
+  categories = Object.values(CATEGORY_VISUALS);
 
   async ngOnInit(): Promise<void> {
     await this.productService.loadProducts();
   }
 
   handleCategorySelected(categoryId: string): void {
-    const currentCategories = this.filters().categories;
+    const currentCategories = this.filters().categories || [];
     const updated = currentCategories.includes(categoryId)
       ? currentCategories.filter((c) => c !== categoryId)
       : [...currentCategories, categoryId];
@@ -128,17 +74,17 @@ export class ProductList {
     this.scrollToTop();
   }
 
-  handleAddToCart(product: Product): void {
+  handleAddToCart(product: ProductWithHelpers): void {
     this.cartService.addToCart(product, 1);
     console.log('Added to cart:', product.name);
   }
 
-  handleAddToCartFromModal(event: { product: Product; quantity: number }): void {
+  handleAddToCartFromModal(event: { product: ProductWithHelpers; quantity: number }): void {
     this.cartService.addToCart(event.product, event.quantity);
     console.log(`Added ${event.quantity}x ${event.product.name} to cart`);
   }
 
-  handleViewDetails(product: Product): void {
+  handleViewDetails(product: ProductWithHelpers): void {
     this.selectedProduct = product;
     this.showModal = true;
     document.body.style.overflow = 'hidden';

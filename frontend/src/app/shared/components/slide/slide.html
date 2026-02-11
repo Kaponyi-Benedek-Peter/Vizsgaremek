@@ -1,14 +1,16 @@
-<div class="slider" (mouseenter)="pause()" (mouseleave)="resume()">
-  <button class="arrow arrow-left" (click)="prev()">
-    <svg width="60" height="60" viewBox="0 0 60 60">
-      <image href="assets/icons/arrowwhite.png" x="0" y="0" width="60" height="60" />
-    </svg>
+<div
+  class="slider"
+  (mouseenter)="pause()"
+  (mouseleave)="resume()"
+  role="region"
+  aria-label="Hero slider"
+>
+  <button class="arrow arrow-left" (click)="prev()" aria-label="Előző slide" title="Előző">
+    <span class="arrow-icon">{{ prevIcon }}</span>
   </button>
 
-  <button class="arrow arrow-right" (click)="next()">
-    <svg width="60" height="60" viewBox="0 0 60 60">
-      <image href="assets/icons/arrowwhite.png" x="0" y="0" width="60" height="60" />
-    </svg>
+  <button class="arrow arrow-right" (click)="next()" aria-label="Következő slide" title="Következő">
+    <span class="arrow-icon">{{ nextIcon }}</span>
   </button>
 
   <div class="slides">
@@ -16,16 +18,31 @@
       [src]="slides[currentIndex].image"
       [alt]="'Slide ' + (currentIndex + 1)"
       class="slide-img"
+      loading="lazy"
     />
+
+    <!-- if it contains some words alt version -->
+    <!--
+    <div class="slide-content">
+      <h1>{{ slides[currentIndex].title | translate }}</h1>
+      <p>{{ slides[currentIndex].subtitle | translate }}</p>
+      <a [href]="slides[currentIndex].link" class="cta-button">
+        {{ slides[currentIndex].cta | translate }}
+      </a>
+    </div>
+    -->
   </div>
 
-  <div class="dots">
+  <!-- DOTS (slide indicators) -->
+  <div class="dots" role="tablist" aria-label="Slide navigation">
     <button
       *ngFor="let slide of slides; let i = index"
       class="dot"
-      [class.active]="i === currentIndex"
+      [class.active]="isActive(i)"
       (click)="goTo(i)"
       [attr.aria-label]="'Ugrás a ' + (i + 1) + '. slide-ra'"
+      [attr.aria-selected]="isActive(i)"
+      role="tab"
     ></button>
   </div>
 </div>

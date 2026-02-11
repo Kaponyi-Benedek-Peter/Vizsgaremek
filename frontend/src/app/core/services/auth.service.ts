@@ -20,7 +20,7 @@ import {
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly API_URL = 'https://api.roysshack.hu';
+  private readonly API_URL = 'https://api.roysshack.hu/api';
 
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
@@ -52,6 +52,7 @@ export class AuthService {
     private router: Router,
   ) {
     this.initAuth();
+    this.setupStorageListener();
   }
 
   private initAuth(): void {
@@ -73,12 +74,40 @@ export class AuthService {
     }
   }
 
-  /**
-   * Login user
-   * @param email User email
-   * @param password User password
-   * @param stayLoggedIn Whether to persist session (localStorage vs sessionStorage)
-   */
+  private setupStorageListener(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (event) => {
+        if (event.key === this.TOKEN_KEY && event.newValue === null) {
+          this.updateAuthState({
+            isAuthenticated: false,
+            user: null,
+            token: null,
+            expiresAt: null,
+          });
+
+          if (!this.router.url.includes('/login')) {
+            this.router.navigate(['/login']);
+          }
+        }
+
+        if (event.key === this.TOKEN_KEY && event.newValue !== null) {
+          this.initAuth();
+        }
+      });
+    }
+  }
+
+  isTokenExpired(): boolean {
+    const expiresAt = this.authStateSignal().expiresAt;
+    if (!expiresAt) return true;
+
+    const now = new Date();
+    const expirationTime = new Date(expiresAt);
+    const fiveMinutes = 5 * 60 * 1000;
+
+    return now.getTime() >= expirationTime.getTime() - fiveMinutes;
+  }
+
   login(email: string, password: string, stayLoggedIn: boolean): Observable<LoginResponse> {
     const request: LoginRequest = {
       email: this.encodeBase64(email),
@@ -89,7 +118,7 @@ export class AuthService {
       tap((response) => {
         this.handleLoginSuccess(response, stayLoggedIn);
       }),
-      catchError(this.handleError),
+      catchError(this.handleError.bind(this)),
     );
   }
 
@@ -103,20 +132,17 @@ export class AuthService {
 
     return this.http
       .post<void>(`${this.API_URL}/registration_request`, request)
-      .pipe(catchError(this.handleError));
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
-  /**
-   * verify email with sessionToken
-   * @param sessionToken Token from email verification link
-   * @param stayLoggedIn Whether to persist session
-   */
   completeRegistration(
-    sessionToken: string,
+    id: string,
+    token: string,
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
     const request: RegistrationPromiseRequest = {
-      sessionToken,
+      id: this.encodeBase64(id),
+      token: this.encodeBase64(token),
     };
 
     return this.http
@@ -125,33 +151,34 @@ export class AuthService {
         tap((response) => {
           const loginResponse: LoginResponse = {
             token: response.token,
-            expires_in: 604800, // 7 days default
+            expires_in: 604800, // 7 days
           };
           this.handleLoginSuccess(loginResponse, stayLoggedIn, response.user);
         }),
-        catchError(this.handleError),
+        catchError(this.handleError.bind(this)),
       );
   }
 
-  requestPasswordChange(email: string): Observable<void> {
+  requestPasswordChange(id: string, email: string, password: string): Observable<void> {
     const request: PasswordChangeRequest = {
-      email: this.encodeBase64(email),
+      id: this.encodeBase64(id),
+      password: this.encodeBase64(password),
     };
 
     return this.http
       .post<void>(`${this.API_URL}/chpass_request`, request)
-      .pipe(catchError(this.handleError));
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
-  completePasswordChange(sessionToken: string, newPassword: string): Observable<void> {
+  completePasswordChange(id: string, token: string): Observable<void> {
     const request: PasswordChangePromiseRequest = {
-      sessionToken,
-      newPassword: this.encodeBase64(newPassword),
+      id: this.encodeBase64(id),
+      token: this.encodeBase64(token),
     };
 
     return this.http
       .post<void>(`${this.API_URL}/chpass_promise`, request)
-      .pipe(catchError(this.handleError));
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
   logout(): void {
@@ -166,25 +193,75 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return this.authStateSignal().token;
+    const token = this.authStateSignal().token;
+
+    if (token && this.isTokenExpired()) {
+      this.logout();
+      return null;
+    }
+
+    return token;
   }
 
   isUserAuthenticated(): boolean {
-    return this.authStateSignal().isAuthenticated;
+    const isAuth = this.authStateSignal().isAuthenticated;
+    const hasValidToken = this.getToken() !== null;
+    return isAuth && hasValidToken;
+  }
+
+  refreshAuthState(): void {
+    this.initAuth();
+  }
+
+  hasStoredSession(): boolean {
+    return this.getStoredToken() !== null;
+  }
+
+  private decodeJWT(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(''),
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
   }
 
   private handleLoginSuccess(response: LoginResponse, stayLoggedIn: boolean, user?: User): void {
     const expiresAt = new Date(Date.now() + response.expires_in * 1000);
 
-    this.storeToken(response.token, expiresAt, stayLoggedIn);
+    let userData = user;
+    if (!userData && response.token) {
+      const decoded = this.decodeJWT(response.token);
+      if (decoded) {
+        userData = {
+          id: decoded.sub || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+          email:
+            decoded.email ||
+            decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+          firstname: '',
+          lastname: '',
+        };
+      }
+    }
 
-    if (user) {
-      this.storeUser(user, stayLoggedIn);
+    this.clearStorage();
+
+    this.storeToken(response.token, expiresAt, stayLoggedIn);
+    if (userData) {
+      this.storeUser(userData, stayLoggedIn);
     }
 
     this.updateAuthState({
       isAuthenticated: true,
-      user: user || this.getStoredUser(),
+      user: userData || this.getStoredUser(),
       token: response.token,
       expiresAt,
     });
@@ -276,7 +353,14 @@ export class AuthService {
           errorMessage = 'auth.errors.bad_request';
           break;
         case 401:
-          errorMessage = 'auth.errors.invalid_credentials';
+          if (apiError?.error === 'hianyzo_auth_header') {
+            errorMessage = 'auth.errors.missing_auth_header';
+          } else if (apiError?.error === 'hibas_token') {
+            errorMessage = 'auth.errors.invalid_token';
+            this.logout();
+          } else {
+            errorMessage = 'auth.errors.invalid_credentials';
+          }
           break;
         case 404:
           errorMessage = 'auth.errors.not_found';

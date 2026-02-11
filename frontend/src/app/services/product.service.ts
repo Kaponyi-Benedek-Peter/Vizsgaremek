@@ -1,16 +1,158 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, firstValueFrom } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Product, ProductsApiResponse } from '../core/models/product.model';
+import {
+  Product,
+  ProductsApiResponse,
+  ProductWithHelpers,
+  enrichProduct,
+  ProductFilterOptions,
+  PaginationConfig,
+  SortOption,
+} from '../core/models/product.model';
+import { TranslationService } from '../core/services/translation.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
   private readonly API_URL = 'https://api.roysshack.hu';
+  private http = inject(HttpClient);
+  private translationService = inject(TranslationService);
 
-  constructor(private http: HttpClient) {}
+  private allProductsSignal = signal<ProductWithHelpers[]>([]);
+  private filtersSignal = signal<ProductFilterOptions>({
+    categories: [],
+    priceRange: null,
+    inStockOnly: false,
+    sortBy: 'popularity',
+  });
+  private currentPageSignal = signal<number>(1);
+  private itemsPerPageSignal = signal<number>(30);
+
+  products = computed(() => this.allProductsSignal());
+  currentFilters = computed(() => this.filtersSignal());
+
+  private filteredProducts = computed(() => {
+    let products = this.allProductsSignal();
+    const filters = this.filtersSignal();
+
+    if (filters.categories && filters.categories.length > 0) {
+      products = products.filter((p) => filters.categories!.includes(p.category));
+    }
+
+    if (filters.priceRange) {
+      const { min, max } = filters.priceRange;
+      products = products.filter((p) => {
+        const price = p.price;
+        return price >= min && price <= max;
+      });
+    }
+
+    if (filters.inStockOnly) {
+      products = products.filter((p) => p.inStock);
+    }
+
+    if (filters.sortBy) {
+      products = this.sortProducts(products, filters.sortBy);
+    }
+
+    return products;
+  });
+
+  paginationState = computed<PaginationConfig>(() => {
+    const totalItems = this.filteredProducts().length;
+    const itemsPerPage = this.itemsPerPageSignal();
+    const currentPage = this.currentPageSignal();
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    return {
+      currentPage,
+      itemsPerPage,
+      totalItems,
+      totalPages,
+    };
+  });
+
+  paginatedProducts = computed(() => {
+    const filtered = this.filteredProducts();
+    const page = this.currentPageSignal();
+    const perPage = this.itemsPerPageSignal();
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+
+    return filtered.slice(start, end);
+  });
+
+  async loadProducts(): Promise<void> {
+    try {
+      const products = await firstValueFrom(this.getAllProducts());
+      const currentLang = this.translationService.getCurrentLanguage();
+      const enrichedProducts = products.map((p) => enrichProduct(p, currentLang));
+      this.allProductsSignal.set(enrichedProducts);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+      this.allProductsSignal.set([]);
+    }
+  }
+
+  setFilters(filters: Partial<ProductFilterOptions>): void {
+    this.filtersSignal.update((current) => ({
+      ...current,
+      ...filters,
+    }));
+    this.currentPageSignal.set(1);
+  }
+
+  clearFilters(): void {
+    this.filtersSignal.set({
+      categories: [],
+      priceRange: null,
+      inStockOnly: false,
+      sortBy: 'popularity',
+    });
+    this.currentPageSignal.set(1);
+  }
+
+  setPage(page: number): void {
+    const totalPages = this.paginationState().totalPages;
+    if (page >= 1 && page <= totalPages) {
+      this.currentPageSignal.set(page);
+    }
+  }
+
+  setItemsPerPage(count: number): void {
+    this.itemsPerPageSignal.set(count);
+    this.currentPageSignal.set(1);
+  }
+
+  private sortProducts(products: ProductWithHelpers[], sortBy: SortOption): ProductWithHelpers[] {
+    const sorted = [...products];
+
+    switch (sortBy) {
+      case 'popularity':
+        return sorted.sort((a, b) => parseFloat(b.times_ordered) - parseFloat(a.times_ordered));
+      case 'price-asc':
+        return sorted.sort((a, b) => a.price - b.price);
+      case 'price-desc':
+        return sorted.sort((a, b) => b.price - a.price);
+      case 'name-asc':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'name-desc':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      case 'rating':
+      case 'rating-desc':
+        return sorted.sort((a, b) => b.ratingNumber - a.ratingNumber);
+      case 'newest':
+        return sorted.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+      case 'default':
+      default:
+        return sorted;
+    }
+  }
 
   getAllProducts(): Observable<Product[]> {
     return this.http.get<ProductsApiResponse>(`${this.API_URL}/api/get_all_products`).pipe(

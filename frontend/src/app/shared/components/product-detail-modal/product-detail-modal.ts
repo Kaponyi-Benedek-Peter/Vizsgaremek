@@ -1,39 +1,28 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  HostListener,
-  inject,
-  Input,
-  Output,
-  signal,
-  computed,
-} from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Product } from '../../../core/models/product.model';
+import { Component, EventEmitter, inject, Input, Output, signal, computed } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
+import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-product-detail-modal',
+  standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './product-detail-modal.html',
   styleUrl: './product-detail-modal.css',
 })
 export class ProductDetailModal {
-  @Input({ required: true }) product!: Product;
+  @Input({ required: true }) product!: ProductWithHelpers;
   @Output() close = new EventEmitter<void>();
-  @Output() addToCart = new EventEmitter<{ product: Product; quantity: number }>();
+  @Output() addToCart = new EventEmitter<{ product: ProductWithHelpers; quantity: number }>();
 
-  private translate = inject(TranslateService);
   private currencyService = inject(CurrencyService);
 
   quantity = signal(1);
   selectedImageIndex = signal(0);
 
   get images(): string[] {
-    return this.product.images && this.product.images.length > 0
-      ? this.product.images
-      : [this.product.imageUrl];
+    return this.product.images;
   }
 
   get selectedImage(): string {
@@ -44,20 +33,19 @@ export class ProductDetailModal {
   canGoNext = computed(() => this.selectedImageIndex() < this.images.length - 1);
 
   get hasDiscount(): boolean {
-    return !!this.product.discountPercentage && this.product.discountPercentage > 0;
+    return this.product.hasDiscount;
   }
 
   get discountedPrice(): number {
-    if (!this.hasDiscount) return this.product.price;
-    return this.product.price * (1 - this.product.discountPercentage! / 100);
+    return this.product.price;
   }
 
   get formattedPrice(): string {
-    return this.currencyService.formatPrice(this.product.price);
+    return this.currencyService.formatPrice(this.product.priceNumber);
   }
 
   get formattedDiscountedPrice(): string {
-    return this.currencyService.formatPrice(this.discountedPrice);
+    return this.currencyService.formatPrice(this.product.price);
   }
 
   get totalPrice(): number {
@@ -77,31 +65,11 @@ export class ProductDetailModal {
   }
 
   get localizedName(): string {
-    const lang = this.translate.currentLang;
-    switch (lang) {
-      case 'hu':
-        return this.product.nameHu || this.product.name;
-      case 'en':
-        return this.product.nameEn || this.product.name;
-      case 'de':
-        return this.product.nameDe || this.product.name;
-      default:
-        return this.product.name;
-    }
+    return this.product.name;
   }
 
   get localizedDescription(): string {
-    const lang = this.translate.currentLang;
-    switch (lang) {
-      case 'hu':
-        return this.product.descriptionHu || this.product.description;
-      case 'en':
-        return this.product.descriptionEn || this.product.description;
-      case 'de':
-        return this.product.descriptionDe || this.product.description;
-      default:
-        return this.product.description;
-    }
+    return this.product.description;
   }
 
   selectImage(index: number): void {
@@ -133,10 +101,10 @@ export class ProductDetailModal {
   }
 
   getRatingStars(): string {
-    if (!this.product.rating) return '';
+    if (!this.product.ratingNumber) return '';
 
-    const fullStars = Math.floor(this.product.rating);
-    const hasHalfStar = this.product.rating % 1 >= 0.5;
+    const fullStars = Math.floor(this.product.ratingNumber);
+    const hasHalfStar = this.product.ratingNumber % 1 >= 0.5;
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
     return '★'.repeat(fullStars) + (hasHalfStar ? '⯨' : '') + '☆'.repeat(emptyStars);
@@ -157,20 +125,5 @@ export class ProductDetailModal {
     if (event.target === event.currentTarget) {
       this.handleClose();
     }
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey(): void {
-    this.handleClose();
-  }
-
-  @HostListener('document:keydown.arrowleft')
-  onArrowLeft(): void {
-    this.previousImage();
-  }
-
-  @HostListener('document:keydown.arrowright')
-  onArrowRight(): void {
-    this.nextImage();
   }
 }

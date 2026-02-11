@@ -21,6 +21,8 @@ PROJECT STRUCTURE
 │   │   │   ├── 📁 constants/
 │   │   │   │   └── 📄 visuals.ts
 │   │   │   ├── 📁 enums/
+│   │   │   ├── 📁 guards/
+│   │   │   │   └── 📄 auth.guard.ts
 │   │   │   ├── 📁 interceptors/
 │   │   │   │   └── 📄 auth.interceptors.ts
 │   │   │   ├── 📁 models/
@@ -191,9 +193,8 @@ PROJECT STRUCTURE
 │   │       │       └── 📄 slide.ts
 │   │       ├── 📁 directives/
 │   │       │   └── 📄 scroll-reveal.directive.ts
-│   │       ├── 📁 pipes/
-│   │       │   └── 📄 currency.pipe.ts
-│   │       └── 📄 shared.module.ts
+│   │       └── 📁 pipes/
+│   │           └── 📄 currency.pipe.ts
 │   ├── 📁 assets/
 │   │   ├── 📁 fonts/
 │   │   │   ├── 📁 Inconsolata/
@@ -579,7 +580,7 @@ FILE: src\app\app.html
 FILE: src\app\app.routes.ts
 ================================================================================
 
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
 import { Admin } from './pages/admin/admin';
 import { Blog } from './pages/blog/blog';
@@ -593,7 +594,6 @@ import { Products } from './pages/products/products';
 import { Profile } from './pages/profile/profile';
 import { Purchase } from './pages/purchase/purchase';
 import { Register } from './pages/register/register';
-import { NgModule } from '@angular/core';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -626,12 +626,6 @@ export const routes: Routes = [
   },
   { path: '**', component: NotFound },
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule],
-})
-export class AppRoutingModule {}
 
 
 
@@ -694,64 +688,64 @@ FILE: src\app\core\constants\visuals.ts
 ================================================================================
 
 export const ICONS = {
-  user: 'assets/icons/userwhite.png',
-  login: 'assets/icons/loginwhite.png',
+  user: 'assets/icons/userwhite.webp',
+  login: 'assets/icons/loginwhite.webp',
 
-  basket: 'assets/icons/basketwhite.png',
-  buy: 'assets/icons/buywhite.png',
+  basket: 'assets/icons/basketwhite.webp',
+  buy: 'assets/icons/buywhite.webp',
 
-  facebook: 'assets/icons/facebookwhite.png',
-  instagram: 'assets/icons/instagramwhite.png',
-  x: 'assets/icons/xwhite.png',
+  facebook: 'assets/icons/facebookwhite.webp',
+  instagram: 'assets/icons/instagramwhite.webp',
+  x: 'assets/icons/xwhite.webp',
 
-  support: 'assets/icons/supportwhite.png',
-  language: 'assets/icons/languagewhite.png',
-  arrow: 'assets/icons/arrowwhite.png',
-  search: 'assets/icons/searchwhite.png',
-  filter: 'assets/icons/filterwhite.png',
+  support: 'assets/icons/supportwhite.webp',
+  language: 'assets/icons/languagewhite.webp',
+  arrow: 'assets/icons/arrowwhite.webp',
+  search: 'assets/icons/searchwhite.webp',
+  filter: 'assets/icons/filterwhite.webp',
 
-  sun: 'assets/icons/sun.png',
-  moon: 'assets/icons/moon.png',
+  sun: 'assets/icons/sun.webp',
+  moon: 'assets/icons/moon.webp',
 
-  add: 'assets/icons/add.png',
-  delete: 'assets/icons/deletewhite.png',
-  edit: 'assets/icons/rename.png',
+  add: 'assets/icons/add.webp',
+  delete: 'assets/icons/deletewhite.webp',
+  edit: 'assets/icons/rename.webp',
 
-  info: 'assets/icons/infowhite.png',
-  calendar: 'assets/icons/calendarwhite.png',
-  location: 'assets/icons/locationwhite.png',
+  info: 'assets/icons/infowhite.webp',
+  calendar: 'assets/icons/calendarwhite.webp',
+  location: 'assets/icons/locationwhite.webp',
 
-  favorites: 'assets/icons/favoriteswhite.png',
-  order: 'assets/icons/orderwhite.png',
-  payment: 'assets/icons/paymentwhite.png',
-  shipping: 'assets/icons/shippingwhite.png',
+  favorites: 'assets/icons/favoriteswhite.webp',
+  order: 'assets/icons/orderwhite.webp',
+  payment: 'assets/icons/paymentwhite.webp',
+  shipping: 'assets/icons/shippingwhite.webp',
 
-  natural: 'assets/icons/naturalwhite.png',
-  mail: 'assets/icons/mailwhite.png',
-  phone: 'assets/icons/phonewhite.png',
-  sale: 'assets/icons/salewhite.png',
-  customers: 'assets/icons/customerswhite.png',
-  reports: 'assets/icons/reportwhite.png',
-  safetypay: 'assets/icons/safetypaywhite.png',
-  select: 'assets/icons/selectwhite.png',
-  share: 'assets/icons/sharewhite.png',
-  ship: 'assets/icons/shipwhite.png',
-  sort: 'assets/icons/sortwhite.png',
-  support247: 'assets/icons/247white.png',
+  natural: 'assets/icons/naturalwhite.webp',
+  mail: 'assets/icons/mailwhite.webp',
+  phone: 'assets/icons/phonewhite.webp',
+  sale: 'assets/icons/salewhite.webp',
+  customers: 'assets/icons/customerswhite.webp',
+  reports: 'assets/icons/reportwhite.webp',
+  safetypay: 'assets/icons/safetypaywhite.webp',
+  select: 'assets/icons/selectwhite.webp',
+  share: 'assets/icons/sharewhite.webp',
+  ship: 'assets/icons/shipwhite.webp',
+  sort: 'assets/icons/sortwhite.webp',
+  support247: 'assets/icons/247white.webp',
 } as const;
 
 export const IMAGES = {
-  logo: 'assets/images/ROYS_SHACK_WHITE.png',
+  logo: 'assets/images/ROYS_SHACK_WHITE.webp',
   heroBg: 'assets/images/herobg.jpg',
 
-  hero1: 'assets/images/hero1.png',
-  hero2: 'assets/images/hero2.png',
-  hero3: 'assets/images/hero3.png',
-  hero4: 'assets/images/hero4.png',
+  hero1: 'assets/images/hero1.webp',
+  hero2: 'assets/images/hero2.webp',
+  hero3: 'assets/images/hero3.webp',
+  hero4: 'assets/images/hero4.webp',
 
-  flagHungary: 'assets/images/Hungary.png',
-  flagEnglish: 'assets/images/English.png',
-  flagGerman: 'assets/images/German.png',
+  flagHungary: 'assets/images/Hungary.webp',
+  flagEnglish: 'assets/images/English.webp',
+  flagGerman: 'assets/images/German.webp',
 } as const;
 
 export type IconKey = keyof typeof ICONS;
@@ -760,15 +754,106 @@ export type ImageKey = keyof typeof IMAGES;
 
 
 ================================================================================
+FILE: src\app\core\guards\auth.guard.ts
+================================================================================
+
+import { inject } from '@angular/core';
+import { Router, CanActivateFn } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+
+/**
+ * Auth Guard - Védett route-ok kezelése
+ *
+ * Használat:
+ * {
+ *   path: 'profile',
+ *   component: ProfileComponent,
+ *   canActivate: [authGuard]
+ * }
+ */
+export const authGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isUserAuthenticated()) {
+    return true;
+  }
+
+  router.navigate(['/login'], {
+    queryParams: { returnUrl: state.url },
+  });
+
+  return false;
+};
+
+/**
+ * Admin Guard - Admin jogosultság ellenőrzése
+ *
+ * Használat:
+ * {
+ *   path: 'admin',
+ *   component: AdminComponent,
+ *   canActivate: [adminGuard]
+ * }
+ */
+export const adminGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isUserAuthenticated()) {
+    router.navigate(['/login'], {
+      queryParams: { returnUrl: state.url },
+    });
+    return false;
+  }
+
+  const currentUser = authService.currentUser();
+  if (currentUser?.role === 'admin' || currentUser?.account_state === 'admin') {
+    return true;
+  }
+
+  router.navigate(['/home']);
+  return false;
+};
+
+/**
+ * Guest Guard - Csak nem bejelentkezett usereknek
+ * Például login/register oldalaknál
+ *
+ * Használat:
+ * {
+ *   path: 'login',
+ *   component: LoginComponent,
+ *   canActivate: [guestGuard]
+ * }
+ */
+export const guestGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isUserAuthenticated()) {
+    router.navigate(['/home']);
+    return false;
+  }
+
+  return true;
+};
+
+
+
+================================================================================
 FILE: src\app\core\interceptors\auth.interceptors.ts
 ================================================================================
 
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const router = inject(Router);
   const token = authService.getToken();
 
   const publicEndpoints = [
@@ -782,16 +867,52 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const isPublicEndpoint = publicEndpoints.some((endpoint) => req.url.includes(endpoint));
 
+  let clonedRequest = req;
   if (token && !isPublicEndpoint) {
-    const clonedRequest = req.clone({
+    clonedRequest = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
     });
-    return next(clonedRequest);
+  } else if (!isPublicEndpoint) {
+    clonedRequest = req.clone({
+      setHeaders: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
 
-  return next(req);
+  return next(clonedRequest).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401) {
+        const errorType = error.error?.error;
+
+        if (errorType === 'hianyzo_auth_header') {
+          console.error('Missing authentication header');
+          if (!isPublicEndpoint) {
+            authService.logout();
+            router.navigate(['/login'], {
+              queryParams: { returnUrl: router.url },
+            });
+          }
+        } else if (errorType === 'hibas_token') {
+          console.error('Invalid or expired JWT token');
+          authService.logout();
+          router.navigate(['/login'], {
+            queryParams: {
+              returnUrl: router.url,
+              message: 'session_expired',
+            },
+          });
+        } else {
+          console.error('Authentication error:', error.error);
+        }
+      }
+
+      return throwError(() => error);
+    }),
+  );
 };
 
 
@@ -805,60 +926,84 @@ export interface User {
   email: string;
   firstname: string;
   lastname: string;
+  role?: string;
+  account_state?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export interface LoginRequest {
-  email: string;
-  password: string;
+  email: string; // Base64 encoded email
+  password: string; // Base64 encoded password
 }
 
 export interface LoginResponse {
   token: string; // JWT token
-  expires_in: number; // Token expiration in seconds (7 days = 604800)
+  expires_in: number; // Token expiration in seconds (default: 604800 = 7 days)
 }
 
 export interface RegistrationRequest {
-  email: string;
-  password: string;
-  firstname: string;
-  lastname: string;
+  email: string; // Base64 encoded email
+  password: string; // Base64 encoded password
+  firstname: string; // Base64 encoded first name
+  lastname: string; // Base64 encoded last name
 }
 
 export interface RegistrationPromiseRequest {
-  sessionToken: string;
+  id: string; // Base64 encoded user ID
+  token: string; // Base64 encoded confirmation token
 }
 
 export interface RegistrationResponse {
-  token: string;
-  user: User;
+  token: string; // JWT token
+  user: User; // User information
 }
 
 export interface PasswordChangeRequest {
-  email: string;
+  id: string; // Base64 encoded user ID
+  password: string; // Base64 encoded current password
 }
 
 export interface PasswordChangePromiseRequest {
-  sessionToken: string;
-  newPassword: string;
+  id: string; // Base64 encoded user ID
+  token: string; // Base64 encoded confirmation token
+}
+
+export interface AccountDeletionRequest {
+  id: string; // Base64 encoded user ID
+  password: string; // Base64 encoded password
+}
+
+export interface AccountDeletionPromiseRequest {
+  id: string; // Base64 encoded user ID
+  token: string; // Base64 encoded confirmation token
 }
 
 export interface ApiErrorResponse {
-  error: string;
-  message?: string;
-  statusCode?: number;
+  error: string; // Error code (e.g., "hianyzo_auth_header", "hibas_token")
+  message?: string; // Optional error message
+  statusCode?: number; // HTTP status code
 }
 
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  token: string | null;
-  expiresAt: Date | null;
+  token: string | null; // JWT token
+  expiresAt: Date | null; // Token expiration time
 }
 
-export interface StorageOptions {
-  stayLoggedIn: boolean;
+export interface JWTPayload {
+  sub?: string; // Subject (user ID)
+  email?: string;
+  name?: string;
+  exp?: number; // Expiration timestamp
+  iat?: number; // Issued at timestamp
+  iss?: string; // Issuer
+  aud?: string; // Audience
+  jti?: string; // JWT ID
+  // .NET specific claims
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'?: string;
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string;
 }
 
 
@@ -893,6 +1038,7 @@ export interface Product {
   packaging: string;
   created_at: string;
   updated_at: string;
+  name: string;
 }
 
 export interface ProductsApiResponse {
@@ -905,7 +1051,151 @@ export interface ProductWithHelpers extends Product {
   priceNumber: number;
   stockNumber: number;
   salePercentageNumber: number;
+  ratingNumber: number;
+
+  inStock: boolean;
+  hasDiscount: boolean;
+  requiresPrescription: boolean;
+
+  price: number;
+  discountPercentage: number;
+  stockQuantity: number;
+  reviewCount: number;
+
+  nameHu: string;
+  nameEn: string;
+  nameDe: string;
+  description: string;
+  descriptionHu: string;
+  descriptionEn: string;
+  descriptionDe: string;
+  activeIngredients: string;
+
   imageUrl: string;
+  images: string[];
+
+  dosage?: string;
+}
+
+export interface Category {
+  id: string;
+  slug: string;
+  name: string;
+  nameHu: string;
+  nameEn: string;
+  nameDe: string;
+  icon?: string;
+  count?: number;
+}
+
+export type SortOption =
+  | 'popularity'
+  | 'default'
+  | 'price-asc'
+  | 'price-desc'
+  | 'name-asc'
+  | 'name-desc'
+  | 'newest'
+  | 'rating'
+  | 'rating-desc';
+
+export interface ProductFilterOptions {
+  categories?: string[];
+  priceRange?: {
+    min: number;
+    max: number;
+  } | null;
+  minPrice?: number;
+  maxPrice?: number;
+  inStockOnly?: boolean;
+  hasDiscount?: boolean;
+  sortBy?: SortOption;
+  searchQuery?: string;
+  manufacturers?: string[];
+  brands?: string[];
+}
+
+export interface PaginationConfig {
+  currentPage: number;
+  itemsPerPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+// Helper function to convert Product to ProductWithHelpers
+export function enrichProduct(
+  product: Product,
+  currentLang: 'hu' | 'en' | 'de' = 'hu',
+): ProductWithHelpers {
+  const priceNumber = parseFloat(product.price_huf) || 0;
+  const stockNumber = parseFloat(product.stock) || 0;
+  const salePercentageNumber = parseFloat(product.sale_percentage) || 0;
+  const ratingNumber = parseFloat(product.rating) || 0;
+
+  const inStock = stockNumber > 0;
+  const hasDiscount = salePercentageNumber > 0;
+  const requiresPrescription = false;
+
+  const discountedPrice = hasDiscount
+    ? priceNumber * (1 - salePercentageNumber / 100)
+    : priceNumber;
+
+  let name = product.name || '';
+  let description = '';
+
+  switch (currentLang) {
+    case 'hu':
+      name = product.name_hu || product.name;
+      description = product.description_hu;
+      break;
+    case 'en':
+      name = product.name_en || product.name;
+      description = product.description_en;
+      break;
+    case 'de':
+      name = product.name_de || product.name;
+      description = product.description_de;
+      break;
+  }
+
+  return {
+    ...product,
+    // Override name with localized version
+    name,
+
+    priceNumber,
+    stockNumber,
+    salePercentageNumber,
+    ratingNumber,
+
+    inStock,
+    hasDiscount,
+    requiresPrescription,
+
+    price: discountedPrice,
+    discountPercentage: salePercentageNumber,
+    stockQuantity: stockNumber,
+    reviewCount: 0, // TODO: Can be computed from reviews table
+
+    nameHu: product.name_hu,
+    nameEn: product.name_en,
+    nameDe: product.name_de,
+    description,
+    descriptionHu: product.description_hu,
+    descriptionEn: product.description_en,
+    descriptionDe: product.description_de,
+    activeIngredients: product.active_ingredients,
+
+    // Image handling - placeholder URLs
+    imageUrl: `assets/images/products/${product.id || 'placeholder'}.webp`,
+    images: [
+      `assets/images/products/${product.id || 'placeholder'}.webp`,
+      `assets/images/products/${product.id || 'placeholder'}-2.webp`,
+      `assets/images/products/${product.id || 'placeholder'}-3.webp`,
+    ],
+
+    dosage: undefined,
+  };
 }
 
 
@@ -914,6 +1204,206 @@ export interface ProductWithHelpers extends Product {
 FILE: src\app\core\services\account.service.ts
 ================================================================================
 
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { AuthService } from './auth.service';
+import { User } from '../models/auth.model';
+
+export interface UpdateProfileRequest {
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+}
+
+export interface DeleteAccountRequest {
+  id: string; // Base64 encoded user ID
+  password: string; // Base64 encoded password
+}
+
+export interface ApiResponse<T = any> {
+  statuscode: string;
+  status: string;
+  message?: string;
+  data?: T;
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AccountService {
+  private readonly API_URL = 'https://api.roysshack.hu/api';
+  private http = inject(HttpClient);
+  private authService = inject(AuthService);
+
+  getProfile(): Observable<User> {
+    return this.http.get<User>(`${this.API_URL}/profile`).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Update user profile
+   * Requires JWT authentication
+   * @param updates Profile fields to update
+   */
+  updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
+    const encodedUpdates: any = {};
+
+    if (updates.firstname) {
+      encodedUpdates.firstname = this.encodeBase64(updates.firstname);
+    }
+    if (updates.lastname) {
+      encodedUpdates.lastname = this.encodeBase64(updates.lastname);
+    }
+    if (updates.email) {
+      encodedUpdates.email = this.encodeBase64(updates.email);
+    }
+
+    return this.http.put<ApiResponse<User>>(`${this.API_URL}/profile`, encodedUpdates).pipe(
+      tap((response) => {
+        console.log('Profile updated successfully');
+      }),
+      catchError(this.handleError),
+    );
+  }
+
+  /**
+   * Request account deletion
+   * Requires JWT authentication
+   * Sends confirmation email
+   * @param userId User's ID
+   * @param password User's password for confirmation
+   */
+  deleteAccountRequest(userId: string, password: string): Observable<ApiResponse> {
+    const request: DeleteAccountRequest = {
+      id: this.encodeBase64(userId),
+      password: this.encodeBase64(password),
+    };
+
+    return this.http.post<ApiResponse>(`${this.API_URL}/delacc_request`, request).pipe(
+      tap(() => {
+        console.log('Account deletion requested - confirmation email sent');
+      }),
+      catchError(this.handleError),
+    );
+  }
+
+  /**
+   * Confirm account deletion with token from email
+   * Requires JWT authentication
+   * @param userId User's ID
+   * @param token Confirmation token from email
+   */
+  confirmAccountDeletion(userId: string, token: string): Observable<ApiResponse> {
+    const request = {
+      id: this.encodeBase64(userId),
+      token: this.encodeBase64(token),
+    };
+
+    return this.http.post<ApiResponse>(`${this.API_URL}/delacc_promise`, request).pipe(
+      tap(() => {
+        console.log('Account deleted successfully');
+        this.authService.logout();
+      }),
+      catchError(this.handleError),
+    );
+  }
+
+  /**
+   * Change user password
+   * Requires JWT authentication
+   * @param userId User's ID
+   * @param currentPassword Current password for verification
+   * @param newPassword New password
+   */
+  changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Observable<ApiResponse> {
+    const request = {
+      id: this.encodeBase64(userId),
+      currentPassword: this.encodeBase64(currentPassword),
+      newPassword: this.encodeBase64(newPassword),
+    };
+
+    return this.http.post<ApiResponse>(`${this.API_URL}/change-password`, request).pipe(
+      tap(() => {
+        console.log('Password changed successfully');
+      }),
+      catchError(this.handleError),
+    );
+  }
+
+  getOrderHistory(): Observable<ApiResponse<any[]>> {
+    return this.http
+      .get<ApiResponse<any[]>>(`${this.API_URL}/orders`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getSavedAddresses(): Observable<ApiResponse<any[]>> {
+    return this.http
+      .get<ApiResponse<any[]>>(`${this.API_URL}/addresses`)
+      .pipe(catchError(this.handleError));
+  }
+
+  exampleAuthenticatedRequest(): Observable<any> {
+    return this.http
+      .get(`${this.API_URL}/some-protected-endpoint`)
+      .pipe(catchError(this.handleError));
+  }
+
+  // Helper methods
+
+  private encodeBase64(value: string): string {
+    try {
+      return btoa(unescape(encodeURIComponent(value)));
+    } catch (error) {
+      console.error('Base64 encoding error:', error);
+      return btoa(value);
+    }
+  }
+
+  private decodeBase64(value: string): string {
+    try {
+      return decodeURIComponent(escape(atob(value)));
+    } catch (error) {
+      console.error('Base64 decoding error:', error);
+      return atob(value);
+    }
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'An unknown error occurred';
+
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      switch (error.status) {
+        case 400:
+          errorMessage = 'account.errors.bad_request';
+          break;
+        case 401:
+          errorMessage = 'account.errors.unauthorized';
+          break;
+        case 403:
+          errorMessage = 'account.errors.forbidden';
+          break;
+        case 404:
+          errorMessage = 'account.errors.not_found';
+          break;
+        case 500:
+          errorMessage = 'account.errors.server_error';
+          break;
+        default:
+          errorMessage = error.error?.message || error.message || errorMessage;
+      }
+    }
+
+    console.error('Account Service Error:', errorMessage);
+    return throwError(() => new Error(errorMessage));
+  }
+}
 
 
 
@@ -943,7 +1433,7 @@ import {
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly API_URL = 'https://api.roysshack.hu';
+  private readonly API_URL = 'https://api.roysshack.hu/api';
 
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
@@ -975,6 +1465,7 @@ export class AuthService {
     private router: Router,
   ) {
     this.initAuth();
+    this.setupStorageListener();
   }
 
   private initAuth(): void {
@@ -996,12 +1487,40 @@ export class AuthService {
     }
   }
 
-  /**
-   * Login user
-   * @param email User email
-   * @param password User password
-   * @param stayLoggedIn Whether to persist session (localStorage vs sessionStorage)
-   */
+  private setupStorageListener(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (event) => {
+        if (event.key === this.TOKEN_KEY && event.newValue === null) {
+          this.updateAuthState({
+            isAuthenticated: false,
+            user: null,
+            token: null,
+            expiresAt: null,
+          });
+
+          if (!this.router.url.includes('/login')) {
+            this.router.navigate(['/login']);
+          }
+        }
+
+        if (event.key === this.TOKEN_KEY && event.newValue !== null) {
+          this.initAuth();
+        }
+      });
+    }
+  }
+
+  isTokenExpired(): boolean {
+    const expiresAt = this.authStateSignal().expiresAt;
+    if (!expiresAt) return true;
+
+    const now = new Date();
+    const expirationTime = new Date(expiresAt);
+    const fiveMinutes = 5 * 60 * 1000;
+
+    return now.getTime() >= expirationTime.getTime() - fiveMinutes;
+  }
+
   login(email: string, password: string, stayLoggedIn: boolean): Observable<LoginResponse> {
     const request: LoginRequest = {
       email: this.encodeBase64(email),
@@ -1012,7 +1531,7 @@ export class AuthService {
       tap((response) => {
         this.handleLoginSuccess(response, stayLoggedIn);
       }),
-      catchError(this.handleError),
+      catchError(this.handleError.bind(this)),
     );
   }
 
@@ -1026,20 +1545,17 @@ export class AuthService {
 
     return this.http
       .post<void>(`${this.API_URL}/registration_request`, request)
-      .pipe(catchError(this.handleError));
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
-  /**
-   * verify email with sessionToken
-   * @param sessionToken Token from email verification link
-   * @param stayLoggedIn Whether to persist session
-   */
   completeRegistration(
-    sessionToken: string,
+    id: string,
+    token: string,
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
     const request: RegistrationPromiseRequest = {
-      sessionToken,
+      id: this.encodeBase64(id),
+      token: this.encodeBase64(token),
     };
 
     return this.http
@@ -1048,33 +1564,34 @@ export class AuthService {
         tap((response) => {
           const loginResponse: LoginResponse = {
             token: response.token,
-            expires_in: 604800, // 7 days default
+            expires_in: 604800, // 7 days
           };
           this.handleLoginSuccess(loginResponse, stayLoggedIn, response.user);
         }),
-        catchError(this.handleError),
+        catchError(this.handleError.bind(this)),
       );
   }
 
-  requestPasswordChange(email: string): Observable<void> {
+  requestPasswordChange(id: string, email: string, password: string): Observable<void> {
     const request: PasswordChangeRequest = {
-      email: this.encodeBase64(email),
+      id: this.encodeBase64(id),
+      password: this.encodeBase64(password),
     };
 
     return this.http
       .post<void>(`${this.API_URL}/chpass_request`, request)
-      .pipe(catchError(this.handleError));
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
-  completePasswordChange(sessionToken: string, newPassword: string): Observable<void> {
+  completePasswordChange(id: string, token: string): Observable<void> {
     const request: PasswordChangePromiseRequest = {
-      sessionToken,
-      newPassword: this.encodeBase64(newPassword),
+      id: this.encodeBase64(id),
+      token: this.encodeBase64(token),
     };
 
     return this.http
       .post<void>(`${this.API_URL}/chpass_promise`, request)
-      .pipe(catchError(this.handleError));
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
   logout(): void {
@@ -1089,25 +1606,75 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return this.authStateSignal().token;
+    const token = this.authStateSignal().token;
+
+    if (token && this.isTokenExpired()) {
+      this.logout();
+      return null;
+    }
+
+    return token;
   }
 
   isUserAuthenticated(): boolean {
-    return this.authStateSignal().isAuthenticated;
+    const isAuth = this.authStateSignal().isAuthenticated;
+    const hasValidToken = this.getToken() !== null;
+    return isAuth && hasValidToken;
+  }
+
+  refreshAuthState(): void {
+    this.initAuth();
+  }
+
+  hasStoredSession(): boolean {
+    return this.getStoredToken() !== null;
+  }
+
+  private decodeJWT(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(''),
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
   }
 
   private handleLoginSuccess(response: LoginResponse, stayLoggedIn: boolean, user?: User): void {
     const expiresAt = new Date(Date.now() + response.expires_in * 1000);
 
-    this.storeToken(response.token, expiresAt, stayLoggedIn);
+    let userData = user;
+    if (!userData && response.token) {
+      const decoded = this.decodeJWT(response.token);
+      if (decoded) {
+        userData = {
+          id: decoded.sub || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+          email:
+            decoded.email ||
+            decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+          firstname: '',
+          lastname: '',
+        };
+      }
+    }
 
-    if (user) {
-      this.storeUser(user, stayLoggedIn);
+    this.clearStorage();
+
+    this.storeToken(response.token, expiresAt, stayLoggedIn);
+    if (userData) {
+      this.storeUser(userData, stayLoggedIn);
     }
 
     this.updateAuthState({
       isAuthenticated: true,
-      user: user || this.getStoredUser(),
+      user: userData || this.getStoredUser(),
       token: response.token,
       expiresAt,
     });
@@ -1199,7 +1766,14 @@ export class AuthService {
           errorMessage = 'auth.errors.bad_request';
           break;
         case 401:
-          errorMessage = 'auth.errors.invalid_credentials';
+          if (apiError?.error === 'hianyzo_auth_header') {
+            errorMessage = 'auth.errors.missing_auth_header';
+          } else if (apiError?.error === 'hibas_token') {
+            errorMessage = 'auth.errors.invalid_token';
+            this.logout();
+          } else {
+            errorMessage = 'auth.errors.invalid_credentials';
+          }
           break;
         case 404:
           errorMessage = 'auth.errors.not_found';
@@ -1226,12 +1800,12 @@ FILE: src\app\core\services\cart.service.ts
 ================================================================================
 
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { Product } from '../models/product.model';
+import { Product, ProductWithHelpers } from '../models/product.model';
 import { TranslationService } from './translation.service';
 import { CurrencyService } from './currency.service';
 
 export interface CartItem {
-  product: Product;
+  product: ProductWithHelpers;
   quantity: number;
 }
 
@@ -1319,7 +1893,7 @@ export class CartService {
     }
   }
 
-  addToCart(product: Product, quantity: number = 1): void {
+  addToCart(product: ProductWithHelpers, quantity: number = 1): void {
     const existingItem = this.cartItems().find((item) => item.product.id === product.id);
 
     if (existingItem) {
@@ -2162,7 +2736,9 @@ export class Email implements OnInit {
     this.isVerifying.set(true);
     this.errorMessage.set('');
 
-    this.authService.completeRegistration(token, true).subscribe({
+    const userId = this.route.snapshot.queryParams['id'] || '';
+
+    this.authService.completeRegistration(userId, token).subscribe({
       next: () => {
         this.isVerifying.set(false);
         this.isVerified.set(true);
@@ -3569,7 +4145,7 @@ export class PasswordResetRequest {
 
     this.isLoading.set(true);
 
-    this.authService.requestPasswordChange(this.email()).subscribe({
+    this.authService.requestPasswordChange('', this.email(), '').subscribe({
       next: () => {
         this.isLoading.set(false);
         this.isEmailSent.set(true);
@@ -4202,7 +4778,7 @@ FILE: src\app\pages\purchase\purchase.html
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
           <polyline points="22 4 12 14.01 9 11.01"></polyline>
         </svg>
-        <span>{{ successMessage() | translate }}</span>
+        <span>{{ successMessage() || '' | translate }}</span>
       </div>
     }
 
@@ -4213,7 +4789,7 @@ FILE: src\app\pages\purchase\purchase.html
           <line x1="12" y1="8" x2="12" y2="12"></line>
           <line x1="12" y1="16" x2="12.01" y2="16"></line>
         </svg>
-        <span>{{ errorMessage() | translate }}</span>
+        <span>{{ errorMessage() || '' | translate }}</span>
       </div>
     }
 
@@ -4952,19 +5528,161 @@ export class Register {
 FILE: src\app\services\product.service.ts
 ================================================================================
 
-import { Injectable } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, firstValueFrom } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Product, ProductsApiResponse } from '../core/models/product.model';
+import {
+  Product,
+  ProductsApiResponse,
+  ProductWithHelpers,
+  enrichProduct,
+  ProductFilterOptions,
+  PaginationConfig,
+  SortOption,
+} from '../core/models/product.model';
+import { TranslationService } from '../core/services/translation.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
   private readonly API_URL = 'https://api.roysshack.hu';
+  private http = inject(HttpClient);
+  private translationService = inject(TranslationService);
 
-  constructor(private http: HttpClient) {}
+  private allProductsSignal = signal<ProductWithHelpers[]>([]);
+  private filtersSignal = signal<ProductFilterOptions>({
+    categories: [],
+    priceRange: null,
+    inStockOnly: false,
+    sortBy: 'popularity',
+  });
+  private currentPageSignal = signal<number>(1);
+  private itemsPerPageSignal = signal<number>(30);
+
+  products = computed(() => this.allProductsSignal());
+  currentFilters = computed(() => this.filtersSignal());
+
+  private filteredProducts = computed(() => {
+    let products = this.allProductsSignal();
+    const filters = this.filtersSignal();
+
+    if (filters.categories && filters.categories.length > 0) {
+      products = products.filter((p) => filters.categories!.includes(p.category));
+    }
+
+    if (filters.priceRange) {
+      const { min, max } = filters.priceRange;
+      products = products.filter((p) => {
+        const price = p.price;
+        return price >= min && price <= max;
+      });
+    }
+
+    if (filters.inStockOnly) {
+      products = products.filter((p) => p.inStock);
+    }
+
+    if (filters.sortBy) {
+      products = this.sortProducts(products, filters.sortBy);
+    }
+
+    return products;
+  });
+
+  paginationState = computed<PaginationConfig>(() => {
+    const totalItems = this.filteredProducts().length;
+    const itemsPerPage = this.itemsPerPageSignal();
+    const currentPage = this.currentPageSignal();
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    return {
+      currentPage,
+      itemsPerPage,
+      totalItems,
+      totalPages,
+    };
+  });
+
+  paginatedProducts = computed(() => {
+    const filtered = this.filteredProducts();
+    const page = this.currentPageSignal();
+    const perPage = this.itemsPerPageSignal();
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+
+    return filtered.slice(start, end);
+  });
+
+  async loadProducts(): Promise<void> {
+    try {
+      const products = await firstValueFrom(this.getAllProducts());
+      const currentLang = this.translationService.getCurrentLanguage();
+      const enrichedProducts = products.map((p) => enrichProduct(p, currentLang));
+      this.allProductsSignal.set(enrichedProducts);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+      this.allProductsSignal.set([]);
+    }
+  }
+
+  setFilters(filters: Partial<ProductFilterOptions>): void {
+    this.filtersSignal.update((current) => ({
+      ...current,
+      ...filters,
+    }));
+    this.currentPageSignal.set(1);
+  }
+
+  clearFilters(): void {
+    this.filtersSignal.set({
+      categories: [],
+      priceRange: null,
+      inStockOnly: false,
+      sortBy: 'popularity',
+    });
+    this.currentPageSignal.set(1);
+  }
+
+  setPage(page: number): void {
+    const totalPages = this.paginationState().totalPages;
+    if (page >= 1 && page <= totalPages) {
+      this.currentPageSignal.set(page);
+    }
+  }
+
+  setItemsPerPage(count: number): void {
+    this.itemsPerPageSignal.set(count);
+    this.currentPageSignal.set(1);
+  }
+
+  private sortProducts(products: ProductWithHelpers[], sortBy: SortOption): ProductWithHelpers[] {
+    const sorted = [...products];
+
+    switch (sortBy) {
+      case 'popularity':
+        return sorted.sort((a, b) => parseFloat(b.times_ordered) - parseFloat(a.times_ordered));
+      case 'price-asc':
+        return sorted.sort((a, b) => a.price - b.price);
+      case 'price-desc':
+        return sorted.sort((a, b) => b.price - a.price);
+      case 'name-asc':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'name-desc':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      case 'rating':
+      case 'rating-desc':
+        return sorted.sort((a, b) => b.ratingNumber - a.ratingNumber);
+      case 'newest':
+        return sorted.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+      case 'default':
+      default:
+        return sorted;
+    }
+  }
 
   getAllProducts(): Observable<Product[]> {
     return this.http.get<ProductsApiResponse>(`${this.API_URL}/api/get_all_products`).pipe(
@@ -7185,23 +7903,23 @@ export class LanguageSwitcher implements OnInit {
     {
       code: 'en',
       name: 'English',
-      flagImage: 'assets/images/English.png',
+      flagImage: 'assets/images/English.webp',
     },
     {
       code: 'hu',
       name: 'Magyar',
-      flagImage: 'assets/images/Hungary.png',
+      flagImage: 'assets/images/Hungary.webp',
     },
     {
       code: 'de',
       name: 'Deutsch',
-      flagImage: 'assets/images/German.png',
+      flagImage: 'assets/images/German.webp',
     },
   ];
 
   constructor(
     private elementRef: ElementRef,
-    private translationService: TranslationService
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
@@ -7212,9 +7930,7 @@ export class LanguageSwitcher implements OnInit {
   }
 
   get currentLang(): Language {
-    return (
-      this.languages.find((lang) => lang.code === this.currentLanguage) || this.languages[1]
-    );
+    return this.languages.find((lang) => lang.code === this.currentLanguage) || this.languages[1];
   }
 
   toggleDropdown(): void {
@@ -7852,7 +8568,7 @@ FILE: src\app\shared\components\product-card\product-card.html
       class="add-to-cart-button"
       [class.compact]="compact"
       [disabled]="!canAddToCart"
-      (click)="handleAddToCart($event)"
+      (click)="onAddToCart()"
       [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName"
     >
       <span class="button-icon">🛒</span>
@@ -7862,7 +8578,7 @@ FILE: src\app\shared\components\product-card\product-card.html
     @if (!compact) {
       <button
         class="details-button"
-        (click)="handleViewDetails($event)"
+        (click)="onViewDetails()"
         [attr.aria-label]="('product.view_details' | translate) + ': ' + localizedName"
       >
         {{ 'product.view_details' | translate }}
@@ -7878,45 +8594,44 @@ FILE: src\app\shared\components\product-card\product-card.ts
 ================================================================================
 
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, Output, signal, computed } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Product } from '../../../core/models/product.model';
+import { TranslateModule } from '@ngx-translate/core';
+import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-product-card',
+  standalone: true,
   imports: [CommonModule, TranslateModule, RouterLink],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
 })
 export class ProductCard {
-  @Input({ required: true }) product!: Product;
+  @Input({ required: true }) product!: ProductWithHelpers;
   @Input() compact = false;
-  @Output() addToCart = new EventEmitter<Product>();
-  @Output() viewDetails = new EventEmitter<Product>();
-  @Output() quantityChange = new EventEmitter<{ product: Product; quantity: number }>();
+  @Output() addToCart = new EventEmitter<ProductWithHelpers>();
+  @Output() viewDetails = new EventEmitter<ProductWithHelpers>();
+  @Output() quantityChange = new EventEmitter<{ product: ProductWithHelpers; quantity: number }>();
 
   quantity = signal(1);
 
-  private translate = inject(TranslateService);
   private currencyService = inject(CurrencyService);
 
   get hasDiscount(): boolean {
-    return !!this.product.discountPercentage && this.product.discountPercentage > 0;
+    return this.product.hasDiscount;
   }
 
   get discountedPrice(): number {
-    if (!this.hasDiscount) return this.product.price;
-    return this.product.price * (1 - this.product.discountPercentage! / 100);
+    return this.product.price;
   }
 
   get formattedPrice(): string {
-    return this.currencyService.formatPrice(this.product.price);
+    return this.currencyService.formatPrice(this.product.priceNumber);
   }
 
   get formattedDiscountedPrice(): string {
-    return this.currencyService.formatPrice(this.discountedPrice);
+    return this.currencyService.formatPrice(this.product.price);
   }
 
   get canAddToCart(): boolean {
@@ -7928,31 +8643,11 @@ export class ProductCard {
   }
 
   get localizedName(): string {
-    const lang = this.translate.currentLang;
-    switch (lang) {
-      case 'hu':
-        return this.product.nameHu || this.product.name;
-      case 'en':
-        return this.product.nameEn || this.product.name;
-      case 'de':
-        return this.product.nameDe || this.product.name;
-      default:
-        return this.product.name;
-    }
+    return this.product.name;
   }
 
   get localizedDescription(): string {
-    const lang = this.translate.currentLang;
-    switch (lang) {
-      case 'hu':
-        return this.product.descriptionHu || this.product.description;
-      case 'en':
-        return this.product.descriptionEn || this.product.description;
-      case 'de':
-        return this.product.descriptionDe || this.product.description;
-      default:
-        return this.product.description;
-    }
+    return this.product.description;
   }
 
   increaseQuantity(): void {
@@ -7969,18 +8664,13 @@ export class ProductCard {
     }
   }
 
-  handleAddToCart(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-
+  onAddToCart(): void {
     if (this.canAddToCart) {
       this.addToCart.emit(this.product);
     }
   }
 
-  handleViewDetails(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
+  onViewDetails(): void {
     this.viewDetails.emit(this.product);
   }
 }
@@ -8844,41 +9534,30 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.ts
 ================================================================================
 
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  HostListener,
-  inject,
-  Input,
-  Output,
-  signal,
-  computed,
-} from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Product } from '../../../core/models/product.model';
+import { Component, EventEmitter, inject, Input, Output, signal, computed } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
+import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 
 @Component({
   selector: 'app-product-detail-modal',
+  standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './product-detail-modal.html',
   styleUrl: './product-detail-modal.css',
 })
 export class ProductDetailModal {
-  @Input({ required: true }) product!: Product;
+  @Input({ required: true }) product!: ProductWithHelpers;
   @Output() close = new EventEmitter<void>();
-  @Output() addToCart = new EventEmitter<{ product: Product; quantity: number }>();
+  @Output() addToCart = new EventEmitter<{ product: ProductWithHelpers; quantity: number }>();
 
-  private translate = inject(TranslateService);
   private currencyService = inject(CurrencyService);
 
   quantity = signal(1);
   selectedImageIndex = signal(0);
 
   get images(): string[] {
-    return this.product.images && this.product.images.length > 0
-      ? this.product.images
-      : [this.product.imageUrl];
+    return this.product.images;
   }
 
   get selectedImage(): string {
@@ -8889,20 +9568,19 @@ export class ProductDetailModal {
   canGoNext = computed(() => this.selectedImageIndex() < this.images.length - 1);
 
   get hasDiscount(): boolean {
-    return !!this.product.discountPercentage && this.product.discountPercentage > 0;
+    return this.product.hasDiscount;
   }
 
   get discountedPrice(): number {
-    if (!this.hasDiscount) return this.product.price;
-    return this.product.price * (1 - this.product.discountPercentage! / 100);
+    return this.product.price;
   }
 
   get formattedPrice(): string {
-    return this.currencyService.formatPrice(this.product.price);
+    return this.currencyService.formatPrice(this.product.priceNumber);
   }
 
   get formattedDiscountedPrice(): string {
-    return this.currencyService.formatPrice(this.discountedPrice);
+    return this.currencyService.formatPrice(this.product.price);
   }
 
   get totalPrice(): number {
@@ -8922,31 +9600,11 @@ export class ProductDetailModal {
   }
 
   get localizedName(): string {
-    const lang = this.translate.currentLang;
-    switch (lang) {
-      case 'hu':
-        return this.product.nameHu || this.product.name;
-      case 'en':
-        return this.product.nameEn || this.product.name;
-      case 'de':
-        return this.product.nameDe || this.product.name;
-      default:
-        return this.product.name;
-    }
+    return this.product.name;
   }
 
   get localizedDescription(): string {
-    const lang = this.translate.currentLang;
-    switch (lang) {
-      case 'hu':
-        return this.product.descriptionHu || this.product.description;
-      case 'en':
-        return this.product.descriptionEn || this.product.description;
-      case 'de':
-        return this.product.descriptionDe || this.product.description;
-      default:
-        return this.product.description;
-    }
+    return this.product.description;
   }
 
   selectImage(index: number): void {
@@ -8978,10 +9636,10 @@ export class ProductDetailModal {
   }
 
   getRatingStars(): string {
-    if (!this.product.rating) return '';
+    if (!this.product.ratingNumber) return '';
 
-    const fullStars = Math.floor(this.product.rating);
-    const hasHalfStar = this.product.rating % 1 >= 0.5;
+    const fullStars = Math.floor(this.product.ratingNumber);
+    const hasHalfStar = this.product.ratingNumber % 1 >= 0.5;
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
     return '★'.repeat(fullStars) + (hasHalfStar ? '⯨' : '') + '☆'.repeat(emptyStars);
@@ -9002,21 +9660,6 @@ export class ProductDetailModal {
     if (event.target === event.currentTarget) {
       this.handleClose();
     }
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKey(): void {
-    this.handleClose();
-  }
-
-  @HostListener('document:keydown.arrowleft')
-  onArrowLeft(): void {
-    this.previousImage();
-  }
-
-  @HostListener('document:keydown.arrowright')
-  onArrowRight(): void {
-    this.nextImage();
   }
 }
 
@@ -9624,7 +10267,7 @@ FILE: src\app\shared\components\product-list\product-list.html
 <div class="product-list-page">
   <app-category-bar
     [categories]="categories"
-    [selectedCategories]="filters().categories"
+    [selectedCategories]="filters().categories || []"
     (categorySelected)="handleCategorySelected($event)"
     (clearCategories)="handleClearCategories()"
   />
@@ -9692,7 +10335,7 @@ FILE: src\app\shared\components\product-list\product-list.ts
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { Product, Category } from '../../../core/models/product.model';
+import { Product, Category, ProductWithHelpers } from '../../../core/models/product.model';
 import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { CategoryBar } from '../category-bar/category-bar';
@@ -9724,7 +10367,7 @@ export class ProductList {
   filters = this.productService.currentFilters;
   allProducts = this.productService.products;
 
-  selectedProduct: Product | null = null;
+  selectedProduct: ProductWithHelpers | null = null;
   showModal = false;
 
   categories: Category[] = [
@@ -9789,7 +10432,7 @@ export class ProductList {
   }
 
   handleCategorySelected(categoryId: string): void {
-    const currentCategories = this.filters().categories;
+    const currentCategories = this.filters().categories || [];
     const updated = currentCategories.includes(categoryId)
       ? currentCategories.filter((c) => c !== categoryId)
       : [...currentCategories, categoryId];
@@ -9819,17 +10462,17 @@ export class ProductList {
     this.scrollToTop();
   }
 
-  handleAddToCart(product: Product): void {
+  handleAddToCart(product: ProductWithHelpers): void {
     this.cartService.addToCart(product, 1);
     console.log('Added to cart:', product.name);
   }
 
-  handleAddToCartFromModal(event: { product: Product; quantity: number }): void {
+  handleAddToCartFromModal(event: { product: ProductWithHelpers; quantity: number }): void {
     this.cartService.addToCart(event.product, event.quantity);
     console.log(`Added ${event.quantity}x ${event.product.name} to cart`);
   }
 
-  handleViewDetails(product: Product): void {
+  handleViewDetails(product: ProductWithHelpers): void {
     this.selectedProduct = product;
     this.showModal = true;
     document.body.style.overflow = 'hidden';
@@ -10397,10 +11040,10 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 })
 export class Slide implements OnInit, OnDestroy {
   slides = [
-    { image: 'assets/images/hero1.png' },
-    { image: 'assets/images/hero2.png' },
-    { image: 'assets/images/hero3.png' },
-    { image: 'assets/images/hero4.png' },
+    { image: 'assets/images/hero1.webp' },
+    { image: 'assets/images/hero2.webp' },
+    { image: 'assets/images/hero3.webp' },
+    { image: 'assets/images/hero4.webp' },
   ];
 
   currentIndex = 0;
@@ -10588,13 +11231,6 @@ export class CurrencyPipe implements PipeTransform {
     return this.currencyService.formatPrice(value);
   }
 }
-
-
-
-================================================================================
-FILE: src\app\shared\shared.module.ts
-================================================================================
-
 
 
 
