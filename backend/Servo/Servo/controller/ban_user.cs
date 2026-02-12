@@ -82,7 +82,7 @@ namespace Servo.controller
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message}  --controller.ban_user.main");
+                service.shared.log($"Error 1: {ex.Message}  --controller.ban_user.main");
                 data.Response.StatusCode = 400;
                 byte[] buffer = Encoding.UTF8.GetBytes("Hibas request");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);

@@ -41,7 +41,7 @@ namespace Servo.controller
             
        
 
-            string id = "";
+            string email = "";
             string controller_jelszo = "";
 
             try
@@ -57,12 +57,12 @@ namespace Servo.controller
 
                 try { 
                 JObject jsonObj = JObject.Parse(lenyeg);
-                id = service.shared.b64dec(jsonObj["id"].ToString());
+                email = service.shared.b64dec(jsonObj["email"].ToString());
                 controller_jelszo = service.shared.b64dec(jsonObj["password"].ToString());
                 }
                 catch
                 {
-                    service.shared.log($"Debug: hibas input --controller.chpass_request 0");
+                    service.shared.log($"Debug 1: hibas input --controller.chpass_request");
                     data.Response.StatusCode = 400;
                     byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
@@ -71,9 +71,9 @@ namespace Servo.controller
                 int resp = 0;
                 try
                 {
-                    resp = service.chpass_request.process_chpas_request(id, controller_jelszo, data.Request.RemoteEndPoint.Address.ToString());
+                    resp = service.chpass_request.process_chpas_request(email, controller_jelszo, data.Request.RemoteEndPoint.Address.ToString());
                 }
-                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --controller.chpass_request 1 "); }
+                catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --controller.chpass_request"); }
 
                     // SERVICE
 
@@ -98,7 +98,7 @@ namespace Servo.controller
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --controller.chpass_request 2 ");
+                service.shared.log($"Error 2: {ex.Message} --controller.chpass_request");
                 data.Response.StatusCode = 400;
                 byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);

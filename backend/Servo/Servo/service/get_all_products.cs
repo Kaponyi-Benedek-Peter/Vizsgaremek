@@ -23,7 +23,7 @@ namespace Servo.service
             {
                 resp = model.get_all_products.communicate_get_all_products();
             }
-            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.get_all_products.process_get_all_products 1"); }
+            catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.get_all_products.process_get_all_products"); }
 
            
             /*try
@@ -48,7 +48,7 @@ namespace Servo.service
 
             if (resp["statuscode"].ToString() == "500")
             {
-                shared.log($"Debug: {resp["status"]} --service.chpass_promise.process_chpass_promise");
+                shared.log($"Debug 1: {resp["status"]} --service.chpass_promise.process_chpass_promise");
                 return "error";
             }
             else

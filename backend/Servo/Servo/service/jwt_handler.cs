@@ -18,15 +18,15 @@ public static class jwt_handler
 
     public static string generate_token(string email)
     {
-        string user_id = Servo.model.shared.get_id_by_email(email);
+        string session_token = Servo.model.shared.get_token_by_id(Servo.model.shared.get_id_by_email(email));
+
         var claims = new[]
         {
 
 
 
-            new Claim(ClaimTypes.Name, user_id),
+            new Claim(ClaimTypes.Authentication, session_token),
             new Claim(ClaimTypes.Email, email),
-            new Claim(JwtRegisteredClaimNames.Sub, user_id),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

@@ -55,10 +55,11 @@ namespace Servo.service
 
 
 
-        public static int process_chpas_request(string controller_id,string controller_jelszo_uj,string ip)
+        public static int process_chpas_request(string controller_email,string controller_jelszo_uj,string ip)
         {
             try
             {
+                string controller_id = model.shared.get_id_by_email(controller_email);
                 string fetched_token = model.shared.get_token_by_id(controller_id);
 
                 string jelszo_uj = controller_jelszo_uj; //service.shared.Decrypt(fetched_token, controller_jelszo_uj);
@@ -68,10 +69,9 @@ namespace Servo.service
 
                 string model_password = model.shared.get_passhash_by_id(controller_id);
                 string accstate = model.shared.get_account_state_by_id(controller_id);
-                service.shared.log($"Debug: {accstate} --service.chpass_request.process_chpas_request ");
+                service.shared.log($"Debug 1: {accstate} --service.chpass_request.process_chpas_request ");
                 if (accstate == "verified")
                 {
-                    string controller_email = model.shared.get_email_by_id(controller_id);
 
                     int result1 = model.shared.delete_confirmations_by_user_id_and_type(controller_id, "password_change");
                     if (result1 == 200)
@@ -92,7 +92,7 @@ namespace Servo.service
                     return 500;
                 }
             }
-            catch (Exception e) { service.shared.log($"Error: {e.Message} --service.chpass_request.process_chpas_request 1");return 1500; }
+            catch (Exception e) { service.shared.log($"Error 1: {e.Message} --service.chpass_request.process_chpas_request");return 1500; }
 
         }
 

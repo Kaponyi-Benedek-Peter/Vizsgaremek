@@ -226,8 +226,8 @@ namespace Servo.controller
                         catch (Exception ex)
                         {
                             data.Response.StatusCode = 500;
-                            byte[] buffer = Encoding.UTF8.GetBytes("error"); // elhallgatni a hibát és alattomos módon lejelenteni 3 sorral lejjebb
-                            data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                            byte[] buffer = Encoding.UTF8.GetBytes("server_error"); // köpönyegforgató módon elhallgatni a hibát és lejelenteni 3 sorral lejjebb
+                        data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                             Form1.Instance.updateerrorcount();
                         service.shared.log($"{data.Request.RemoteEndPoint.Address.ToString()} --> {hely.Split(new string[] { "\\public\\" }, StringSplitOptions.None)[1]} || ERROR: + {ex.Message}");
                         }

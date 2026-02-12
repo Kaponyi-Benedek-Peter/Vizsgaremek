@@ -55,7 +55,7 @@ namespace Servo
                     catch (Exception ex)
                     {
 
-                        service.shared.log($"Error: {ex.Message} --lib.shared.start_server > server");
+                        service.shared.log($"Error 1: {ex.Message} --lib.shared.start_server > server");
                     }
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -75,7 +75,7 @@ namespace Servo
                     }
                     catch (Exception ex)
                     {
-                        service.shared.log($"Error: {ex.Message} --lib.shared.start_server > email_auth refresh");
+                        service.shared.log($"Error 2: {ex.Message} --lib.shared.start_server > email_auth refresh");
                     }
 
 
@@ -106,7 +106,7 @@ namespace Servo
                     }
                     catch (Exception ex)
                     {
-                        service.shared.log($"Error: {ex.Message} --lib.exchange_rates");
+                        service.shared.log($"Error 3: {ex.Message} --lib.shared > exhange_rates");
                     }
 
                     Thread.Sleep(3000000);

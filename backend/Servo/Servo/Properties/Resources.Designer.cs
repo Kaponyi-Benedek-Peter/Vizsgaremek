@@ -59,5 +59,25 @@ namespace Servo.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon roy_icon {
+            get {
+                object obj = ResourceManager.GetObject("roy_icon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon roy_icon_black {
+            get {
+                object obj = ResourceManager.GetObject("roy_icon_black", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }

@@ -42,7 +42,7 @@ namespace Servo.model
                 return 200;
             }
             catch (Exception ex) {
-                service.shared.log($"Error: {ex.Message} --model.registration_promise.main 1");
+                service.shared.log($"Error 1: {ex.Message} --model.registration_promise.main");
                 return 500;
                 
             }

@@ -271,7 +271,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_email_by_id");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_email_by_id");
                 return "500";
             }
 
@@ -309,7 +309,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_token_by_id");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_token_by_id");
                 return "500";
             }
 
@@ -359,7 +359,7 @@ namespace Servo.model
                 
             }
             catch (Exception ex) {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_full_confirmation_by_user_id");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_full_confirmation_by_user_id");
                 list["error"] = "true";
             }
 
@@ -397,7 +397,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_account_state_by_id");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_account_state_by_id");
                 return "500";
 
             }
@@ -434,7 +434,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_passhash_by_id");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_passhash_by_id");
                 return "500";
 
             }
@@ -472,7 +472,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_sesstoken_expiration_by_id");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_sesstoken_expiration_by_id");
                 return "500";
 
             }
@@ -510,7 +510,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.get_id_by_email");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_id_by_email");
                 return "500";
             }
 
@@ -537,7 +537,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.add_confirmation");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_confirmation");
                 return 500;
             }
         }
@@ -563,7 +563,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.delete_confirmations_by_user_id_and_type");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_confirmations_by_user_id_and_type");
                 return 500;
             }
         }
@@ -623,7 +623,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.add_product");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_product");
                 return 500;
             }
         }
@@ -675,7 +675,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.add_review");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_review");
                 return 500;
             }
         }
@@ -696,7 +696,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_reviews");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_all_reviews");
                 return 500;
             }
         }
@@ -750,7 +750,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.add_order");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_order");
                 return 500;
             }
         }
@@ -788,7 +788,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.refresh_token 9");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.refresh_token");
                 return "500";
 
             }
@@ -816,7 +816,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_users 10");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_all_users");
                 return 500;
             }
         }
@@ -837,7 +837,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_confirmations 11");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_all_confirmations");
                 return 500;
             }
         }
@@ -857,7 +857,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_orders 12");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_all_orders");
                 return 500;
             }
         }
@@ -878,7 +878,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_posts 13");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_all_posts");
                 return 500;
             }
         }
@@ -900,7 +900,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.shared.delete_all_products 14");
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_all_products");
                 return 500;
             }
         }

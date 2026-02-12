@@ -23,7 +23,7 @@ namespace Servo.service
                 string model_recieved_token = model.shared.get_token_by_id(controller_id);
 
 
-                service.shared.log($"Debug: {model_recieved_token} || {accstate} --service.registration_promise.process_registration_promise 1");
+                service.shared.log($"Debug 1: {model_recieved_token} || {accstate} --service.registration_promise.process_registration_promise");
                 if (accstate == "500")
                 {
                     return 404;
@@ -33,13 +33,13 @@ namespace Servo.service
                     var test=model.registration_promise.main(controller_id);
                     //MessageBox.Show(test.ToString());
 
-                    service.shared.log($"Debug: {test.ToString()} --service.registration_promise.process_registration_promise 2");
+                    service.shared.log($"Debug 2: {test.ToString()} --service.registration_promise.process_registration_promise");
 
 
                     if (test == 200)
                     {
 
-                        service.shared.log($"Debug: {accstate} --service.registration_promise.process_registration_promise 3");
+                        service.shared.log($"Debug 3: {accstate} --service.registration_promise.process_registration_promise");
 
                         return 200;
                         
@@ -60,13 +60,13 @@ namespace Servo.service
                     }
                     else if (accstate == "verified")
                     {
-                        service.shared.log($"Debug: {accstate} --service.registration_promise.process_registration_promise 4");
+                        service.shared.log($"Debug 4: {accstate} --service.registration_promise.process_registration_promise");
                         return 409;
                     }
 
                     else
                     {
-                        service.shared.log($"Debug: {accstate} --service.registration_promise.process_registration_promise 5");
+                        service.shared.log($"Debug 5: {accstate} --service.registration_promise.process_registration_promise");
                         return 500;
                     }
                     // nem oké
@@ -75,7 +75,7 @@ namespace Servo.service
                 }
 
             }
-            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.registration_promise.process_registration_promise 2");return 404; }
+            catch (Exception ex) { service.shared.log($"Error 2: {ex.Message} --service.registration_promise.process_registration_promise");return 404; }
 
         }
 

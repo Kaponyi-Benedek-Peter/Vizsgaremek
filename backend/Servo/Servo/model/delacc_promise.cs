@@ -32,7 +32,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.delacc_promise.delete_account 1");
+                service.shared.log($"Error 1: {ex.Message} --model.delacc_promise.delete_account");
                 return 500;
             }
         }

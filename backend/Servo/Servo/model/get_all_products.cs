@@ -67,7 +67,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --model.get_all_products.communicate_get_all_products");
+                service.shared.log($"Error 1: {ex.Message} --model.get_all_products.communicate_get_all_products");
                 result["statuscode"] = "500";
                 result["status"] = "unknown error";
 

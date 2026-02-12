@@ -67,7 +67,7 @@ namespace Servo.controller
                 {
                     resp = service.delacc_promise.process_delacc_promise(id, confirmation_token, data.Request.RemoteEndPoint.Address.ToString());
                 }
-                catch (Exception ex) { service.shared.log($"Error: {ex.Message} --controller.delacc_promise.main");}
+                catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --controller.delacc_promise.main");}
 
                 
                 if (resp == 200)
@@ -91,7 +91,7 @@ namespace Servo.controller
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error: {ex.Message} --controller.delacc_promise.main 2");
+                service.shared.log($"Error 2: {ex.Message} --controller.delacc_promise.main");
                 data.Response.StatusCode = 400;
                 byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);

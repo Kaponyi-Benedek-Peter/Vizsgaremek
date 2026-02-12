@@ -15,7 +15,7 @@ namespace Servo.service
             string id = model.shared.get_id_by_email(email);
             string model_password = model.shared.get_passhash_by_id(id);
             string accstate = model.shared.get_account_state_by_id(id);
-            service.shared.log($"Debug: {service.shared.hashpass(controller_jelszo)} || {model_password} --service.login.process_login 1");
+            service.shared.log($"Debug 1: {service.shared.hashpass(controller_jelszo)} || {model_password} --service.login.process_login");
             if (model_password == service.shared.hashpass(controller_jelszo) && accstate == "verified")
             {
                 // bejelentkeztetés oké

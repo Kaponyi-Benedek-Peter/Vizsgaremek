@@ -23,7 +23,7 @@ namespace Servo.service
             {
                 resp = model.shared.get_full_confirmation_by_user_id(controller_id,"password_change");
             }
-            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.process_chpass_promise 1"); }
+            catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.chpass_promise.process_chpass_promise"); }
 
             string recieved_token=""; 
             string expirationdate="";
@@ -37,7 +37,7 @@ namespace Servo.service
              new_passhash = resp["new_value"];
 
             }
-            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.process_chpass_promise 2"); }
+            catch (Exception ex) { service.shared.log($"Error 2: {ex.Message} --service.chpass_promise.process_chpass_promise"); }
 
 
             string fetched_token = model.shared.get_token_by_id(controller_id);
@@ -54,7 +54,7 @@ namespace Servo.service
 
             if (resp["error"] == "true" && resp["type"] != "password_change")
             {
-                shared.log($"Debug: {resp["type"]} --service.chpass_promise.process_chpass_promise");
+                shared.log($"Debug 1: {resp["type"]} --service.chpass_promise.process_chpass_promise");
                 return 401;
             }
             else { 
@@ -75,7 +75,7 @@ namespace Servo.service
                     }
                     else
                     {
-                        shared.log($"Debug: {controller_confirmation_token} > {recieved_token} --service.chpass_promise.process_chpass_promise X");
+                        shared.log($"Debug 1: {controller_confirmation_token} > {recieved_token} --service.chpass_promise.process_chpass_promise X");
                         return 401;
 
                     }
