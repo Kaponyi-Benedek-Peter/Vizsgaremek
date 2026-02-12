@@ -85,12 +85,13 @@ namespace Servo.model
             public string created_at { get; set; } = "";
             public string updated_at { get; set; } = "";
             public string packaging { get; set; } = "";
+            public string thumbnail_url { get; set; } = "";
         }
 
 
             public class review
             {
-                public string product_id;
+                public string product_id { get; set; } = "";
                 public string title { get; set; } = "";
                 public string body { get; set; } = "";
                 public string rating { get; set; } = "";
@@ -99,9 +100,19 @@ namespace Servo.model
                 
             }
 
+        public class product_image
+        {
+            public string alt_text_hu { get; set; } = "";
+            public string alt_text_en { get; set; } = "";
+            public string alt_text_de { get; set; } = "";
+            public string image_url { get; set; } = "";
+            public int sort_id { get; set; } = 0;
+            public int product_id { get; set; } = 0;
+        }
 
 
-            public static void init()
+
+        public static void init()
         {
             conn= new MySqlConnection(connStr);
             conn.Open();
@@ -613,6 +624,8 @@ namespace Servo.model
                     cmd.Parameters.AddWithValue("@p_packaging", prod.packaging);
                     cmd.Parameters.AddWithValue("@p_created_at", prod.created_at);
                     cmd.Parameters.AddWithValue("@p_updated_at", prod.updated_at);
+                    cmd.Parameters.AddWithValue("@p_thumbnail_url", prod.thumbnail_url);
+
 
 
 
@@ -904,6 +917,119 @@ namespace Servo.model
                 return 500;
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public static int add_product_image(product_image img)
+        {
+
+
+
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("create_product_image", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    /*
+                     	p_alt_text_de,
+                        p_alt_text_en,
+                        p_alt_text_hu,
+                        p_image_url,
+                        p_sort_id,
+                        p_product_id
+                     */
+
+                    cmd.Parameters.AddWithValue("@p_alt_text_de", img.alt_text_de);
+                    cmd.Parameters.AddWithValue("@p_alt_text_en", img.alt_text_en);
+                    cmd.Parameters.AddWithValue("@p_alt_text_hu", img.alt_text_hu);
+                    cmd.Parameters.AddWithValue("@p_image_url", img.image_url);
+                    cmd.Parameters.AddWithValue("@p_sort_id", img.sort_id);
+                    cmd.Parameters.AddWithValue("@p_product_id", img.product_id);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_product_image");
+                return 500;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

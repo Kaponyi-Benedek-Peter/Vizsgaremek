@@ -20,32 +20,41 @@ namespace Servo
 
         public void start_server(int port)
         {
+            //service.shared.log("[starting server 1.1]");
+
             isrunning = true;
             service.shared.init();
             jwt_handler.init();
-
+            //service.shared.log("[starting server 1.2]");
 
             hallgatozo.Prefixes.Add($"http://+:{port.ToString()}/");
 
             hallgatozo.Start();
-            service.shared.log("[server started 1/1]");
-            service.shared.log($"hosting at: http://localhost:{port}/");
-            service.shared.log($"hosting from: {service.shared.baseDir}\n");
 
+            //service.shared.log("[starting server 1.3]");
+
+            //service.shared.log("[server started 1/1]");
+            //service.shared.log($"hosting at: http://localhost:{port}/");
+            //service.shared.log($"hosting from: {service.shared.baseDir}\n");
+
+            //service.shared.log("[starting server 2]");
 
             cts = new CancellationTokenSource();
             var token = cts.Token;
 
             server_main = Task.Factory.StartNew(() =>
             {
+                //service.shared.log("[starting server 3]");
                 while (!token.IsCancellationRequested)
                 {
                     try
                     {
+                        //service.shared.log("[starting server 4]");
                         HttpListenerContext context = hallgatozo.GetContext();
                         ThreadPool.QueueUserWorkItem(o => controller.router.main(context, service.shared.baseDir));
 
                         Form1.Instance.updateconnections();
+                        //service.shared.log("[starting server 5]");
                     }
                     catch (HttpListenerException ex) when (token.IsCancellationRequested)
                     {

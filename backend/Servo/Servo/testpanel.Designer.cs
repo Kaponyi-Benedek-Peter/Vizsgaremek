@@ -45,9 +45,12 @@
             this.button12 = new System.Windows.Forms.Button();
             this.button13 = new System.Windows.Forms.Button();
             this.button14 = new System.Windows.Forms.Button();
-            this.product_id_tbox = new System.Windows.Forms.TextBox();
+            this.reviews_tbox = new System.Windows.Forms.TextBox();
             this.orders_tbox = new System.Windows.Forms.TextBox();
             this.confirmations_tbox = new System.Windows.Forms.TextBox();
+            this.product_image_tbox = new System.Windows.Forms.TextBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button15 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // otptestbox
@@ -55,10 +58,10 @@
             this.otptestbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.otptestbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.otptestbox.ForeColor = System.Drawing.Color.White;
-            this.otptestbox.Location = new System.Drawing.Point(163, 73);
+            this.otptestbox.Location = new System.Drawing.Point(236, 82);
             this.otptestbox.Margin = new System.Windows.Forms.Padding(4);
             this.otptestbox.Name = "otptestbox";
-            this.otptestbox.Size = new System.Drawing.Size(143, 37);
+            this.otptestbox.Size = new System.Drawing.Size(347, 37);
             this.otptestbox.TabIndex = 31;
             this.otptestbox.Text = "kerepesi.aron@szechenyi.hu";
             // 
@@ -69,13 +72,14 @@
             this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button5.ForeColor = System.Drawing.Color.White;
-            this.button5.Location = new System.Drawing.Point(163, 13);
+            this.button5.Location = new System.Drawing.Point(13, 73);
             this.button5.Margin = new System.Windows.Forms.Padding(4);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(143, 52);
+            this.button5.Size = new System.Drawing.Size(215, 52);
             this.button5.TabIndex = 30;
             this.button5.Text = "Test magic link";
             this.button5.UseVisualStyleBackColor = false;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // button4
             // 
@@ -87,7 +91,7 @@
             this.button4.Location = new System.Drawing.Point(13, 13);
             this.button4.Margin = new System.Windows.Forms.Padding(4);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(143, 52);
+            this.button4.Size = new System.Drawing.Size(215, 52);
             this.button4.TabIndex = 29;
             this.button4.Text = "Test email";
             this.button4.UseVisualStyleBackColor = false;
@@ -98,10 +102,10 @@
             this.textBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox1.ForeColor = System.Drawing.Color.White;
-            this.textBox1.Location = new System.Drawing.Point(13, 73);
+            this.textBox1.Location = new System.Drawing.Point(236, 22);
             this.textBox1.Margin = new System.Windows.Forms.Padding(4);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(143, 37);
+            this.textBox1.Size = new System.Drawing.Size(479, 37);
             this.textBox1.TabIndex = 32;
             this.textBox1.Text = "kerepesi.aron@szechenyi.hu";
             // 
@@ -109,11 +113,11 @@
             // 
             this.textBox2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.textBox2.ForeColor = System.Drawing.Color.White;
-            this.textBox2.Location = new System.Drawing.Point(315, 21);
+            this.textBox2.Location = new System.Drawing.Point(591, 81);
             this.textBox2.Margin = new System.Windows.Forms.Padding(4);
             this.textBox2.Name = "textBox2";
             this.textBox2.ReadOnly = true;
-            this.textBox2.Size = new System.Drawing.Size(142, 37);
+            this.textBox2.Size = new System.Drawing.Size(124, 37);
             this.textBox2.TabIndex = 33;
             // 
             // button2
@@ -123,10 +127,10 @@
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button2.ForeColor = System.Drawing.Color.White;
-            this.button2.Location = new System.Drawing.Point(13, 118);
+            this.button2.Location = new System.Drawing.Point(13, 176);
             this.button2.Margin = new System.Windows.Forms.Padding(4);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(143, 52);
+            this.button2.Size = new System.Drawing.Size(386, 52);
             this.button2.TabIndex = 37;
             this.button2.Text = "Add test users";
             this.button2.UseVisualStyleBackColor = false;
@@ -139,7 +143,7 @@
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button3.ForeColor = System.Drawing.Color.White;
-            this.button3.Location = new System.Drawing.Point(315, 118);
+            this.button3.Location = new System.Drawing.Point(567, 176);
             this.button3.Margin = new System.Windows.Forms.Padding(4);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(148, 52);
@@ -155,10 +159,10 @@
             this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button6.ForeColor = System.Drawing.Color.White;
-            this.button6.Location = new System.Drawing.Point(166, 456);
+            this.button6.Location = new System.Drawing.Point(13, 577);
             this.button6.Margin = new System.Windows.Forms.Padding(4);
             this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(143, 52);
+            this.button6.Size = new System.Drawing.Size(702, 52);
             this.button6.TabIndex = 39;
             this.button6.Text = "Delete all *";
             this.button6.UseVisualStyleBackColor = false;
@@ -171,7 +175,7 @@
             this.button7.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button7.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button7.ForeColor = System.Drawing.Color.White;
-            this.button7.Location = new System.Drawing.Point(315, 178);
+            this.button7.Location = new System.Drawing.Point(567, 236);
             this.button7.Margin = new System.Windows.Forms.Padding(4);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(148, 52);
@@ -187,10 +191,10 @@
             this.button8.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button8.ForeColor = System.Drawing.Color.White;
-            this.button8.Location = new System.Drawing.Point(13, 178);
+            this.button8.Location = new System.Drawing.Point(13, 236);
             this.button8.Margin = new System.Windows.Forms.Padding(4);
             this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(143, 52);
+            this.button8.Size = new System.Drawing.Size(386, 52);
             this.button8.TabIndex = 40;
             this.button8.Text = "Add test products";
             this.button8.UseVisualStyleBackColor = false;
@@ -203,7 +207,7 @@
             this.button9.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button9.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button9.ForeColor = System.Drawing.Color.White;
-            this.button9.Location = new System.Drawing.Point(315, 238);
+            this.button9.Location = new System.Drawing.Point(567, 296);
             this.button9.Margin = new System.Windows.Forms.Padding(4);
             this.button9.Name = "button9";
             this.button9.Size = new System.Drawing.Size(148, 52);
@@ -219,10 +223,10 @@
             this.button10.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button10.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button10.ForeColor = System.Drawing.Color.White;
-            this.button10.Location = new System.Drawing.Point(13, 238);
+            this.button10.Location = new System.Drawing.Point(13, 296);
             this.button10.Margin = new System.Windows.Forms.Padding(4);
             this.button10.Name = "button10";
-            this.button10.Size = new System.Drawing.Size(143, 52);
+            this.button10.Size = new System.Drawing.Size(386, 52);
             this.button10.TabIndex = 42;
             this.button10.Text = "Add test orders";
             this.button10.UseVisualStyleBackColor = false;
@@ -235,7 +239,7 @@
             this.button11.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button11.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button11.ForeColor = System.Drawing.Color.White;
-            this.button11.Location = new System.Drawing.Point(315, 298);
+            this.button11.Location = new System.Drawing.Point(567, 356);
             this.button11.Margin = new System.Windows.Forms.Padding(4);
             this.button11.Name = "button11";
             this.button11.Size = new System.Drawing.Size(148, 52);
@@ -251,10 +255,10 @@
             this.button12.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button12.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button12.ForeColor = System.Drawing.Color.White;
-            this.button12.Location = new System.Drawing.Point(13, 298);
+            this.button12.Location = new System.Drawing.Point(13, 356);
             this.button12.Margin = new System.Windows.Forms.Padding(4);
             this.button12.Name = "button12";
-            this.button12.Size = new System.Drawing.Size(143, 52);
+            this.button12.Size = new System.Drawing.Size(386, 52);
             this.button12.TabIndex = 45;
             this.button12.Text = "Add test confirmations";
             this.button12.UseVisualStyleBackColor = false;
@@ -267,10 +271,10 @@
             this.button13.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button13.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button13.ForeColor = System.Drawing.Color.White;
-            this.button13.Location = new System.Drawing.Point(13, 358);
+            this.button13.Location = new System.Drawing.Point(13, 416);
             this.button13.Margin = new System.Windows.Forms.Padding(4);
             this.button13.Name = "button13";
-            this.button13.Size = new System.Drawing.Size(143, 52);
+            this.button13.Size = new System.Drawing.Size(386, 52);
             this.button13.TabIndex = 47;
             this.button13.Text = "Add test reviews";
             this.button13.UseVisualStyleBackColor = false;
@@ -283,7 +287,7 @@
             this.button14.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button14.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button14.ForeColor = System.Drawing.Color.White;
-            this.button14.Location = new System.Drawing.Point(315, 358);
+            this.button14.Location = new System.Drawing.Point(567, 416);
             this.button14.Margin = new System.Windows.Forms.Padding(4);
             this.button14.Name = "button14";
             this.button14.Size = new System.Drawing.Size(148, 52);
@@ -292,25 +296,25 @@
             this.button14.UseVisualStyleBackColor = false;
             this.button14.Click += new System.EventHandler(this.button14_Click);
             // 
-            // product_id_tbox
+            // reviews_tbox
             // 
-            this.product_id_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.product_id_tbox.ForeColor = System.Drawing.Color.White;
-            this.product_id_tbox.Location = new System.Drawing.Point(163, 366);
-            this.product_id_tbox.Margin = new System.Windows.Forms.Padding(4);
-            this.product_id_tbox.Name = "product_id_tbox";
-            this.product_id_tbox.Size = new System.Drawing.Size(142, 37);
-            this.product_id_tbox.TabIndex = 48;
-            this.product_id_tbox.Text = "product_id";
+            this.reviews_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.reviews_tbox.ForeColor = System.Drawing.Color.White;
+            this.reviews_tbox.Location = new System.Drawing.Point(408, 424);
+            this.reviews_tbox.Margin = new System.Windows.Forms.Padding(4);
+            this.reviews_tbox.Name = "reviews_tbox";
+            this.reviews_tbox.Size = new System.Drawing.Size(150, 37);
+            this.reviews_tbox.TabIndex = 48;
+            this.reviews_tbox.Text = "product_id";
             // 
             // orders_tbox
             // 
             this.orders_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.orders_tbox.ForeColor = System.Drawing.Color.White;
-            this.orders_tbox.Location = new System.Drawing.Point(163, 246);
+            this.orders_tbox.Location = new System.Drawing.Point(408, 304);
             this.orders_tbox.Margin = new System.Windows.Forms.Padding(4);
             this.orders_tbox.Name = "orders_tbox";
-            this.orders_tbox.Size = new System.Drawing.Size(142, 37);
+            this.orders_tbox.Size = new System.Drawing.Size(150, 37);
             this.orders_tbox.TabIndex = 49;
             this.orders_tbox.Text = "user_id";
             // 
@@ -318,22 +322,68 @@
             // 
             this.confirmations_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.confirmations_tbox.ForeColor = System.Drawing.Color.White;
-            this.confirmations_tbox.Location = new System.Drawing.Point(164, 306);
+            this.confirmations_tbox.Location = new System.Drawing.Point(408, 364);
             this.confirmations_tbox.Margin = new System.Windows.Forms.Padding(4);
             this.confirmations_tbox.Name = "confirmations_tbox";
-            this.confirmations_tbox.Size = new System.Drawing.Size(142, 37);
+            this.confirmations_tbox.Size = new System.Drawing.Size(150, 37);
             this.confirmations_tbox.TabIndex = 50;
             this.confirmations_tbox.Text = "start_user_id";
+            // 
+            // product_image_tbox
+            // 
+            this.product_image_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.product_image_tbox.ForeColor = System.Drawing.Color.White;
+            this.product_image_tbox.Location = new System.Drawing.Point(408, 484);
+            this.product_image_tbox.Margin = new System.Windows.Forms.Padding(4);
+            this.product_image_tbox.Name = "product_image_tbox";
+            this.product_image_tbox.Size = new System.Drawing.Size(150, 37);
+            this.product_image_tbox.TabIndex = 53;
+            this.product_image_tbox.Text = "product_id";
+            // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.button1.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.button1.ForeColor = System.Drawing.Color.White;
+            this.button1.Location = new System.Drawing.Point(13, 476);
+            this.button1.Margin = new System.Windows.Forms.Padding(4);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(386, 52);
+            this.button1.TabIndex = 52;
+            this.button1.Text = "Add test prod. images";
+            this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // button15
+            // 
+            this.button15.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.button15.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.button15.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button15.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.button15.ForeColor = System.Drawing.Color.White;
+            this.button15.Location = new System.Drawing.Point(567, 476);
+            this.button15.Margin = new System.Windows.Forms.Padding(4);
+            this.button15.Name = "button15";
+            this.button15.Size = new System.Drawing.Size(148, 52);
+            this.button15.TabIndex = 51;
+            this.button15.Text = "Delete all reviews";
+            this.button15.UseVisualStyleBackColor = false;
+            this.button15.Click += new System.EventHandler(this.button15_Click);
             // 
             // testpanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(15F, 30F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(53)))), ((int)(((byte)(56)))));
-            this.ClientSize = new System.Drawing.Size(474, 522);
+            this.ClientSize = new System.Drawing.Size(728, 642);
+            this.Controls.Add(this.product_image_tbox);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.button15);
             this.Controls.Add(this.confirmations_tbox);
             this.Controls.Add(this.orders_tbox);
-            this.Controls.Add(this.product_id_tbox);
+            this.Controls.Add(this.reviews_tbox);
             this.Controls.Add(this.button13);
             this.Controls.Add(this.button14);
             this.Controls.Add(this.button12);
@@ -385,8 +435,11 @@
         private System.Windows.Forms.Button button12;
         private System.Windows.Forms.Button button13;
         private System.Windows.Forms.Button button14;
-        public System.Windows.Forms.TextBox product_id_tbox;
+        public System.Windows.Forms.TextBox reviews_tbox;
         public System.Windows.Forms.TextBox orders_tbox;
         public System.Windows.Forms.TextBox confirmations_tbox;
+        public System.Windows.Forms.TextBox product_image_tbox;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button15;
     }
 }

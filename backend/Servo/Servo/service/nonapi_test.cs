@@ -107,6 +107,7 @@ namespace Servo.service
                   sku     = "sku",
                   active_ingredient     = "active_ingredient",
                   packaging     = "valami",
+                  thumbnail_url = $"https://www.roysshack.hu/assets/products/{i}/tumbnail.webp",
                 };
 
                 model.shared.add_product(prod);
@@ -172,6 +173,7 @@ namespace Servo.service
         }
 
 
+
         public static void deleteallconfirmations()
         {
             model.shared.delete_all_confirmations();
@@ -191,6 +193,129 @@ namespace Servo.service
         {
             model.shared.delete_all_reviews();
         }
+
+
+
+
+
+
+        public static void addtestimages(int product_id)
+        {
+
+            for (int i = 0; i < 3; i++)
+            {
+
+
+                model.shared.product_image img = new model.shared.product_image
+                {
+                    /*
+                     p_alt_text_de,
+                        p_alt_text_en,
+                        p_alt_text_hu,
+                        p_image_url,
+                        p_sort_id,
+                        p_product_id
+                     
+                     */
+                    alt_text_hu = (product_id).ToString(),
+                    alt_text_en= "city",
+                    alt_text_de= "alt_text_de",
+                    image_url= $"https://www.roysshack.hu/assets/products/{product_id}/{i}",
+                    sort_id= i,
+                    product_id= product_id
+
+                };
+
+                model.shared.add_product_image(img);
+            }
+
+
+
+        }
+
+
+
+
+        public static void deleteallimages()
+        {
+
+           
+              //  model.shared.delet();
+            
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     }

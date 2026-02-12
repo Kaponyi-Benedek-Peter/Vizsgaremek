@@ -67,7 +67,14 @@ public static class jwt_handler
         }
         catch
         {
-            return new ClaimsPrincipal();
+            
+            return null;
         }
     }
+
+
+
+
+
+
 }

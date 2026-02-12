@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static Servo.model.shared;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace Servo
 {
@@ -104,7 +105,7 @@ namespace Servo
 
         private void button13_Click(object sender, EventArgs e)
         {
-            service.nonapi_test.addtestreviews(product_id_tbox.Text);
+            service.nonapi_test.addtestreviews(reviews_tbox.Text);
             service.shared.log("[Add test reviews]");
         }
 
@@ -117,6 +118,22 @@ namespace Servo
             model.shared.delete_all_products();
 
             service.shared.log("[Delete all]");
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            service.nonapi_test.addtestimages(Convert.ToInt32(product_image_tbox.Text));
+        }
+
+        private void button15_Click(object sender, EventArgs e)
+        {
+            service.nonapi_test.deleteallimages();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            service.shared.send_mail(otptestbox.Text, "Confirm your registration", registerhtml_top + $"{service.shared.current_url}?activate={service.shared.b64enc(id)};{service.shared.b64enc(session_token)}" + registerhtml_bottom, "registration");
+
         }
     }
 }

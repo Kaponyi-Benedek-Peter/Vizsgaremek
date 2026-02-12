@@ -117,8 +117,10 @@ namespace Servo
             {
                 try
                 {
+                    //service.shared.log("[starting server 1]");
                     sh.start_server(int.Parse(textBox4.Text));
                     sh.isrunning = true;
+                    //service.shared.log("[starting server 6]");
                 }
                 catch (Exception ex)
                 {
