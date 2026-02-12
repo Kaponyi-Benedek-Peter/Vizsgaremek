@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 12, 2026 at 09:51 AM
+-- Generation Time: Feb 12, 2026 at 10:12 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -151,6 +151,25 @@ VALUES(
     p_image_url
 );
 
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product_image` (IN `p_alt_text_de` VARCHAR(255), IN `p_alt_text_en` VARCHAR(255), IN `p_alt_text_hu` VARCHAR(255), IN `p_image_url` VARCHAR(255), IN `p_sort_id` INT, IN `p_product_id` INT)   BEGIN
+INSERT INTO roy.product_images(
+	alt_text_de,
+    alt_text_en,
+    alt_text_hu,
+    image_url,
+    sort_id,
+    product_id
+)
+VALUES (
+	p_alt_text_de,
+    p_alt_text_en,
+    p_alt_text_hu,
+    p_image_url,
+    p_sort_id,
+    p_product_id
+);
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_review` (IN `p_body` TEXT, IN `p_product_id` INT, IN `p_rating` DECIMAL(3,2), IN `p_title` VARCHAR(255), IN `p_user_id` INT)   BEGIN
@@ -377,7 +396,7 @@ SELECT *
     FROM roy.product_images;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_product_image_by_product_id` (IN `p_product_id` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_product_images_by_product_id` (IN `p_product_id` INT)   BEGIN
 SELECT *
     FROM roy.product_images
     WHERE product_id = p_product_id
@@ -791,6 +810,13 @@ CREATE TABLE `product_images` (
   `sort_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Dumping data for table `product_images`
+--
+
+INSERT INTO `product_images` (`id`, `alt_text_de`, `alt_text_hu`, `alt_text_en`, `image_url`, `product_id`, `sort_id`) VALUES
+(1, 'altde', 'althu', 'alten', 'aba', 1, 1);
+
 -- --------------------------------------------------------
 
 --
@@ -988,7 +1014,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `product_images`
 --
 ALTER TABLE `product_images`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `reviews`
