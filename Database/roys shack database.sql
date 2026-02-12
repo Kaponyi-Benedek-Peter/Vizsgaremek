@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 11, 2026 at 10:55 AM
+-- Generation Time: Feb 12, 2026 at 09:51 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -377,6 +377,13 @@ SELECT *
     FROM roy.product_images;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_product_image_by_product_id` (IN `p_product_id` INT)   BEGIN
+SELECT *
+    FROM roy.product_images
+    WHERE product_id = p_product_id
+    ORDER BY sort_id ASC;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_reviews_page` (IN `p_page` INT(11), IN `p_amount` INT(11), OUT `p_count_out` INT(11))   BEGIN
 
 DECLARE page INT DEFAULT 0;
@@ -578,6 +585,18 @@ SET
     thumbnail_url = p_thumbnail_url
 WHERE id = p_id;
 
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_image_sort_by_id` (IN `p_id` INT, IN `p_sort_id` INT)   BEGIN
+	UPDATE roy.product_images
+    SET sort_id = p_sort_id
+    WHERE id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_image_url_by_id` (IN `p_id` INT, IN `p_image_url` VARCHAR(255))   BEGIN
+	UPDATE roy.product_images
+    SET image_url = p_image_url
+    WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_stock_by_id` (IN `p_id` INT, IN `p_new_stock` INT)   BEGIN
