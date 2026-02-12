@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 12, 2026 at 11:04 AM
+-- Generation Time: Feb 12, 2026 at 11:11 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -214,6 +214,10 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_products` ()   BEGIN
 DELETE FROM roy.products;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_product_images` ()   BEGIN
+DELETE FROM roy.product_images;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_reviews` ()   BEGIN
