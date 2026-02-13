@@ -34,7 +34,7 @@
       @if (allProducts().length === 0) {
         <div class="empty-state">
           <div class="empty-icon">📦</div>
-          <h3 class="empty-title-no-products">Nincsenek termékeink rögzítve</h3>
+          <h3 class="empty-title-no-products">{{ 'products.empty' | translate }}</h3>
         </div>
       } @else {
         <div class="empty-state">

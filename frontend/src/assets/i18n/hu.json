@@ -97,19 +97,6 @@
     "add_to_cart": "Kosárba",
     "close": "Bezár"
   },
-  "category": {
-    "filter_by": "Szűrés kategória szerint",
-    "clear_all": "Összes törlése",
-    "select": "Kategória kiválasztása",
-    "medicine": "Gyógyszerek",
-    "vitamins": "Vitaminok",
-    "supplements": "Táplálékkiegészítők",
-    "cosmetics": "Kozmetikumok",
-    "baby-care": "Babaápolás",
-    "medical-devices": "Orvosi eszközök",
-    "personal-care": "Személyi higiénia",
-    "health-monitoring": "Egészségügyi eszközök"
-  },
   "filter": {
     "sort_by": "Rendezés",
     "filters": "Szűrők",
@@ -262,5 +249,46 @@
       "password_reset_failed": "Jelszó visszaállítás sikertelen",
       "invalid_reset_link": "Érvénytelen vagy lejárt visszaállítási link"
     }
+  },
+  "category": {
+    "select": "Kategória kiválasztása",
+    "clearAll": "Összes törlése",
+    "medicine": "Gyógyszerek",
+    "vitamins": "Vitaminok",
+    "supplements": "Táplálékkiegészítők",
+    "cosmetics": "Kozmetikumok",
+    "baby-care": "Babaápolás",
+    "medical-devices": "Orvosi eszközök"
+  },
+  "products": {
+    "title": "Termékek",
+    "filter": {
+      "title": "Termékek szűrése",
+      "priceRange": "Ártartomány",
+      "inStockOnly": "Csak raktáron",
+      "hasDiscount": "Akciós",
+      "sortBy": "Rendezés",
+      "clear": "Szűrők törlése",
+      "apply": "Szűrők alkalmazása"
+    },
+    "sort": {
+      "popularity": "Népszerűség",
+      "default": "Alapértelmezett",
+      "price-asc": "Ár: olcsótól drágáig",
+      "price-desc": "Ár: drágától olcsóig",
+      "name-asc": "Név: A-Z",
+      "name-desc": "Név: Z-A",
+      "newest": "Legújabb",
+      "rating": "Értékelés"
+    },
+    "pagination": {
+      "itemsPerPage": "Termék oldalanként:",
+      "showing": "Megjelenítve",
+      "of": "/",
+      "products": "termék"
+    },
+    "empty": "Nincsenek termékek",
+    "addToCart": "Kosárba",
+    "viewDetails": "Részletek"
   }
 }

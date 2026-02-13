@@ -15,12 +15,13 @@ import {
   AuthState,
   ApiErrorResponse,
 } from '../models/auth.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly API_URL = 'https://api.roysshack.hu/api';
+  private readonly API_URL = environment.baseURL;
 
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
@@ -114,7 +115,7 @@ export class AuthService {
       password: this.encodeBase64(password),
     };
 
-    return this.http.post<LoginResponse>(`${this.API_URL}/login`, request).pipe(
+    return this.http.post<LoginResponse>(`${this.API_URL}/api/login`, request).pipe(
       tap((response) => {
         this.handleLoginSuccess(response, stayLoggedIn);
       }),
@@ -131,7 +132,7 @@ export class AuthService {
     };
 
     return this.http
-      .post<void>(`${this.API_URL}/registration_request`, request)
+      .post<void>(`${this.API_URL}/api/registration_request`, request)
       .pipe(catchError(this.handleError.bind(this)));
   }
 
@@ -146,7 +147,7 @@ export class AuthService {
     };
 
     return this.http
-      .post<RegistrationResponse>(`${this.API_URL}/registration_promise`, request)
+      .post<RegistrationResponse>(`${this.API_URL}/api/registration_promise`, request)
       .pipe(
         tap((response) => {
           const loginResponse: LoginResponse = {
@@ -166,7 +167,7 @@ export class AuthService {
     };
 
     return this.http
-      .post<void>(`${this.API_URL}/chpass_request`, request)
+      .post<void>(`${this.API_URL}/api/chpass_request`, request)
       .pipe(catchError(this.handleError.bind(this)));
   }
 
@@ -177,7 +178,7 @@ export class AuthService {
     };
 
     return this.http
-      .post<void>(`${this.API_URL}/chpass_promise`, request)
+      .post<void>(`${this.API_URL}/api/chpass_promise`, request)
       .pipe(catchError(this.handleError.bind(this)));
   }
 

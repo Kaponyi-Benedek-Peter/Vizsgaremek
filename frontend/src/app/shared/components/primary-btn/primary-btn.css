@@ -4,7 +4,9 @@
   min-width: 100px;
   background: transparent;
   border: none;
-  color: #ffffff;
+
+  color: var(--text-primary);
+
   font-family: 'Inconsolata', monospace;
   font-size: clamp(12px, 3vw, 16px);
   letter-spacing: 0.13em;
@@ -16,6 +18,11 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+.primary-btn:hover {
+  color: var(--color-primary);
 }
 
 .btn-text {
@@ -32,7 +39,7 @@
   transform: translateX(-50%);
   height: 2px;
   width: 16px;
-  background-color: #72e4f0;
+  background-color: var(--color-primary);
   transition: width 0.3s ease;
 }
 

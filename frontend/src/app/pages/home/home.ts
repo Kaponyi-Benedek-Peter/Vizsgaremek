@@ -25,11 +25,12 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 export class Home {
   IMAGES = IMAGES;
   ICONS = ICONS;
+
   products = [
-    { id: 1, img: 'assets/images/hero1.png', alt: 'Termék 1' },
-    { id: 2, img: 'assets/images/hero2.png', alt: 'Termék 2' },
-    { id: 3, img: 'assets/images/hero3.png', alt: 'Termék 3' },
-    { id: 4, img: 'assets/images/hero4.png', alt: 'Termék 4' },
+    { id: 1, img: IMAGES.hero1, alt: 'Termék 1' },
+    { id: 2, img: IMAGES.hero2, alt: 'Termék 2' },
+    { id: 3, img: IMAGES.hero3, alt: 'Termék 3' },
+    { id: 4, img: IMAGES.hero4, alt: 'Termék 4' },
   ];
 
   onProductClick(productId: number): void {

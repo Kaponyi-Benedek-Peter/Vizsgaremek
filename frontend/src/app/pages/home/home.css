@@ -7,7 +7,10 @@
 }
 
 .hero {
-  background-image: url('/assets/images/herobg.jpg');
+  background-image: url('../../../assets/images/herobg.webp');
+
+  background-color: var(--color-primary);
+
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

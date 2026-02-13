@@ -1,5 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
@@ -12,10 +12,13 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './email.css',
 })
 export class Email implements OnInit {
+  private location = inject(Location);
+
   isVerifying = signal(false);
   isVerified = signal(false);
   errorMessage = signal('');
-  sessionToken = signal<string | null>(null);
+  userId = signal<string>('');
+  token = signal<string>('');
 
   constructor(
     private route: ActivatedRoute,
@@ -25,21 +28,37 @@ export class Email implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
+      const id = params['id'];
       const token = params['token'];
-      if (token) {
-        this.sessionToken.set(token);
-        this.verifyEmail(token);
+
+      if (!id || !token) {
+        this.errorMessage.set('auth.errors.invalid_verification_link');
+        return;
       }
+
+      const cleanUrl = `/email?id=${id}&token=${token}`;
+      this.location.replaceState(cleanUrl);
+
+      this.userId.set(id);
+      this.token.set(token);
+      this.verifyEmail();
     });
   }
 
-  verifyEmail(token: string): void {
+  verifyEmail(): void {
     this.isVerifying.set(true);
     this.errorMessage.set('');
 
-    const userId = this.route.snapshot.queryParams['id'] || '';
+    const id = this.userId();
+    const token = this.token();
 
-    this.authService.completeRegistration(userId, token).subscribe({
+    if (!id || !token) {
+      this.errorMessage.set('auth.errors.invalid_verification_link');
+      this.isVerifying.set(false);
+      return;
+    }
+
+    this.authService.completeRegistration(id, token, true).subscribe({
       next: () => {
         this.isVerifying.set(false);
         this.isVerified.set(true);
@@ -55,8 +74,6 @@ export class Email implements OnInit {
   }
 
   resendEmail(): void {
-    // This would need to be implemented in the backend
-    // For now, just redirect to register
     this.router.navigate(['/register']);
   }
 }

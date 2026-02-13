@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { Product, Category, ProductWithHelpers } from '../../../core/models/product.model';
+import { Category, ProductWithHelpers } from '../../../core/models/product.model';
 import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { CategoryBar } from '../category-bar/category-bar';
@@ -9,7 +9,7 @@ import { ProductCard } from '../product-card/product-card';
 import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
 import { ProductDetailModal } from '../product-detail-modal/product-detail-modal';
-import { CATEGORY_VISUALS } from '../../../core/constants/visuals';
+import { getCategoriesFromVisuals } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-list',
@@ -37,7 +37,7 @@ export class ProductList {
   selectedProduct: ProductWithHelpers | null = null;
   showModal = false;
 
-  categories = Object.values(CATEGORY_VISUALS);
+  categories: Category[] = getCategoriesFromVisuals();
 
   async ngOnInit(): Promise<void> {
     await this.productService.loadProducts();

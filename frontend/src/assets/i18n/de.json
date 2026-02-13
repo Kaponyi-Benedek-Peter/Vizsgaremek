@@ -97,19 +97,6 @@
     "add_to_cart": "In den Warenkorb",
     "close": "Schließen"
   },
-  "category": {
-    "filter_by": "Nach Kategorie filtern",
-    "clear_all": "Alle löschen",
-    "select": "Kategorie auswählen",
-    "medicine": "Medikamente",
-    "vitamins": "Vitamine",
-    "supplements": "Nahrungsergänzungen",
-    "cosmetics": "Kosmetik",
-    "baby-care": "Babypflege",
-    "medical-devices": "Medizinische Geräte",
-    "personal-care": "Körperpflege",
-    "health-monitoring": "Gesundheitsüberwachung"
-  },
   "filter": {
     "sort_by": "Sortieren nach",
     "filters": "Filter",
@@ -262,5 +249,46 @@
       "password_reset_failed": "Passwort-Reset fehlgeschlagen",
       "invalid_reset_link": "Ungültiger oder abgelaufener Reset-Link"
     }
+  },
+  "category": {
+    "select": "Kategorie auswählen",
+    "clearAll": "Alle löschen",
+    "medicine": "Medikamente",
+    "vitamins": "Vitamine",
+    "supplements": "Nahrungsergänzungsmittel",
+    "cosmetics": "Kosmetika",
+    "baby-care": "Babypflege",
+    "medical-devices": "Medizinische Geräte"
+  },
+  "products": {
+    "title": "Produkte",
+    "filter": {
+      "title": "Produkte filtern",
+      "priceRange": "Preisspanne",
+      "inStockOnly": "Nur auf Lager",
+      "hasDiscount": "Im Angebot",
+      "sortBy": "Sortieren nach",
+      "clear": "Filter löschen",
+      "apply": "Filter anwenden"
+    },
+    "sort": {
+      "popularity": "Beliebtheit",
+      "default": "Standard",
+      "price-asc": "Preis: Niedrig bis Hoch",
+      "price-desc": "Preis: Hoch bis Niedrig",
+      "name-asc": "Name: A-Z",
+      "name-desc": "Name: Z-A",
+      "newest": "Neueste",
+      "rating": "Bewertung"
+    },
+    "pagination": {
+      "itemsPerPage": "Artikel pro Seite:",
+      "showing": "Anzeigen",
+      "of": "von",
+      "products": "Produkte"
+    },
+    "empty": "Keine Produkte gefunden",
+    "addToCart": "In den Warenkorb",
+    "viewDetails": "Details anzeigen"
   }
 }

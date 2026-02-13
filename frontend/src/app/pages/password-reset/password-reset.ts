@@ -1,5 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,9 +13,12 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './password-reset.css',
 })
 export class PasswordReset implements OnInit {
+  private location = inject(Location);
+
   newPassword = signal('');
   confirmPassword = signal('');
-  sessionToken = signal<string | null>(null);
+  userId = signal<string>('');
+  token = signal<string>('');
   isLoading = signal(false);
   errorMessage = signal('');
   isSuccess = signal(false);
@@ -30,12 +33,19 @@ export class PasswordReset implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
+      const id = params['id'];
       const token = params['token'];
-      if (!token) {
+
+      if (!id || !token) {
         this.errorMessage.set('auth.errors.invalid_reset_link');
         return;
       }
-      this.sessionToken.set(token);
+
+      const cleanUrl = `/password-reset?id=${id}&token=${token}`;
+      this.location.replaceState(cleanUrl);
+
+      this.userId.set(id);
+      this.token.set(token);
     });
   }
 
@@ -57,15 +67,17 @@ export class PasswordReset implements OnInit {
       return;
     }
 
-    const token = this.sessionToken();
-    if (!token) {
+    const id = this.userId();
+    const token = this.token();
+
+    if (!id || !token) {
       this.errorMessage.set('auth.errors.invalid_reset_link');
       return;
     }
 
     this.isLoading.set(true);
 
-    this.authService.completePasswordChange(token, this.newPassword()).subscribe({
+    this.authService.completePasswordChange(id, token).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.isSuccess.set(true);

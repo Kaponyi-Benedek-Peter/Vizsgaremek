@@ -1,7 +1,6 @@
 import { NgFor, NgIf } from '@angular/common';
 import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
 import { TranslationService, SupportedLanguage } from '../../../core/services/translation.service';
-import { isEmoji, LANGUAGE_OPTIONS } from '../../../core/constants/visuals';
 
 interface Language {
   code: SupportedLanguage;
@@ -18,10 +17,25 @@ interface Language {
 })
 export class LanguageSwitcher implements OnInit {
   isOpen = false;
-  currentLanguage: SupportedLanguage = 'hu';
+  currentLanguage: SupportedLanguage = 'en';
 
-  languages = LANGUAGE_OPTIONS;
-  isEmoji = isEmoji;
+  languages: Language[] = [
+    {
+      code: 'en',
+      name: 'English',
+      flagImage: 'assets/images/English.webp',
+    },
+    {
+      code: 'hu',
+      name: 'Magyar',
+      flagImage: 'assets/images/Hungary.webp',
+    },
+    {
+      code: 'de',
+      name: 'Deutsch',
+      flagImage: 'assets/images/German.webp',
+    },
+  ];
 
   constructor(
     private elementRef: ElementRef,

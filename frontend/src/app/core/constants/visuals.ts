@@ -10,6 +10,8 @@
  * Type-safe
  */
 
+import { Category } from '../../core/models/product.model';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
 // ═══════════════════════════════════════════════════════════════════════════
@@ -134,22 +136,22 @@ export const ICONS = {
 
 export const IMAGES = {
   // Logo
-  logo: 'assets/images/ROYS_SHACK_WHITE.webp', // vagy: PLACEHOLDERS.logo()
+  logo: 'assets/images/ROYS_SHACK_WHITE.webp', // or: PLACEHOLDERS.logo()
 
   // Hero background
-  heroBg: 'assets/images/herobg.jpg', // vagy: PLACEHOLDERS.hero(1920, 600, 'Background')
+  heroBg: 'assets/images/herobg.webp', // or: PLACEHOLDERS.hero(1920, 600, 'Background')
 
   // Hero slides - PLACEHOLDER version
-  hero1: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Egészségügyi Termékek"),
-  hero2: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Prémium Minőség"),
-  hero3: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Gyors Szállítás"),
-  hero4: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Kedvező Árak"),
+  // hero1: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Egészségügyi Termékek"),
+  // hero2: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Prémium Minőség"),
+  // hero3: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Gyors Szállítás"),
+  // hero4: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Kedvező Árak"),
 
   // IF we will have our own:
-  // hero1: 'assets/images/hero1.webp',
-  // hero2: 'assets/images/hero2.webp',
-  // hero3: 'assets/images/hero3.webp',
-  // hero4: 'assets/images/hero4.webp',
+  hero1: 'assets/images/hero1.webp',
+  hero2: 'assets/images/hero2.webp',
+  hero3: 'assets/images/hero3.webp',
+  hero4: 'assets/images/hero4.webp',
 
   // Language flags - emoji version
   flagHungary: '🇭🇺',
@@ -297,6 +299,43 @@ export const CATEGORY_VISUALS: Record<string, CategoryVisual> = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// CATEGORY NAMES (for conversion to full Category interface)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const CATEGORY_NAMES: Record<string, { hu: string; en: string; de: string }> = {
+  medicine: {
+    hu: 'Gyógyszerek',
+    en: 'Medicines',
+    de: 'Medikamente',
+  },
+  vitamins: {
+    hu: 'Vitaminok',
+    en: 'Vitamins',
+    de: 'Vitamine',
+  },
+  supplements: {
+    hu: 'Táplálékkiegészítők',
+    en: 'Supplements',
+    de: 'Nahrungsergänzungsmittel',
+  },
+  cosmetics: {
+    hu: 'Kozmetikumok',
+    en: 'Cosmetics',
+    de: 'Kosmetika',
+  },
+  'baby-care': {
+    hu: 'Babaápolás',
+    en: 'Baby Care',
+    de: 'Babypflege',
+  },
+  'medical-devices': {
+    hu: 'Orvosi eszközök',
+    en: 'Medical Devices',
+    de: 'Medizinische Geräte',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // HELPER Functions
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -331,6 +370,35 @@ export function isEmoji(value: string): boolean {
   return value.length <= 4 && /[\u{1F300}-\u{1F9FF}]/u.test(value);
 }
 
+export function getCategoriesFromVisuals(): Category[] {
+  return Object.values(CATEGORY_VISUALS).map((visual) => ({
+    id: visual.id,
+    slug: visual.id, // slug = id for now
+    name: CATEGORY_NAMES[visual.id]?.en || visual.id,
+    nameHu: CATEGORY_NAMES[visual.id]?.hu || visual.id,
+    nameEn: CATEGORY_NAMES[visual.id]?.en || visual.id,
+    nameDe: CATEGORY_NAMES[visual.id]?.de || visual.id,
+    icon: visual.icon,
+    count: undefined, // Will be calculated later if needed
+  }));
+}
+
+export function getCategoryById(categoryId: string): Category | undefined {
+  const visual = CATEGORY_VISUALS[categoryId];
+  if (!visual) return undefined;
+
+  return {
+    id: visual.id,
+    slug: visual.id,
+    name: CATEGORY_NAMES[categoryId]?.en || categoryId,
+    nameHu: CATEGORY_NAMES[categoryId]?.hu || categoryId,
+    nameEn: CATEGORY_NAMES[categoryId]?.en || categoryId,
+    nameDe: CATEGORY_NAMES[categoryId]?.de || categoryId,
+    icon: visual.icon,
+    count: undefined,
+  };
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPE EXPORTS
 // ═══════════════════════════════════════════════════════════════════════════
@@ -362,4 +430,6 @@ export default {
   getLanguageOption,
   getIconUrl,
   isEmoji,
+  getCategoriesFromVisuals,
+  getCategoryById,
 };

@@ -66,19 +66,6 @@
     "add_to_cart": "Add to Cart",
     "close": "Close"
   },
-  "category": {
-    "filter_by": "Filter by category",
-    "clear_all": "Clear all",
-    "select": "Select category",
-    "medicine": "Medicines",
-    "vitamins": "Vitamins",
-    "supplements": "Supplements",
-    "cosmetics": "Cosmetics",
-    "baby-care": "Baby Care",
-    "medical-devices": "Medical Devices",
-    "personal-care": "Personal Care",
-    "health-monitoring": "Health Monitoring"
-  },
   "filter": {
     "sort_by": "Sort by",
     "filters": "Filters",
@@ -262,5 +249,46 @@
     "validation_error": "Please fill in all required fields.",
     "invalid_zipcode": "Please enter a valid zip code.",
     "invalid_phone": "Please enter a valid phone number."
+  },
+  "category": {
+    "select": "Select category",
+    "clearAll": "Clear all",
+    "medicine": "Medicines",
+    "vitamins": "Vitamins",
+    "supplements": "Supplements",
+    "cosmetics": "Cosmetics",
+    "baby-care": "Baby Care",
+    "medical-devices": "Medical Devices"
+  },
+  "products": {
+    "title": "Products",
+    "filter": {
+      "title": "Filter Products",
+      "priceRange": "Price Range",
+      "inStockOnly": "In Stock Only",
+      "hasDiscount": "On Sale",
+      "sortBy": "Sort By",
+      "clear": "Clear Filters",
+      "apply": "Apply Filters"
+    },
+    "sort": {
+      "popularity": "Popularity",
+      "default": "Default",
+      "price-asc": "Price: Low to High",
+      "price-desc": "Price: High to Low",
+      "name-asc": "Name: A-Z",
+      "name-desc": "Name: Z-A",
+      "newest": "Newest",
+      "rating": "Rating"
+    },
+    "pagination": {
+      "itemsPerPage": "Items per page:",
+      "showing": "Showing",
+      "of": "of",
+      "products": "products"
+    },
+    "empty": "No products found",
+    "addToCart": "Add to Cart",
+    "viewDetails": "View Details"
   }
 }

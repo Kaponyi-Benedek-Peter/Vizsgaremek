@@ -12,12 +12,13 @@ import {
   SortOption,
 } from '../core/models/product.model';
 import { TranslationService } from '../core/services/translation.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
-  private readonly API_URL = 'https://api.roysshack.hu';
+  private readonly API_URL = environment.baseURL;
   private http = inject(HttpClient);
   private translationService = inject(TranslationService);
 
