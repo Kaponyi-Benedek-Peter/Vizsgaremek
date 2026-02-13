@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 12, 2026 at 11:11 AM
+-- Generation Time: Feb 13, 2026 at 09:08 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -25,17 +25,21 @@ DELIMITER $$
 --
 -- Procedures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `ban_user_by_id` (IN `p_id` INT)   UPDATE roy.users
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ban_user_by_id` (IN `p_id` INT)   BEGIN
+UPDATE roy.users
 SET account_state = 'banned'
-WHERE id = p_id$$
+WHERE id = p_id;
+END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `calculate_average_product_rating` (IN `p_product_id` INT)   UPDATE roy.products
+CREATE DEFINER=`root`@`localhost` PROCEDURE `calculate_average_product_rating` (IN `p_product_id` INT)   BEGIN
+UPDATE roy.products
 SET rating = (
     SELECT AVG(rating)
     FROM reviews
     WHERE product_id = p_product_id
 )
-WHERE id = p_product_id$$
+WHERE id = p_product_id;
+END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `calculate_order_price` (IN `p_id` INT)   BEGIN
     DECLARE final_price DECIMAL(10,2);
@@ -55,7 +59,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_account` (IN `p_first_name` 
     VALUES (p_first_name, p_last_name, p_email, p_sesstoken, p_passhash, NOW() + INTERVAL 1 week, p_account_state);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_confirmation` (IN `p_confirmation_token` VARCHAR(255), IN `p_user_id` INT(255), IN `p_new_value` VARCHAR(255), IN `p_type` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_confirmation` (IN `p_confirmation_token` VARCHAR(255), IN `p_user_id` INT, IN `p_new_value` VARCHAR(255), IN `p_type` VARCHAR(255))   BEGIN
     INSERT INTO roy.confirmations (confirmation_token, confirmation_token_expire, user_id, new_value, confirmation_type)
     VALUES (p_confirmation_token, NOW() + INTERVAL 1 WEEK, p_user_id, p_new_value, p_type);
 END$$
@@ -65,7 +69,7 @@ INSERT INTO roy.newsletter_recipients (news_level, user_id, received_current_new
 VALUES (p_news_level, p_user_id, '0');
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(10), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(12))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(10), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(20))   BEGIN
 
 INSERT INTO roy.orders (user_id, created_at, price, city, zipcode, address, apartment_number, note, house_number, phone_number)
 VALUES(p_user_id, NOW(),'0', p_city, p_zipcode, p_address, p_apartment_number, p_note, p_house_number, p_phone_number);
@@ -237,12 +241,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_id` (IN `p_i
     DELETE FROM roy.confirmations WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_user_id` (IN `p_user_id` INT(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_user_id` (IN `p_user_id` INT)   BEGIN
     DELETE FROM roy.confirmations WHERE user_id = p_user_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_expired_confirmations` ()   DELETE FROM roy.confirmations
-    WHERE confirmation_token_expire < NOW()$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_expired_confirmations` ()   BEGIN
+DELETE FROM roy.confirmations
+    WHERE confirmation_token_expire < NOW();
+END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_order_by_id` (IN `p_id` INT)   BEGIN
     DELETE FROM roy.orders WHERE id = p_id;
@@ -281,18 +287,13 @@ DECLARE page INT DEFAULT 0;
 
 SET page = (p_page - 1) * p_amount;
 
-SELECT * FROM `confirmations`
+SELECT * FROM roy.confirmations
 LIMIT p_amount OFFSET page;
 
 SET p_count_out = (
-    SELECT COUNT(*) FROM `confirmations`
+    SELECT COUNT(*) FROM roy.confirmations
 );
 
-END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_newsletters` ()   BEGIN
-SELECT *
-    FROM roy.newsletters;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_newsletter_recipients` ()   BEGIN
@@ -306,11 +307,11 @@ DECLARE page INT DEFAULT 0;
 
 SET page = (p_page - 1) * p_amount;
 
-SELECT * FROM `newsletter_recipients`
+SELECT * FROM roy.newsletter_recipients
 LIMIT p_amount OFFSET page;
 
 SET p_count_out = (
-    SELECT COUNT(*) FROM `newsletter_recipients`
+    SELECT COUNT(*) FROM roy.newsletter_recipients
 );
 
 END$$
@@ -326,11 +327,11 @@ DECLARE page INT DEFAULT 0;
 
 SET page = (p_page - 1) * p_amount;
 
-SELECT * FROM `orders`
+SELECT * FROM roy.orders
 LIMIT p_amount OFFSET page;
 
 SET p_count_out = (
-    SELECT COUNT(*) FROM `orders`
+    SELECT COUNT(*) FROM roy.orders
 );
 
 END$$
@@ -346,11 +347,11 @@ DECLARE page INT DEFAULT 0;
 
 SET page = (p_page - 1) * p_amount;
 
-SELECT * FROM `order_items`
+SELECT * FROM roy.order_items
 LIMIT p_amount OFFSET page;
 
 SET p_count_out = (
-    SELECT COUNT(*) FROM `order_items`
+    SELECT COUNT(*) FROM roy.order_items
 );
 
 END$$
@@ -366,11 +367,11 @@ DECLARE page INT DEFAULT 0;
 
 SET page = (p_page - 1) * p_amount;
 
-SELECT * FROM `posts`
+SELECT * FROM roy.posts
 LIMIT p_amount OFFSET page;
 
 SET p_count_out = (
-    SELECT COUNT(*) FROM `posts`
+    SELECT COUNT(*) FROM roy.posts
 );
 
 END$$
@@ -386,11 +387,11 @@ DECLARE page INT DEFAULT 0;
 
 SET page = (p_page - 1) * p_amount;
 
-SELECT * FROM `products`
+SELECT * FROM roy.products
 LIMIT p_amount OFFSET page;
 
 SET p_count_out = (
-    SELECT COUNT(*) FROM `products`
+    SELECT COUNT(*) FROM roy.products
 );
 
 END$$
@@ -413,26 +414,27 @@ DECLARE page INT DEFAULT 0;
 
 SET page = (p_page - 1) * p_amount;
 
-SELECT * FROM `reviews`
+SELECT * FROM roy.reviews
 LIMIT p_amount OFFSET page;
 
 SET p_count_out = (
-    SELECT COUNT(*) FROM `reviews`
+    SELECT COUNT(*) FROM roy.reviews
 );
 
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_reviews_page_by_product` (IN `p_page` INT, IN `p_amount` INT, OUT `p_count_out` INT, IN `p_product_id` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_reviews_page_by_product_id` (IN `p_page` INT, IN `p_amount` INT, OUT `p_count_out` INT, IN `p_product_id` INT)   BEGIN
 
 DECLARE page INT DEFAULT 0;
 
 SET page = (p_page - 1) * p_amount;
 
-SELECT * FROM `reviews`
+SELECT * FROM roy.reviews
+WHERE product_id = p_product_id
 LIMIT p_amount OFFSET page;
 
 SET p_count_out = (
-    SELECT COUNT(*) FROM `reviews` 
+    SELECT COUNT(*) FROM roy.reviews
 	WHERE product_id = p_product_id
 );
 
@@ -449,11 +451,11 @@ DECLARE page INT DEFAULT 0;
 
 SET page = (p_page - 1) * p_amount;
 
-SELECT * FROM `users`
+SELECT * FROM roy.users
 LIMIT p_amount OFFSET page;
 
 SET p_count_out = (
-    SELECT COUNT(*) FROM `users`
+    SELECT COUNT(*) FROM roy.users
 );
 
 END$$
@@ -465,12 +467,12 @@ SELECT *
     ORDER BY id ASC;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_user_id` (IN `p_user_id` INT(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_user_id` (IN `p_user_id` INT)   BEGIN
 SELECT * from roy.confirmations
 where confirmations.user_id = p_user_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_user_id_and_type` (IN `p_user_id` INT(255), IN `p_confirmation_type` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_confirmations_by_user_id_and_type` (IN `p_user_id` INT, IN `p_confirmation_type` VARCHAR(255))   BEGIN
 SELECT * from roy.confirmations
 where confirmations.user_id = p_user_id AND confirmations.confirmation_type = p_confirmation_type;
 END$$
@@ -495,10 +497,12 @@ SELECT * from roy.order_items
 where order_items.id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_posts_by_user` (IN `p_user_id` INT)   SELECT *
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_posts_by_user` (IN `p_user_id` INT)   BEGIN
+SELECT *
     FROM posts
     WHERE user_id = p_user_id
-    ORDER BY created_at DESC$$
+    ORDER BY created_at DESC;
+END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_post_by_id` (IN `p_id` INT)   BEGIN
 SELECT * from roy.posts
@@ -508,6 +512,11 @@ END$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_product_by_id` (IN `p_id` INT)   BEGIN
 SELECT * from roy.products
 where products.id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_product_image_by_id` (IN `p_id` INT)   BEGIN
+SELECT * from roy.product_images
+where id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_email` (IN `p_email` VARCHAR(255))   BEGIN
@@ -556,20 +565,24 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_name_by_id` (IN `p_id` INT, 
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_order_item_quantity` (IN `p_id` INT, IN `p_new_quantity` INT)   BEGIN
-DECLARE v_order_id INT;
+    DECLARE v_order_id INT;
+    DECLARE v_product_id INT;
+    DECLARE v_unit_price DECIMAL(10,2);
 
-SELECT order_id INTO v_order_id
-FROM order_items
-WHERE id = p_id;
+    SELECT order_id, product_id, price / quantity
+    INTO v_order_id, v_product_id, v_unit_price
+    FROM order_items
+    WHERE id = p_id;
 
-UPDATE order_items
-SET quantity = p_new_quantity
-WHERE id = p_id;
+    UPDATE order_items
+    SET quantity = p_new_quantity,
+        price = v_unit_price * p_new_quantity
+    WHERE id = p_id;
 
-CALL calculate_order_price(v_order_id);
+    CALL calculate_order_price(v_order_id);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_password_by_id` (IN `p_id` INT(255), IN `p_new_passhash` VARCHAR(255))   BEGIN 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_password_by_id` (IN `p_id` INT, IN `p_new_passhash` VARCHAR(255))   BEGIN 
 	UPDATE roy.users
     SET passhash = p_new_passhash
     WHERE id = p_id;
@@ -581,7 +594,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, 
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_by_id` (IN `p_id` INT, IN `name_de` VARCHAR(255), IN `description_en` TEXT, IN `price_huf` INT, IN `times_ordered` INT, IN `stock` INT, IN `sale_percentage` DECIMAL(10,0), IN `description_preview_en` TEXT, IN `name_hu` VARCHAR(255), IN `name_en` VARCHAR(255), IN `description_hu` TEXT, IN `description_de` TEXT, IN `description_preview_hu` TEXT, IN `description_preview_de` TEXT, IN `category` VARCHAR(255), IN `manufacturer` VARCHAR(255), IN `brand` VARCHAR(255), IN `sku` VARCHAR(255), IN `active_ingredients` TEXT, IN `packaging` VARCHAR(255), IN `name` VARCHAR(255), IN `thumbnail_url` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_by_id` (IN `p_id` INT, IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` INT, IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255))   BEGIN
 
 UPDATE roy.products
 SET
@@ -628,7 +641,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_stock_by_id` (IN `p_
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_times_ordered` (IN `p_id` INT, IN `p_new_times_ordered` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_times_ordered_by_id` (IN `p_id` INT, IN `p_new_times_ordered` INT)   BEGIN
 	UPDATE roy.products
     SET times_ordered = p_new_times_ordered
     WHERE id = p_id;
@@ -655,12 +668,19 @@ DELIMITER ;
 
 CREATE TABLE `confirmations` (
   `id` int(11) NOT NULL,
-  `user_id` int(255) NOT NULL,
+  `user_id` int(11) NOT NULL,
   `new_value` varchar(255) DEFAULT NULL,
   `confirmation_token` varchar(255) NOT NULL,
   `confirmation_token_expire` datetime NOT NULL,
   `confirmation_type` enum('password_change','account_deletion','account_creation') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `confirmations`
+--
+
+INSERT INTO `confirmations` (`id`, `user_id`, `new_value`, `confirmation_token`, `confirmation_token_expire`, `confirmation_type`) VALUES
+(4, 38, 'test_new_value', 'test_new_confirmation_token', '2026-02-19 21:41:20', 'account_creation');
 
 -- --------------------------------------------------------
 
@@ -674,6 +694,13 @@ CREATE TABLE `newsletter_recipients` (
   `received_current_newsletter` int(11) NOT NULL,
   `id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `newsletter_recipients`
+--
+
+INSERT INTO `newsletter_recipients` (`user_id`, `news_level`, `received_current_newsletter`, `id`) VALUES
+(38, 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -692,8 +719,15 @@ CREATE TABLE `orders` (
   `apartment_number` int(11) NOT NULL,
   `note` varchar(255) NOT NULL,
   `house_number` int(11) NOT NULL,
-  `phone_number` varchar(12) NOT NULL
+  `phone_number` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `created_at`, `price`, `city`, `zipcode`, `address`, `apartment_number`, `note`, `house_number`, `phone_number`) VALUES
+(1, 38, '2026-02-13 09:16:58', '1803.00', 'Test_city', '0000', 'address', 0, 'note', 12, '9999');
 
 -- --------------------------------------------------------
 
@@ -708,6 +742,14 @@ CREATE TABLE `order_items` (
   `quantity` int(11) NOT NULL,
   `price` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`) VALUES
+(1, 1, 1, 2, '1800.00'),
+(2, 1, 2, 3, '3.00');
 
 -- --------------------------------------------------------
 
@@ -764,39 +806,8 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_percentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging`, `created_at`, `updated_at`, `name`, `thumbnail_url`) VALUES
-(1, 'name_de', 'product0_en', 0, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product0_hu', 'product0_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 2.90, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-11 10:47:42', 'product0', ''),
-(2, 'name_de', 'product1_en', 1, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product1_hu', 'product1_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 2.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-11 10:48:06', 'product1', ''),
-(3, 'name_de', 'product2_en', 2, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product2_hu', 'product2_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product2', ''),
-(4, 'name_de', 'product3_en', 3, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product3_hu', 'product3_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product3', ''),
-(5, 'name_de', 'product4_en', 4, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product4_hu', 'product4_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product4', ''),
-(6, 'name_de', 'product5_en', 5, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product5_hu', 'product5_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product5', ''),
-(7, 'name_de', 'product6_en', 6, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product6_hu', 'product6_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product6', ''),
-(8, 'name_de', 'product7_en', 7, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product7_hu', 'product7_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product7', ''),
-(9, 'name_de', 'product8_en', 8, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product8_hu', 'product8_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product8', ''),
-(10, 'name_de', 'product9_en', 9, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product9_hu', 'product9_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product9', ''),
-(11, 'name_de', 'product10_en', 10, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product10_hu', 'product10_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product10', ''),
-(12, 'name_de', 'product11_en', 11, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product11_hu', 'product11_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product11', ''),
-(13, 'name_de', 'product12_en', 12, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product12_hu', 'product12_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product12', ''),
-(14, 'name_de', 'product13_en', 13, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product13_hu', 'product13_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product13', ''),
-(15, 'name_de', 'product14_en', 14, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product14_hu', 'product14_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product14', ''),
-(16, 'name_de', 'product15_en', 15, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product15_hu', 'product15_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product15', ''),
-(17, 'name_de', 'product16_en', 16, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product16_hu', 'product16_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product16', ''),
-(18, 'name_de', 'product17_en', 17, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product17_hu', 'product17_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product17', ''),
-(19, 'name_de', 'product18_en', 18, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product18_hu', 'product18_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product18', ''),
-(20, 'name_de', 'product19_en', 19, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product19_hu', 'product19_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product19', ''),
-(21, 'name_de', 'product20_en', 20, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product20_hu', 'product20_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product20', ''),
-(22, 'name_de', 'product21_en', 21, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product21_hu', 'product21_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product21', ''),
-(23, 'name_de', 'product22_en', 22, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product22_hu', 'product22_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product22', ''),
-(24, 'name_de', 'product23_en', 23, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product23_hu', 'product23_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product23', ''),
-(25, 'name_de', 'product24_en', 24, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product24_hu', 'product24_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product24', ''),
-(26, 'name_de', 'product25_en', 25, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product25_hu', 'product25_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product25', ''),
-(27, 'name_de', 'product26_en', 26, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product26_hu', 'product26_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product26', ''),
-(28, 'name_de', 'product27_en', 27, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product27_hu', 'product27_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product27', ''),
-(29, 'name_de', 'product28_en', 28, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product28_hu', 'product28_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product28', ''),
-(30, 'name_de', 'product29_en', 29, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product29_hu', 'product29_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product29', ''),
-(31, 'name_de', 'product30_en', 30, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product30_hu', 'product30_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product30', ''),
-(32, 'name_de', 'product31_en', 31, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product31_hu', 'product31_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product31', ''),
-(33, 'name_de', 'product32_en', 32, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product32_hu', 'product32_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 0.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-10 08:37:40', 'product32', '');
+(1, 'test_name_de', 'test_description_en', 1000, 5, 50, '10', 'test_description_preview_en', 'test_name_hu', 'test_name_en', 'test_description_hu', 'test_description_de', 'test_description_preview_hu', 'test_description_preview_de', 'test_category', 'test_manufacturer', 'test_brand', 2.90, 'test_sku', 'test_active_ingredients', 'test_packaging', '2026-02-10 09:37:40', '2026-02-12 19:57:42', 'test_name', 'test_thumbnail_url'),
+(2, 'name_de', 'product1_en', 1, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product1_hu', 'product1_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 2.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-11 10:48:06', 'product1', '');
 
 -- --------------------------------------------------------
 
@@ -819,7 +830,8 @@ CREATE TABLE `product_images` (
 --
 
 INSERT INTO `product_images` (`id`, `alt_text_de`, `alt_text_hu`, `alt_text_en`, `image_url`, `product_id`, `sort_id`) VALUES
-(1, 'altde', 'althu', 'alten', 'aba', 1, 1);
+(1, 'altde', 'althu', 'alten', 'test_url', 1, 3),
+(2, 'alt_text_de', 'alt_text_hu', 'alt_text_en', 'image_url', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -836,18 +848,6 @@ CREATE TABLE `reviews` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `reviews`
---
-
-INSERT INTO `reviews` (`product_id`, `id`, `title`, `body`, `rating`, `created_at`, `user_id`) VALUES
-(1, 3, 'title', 'body', '2.50', '2026-02-10 09:37:44', 0),
-(1, 4, 'title', 'body', '5.00', '2026-02-10 09:37:44', 1),
-(1, 5, 'title', 'body', '5.00', '2026-02-10 09:37:44', 2),
-(1, 6, '1', '1', '1.00', '2026-02-11 11:47:21', 1),
-(1, 7, '1', '1', '1.00', '2026-02-11 11:47:42', 1),
-(2, 8, '2', '2', '2.00', '2026-02-11 11:48:06', 2);
 
 -- --------------------------------------------------------
 
@@ -950,7 +950,8 @@ ALTER TABLE `posts`
 -- Indexes for table `products`
 --
 ALTER TABLE `products`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `sku` (`sku`);
 
 --
 -- Indexes for table `product_images`
@@ -965,7 +966,8 @@ ALTER TABLE `product_images`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_reviews_product` (`product_id`);
+  ADD KEY `fk_reviews_product` (`product_id`),
+  ADD KEY `fk_reviews_user` (`user_id`);
 
 --
 -- Indexes for table `users`
@@ -982,25 +984,25 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `confirmations`
 --
 ALTER TABLE `confirmations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `newsletter_recipients`
 --
 ALTER TABLE `newsletter_recipients`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `posts`
@@ -1012,13 +1014,13 @@ ALTER TABLE `posts`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `product_images`
 --
 ALTER TABLE `product_images`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `reviews`
@@ -1046,7 +1048,8 @@ ALTER TABLE `confirmations`
 -- Constraints for table `newsletter_recipients`
 --
 ALTER TABLE `newsletter_recipients`
-  ADD CONSTRAINT `fk_newsletter_recipients_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_newsletter_recipients_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_newsletter_recipients_user_complete` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `orders`
@@ -1065,7 +1068,8 @@ ALTER TABLE `order_items`
 -- Constraints for table `posts`
 --
 ALTER TABLE `posts`
-  ADD CONSTRAINT `fk_posts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_posts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_posts_user_complete` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `product_images`
@@ -1077,7 +1081,8 @@ ALTER TABLE `product_images`
 -- Constraints for table `reviews`
 --
 ALTER TABLE `reviews`
-  ADD CONSTRAINT `fk_reviews_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_reviews_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_reviews_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
