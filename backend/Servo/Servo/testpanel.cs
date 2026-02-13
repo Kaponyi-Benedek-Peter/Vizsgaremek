@@ -132,8 +132,9 @@ namespace Servo
 
         private void button5_Click(object sender, EventArgs e)
         {
-            service.shared.send_mail(otptestbox.Text, "Confirm your registration", registerhtml_top + $"{service.shared.current_url}?activate={service.shared.b64enc(id)};{service.shared.b64enc(session_token)}" + registerhtml_bottom, "registration");
-
+            string otp = service.shared.gen_code(true);
+            service.shared.send_mail(otptestbox.Text, "Your OTP code", service.registration_request.registerhtml_top + $"{otp}" + service.registration_request.registerhtml_bottom, "otp");
+            textBox2.Text=otp;
         }
     }
 }

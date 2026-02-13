@@ -103,7 +103,7 @@ namespace Servo.controller
                     if (user == null)
                     {
                         data.Response.StatusCode = 401;
-                        byte[] buffer = Encoding.UTF8.GetBytes("hibas_token");
+                        byte[] buffer = Encoding.UTF8.GetBytes("wrong_token");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
                         data = endconnection(data);

@@ -22,7 +22,7 @@ namespace Servo.model
             var result = new Dictionary<string, object>
             {
                 { "statuscode", "200" },
-                { "status", "no error" },
+                { "status", "success" },
                 { "products", new List<Dictionary<string, string>>() }
             };
 
@@ -41,10 +41,10 @@ namespace Servo.model
                             var product = new Dictionary<string, string>();
 
                             
-                            string[] fields = { "id", "name_de", "description_en", "price_huf", "times_ordered",
-                                      "stock", "sale_percentage", "description_preview_en", "name_hu",
-                                      "name_en", "description_hu", "description_de", "description_preview_hu",
-                                      "description_preview_de", "category", "manufacturer", "brand",
+                            string[] fields = { "id","name_hu","name_en", "name_de", "description_hu", "description_en", "description_de","description_preview_hu","description_preview_en",  "description_preview_de", "price_huf", "times_ordered",
+                                      "stock", "sale_percentage", 
+                                       
+                                      "category", "manufacturer", "brand",
                                       "rating", "sku", "active_ingredients", "packaging", "created_at",
                                       "updated_at" };
 

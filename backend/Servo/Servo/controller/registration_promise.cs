@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -38,9 +39,16 @@ namespace Servo.controller
                 }
                 catch
                 {
+                    var respon = new
+                    {
+                        status = "malformed_request",
+                        statuscode = "400"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
 
                     data.Response.StatusCode = 400;
-                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                     return;
                 }
@@ -52,43 +60,101 @@ namespace Servo.controller
                 int resp = service.registration_promise.process_registration_promise(id, confirmation_token);
                 if (resp == 200)
                 {
-                    data.Response.StatusCode = 200;
-                    byte[] buffer = Encoding.UTF8.GetBytes("aktivalva");
+                    
                     service.shared.log("response:200 (aktivalva)");
+
+
+                    var respon = new
+                    {
+                        status = "activated",
+                        statuscode = "200"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+                    data.Response.StatusCode = 200;
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
+
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else if (resp == 401)
                 {
+                    var respon = new
+                    {
+                        status = "wrong_token",
+                        statuscode = "401"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
                     data.Response.StatusCode = 401;
-                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_token");
-                    service.shared.log("response:401 (hibas_token)");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
+                    service.shared.log("response:401 (wrong_token)");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else if (resp == 409)
                 {
+
+                    var respon = new
+                    {
+                        status = "user_already_activated",
+                        statuscode = "409"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+                  
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
+
+
                     data.Response.StatusCode = 409;
-                    byte[] buffer = Encoding.UTF8.GetBytes("felhasznalo_mar_aktivalva");
-                    service.shared.log("response:409 (felhasznalo_mar_aktivalva)");
+                  
+                    service.shared.log("response:409 (user_already_activated)");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else
                 {
+
+                    var respon = new
+                    {
+                        status = "user_not_found",
+                        statuscode = "404"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
+
+
                     service.shared.log(resp.ToString());
                     data.Response.StatusCode = 404;
-                    byte[] buffer = Encoding.UTF8.GetBytes("felhasznalo_nem_letezik");
+                  
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
-                    service.shared.log("response:500 (felhasznalo_nem_letezik)");
+                    service.shared.log("response:404 (user_not_found)");
                 }
             }
             catch (Exception ex)
             {
+                var respon = new
+                {
+                    status = "malformed_request",
+                    statuscode = "400"
+                };
+
+                string jsonrespon = JsonSerializer.Serialize(respon);
+
+
+                byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
+
+
                 service.shared.log($"Error 1: {ex.Message} -registration_promise.main");
                 data.Response.StatusCode = 400;
-                byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
+               
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
-                service.shared.log("response:400 (hibas_request)");
+                service.shared.log("response:400 (malformed_request)");
             }
             finally
             {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
@@ -9,7 +10,7 @@ namespace Servo.service
 {
     internal class chpass_promise
     {
-        public static int process_chpass_promise(string controller_id, string controller_confirmation_token, string ip)
+        public static (int responsecode, string responsedata) process_chpass_promise(string controller_id, string controller_confirmation_token, string ip)
         {
             
             service.shared.log("Password change request: " + controller_id + "   -> " + controller_confirmation_token + "  (" + ip);
@@ -55,12 +56,12 @@ namespace Servo.service
             if (resp["error"] == "true" && resp["type"] != "password_change")
             {
                 shared.log($"Debug 1: {resp["type"]} --service.chpass_promise.process_chpass_promise");
-                return 401;
+                return (401,"error");
             }
             else { 
                 if (currentDate > expirationDate)
                 {
-                    return 402;
+                    return (410, "error");
 
                 }
                 else
@@ -71,17 +72,44 @@ namespace Servo.service
 
                         model.chpass_promise.change_password(controller_id, new_passhash);
                         model.chpass_promise.delete_confirmation(controller_id);
-                        return 200;
+                        string model_email = model.shared.get_email_by_id(controller_id);
+
+
+                        string new_sesstoken = service.shared.gen_code(false);
+
+                        string model_session_token = model.shared.refresh_token(controller_id,new_sesstoken);
+
+                        if (model_session_token != "404")
+                        {
+                            var respon = new
+                            {
+                                jwt_token = jwt_handler.generate_token(model_email),
+                                session_token = new_sesstoken,
+                                status = "success",
+                                statuscode = "200"
+                            };
+
+                            string jsonrespon = JsonSerializer.Serialize(respon);
+
+
+                            return (200, "error");
+                        }
+                        else
+                        {
+                            return (500, "error");
+                        }
+
+                        
                     }
                     else
                     {
                         shared.log($"Debug 1: {controller_confirmation_token} > {recieved_token} --service.chpass_promise.process_chpass_promise X");
-                        return 401;
+                        return (401, "error");
 
                     }
 
 
-                return 500;
+                return (500, "error");
 
                 }
             }

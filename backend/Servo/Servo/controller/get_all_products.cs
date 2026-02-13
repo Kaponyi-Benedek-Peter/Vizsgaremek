@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
@@ -57,16 +58,37 @@ namespace Servo.controller
                 
                 else //if (resp == 500)
                 {
+
+                    var respon = new
+                    {
+                        status = "unknown_error",
+                        statuscode = "500"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
                     data.Response.StatusCode = 500;
-                    byte[] buffer = Encoding.UTF8.GetBytes("unknown_error");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
             }
             catch (Exception ex)
             {
                 service.shared.log($"Error 1: {ex.Message} --controller.login.main");
+
+
+                var respon = new
+                {
+                    status = "malformed_request",
+                    statuscode = "400"
+                };
+
+                string jsonrespon = JsonSerializer.Serialize(respon);
+
+
                 data.Response.StatusCode = 400;
-                byte[] buffer = Encoding.UTF8.GetBytes("Hibas request");
+                byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
             }
             finally

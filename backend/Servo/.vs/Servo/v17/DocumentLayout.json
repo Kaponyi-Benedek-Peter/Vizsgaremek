@@ -3,40 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\testpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\testpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\controller\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\service\\registration_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\registration_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\controller\\registration_promise.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\registration_promise.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\testpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\testpanel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\controller\\registration_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\registration_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\servo\\service\\nonapi_test.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\nonapi_test.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\service\\jwt_handler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\jwt_handler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\controller\\router.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\router.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\model\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\model\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\controller\\chpass_promise.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\chpass_promise.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -46,7 +26,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -54,117 +34,54 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "registration_request.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\registration_request.cs",
-              "RelativeDocumentMoniker": "Servo\\service\\registration_request.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\registration_request.cs",
-              "RelativeToolTip": "Servo\\service\\registration_request.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-12T13:12:05.486Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "testpanel.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\testpanel.cs",
-              "RelativeDocumentMoniker": "Servo\\testpanel.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\testpanel.cs",
-              "RelativeToolTip": "Servo\\testpanel.cs",
-              "ViewState": "AgIAAHoAAAAAAAAAAAAqwIAAAAAJAAAAAAAAAA==",
+              "Title": "login.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\login.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\login.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\login.cs",
+              "RelativeToolTip": "Servo\\controller\\login.cs",
+              "ViewState": "AgIAAEwAAAAAAAAAAAAQwFUAAABqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-12T13:11:23.635Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "nonapi_test.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\nonapi_test.cs",
-              "RelativeDocumentMoniker": "Servo\\service\\nonapi_test.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\nonapi_test.cs",
-              "RelativeToolTip": "Servo\\service\\nonapi_test.cs",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAAACMAAAAZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-10T09:44:54.551Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Form1.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\Form1.cs",
-              "RelativeDocumentMoniker": "Servo\\Form1.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\Form1.cs [Design]",
-              "RelativeToolTip": "Servo\\Form1.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-12T12:13:04.473Z",
-              "EditorCaption": " [Design]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "Form1.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\Form1.cs",
-              "RelativeDocumentMoniker": "Servo\\Form1.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\Form1.cs",
-              "RelativeToolTip": "Servo\\Form1.cs",
-              "ViewState": "AgIAAGQAAAAAAAAAAAAuwHEAAAA1AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-12T12:13:37.418Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "jwt_handler.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\jwt_handler.cs",
-              "RelativeDocumentMoniker": "Servo\\service\\jwt_handler.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\jwt_handler.cs",
-              "RelativeToolTip": "Servo\\service\\jwt_handler.cs",
-              "ViewState": "AgIAADIAAAAAAAAAAAAQwEUAAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-12T12:47:02.582Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "router.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\router.cs",
-              "RelativeDocumentMoniker": "Servo\\controller\\router.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\router.cs",
-              "RelativeToolTip": "Servo\\controller\\router.cs",
-              "ViewState": "AgIAAGoAAAAAAAAAAAAYwHkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-12T11:41:07.537Z",
+              "WhenOpened": "2026-02-13T10:25:19.275Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "testpanel.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\testpanel.cs",
-              "RelativeDocumentMoniker": "Servo\\testpanel.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\testpanel.cs [Design]",
-              "RelativeToolTip": "Servo\\testpanel.cs [Design]",
+              "Title": "registration_request.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\registration_request.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\registration_request.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\registration_request.cs",
+              "RelativeToolTip": "Servo\\controller\\registration_request.cs",
+              "ViewState": "AgIAAEAAAAAAAAAAAAAQwGgAAABYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-12T10:57:57.031Z",
-              "EditorCaption": " [Design]"
+              "WhenOpened": "2026-02-13T10:07:15.681Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "shared.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\model\\shared.cs",
-              "RelativeDocumentMoniker": "Servo\\model\\shared.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\model\\shared.cs",
-              "RelativeToolTip": "Servo\\model\\shared.cs",
-              "ViewState": "AgIAAGMAAAAAAAAAAAAUwGoAAAA5AAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "chpass_promise.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\chpass_promise.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\chpass_promise.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\chpass_promise.cs",
+              "RelativeToolTip": "Servo\\controller\\chpass_promise.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-12T10:57:35.546Z",
+              "WhenOpened": "2026-02-13T10:05:22.903Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "registration_promise.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\registration_promise.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\registration_promise.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\registration_promise.cs",
+              "RelativeToolTip": "Servo\\controller\\registration_promise.cs",
+              "ViewState": "AgIAACgAAAAAAAAAAAAQwIYAAABEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-13T10:05:19.624Z",
               "EditorCaption": ""
             }
           ]

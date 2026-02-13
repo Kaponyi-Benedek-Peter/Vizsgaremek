@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Servo.controller
@@ -43,7 +44,9 @@ namespace Servo.controller
                 token = jsonObj["token"].ToString();
 
                 service.shared.log("Password change promise: " + id + "  " + token + "  (" + data.Request.RemoteEndPoint.Address.ToString());
-                int resp = 418;
+
+                (int responsecode, string responsedata) resp = (418, "undefined");
+                //
                 try
                 {
 
@@ -55,29 +58,67 @@ namespace Servo.controller
                     service.shared.log($"Error 1: {ex.Message} --controller.chpass_promise.main");
                 }
                 //service.shared.log(resp.ToString());
-                if (resp == 402)
+                if (resp.responsecode == 410)
                 {
+
+                    var respon = new
+                    {
+                        status = "confirmation_lejart",
+                        statuscode = "410"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
                     data.Response.StatusCode = 410;
-                    byte[] buffer = Encoding.UTF8.GetBytes("confirmation_lejart");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
-                else if (resp == 200)
+                else if (resp.responsecode == 200)
                 {
                     data.Response.StatusCode = 200;
-                    byte[] buffer = Encoding.UTF8.GetBytes("jelszo_megvaltoztatva");
+
+                    byte[] buffer = Encoding.UTF8.GetBytes(resp.responsedata);
+
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
-                else if (resp == 404)
+                else if (resp.responsecode == 404)
                 {
-                    data.Response.StatusCode = 404;
-                    byte[] buffer = Encoding.UTF8.GetBytes("confirmation_nem_letezik_vagy_hibas");
+
+                    var respon = new
+                    {
+                        status = "404",
+                        statuscode = "confirmation_nem_letezik_vagy_hibas"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
+
+
+                
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else
                 {
-                    service.shared.log($"Debug 1: {resp} -controller.chpass_promise.main");
-                    data.Response.StatusCode = 400;
-                    byte[] buffer = Encoding.UTF8.GetBytes("confirmation_nem_letezik_vagy_hibas");
+                    service.shared.log($"Debug 1: {resp.responsecode} -controller.chpass_promise.main");
+
+
+
+                    var respon = new
+                    {
+                        status = "confirmation_nem_letezik_vagy_hiba",
+                        statuscode = "500"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
+
+
+                    data.Response.StatusCode = 500;
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
 
@@ -85,8 +126,22 @@ namespace Servo.controller
             catch (Exception ex)
             {
                 service.shared.log($"Error 2: {ex.Message} -controller.chpass_promise.main");
+
+
+                var respon = new
+                {
+                    status = "malformed_request",
+                    statuscode = "400"
+                };
+
+                string jsonrespon = JsonSerializer.Serialize(respon);
+
+
+
+
+
                 data.Response.StatusCode = 400;
-                byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
+                byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
             }
             finally

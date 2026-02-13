@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 
 namespace Servo.controller
 {
@@ -38,11 +39,34 @@ namespace Servo.controller
                 }
                 catch {
 
+                    var respon = new
+                    {
+                        status = "malformed_request",
+                        statuscode = "400"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
                     data.Response.StatusCode = 400;
-                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                     return;
+                }
 
+                if (false)
+                {
+                    var respon = new
+                    {
+                        status = "requirements_not_met",
+                        statuscode = "403"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+                    data.Response.StatusCode = 403;
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
+                    data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                    return;
                 }
 
                 service.shared.log("Registration request: " + email + "  " + jelszo + "  (" + data.Request.RemoteEndPoint.Address.ToString() + ")");
@@ -50,14 +74,34 @@ namespace Servo.controller
                 int resp = service.registration_request.process_registration_request(email, jelszo, lastname, firstname, data.Request.RemoteEndPoint.Address.ToString());
                 if (resp == 200)
                 {
+
+                    var respon = new
+                    {
+                        status = "email_sent",
+                        statuscode = "200"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
                     data.Response.StatusCode = 200;
-                    byte[] buffer = Encoding.UTF8.GetBytes("email kuldve " + email);
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else
                 {
+
+                    var respon = new
+                    {
+                        status = "user_already_exists",
+                        statuscode = "401"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
                     data.Response.StatusCode = 401;
-                    byte[] buffer = Encoding.UTF8.GetBytes("felhasznalo_mar_letezik");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     service.shared.log("Debug 1: controller.registration_request.main");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
@@ -66,11 +110,22 @@ namespace Servo.controller
             catch (Exception ex)
             {
                 service.shared.log($"Error 1: {ex.Message} --controller.registration_request");
+
+
+                var respon = new
+                {
+                    status = "server_error",
+                    statuscode = "500"
+                };
+
+                string jsonrespon = JsonSerializer.Serialize(respon);
+
+
                 data.Response.StatusCode = 500;
-                byte[] buffer = Encoding.UTF8.GetBytes("sze_v_felhasznalo_nem_letezik");
+                byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
-                service.shared.log("response:500 (hibas_request)");
+                service.shared.log("response:500 (server_error)");
 
             }
             

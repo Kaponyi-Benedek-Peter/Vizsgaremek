@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Servo.controller
@@ -84,8 +85,17 @@ namespace Servo.controller
                 catch
                 {
 
+                    var respon = new
+                    {
+                        status = "malformed_request",
+                        statuscode = "400"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
                     data.Response.StatusCode = 400;
-                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                     return;
                 }
@@ -105,20 +115,50 @@ namespace Servo.controller
 
                 if (resp == 200)
                 {
+
+                    var respon = new
+                    {
+                        status = "email_sent",
+                        statuscode = "200"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
+
                     data.Response.StatusCode = 200;
-                    byte[] buffer = Encoding.UTF8.GetBytes("email_kuldve");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else if (resp == 401)
                 {
+                    var respon = new
+                    {
+                        status = "wrong_password",
+                        statuscode = "401"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
                     data.Response.StatusCode = 401;
-                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_jelszo");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else //if (resp == 500)
                 {
+
+                    var respon = new
+                    {
+                        status = "server_error_or_inexistent_user",
+                        statuscode = "500"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
                     data.Response.StatusCode = 500;
-                    byte[] buffer = Encoding.UTF8.GetBytes("sze_v_felhasznalo_nem_letezik");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
             }
@@ -139,8 +179,8 @@ namespace Servo.controller
             catch (Exception ex)
             {
                 service.shared.log($"Error 2: {ex.Message} --controller.delacc_request.main");
-                data.Response.StatusCode = 400;
-                byte[] buffer = Encoding.UTF8.GetBytes("Hibas request"); // magyarul: bárhol lehet a hiba
+                data.Response.StatusCode = 500;
+                byte[] buffer = Encoding.UTF8.GetBytes("server_error_or_inexistent_user");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
             }
             finally

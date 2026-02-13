@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Servo.controller
@@ -50,8 +51,17 @@ namespace Servo.controller
                 catch
                 {
 
+                    var respon = new
+                    {
+                        status = "malformed_request",
+                        statuscode = "400"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
                     data.Response.StatusCode = 400;
-                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_request");
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                     return;
 
@@ -64,27 +74,38 @@ namespace Servo.controller
                 if (resp == 200)
                 {
                     data.Response.StatusCode = 200;
-                    byte[] buffer = Encoding.UTF8.GetBytes("email_kuldve");
+                    byte[] buffer = Encoding.UTF8.GetBytes("email_sent");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else if (resp == 401)
                 {
                     data.Response.StatusCode = 401;
-                    byte[] buffer = Encoding.UTF8.GetBytes("hibas_jelszo");
+                    byte[] buffer = Encoding.UTF8.GetBytes("wrong_password");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else //if (resp == 500)
                 {
                     data.Response.StatusCode = 500;
-                    byte[] buffer = Encoding.UTF8.GetBytes("sze_v_felhasznalo_nem_letezik");
+                    byte[] buffer = Encoding.UTF8.GetBytes("server_error_or_inexistent_user");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }*/
             }
             catch (Exception ex)
             {
+
+                var respon = new
+                {
+                    status = "malformed_request",
+                    statuscode = "400"
+                };
+
+                string jsonrespon = JsonSerializer.Serialize(respon);
+
+
+
                 service.shared.log($"Error 1: {ex.Message}  --controller.ban_user.main");
                 data.Response.StatusCode = 400;
-                byte[] buffer = Encoding.UTF8.GetBytes("Hibas request");
+                byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
             }
             finally
