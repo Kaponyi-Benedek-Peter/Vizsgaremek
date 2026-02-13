@@ -142,8 +142,8 @@ export class AuthService {
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
     const request: RegistrationPromiseRequest = {
-      id: this.encodeBase64(id),
-      token: this.encodeBase64(token),
+      id: id,
+      token: token,
     };
 
     return this.http
@@ -173,8 +173,8 @@ export class AuthService {
 
   completePasswordChange(id: string, token: string): Observable<void> {
     const request: PasswordChangePromiseRequest = {
-      id: this.encodeBase64(id),
-      token: this.encodeBase64(token),
+      id: id,
+      token: token,
     };
 
     return this.http

@@ -1,7 +1,7 @@
 .featured-section {
   width: 100%;
   max-width: 1840px;
-  background-color: #f5f0e1;
+  background-color: var(--color-featured-bg);
   position: relative;
   padding: 60px clamp(40px, 5vw, 80px);
   margin: 0 auto;
@@ -17,9 +17,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(100, 90, 70, 0.25) 10%,
-    rgba(100, 90, 70, 0.35) 50%,
-    rgba(100, 90, 70, 0.25) 90%,
+    var(--color-featured-divider) 10%,
+    var(--color-featured-divider) 50%,
+    var(--color-featured-divider) 90%,
     transparent 100%
   );
 }
@@ -34,9 +34,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(100, 90, 70, 0.25) 10%,
-    rgba(100, 90, 70, 0.35) 50%,
-    rgba(100, 90, 70, 0.25) 90%,
+    var(--color-featured-divider) 10%,
+    var(--color-featured-divider) 50%,
+    var(--color-featured-divider) 90%,
     transparent 100%
   );
 }
@@ -48,7 +48,7 @@
   letter-spacing: 3px;
   text-align: center;
   margin-bottom: clamp(50px, 8vw, 90px);
-  color: #131313;
+  color: var(--text-primary);
   text-transform: uppercase;
   position: relative;
 }
@@ -58,7 +58,7 @@
   display: block;
   width: 80px;
   height: 2px;
-  background: #067a45;
+  background: var(--color-primary);
   margin: 20px auto 0;
 }
 

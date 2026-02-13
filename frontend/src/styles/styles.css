@@ -59,12 +59,16 @@
   --btn-primary-bg: #067a45;
   --btn-primary-text: #ffffff;
   --btn-primary-hover: #0b5f39;
+  --btn-underline-color: var(--color-white);
 
   --btn-secondary-bg: #f5f5f5;
   --btn-secondary-text: #131313;
   --btn-secondary-hover: #e0e0e0;
 
   --overlay-bg: rgba(0, 0, 0, 0.5);
+
+  --color-featured-bg: #f5f0e1;
+  --color-featured-divider: rgba(100, 90, 70, 0.35);
 
   --transition-speed: 0.3s;
   --transition-ease: ease;
@@ -98,12 +102,16 @@
   --btn-primary-bg: #067a45;
   --btn-primary-text: #ffffff;
   --btn-primary-hover: #0b5f39;
+  --btn-underline-color: var(--color-white);
 
   --btn-secondary-bg: #303030;
   --btn-secondary-text: #ffffff;
   --btn-secondary-hover: #404040;
 
   --overlay-bg: rgba(0, 0, 0, 0.7);
+
+  --color-featured-bg: #1e1e1e;
+  --color-featured-divider: rgba(255, 255, 255, 0.15);
 }
 
 html {

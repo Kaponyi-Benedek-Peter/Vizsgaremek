@@ -50,10 +50,9 @@
 .lang-dropdown {
   position: absolute;
   top: calc(100% + 8px);
-  right: auto;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 0;
   width: 192px;
+  max-width: calc(100vw - 40px);
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -115,9 +114,6 @@
 @media (max-width: 640px) {
   .lang-dropdown {
     width: 160px;
-    left: auto;
-    right: 0;
-    transform: none;
   }
 
   .lang-item {

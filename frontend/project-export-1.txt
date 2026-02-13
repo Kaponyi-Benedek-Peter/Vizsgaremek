@@ -106,11 +106,21 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 purchase.html
 │   │   │   │   ├── 📄 purchase.spec.ts
 │   │   │   │   └── 📄 purchase.ts
-│   │   │   └── 📁 register/
-│   │   │       ├── 📄 register.css
-│   │   │       ├── 📄 register.html
-│   │   │       ├── 📄 register.spec.ts
-│   │   │       └── 📄 register.ts
+│   │   │   ├── 📁 register/
+│   │   │   │   ├── 📄 register.css
+│   │   │   │   ├── 📄 register.html
+│   │   │   │   ├── 📄 register.spec.ts
+│   │   │   │   └── 📄 register.ts
+│   │   │   ├── 📁 registration-promise/
+│   │   │   │   ├── 📄 registration-promise.css
+│   │   │   │   ├── 📄 registration-promise.html
+│   │   │   │   ├── 📄 registration-promise.spec.ts
+│   │   │   │   └── 📄 registration-promise.ts
+│   │   │   └── 📁 test/
+│   │   │       ├── 📄 test.css
+│   │   │       ├── 📄 test.html
+│   │   │       ├── 📄 test.spec.ts
+│   │   │       └── 📄 test.ts
 │   │   ├── 📁 services/
 │   │   │   └── 📄 product.service.ts
 │   │   └── 📁 shared/
@@ -594,6 +604,7 @@ import { Products } from './pages/products/products';
 import { Profile } from './pages/profile/profile';
 import { Purchase } from './pages/purchase/purchase';
 import { Register } from './pages/register/register';
+import { Test } from './pages/test/test';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -613,6 +624,13 @@ export const routes: Routes = [
   },
   { path: 'email', loadComponent: () => import('./pages/email/email').then((m) => m.Email) },
   {
+    path: 'registration-promise',
+    loadComponent: () =>
+      import('./pages/registration-promise/registration-promise').then(
+        (m) => m.RegistrationPromise,
+      ),
+  },
+  {
     path: 'password-reset-request',
     loadComponent: () =>
       import('./pages/password-reset-request/password-reset-request').then(
@@ -624,6 +642,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/password-reset/password-reset').then((m) => m.PasswordReset),
   },
+  { path: 'test', component: Test },
   { path: '**', component: NotFound },
 ];
 
@@ -1927,8 +1946,8 @@ export class AuthService {
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
     const request: RegistrationPromiseRequest = {
-      id: this.encodeBase64(id),
-      token: this.encodeBase64(token),
+      id: id,
+      token: token,
     };
 
     return this.http
@@ -1958,8 +1977,8 @@ export class AuthService {
 
   completePasswordChange(id: string, token: string): Observable<void> {
     const request: PasswordChangePromiseRequest = {
-      id: this.encodeBase64(id),
-      token: this.encodeBase64(token),
+      id: id,
+      token: token,
     };
 
     return this.http
@@ -2932,7 +2951,7 @@ FILE: src\app\pages\email\email.html
 
 <div class="auth-container">
   <div class="auth-card verification-card">
-    @if (!sessionToken() && !isVerifying() && !isVerified()) {
+    @if (!token() && !isVerifying() && !isVerified() && !errorMessage()) {
       <div class="verification-content">
         <div class="icon-wrapper">
           <svg class="mail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -3070,8 +3089,8 @@ describe('Email', () => {
 FILE: src\app\pages\email\email.ts
 ================================================================================
 
-import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
@@ -3084,10 +3103,13 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './email.css',
 })
 export class Email implements OnInit {
+  private location = inject(Location);
+
   isVerifying = signal(false);
   isVerified = signal(false);
   errorMessage = signal('');
-  sessionToken = signal<string | null>(null);
+  userId = signal<string>('');
+  token = signal<string>('');
 
   constructor(
     private route: ActivatedRoute,
@@ -3097,21 +3119,37 @@ export class Email implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
+      const id = params['id'];
       const token = params['token'];
-      if (token) {
-        this.sessionToken.set(token);
-        this.verifyEmail(token);
+
+      if (!id || !token) {
+        this.errorMessage.set('auth.errors.invalid_verification_link');
+        return;
       }
+
+      const cleanUrl = `/email?id=${id}&token=${token}`;
+      this.location.replaceState(cleanUrl);
+
+      this.userId.set(id);
+      this.token.set(token);
+      this.verifyEmail();
     });
   }
 
-  verifyEmail(token: string): void {
+  verifyEmail(): void {
     this.isVerifying.set(true);
     this.errorMessage.set('');
 
-    const userId = this.route.snapshot.queryParams['id'] || '';
+    const id = this.userId();
+    const token = this.token();
 
-    this.authService.completeRegistration(userId, token).subscribe({
+    if (!id || !token) {
+      this.errorMessage.set('auth.errors.invalid_verification_link');
+      this.isVerifying.set(false);
+      return;
+    }
+
+    this.authService.completeRegistration(id, token, true).subscribe({
       next: () => {
         this.isVerifying.set(false);
         this.isVerified.set(true);
@@ -3127,8 +3165,6 @@ export class Email implements OnInit {
   }
 
   resendEmail(): void {
-    // This would need to be implemented in the backend
-    // For now, just redirect to register
     this.router.navigate(['/register']);
   }
 }
@@ -3331,7 +3367,7 @@ FILE: src\app\pages\home\home.html
 
 <div class="home">
   <div class="hero">
-    <h1 appScrollReveal [animationType]="'fade-scale'" [animationDuration]="800">
+    <h1 appScrollReveal [animationType]="'fade-scale'" [animationDuration]="800" [autoPlay]="true">
       {{ 'home.hero.title' | translate }}
     </h1>
 
@@ -3340,11 +3376,18 @@ FILE: src\app\pages\home\home.html
       [animationType]="'slide-up'"
       [animationDelay]="200"
       [animationDuration]="800"
+      [autoPlay]="true"
     >
       {{ 'home.hero.subtitle' | translate }}
     </h2>
 
-    <p appScrollReveal [animationType]="'fade'" [animationDelay]="400" [animationDuration]="800">
+    <p
+      appScrollReveal
+      [animationType]="'fade'"
+      [animationDelay]="400"
+      [animationDuration]="800"
+      [autoPlay]="true"
+    >
       {{ 'home.hero.description' | translate }}
     </p>
 
@@ -3354,9 +3397,8 @@ FILE: src\app\pages\home\home.html
   <div appScrollReveal [animationType]="'fade-scale'" [threshold]="0.2">
     <app-featured>
       <app-featured-product-card
-        *ngFor="let product of products; let i = index"
-        [img]="product.img"
-        [alt]="product.alt"
+        *ngFor="let product of products(); let i = index"
+        [product]="product"
         (cardClick)="onProductClick(product.id)"
         appScrollReveal
         [animationType]="'slide-up'"
@@ -3403,15 +3445,17 @@ describe('Home', () => {
 FILE: src\app\pages\home\home.ts
 ================================================================================
 
-import { Component } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Router } from '@angular/router';
 
 import { Slide } from '../../shared/components/slide/slide';
 import { Featured } from '../../shared/components/featured/featured';
 import { FeaturedProductCard } from '../../shared/components/featured-product-card/featured-product-card';
 import { ScrollRevealDirective } from '../../shared/directives/scroll-reveal.directive';
 import { ICONS, IMAGES } from '../../core/constants/visuals';
+import { ProductWithHelpers, enrichProduct, Product } from '../../core/models/product.model';
 
 @Component({
   selector: 'app-home',
@@ -3428,18 +3472,138 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
   styleUrl: './home.css',
 })
 export class Home {
+  private router = inject(Router);
+  private translateService = inject(TranslateService);
+
   IMAGES = IMAGES;
   ICONS = ICONS;
 
-  products = [
-    { id: 1, img: IMAGES.hero1, alt: 'Termék 1' },
-    { id: 2, img: IMAGES.hero2, alt: 'Termék 2' },
-    { id: 3, img: IMAGES.hero3, alt: 'Termék 3' },
-    { id: 4, img: IMAGES.hero4, alt: 'Termék 4' },
+  private mockProducts: Product[] = [
+    {
+      id: '1',
+      name_de: 'Algopyrin 500mg Tabletten',
+      name_hu: 'Algopyrin 500mg Tabletta',
+      name_en: 'Algopyrin 500mg Tablets',
+      description_de:
+        'Schmerzlinderung und Fiebersenkung für Kopfschmerzen, Muskelschmerzen und Fieber.',
+      description_hu:
+        'Fájdalomcsillapító és lázcsillapító tabletta fejfájás, izomfájdalom és láz esetén.',
+      description_en: 'Pain relief and fever reducing tablets for headache, muscle pain and fever.',
+      description_preview_de: 'Schmerzlinderung und Fiebersenkung',
+      description_preview_hu: 'Fájdalomcsillapító és lázcsillapító',
+      description_preview_en: 'Pain relief and fever reducing',
+      price_huf: '2490',
+      price_usd: '7',
+      price_eur: '6',
+      times_ordered: '0',
+      stock: '45',
+      sale_percentage: '15',
+      category: 'pain-relief',
+      manufacturer: 'Bayer',
+      brand: 'Algopyrin',
+      rating: '4.5',
+      sku: 'ALG-500-20',
+      active_ingredients: 'Acetylsalicylic acid',
+      packaging: '20 tabletta',
+      created_at: '2024-01-15',
+      updated_at: '2024-02-10',
+      name: 'Algopyrin 500mg',
+    },
+    {
+      id: '2',
+      name_de: 'Aspirin Plus C Brausetabletten',
+      name_hu: 'Aspirin Plus C Pezsgőtabletta',
+      name_en: 'Aspirin Plus C Effervescent',
+      description_de: 'Schnelle Linderung bei Erkältung und Grippe mit Vitamin C.',
+      description_hu: 'Gyors megkönnyebbülés megfázás és influenza esetén C-vitaminnal.',
+      description_en: 'Fast relief for cold and flu with Vitamin C.',
+      description_preview_de: 'Erkältungs- und Grippemittel',
+      description_preview_hu: 'Megfázás és influenza elleni szer',
+      description_preview_en: 'Cold and flu relief',
+      price_huf: '3490',
+      price_usd: '10',
+      price_eur: '9',
+      times_ordered: '0',
+      stock: '30',
+      sale_percentage: '10',
+      category: 'cold-flu',
+      manufacturer: 'Bayer',
+      brand: 'Aspirin',
+      rating: '4.7',
+      sku: 'ASP-C-10',
+      active_ingredients: 'Acetylsalicylic acid, Ascorbic acid',
+      packaging: '10 pezsgőtabletta',
+      created_at: '2024-01-20',
+      updated_at: '2024-02-15',
+      name: 'Aspirin Plus C',
+    },
+    {
+      id: '3',
+      name_de: 'Bepanthen Wund- und Heilsalbe',
+      name_hu: 'Bepanthen Sebgyógyító Krém',
+      name_en: 'Bepanthen Wound Healing Ointment',
+      description_de: 'Unterstützt die Wundheilung und Regeneration der Haut.',
+      description_hu: 'Támogatja a sebgyógyulást és a bőr regenerálódását.',
+      description_en: 'Supports wound healing and skin regeneration.',
+      description_preview_de: 'Wundheilung und Hautregeneration',
+      description_preview_hu: 'Sebgyógyulás és bőr regeneráció',
+      description_preview_en: 'Wound healing and skin regeneration',
+      price_huf: '2890',
+      price_usd: '8',
+      price_eur: '7',
+      times_ordered: '0',
+      stock: '50',
+      sale_percentage: '0',
+      category: 'skin-care',
+      manufacturer: 'Bayer',
+      brand: 'Bepanthen',
+      rating: '4.8',
+      sku: 'BEP-50G',
+      active_ingredients: 'Dexpanthenol',
+      packaging: '50g krém',
+      created_at: '2024-01-25',
+      updated_at: '2024-02-20',
+      name: 'Bepanthen',
+    },
+    {
+      id: '4',
+      name_de: 'Voltaren Schmerzgel',
+      name_hu: 'Voltaren Fájdalomcsillapító Gél',
+      name_en: 'Voltaren Pain Relief Gel',
+      description_de: 'Entzündungshemmendes Gel für Muskel- und Gelenkschmerzen.',
+      description_hu: 'Gyulladáscsökkentő gél izom- és ízületi fájdalmakra.',
+      description_en: 'Anti-inflammatory gel for muscle and joint pain.',
+      description_preview_de: 'Gegen Muskel- und Gelenkschmerzen',
+      description_preview_hu: 'Izom- és ízületi fájdalmak ellen',
+      description_preview_en: 'For muscle and joint pain',
+      price_huf: '4290',
+      price_usd: '12',
+      price_eur: '11',
+      times_ordered: '0',
+      stock: '25',
+      sale_percentage: '20',
+      category: 'pain-relief',
+      manufacturer: 'Novartis',
+      brand: 'Voltaren',
+      rating: '4.6',
+      sku: 'VOL-100G',
+      active_ingredients: 'Diclofenac',
+      packaging: '100g gél',
+      created_at: '2024-02-01',
+      updated_at: '2024-02-25',
+      name: 'Voltaren',
+    },
   ];
 
-  onProductClick(productId: number): void {
+  products = computed<ProductWithHelpers[]>(() => {
+    const currentLang = this.translateService.currentLang as 'hu' | 'en' | 'de';
+    return this.mockProducts.map((p) => enrichProduct(p, currentLang));
+  });
+
+  onProductClick(productId: string): void {
     console.log(`Termék ${productId} kattintva`);
+    // TODO: Navigáció a termék részletekhez
+    // this.router.navigate(['/products', productId]);
   }
 }
 
@@ -4247,8 +4411,8 @@ describe('PasswordReset', () => {
 FILE: src\app\pages\password-reset\password-reset.ts
 ================================================================================
 
-import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -4262,9 +4426,12 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './password-reset.css',
 })
 export class PasswordReset implements OnInit {
+  private location = inject(Location);
+
   newPassword = signal('');
   confirmPassword = signal('');
-  sessionToken = signal<string | null>(null);
+  userId = signal<string>('');
+  token = signal<string>('');
   isLoading = signal(false);
   errorMessage = signal('');
   isSuccess = signal(false);
@@ -4279,12 +4446,19 @@ export class PasswordReset implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
+      const id = params['id'];
       const token = params['token'];
-      if (!token) {
+
+      if (!id || !token) {
         this.errorMessage.set('auth.errors.invalid_reset_link');
         return;
       }
-      this.sessionToken.set(token);
+
+      const cleanUrl = `/password-reset?id=${id}&token=${token}`;
+      this.location.replaceState(cleanUrl);
+
+      this.userId.set(id);
+      this.token.set(token);
     });
   }
 
@@ -4306,15 +4480,17 @@ export class PasswordReset implements OnInit {
       return;
     }
 
-    const token = this.sessionToken();
-    if (!token) {
+    const id = this.userId();
+    const token = this.token();
+
+    if (!id || !token) {
       this.errorMessage.set('auth.errors.invalid_reset_link');
       return;
     }
 
     this.isLoading.set(true);
 
-    this.authService.completePasswordChange(token, this.newPassword()).subscribe({
+    this.authService.completePasswordChange(id, token).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.isSuccess.set(true);
@@ -5902,6 +6078,321 @@ export class Register {
 
 
 ================================================================================
+FILE: src\app\pages\registration-promise\registration-promise.css
+================================================================================
+
+@import '../email/email.css';
+
+
+
+================================================================================
+FILE: src\app\pages\registration-promise\registration-promise.html
+================================================================================
+
+<div class="auth-container">
+  <div class="auth-card verification-card">
+    @if (!token() && !isVerifying() && !isVerified() && !errorMessage()) {
+      <div class="verification-content">
+        <div class="icon-wrapper">
+          <svg class="mail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+
+        <h1>{{ 'auth.email.check_inbox' | translate }}</h1>
+        <p class="verification-text">{{ 'auth.email.sent_message' | translate }}</p>
+
+        <div class="verification-steps">
+          <div class="step">
+            <span class="step-number">1</span>
+            <p>{{ 'auth.email.step_1' | translate }}</p>
+          </div>
+          <div class="step">
+            <span class="step-number">2</span>
+            <p>{{ 'auth.email.step_2' | translate }}</p>
+          </div>
+          <div class="step">
+            <span class="step-number">3</span>
+            <p>{{ 'auth.email.step_3' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="verification-help">
+          <p>{{ 'auth.email.no_email' | translate }}</p>
+          <button class="link-btn" (click)="resendEmail()">
+            {{ 'auth.email.resend' | translate }}
+          </button>
+        </div>
+
+        <a routerLink="/login" class="back-link">
+          {{ 'auth.email.back_to_login' | translate }}
+        </a>
+      </div>
+    }
+
+    @if (isVerifying()) {
+      <div class="verification-content">
+        <div class="icon-wrapper">
+          <div class="spinner-large"></div>
+        </div>
+
+        <h1>{{ 'auth.email.verifying' | translate }}</h1>
+        <p class="verification-text">{{ 'auth.email.verifying_message' | translate }}</p>
+      </div>
+    }
+
+    @if (isVerified() && !errorMessage()) {
+      <div class="verification-content">
+        <div class="icon-wrapper success">
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="3"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+
+        <h1>{{ 'auth.email.verified' | translate }}</h1>
+        <p class="verification-text">{{ 'auth.email.verified_message' | translate }}</p>
+
+        <div class="redirect-info">
+          <p>{{ 'auth.email.redirecting' | translate }}</p>
+        </div>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="verification-content">
+        <div class="icon-wrapper error">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" stroke-width="2" />
+            <path stroke-linecap="round" stroke-width="2" d="M12 8v4M12 16h.01" />
+          </svg>
+        </div>
+
+        <h1>{{ 'auth.email.verification_failed' | translate }}</h1>
+        <p class="error-message">{{ errorMessage() | translate }}</p>
+
+        <div class="error-actions">
+          <button class="submit-btn" (click)="resendEmail()">
+            {{ 'auth.email.try_again' | translate }}
+          </button>
+          <a routerLink="/register" class="link">
+            {{ 'auth.email.back_to_register' | translate }}
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+
+
+================================================================================
+FILE: src\app\pages\registration-promise\registration-promise.spec.ts
+================================================================================
+
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { RegistrationPromise } from './registration-promise';
+
+describe('RegistrationPromise', () => {
+  let component: RegistrationPromise;
+  let fixture: ComponentFixture<RegistrationPromise>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [RegistrationPromise]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(RegistrationPromise);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+
+================================================================================
+FILE: src\app\pages\registration-promise\registration-promise.ts
+================================================================================
+
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../core/services/auth.service';
+
+@Component({
+  selector: 'app-registration-promise',
+  standalone: true,
+  imports: [CommonModule, RouterModule, TranslateModule],
+  templateUrl: './registration-promise.html',
+  styleUrl: './registration-promise.css',
+})
+export class RegistrationPromise implements OnInit {
+  private location = inject(Location);
+
+  isVerifying = signal(false);
+  isVerified = signal(false);
+  errorMessage = signal('');
+  userId = signal<string>('');
+  token = signal<string>('');
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthService,
+  ) {}
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      const activate = params['activate'];
+
+      if (!activate) {
+        this.errorMessage.set('auth.errors.invalid_verification_link');
+        return;
+      }
+
+      const parts = activate.split(';');
+
+      if (parts.length !== 2) {
+        this.errorMessage.set('auth.errors.invalid_verification_link');
+        return;
+      }
+
+      const id = parts[0].trim();
+      const token = parts[1].trim();
+
+      if (!id || !token) {
+        this.errorMessage.set('auth.errors.invalid_verification_link');
+        return;
+      }
+
+      // URL handler
+      const cleanUrl = `/registration-promise?activate=${id};${token}`;
+      this.location.replaceState(cleanUrl);
+
+      this.userId.set(id);
+      this.token.set(token);
+      this.verifyEmail();
+    });
+  }
+
+  verifyEmail(): void {
+    this.isVerifying.set(true);
+    this.errorMessage.set('');
+
+    const id = this.userId();
+    const token = this.token();
+
+    if (!id || !token) {
+      this.errorMessage.set('auth.errors.invalid_verification_link');
+      this.isVerifying.set(false);
+      return;
+    }
+
+    // API call
+    this.authService.completeRegistration(id, token, true).subscribe({
+      next: () => {
+        this.isVerifying.set(false);
+        this.isVerified.set(true);
+        setTimeout(() => {
+          this.router.navigate(['/home']);
+        }, 2000);
+      },
+      error: (error) => {
+        this.isVerifying.set(false);
+        this.errorMessage.set(error.message || 'auth.errors.verification_failed');
+      },
+    });
+  }
+
+  resendEmail(): void {
+    this.router.navigate(['/register']);
+  }
+}
+
+
+
+================================================================================
+FILE: src\app\pages\test\test.css
+================================================================================
+
+
+
+
+================================================================================
+FILE: src\app\pages\test\test.html
+================================================================================
+
+<p>===================================== TEST =================================</p>
+<app-primary-btn>{{ 'header.home' | translate }}</app-primary-btn>
+<p>===================================== TEST =================================</p>
+
+
+
+================================================================================
+FILE: src\app\pages\test\test.spec.ts
+================================================================================
+
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { Test } from './test';
+
+describe('Test', () => {
+  let component: Test;
+  let fixture: ComponentFixture<Test>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [Test]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(Test);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+
+================================================================================
+FILE: src\app\pages\test\test.ts
+================================================================================
+
+import { Component } from '@angular/core';
+import { PrimaryBtn } from '../../shared/components/primary-btn/primary-btn';
+import { TranslateModule } from '@ngx-translate/core';
+
+@Component({
+  selector: 'app-test',
+  imports: [PrimaryBtn, TranslateModule],
+  templateUrl: './test.html',
+  styleUrl: './test.css',
+})
+export class Test {}
+
+
+
+================================================================================
 FILE: src\app\services\product.service.ts
 ================================================================================
 
@@ -6520,7 +7011,7 @@ FILE: src\app\shared\components\featured\featured.css
 .featured-section {
   width: 100%;
   max-width: 1840px;
-  background-color: #f5f0e1;
+  background-color: var(--color-featured-bg);
   position: relative;
   padding: 60px clamp(40px, 5vw, 80px);
   margin: 0 auto;
@@ -6536,9 +7027,9 @@ FILE: src\app\shared\components\featured\featured.css
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(100, 90, 70, 0.25) 10%,
-    rgba(100, 90, 70, 0.35) 50%,
-    rgba(100, 90, 70, 0.25) 90%,
+    var(--color-featured-divider) 10%,
+    var(--color-featured-divider) 50%,
+    var(--color-featured-divider) 90%,
     transparent 100%
   );
 }
@@ -6553,9 +7044,9 @@ FILE: src\app\shared\components\featured\featured.css
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(100, 90, 70, 0.25) 10%,
-    rgba(100, 90, 70, 0.35) 50%,
-    rgba(100, 90, 70, 0.25) 90%,
+    var(--color-featured-divider) 10%,
+    var(--color-featured-divider) 50%,
+    var(--color-featured-divider) 90%,
     transparent 100%
   );
 }
@@ -6567,7 +7058,7 @@ FILE: src\app\shared\components\featured\featured.css
   letter-spacing: 3px;
   text-align: center;
   margin-bottom: clamp(50px, 8vw, 90px);
-  color: #131313;
+  color: var(--text-primary);
   text-transform: uppercase;
   position: relative;
 }
@@ -6577,7 +7068,7 @@ FILE: src\app\shared\components\featured\featured.css
   display: block;
   width: 80px;
   height: 2px;
-  background: #067a45;
+  background: var(--color-primary);
   margin: 20px auto 0;
 }
 
@@ -6659,16 +7150,18 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 
 .featured-product-card {
   width: 100%;
-  height: 300px;
-  background: #c4c0b5;
-  border-radius: 0;
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.15),
-    0 4px 8px rgba(0, 0, 0, 0.1);
+  height: auto;
+  min-height: 360px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
 }
 
 .featured-product-card::before {
@@ -6682,9 +7175,8 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 
 .featured-product-card:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.2),
-    0 8px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary);
 }
 
 .featured-product-card:hover::before {
@@ -6693,13 +7185,14 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 
 .featured-product-image-wrapper {
   width: 100%;
-  height: 100%;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  padding: 12px;
+  height: 240px;
+  background: var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-border);
+  padding: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .featured-product-image {
@@ -6714,15 +7207,15 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #6b6760;
+  color: var(--text-secondary);
   gap: 16px;
 }
 
 .featured-placeholder-icon {
   width: 70px;
   height: 70px;
-  border: 3px solid #6b6760;
-  border-radius: 0;
+  border: 3px solid var(--text-secondary);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6739,6 +7232,113 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   letter-spacing: 3px;
   text-transform: uppercase;
   opacity: 0.5;
+}
+
+.featured-product-info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.featured-product-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.featured-product-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.featured-product-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.featured-product-old-price {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
+.featured-product-stock {
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.featured-stock-in {
+  color: var(--color-success);
+}
+
+.featured-stock-out {
+  color: var(--color-error);
+}
+
+.featured-stock-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.featured-stock-in .featured-stock-indicator {
+  background-color: var(--color-success);
+}
+
+.featured-stock-out .featured-stock-indicator {
+  background-color: var(--color-error);
+}
+
+.featured-badges {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+.featured-badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  color: white;
+}
+
+.featured-badge-discount {
+  background: var(--color-error);
+}
+
+.featured-badge-prescription {
+  background: var(--color-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  padding: 0;
 }
 
 @keyframes fadeInUp {
@@ -6779,13 +7379,27 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 :host:nth-child(6) {
   animation-delay: 0.9s;
 }
+
 @media (max-width: 768px) {
   .featured-product-card {
-    height: 260px;
+    min-height: 320px;
   }
 
   .featured-product-image-wrapper {
-    padding: 16px;
+    height: 200px;
+    padding: 12px;
+  }
+
+  .featured-product-info {
+    padding: 12px;
+  }
+
+  .featured-product-name {
+    font-size: 1rem;
+  }
+
+  .featured-product-price {
+    font-size: 1.25rem;
   }
 }
 
@@ -6797,12 +7411,45 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.html
 
 <div class="featured-product-card" (click)="onCardClick()">
   <div class="featured-product-image-wrapper">
-    <img *ngIf="img" [src]="img" [alt]="alt" class="featured-product-image" />
+    <img *ngIf="imageUrl()" [src]="imageUrl()" [alt]="altText()" class="featured-product-image" />
+
+    <div class="featured-badges" *ngIf="discountPercentage() || requiresPrescription()">
+      <span *ngIf="discountPercentage()" class="featured-badge featured-badge-discount">
+        -{{ discountPercentage() }}%
+      </span>
+      <span
+        *ngIf="requiresPrescription()"
+        class="featured-badge featured-badge-prescription"
+        title="Vény szükséges"
+      >
+        ℞
+      </span>
+    </div>
   </div>
 
-  <div *ngIf="!img" class="featured-product-card-placeholder">
-    <div class="placeholder-icon">?</div>
-    <div class="placeholder-text">Nincs kép</div>
+  <div *ngIf="!imageUrl()" class="featured-product-card-placeholder">
+    <div class="featured-placeholder-icon">?</div>
+    <div class="featured-placeholder-text">Nincs kép</div>
+  </div>
+
+  <div class="featured-product-info" *ngIf="productName()">
+    <h3 class="featured-product-name">{{ productName() }}</h3>
+
+    <div class="featured-product-price-row">
+      <span class="featured-product-price">{{ price() | appCurrency }}</span>
+      <span class="featured-product-old-price" *ngIf="oldPrice()">
+        {{ oldPrice() | appCurrency }}
+      </span>
+    </div>
+
+    <div
+      class="featured-product-stock"
+      [class.featured-stock-in]="inStock()"
+      [class.featured-stock-out]="!inStock()"
+    >
+      <span class="featured-stock-indicator"></span>
+      <span>{{ inStock() ? 'Raktáron' : 'Elfogyott' }}</span>
+    </div>
   </div>
 </div>
 
@@ -6812,25 +7459,67 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.html
 FILE: src\app\shared\components\featured-product-card\featured-product-card.ts
 ================================================================================
 
-import { NgIf } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { CommonModule, NgIf } from '@angular/common';
+import { Component, EventEmitter, Input, Output, inject, computed } from '@angular/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { CurrencyService } from '../../../core/services/currency.service';
+import { ProductWithHelpers } from '../../../core/models/product.model';
+import { CurrencyPipe } from '../../pipes/currency.pipe';
 
 @Component({
   selector: 'app-featured-product-card',
-  imports: [NgIf],
+  imports: [CommonModule, NgIf, TranslateModule, CurrencyPipe],
   templateUrl: './featured-product-card.html',
   styleUrl: './featured-product-card.css',
 })
 export class FeaturedProductCard {
-  @Input() img: string = '';
-  @Input() alt: string = 'Termék kép';
-
+  @Input() product!: ProductWithHelpers;
   @Output() cardClick = new EventEmitter<void>();
 
-  constructor() {}
+  private currencyService = inject(CurrencyService);
+  private translateService = inject(TranslateService);
+
+  productName = computed(() => {
+    const lang = this.translateService.currentLang;
+    if (lang === 'hu') return this.product?.name_hu || this.product?.name || '';
+    if (lang === 'de') return this.product?.name_de || this.product?.name || '';
+    return this.product?.name_en || this.product?.name || '';
+  });
+
+  imageUrl = computed(() => {
+    return this.product?.imageUrl || '';
+  });
+
+  altText = computed(() => {
+    const name = this.productName();
+    return name || 'Termék kép';
+  });
+
+  price = computed(() => {
+    return this.product?.price || 0;
+  });
+
+  oldPrice = computed(() => {
+    if (!this.product?.hasDiscount) return null;
+    return this.product.priceNumber || null;
+  });
+
+  inStock = computed(() => {
+    return this.product?.inStock || false;
+  });
+
+  discountPercentage = computed(() => {
+    return this.product?.discountPercentage || 0;
+  });
+
+  requiresPrescription = computed(() => {
+    return this.product?.requiresPrescription || false;
+  });
 
   onCardClick(): void {
-    this.cardClick.emit();
+    if (this.product) {
+      this.cardClick.emit();
+    }
   }
 }
 
@@ -7056,8 +7745,8 @@ FILE: src\app\shared\components\footer\footer.css
 ================================================================================
 
 .footer {
-  background-color: var(--color-primary-light);
-  color: var(--text-inverse);
+  background-color: var(--color-primary);
+  color: var(--color-white);
   width: 100%;
   transition: background-color var(--transition-speed) var(--transition-ease);
 }
@@ -7248,7 +7937,8 @@ FILE: src\app\shared\components\header\header.css
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border-bottom: 1px solid var(--border-color);
   padding: 1rem 2rem;
   display: flex;
@@ -8115,10 +8805,9 @@ FILE: src\app\shared\components\language-switcher\language-switcher.css
 .lang-dropdown {
   position: absolute;
   top: calc(100% + 8px);
-  right: auto;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 0;
   width: 192px;
+  max-width: calc(100vw - 40px);
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -8180,9 +8869,6 @@ FILE: src\app\shared\components\language-switcher\language-switcher.css
 @media (max-width: 640px) {
   .lang-dropdown {
     width: 160px;
-    left: auto;
-    right: 0;
-    transform: none;
   }
 
   .lang-item {
@@ -8354,7 +9040,7 @@ FILE: src\app\shared\components\primary-btn\primary-btn.css
   background: transparent;
   border: none;
 
-  color: var(--text-primary);
+  color: currentColor;
 
   font-family: 'Inconsolata', monospace;
   font-size: clamp(12px, 3vw, 16px);
@@ -8367,11 +9053,13 @@ FILE: src\app\shared\components\primary-btn\primary-btn.css
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: color 0.3s ease;
+  transition:
+    color 0.3s ease,
+    opacity 0.2s ease;
 }
 
 .primary-btn:hover {
-  color: var(--color-primary);
+  opacity: 0.75;
 }
 
 .btn-text {
@@ -8388,7 +9076,7 @@ FILE: src\app\shared\components\primary-btn\primary-btn.css
   transform: translateX(-50%);
   height: 2px;
   width: 16px;
-  background-color: var(--color-primary);
+  background-color: var(--btn-underline-color, var(--color-accent-bright));
   transition: width 0.3s ease;
 }
 
@@ -11561,7 +12249,14 @@ FILE: src\app\shared\directives\scroll-reveal.directive.ts
 
 import { Directive, ElementRef, HostListener, Input, OnInit } from '@angular/core';
 
-export type AnimationType = 'fade' | 'slide-up' | 'slide-down' | 'slide-left' | 'slide-right' | 'scale' | 'fade-scale';
+export type AnimationType =
+  | 'fade'
+  | 'slide-up'
+  | 'slide-down'
+  | 'slide-left'
+  | 'slide-right'
+  | 'scale'
+  | 'fade-scale';
 
 @Directive({
   selector: '[appScrollReveal]',
@@ -11571,7 +12266,8 @@ export class ScrollRevealDirective implements OnInit {
   @Input() animationType: AnimationType = 'fade-scale';
   @Input() animationDelay: number = 0;
   @Input() animationDuration: number = 600;
-  @Input() threshold: number = 0.1; // Mennyit lásson az elemből, hogy aktiválódjon (0-1)
+  @Input() threshold: number = 0.1;
+  @Input() autoPlay: boolean = false;
 
   private hasAnimated = false;
 
@@ -11579,21 +12275,25 @@ export class ScrollRevealDirective implements OnInit {
 
   ngOnInit(): void {
     this.setupElement();
-    this.checkVisibility();
+
+    if (this.autoPlay) {
+      setTimeout(() => {
+        this.reveal();
+      }, 50);
+    } else {
+      this.checkVisibility();
+    }
   }
 
   private setupElement(): void {
     const element = this.el.nativeElement as HTMLElement;
-    
-    // Alapértelmezett rejtett állapot
+
     element.style.opacity = '0';
     element.style.transition = `all ${this.animationDuration}ms ease`;
     element.style.transitionDelay = `${this.animationDelay}ms`;
 
-    // Animáció típus szerinti kezdő pozíció
     switch (this.animationType) {
       case 'fade':
-        // Csak opacity
         break;
       case 'slide-up':
         element.style.transform = 'translateY(50px)';
@@ -11619,6 +12319,9 @@ export class ScrollRevealDirective implements OnInit {
   @HostListener('window:scroll', [])
   @HostListener('window:resize', [])
   onWindowEvent(): void {
+    if (this.autoPlay) {
+      return;
+    }
     this.checkVisibility();
   }
 
@@ -11631,7 +12334,6 @@ export class ScrollRevealDirective implements OnInit {
     const rect = element.getBoundingClientRect();
     const windowHeight = window.innerHeight;
 
-    // Elem láthatóságának ellenőrzése
     const elementHeight = rect.height;
     const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
     const visibilityRatio = visibleHeight / elementHeight;
@@ -11642,17 +12344,16 @@ export class ScrollRevealDirective implements OnInit {
   }
 
   private reveal(): void {
-    this.hasAnimated = true;
+    if (this.hasAnimated) {
+      return;
+    }
+
     const element = this.el.nativeElement as HTMLElement;
-    
+
     element.style.opacity = '1';
     element.style.transform = 'translateY(0) translateX(0) scale(1)';
-  }
 
-  // Public metódus az animáció resetelésére (opcionális)
-  public reset(): void {
-    this.hasAnimated = false;
-    this.setupElement();
+    this.hasAnimated = true;
   }
 }
 
@@ -12854,12 +13555,16 @@ FILE: src\styles\styles.css
   --btn-primary-bg: #067a45;
   --btn-primary-text: #ffffff;
   --btn-primary-hover: #0b5f39;
+  --btn-underline-color: var(--color-white);
 
   --btn-secondary-bg: #f5f5f5;
   --btn-secondary-text: #131313;
   --btn-secondary-hover: #e0e0e0;
 
   --overlay-bg: rgba(0, 0, 0, 0.5);
+
+  --color-featured-bg: #f5f0e1;
+  --color-featured-divider: rgba(100, 90, 70, 0.35);
 
   --transition-speed: 0.3s;
   --transition-ease: ease;
@@ -12893,12 +13598,16 @@ FILE: src\styles\styles.css
   --btn-primary-bg: #067a45;
   --btn-primary-text: #ffffff;
   --btn-primary-hover: #0b5f39;
+  --btn-underline-color: var(--color-white);
 
   --btn-secondary-bg: #303030;
   --btn-secondary-text: #ffffff;
   --btn-secondary-hover: #404040;
 
   --overlay-bg: rgba(0, 0, 0, 0.7);
+
+  --color-featured-bg: #1e1e1e;
+  --color-featured-divider: rgba(255, 255, 255, 0.15);
 }
 
 html {

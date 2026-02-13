@@ -5,7 +5,7 @@
   background: transparent;
   border: none;
 
-  color: var(--text-primary);
+  color: currentColor;
 
   font-family: 'Inconsolata', monospace;
   font-size: clamp(12px, 3vw, 16px);
@@ -18,11 +18,13 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: color 0.3s ease;
+  transition:
+    color 0.3s ease,
+    opacity 0.2s ease;
 }
 
 .primary-btn:hover {
-  color: var(--color-primary);
+  opacity: 0.75;
 }
 
 .btn-text {
@@ -39,7 +41,7 @@
   transform: translateX(-50%);
   height: 2px;
   width: 16px;
-  background-color: var(--color-primary);
+  background-color: var(--btn-underline-color, var(--color-accent-bright));
   transition: width 0.3s ease;
 }
 

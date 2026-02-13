@@ -12,6 +12,7 @@ import { Products } from './pages/products/products';
 import { Profile } from './pages/profile/profile';
 import { Purchase } from './pages/purchase/purchase';
 import { Register } from './pages/register/register';
+import { Test } from './pages/test/test';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -31,6 +32,13 @@ export const routes: Routes = [
   },
   { path: 'email', loadComponent: () => import('./pages/email/email').then((m) => m.Email) },
   {
+    path: 'registration-promise',
+    loadComponent: () =>
+      import('./pages/registration-promise/registration-promise').then(
+        (m) => m.RegistrationPromise,
+      ),
+  },
+  {
     path: 'password-reset-request',
     loadComponent: () =>
       import('./pages/password-reset-request/password-reset-request').then(
@@ -42,5 +50,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/password-reset/password-reset').then((m) => m.PasswordReset),
   },
+  { path: 'test', component: Test },
   { path: '**', component: NotFound },
 ];

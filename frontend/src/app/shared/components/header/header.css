@@ -2,7 +2,8 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border-bottom: 1px solid var(--border-color);
   padding: 1rem 2rem;
   display: flex;

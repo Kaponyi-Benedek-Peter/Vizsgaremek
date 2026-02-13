@@ -1,6 +1,6 @@
 <div class="home">
   <div class="hero">
-    <h1 appScrollReveal [animationType]="'fade-scale'" [animationDuration]="800">
+    <h1 appScrollReveal [animationType]="'fade-scale'" [animationDuration]="800" [autoPlay]="true">
       {{ 'home.hero.title' | translate }}
     </h1>
 
@@ -9,11 +9,18 @@
       [animationType]="'slide-up'"
       [animationDelay]="200"
       [animationDuration]="800"
+      [autoPlay]="true"
     >
       {{ 'home.hero.subtitle' | translate }}
     </h2>
 
-    <p appScrollReveal [animationType]="'fade'" [animationDelay]="400" [animationDuration]="800">
+    <p
+      appScrollReveal
+      [animationType]="'fade'"
+      [animationDelay]="400"
+      [animationDuration]="800"
+      [autoPlay]="true"
+    >
       {{ 'home.hero.description' | translate }}
     </p>
 
@@ -23,9 +30,8 @@
   <div appScrollReveal [animationType]="'fade-scale'" [threshold]="0.2">
     <app-featured>
       <app-featured-product-card
-        *ngFor="let product of products; let i = index"
-        [img]="product.img"
-        [alt]="product.alt"
+        *ngFor="let product of products(); let i = index"
+        [product]="product"
         (cardClick)="onProductClick(product.id)"
         appScrollReveal
         [animationType]="'slide-up'"
