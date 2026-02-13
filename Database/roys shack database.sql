@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 13, 2026 at 09:08 AM
+-- Generation Time: Feb 13, 2026 at 10:01 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -102,7 +102,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_body` TEXT, IN 
     VALUES (p_title, p_body, p_user_id, p_image_source, NOW());
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255), IN `p_featured` TINYINT)   BEGIN
 
 INSERT INTO roy.products(
     name_de,
@@ -127,7 +127,8 @@ INSERT INTO roy.products(
     packaging,
     name,
     created_at,
-    thumbnail_url
+    thumbnail_url,
+    featured
 )
 VALUES(
     p_name_de,
@@ -152,7 +153,8 @@ VALUES(
     p_packaging,
     p_name,
     NOW(),
-    p_thumbnail_url
+    p_thumbnail_url,
+    p_featured
 );
 
 END$$
@@ -294,6 +296,11 @@ SET p_count_out = (
     SELECT COUNT(*) FROM roy.confirmations
 );
 
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_featured_products` ()   BEGIN
+select * from roy.products
+where featured = 1;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_newsletter_recipients` ()   BEGIN
@@ -594,7 +601,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, 
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_by_id` (IN `p_id` INT, IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` INT, IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_by_id` (IN `p_id` INT, IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` INT, IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255), IN `p_featured` TINYINT)   BEGIN
 
 UPDATE roy.products
 SET
@@ -618,7 +625,8 @@ SET
     active_ingredients = p_active_ingredients,
     packaging = p_packaging,
     name = p_name,
-    thumbnail_url = p_thumbnail_url
+    thumbnail_url = p_thumbnail_url,
+    featured = p_featured
 WHERE id = p_id;
 
 END$$
@@ -798,16 +806,17 @@ CREATE TABLE `products` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `name` varchar(255) NOT NULL,
-  `thumbnail_url` varchar(255) NOT NULL
+  `thumbnail_url` varchar(255) NOT NULL,
+  `featured` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_percentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging`, `created_at`, `updated_at`, `name`, `thumbnail_url`) VALUES
-(1, 'test_name_de', 'test_description_en', 1000, 5, 50, '10', 'test_description_preview_en', 'test_name_hu', 'test_name_en', 'test_description_hu', 'test_description_de', 'test_description_preview_hu', 'test_description_preview_de', 'test_category', 'test_manufacturer', 'test_brand', 2.90, 'test_sku', 'test_active_ingredients', 'test_packaging', '2026-02-10 09:37:40', '2026-02-12 19:57:42', 'test_name', 'test_thumbnail_url'),
-(2, 'name_de', 'product1_en', 1, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product1_hu', 'product1_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 2.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-11 10:48:06', 'product1', '');
+INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_percentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging`, `created_at`, `updated_at`, `name`, `thumbnail_url`, `featured`) VALUES
+(1, 'test_name_de', 'test_description_en', 1000, 5, 50, '10', 'test_description_preview_en', 'test_name_hu', 'test_name_en', 'test_description_hu', 'test_description_de', 'test_description_preview_hu', 'test_description_preview_de', 'test_category', 'test_manufacturer', 'test_brand', 2.90, 'test_sku', 'test_active_ingredients', 'test_packaging', '2026-02-10 09:37:40', '2026-02-13 09:44:43', 'test_name', 'test_thumbnail_url', 1),
+(2, 'name_de', 'product1_en', 1, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product1_hu', 'product1_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 2.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-11 10:48:06', 'product1', '', 0);
 
 -- --------------------------------------------------------
 
