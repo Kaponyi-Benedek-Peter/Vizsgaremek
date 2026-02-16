@@ -50,7 +50,6 @@ export class RegistrationPromise implements OnInit {
         return;
       }
 
-      // URL handler
       const cleanUrl = `/registration-promise?activate=${id};${token}`;
       this.location.replaceState(cleanUrl);
 
@@ -73,14 +72,10 @@ export class RegistrationPromise implements OnInit {
       return;
     }
 
-    // API call
     this.authService.completeRegistration(id, token, true).subscribe({
       next: () => {
         this.isVerifying.set(false);
         this.isVerified.set(true);
-        setTimeout(() => {
-          this.router.navigate(['/home']);
-        }, 2000);
       },
       error: (error) => {
         this.isVerifying.set(false);

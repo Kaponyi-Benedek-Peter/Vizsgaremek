@@ -168,6 +168,11 @@
       "firstname": "Vorname",
       "lastname": "Nachname"
     },
+    "success": {
+      "welcome_back": "Erfolgreich angemeldet! Willkommen zurück!",
+      "logged_in": "Erfolgreich angemeldet",
+      "registered": "Registrierung erfolgreich! Überprüfen Sie Ihre E-Mail."
+    },
     "placeholders": {
       "email": "beispiel@email.de",
       "password": "••••••••",
@@ -337,5 +342,14 @@
     "no_results_title": "Keine Ergebnisse gefunden",
     "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
     "reset_filters": "Filter zurücksetzen"
+  },
+  "profile": {
+    "account_details": "Kontodetails",
+    "first_name": "Vorname",
+    "last_name": "Nachname",
+    "email": "E-Mail-Adresse",
+    "role": "Rolle",
+    "view_orders": "Meine Bestellungen anzeigen",
+    "logout": "Abmelden"
   }
 }

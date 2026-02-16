@@ -1,1 +1,77 @@
-<p>profile works!</p>
+<div class="profile-container">
+  <div class="profile-wrapper">
+    <div class="profile-header">
+      <div class="profile-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+          />
+        </svg>
+      </div>
+
+      <div class="profile-info">
+        <h1 class="profile-name">{{ fullName() }}</h1>
+        <p class="profile-email">{{ email() }}</p>
+      </div>
+    </div>
+
+    <div class="profile-content">
+      <div class="profile-section">
+        <h2>{{ 'profile.account_details' | translate }}</h2>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">{{ 'profile.first_name' | translate }}</span>
+            <span class="detail-value">{{ user()?.firstname }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">{{ 'profile.last_name' | translate }}</span>
+            <span class="detail-value">{{ user()?.lastname }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">{{ 'profile.email' | translate }}</span>
+            <span class="detail-value">{{ user()?.email }}</span>
+          </div>
+
+          @if (user()?.role) {
+            <div class="detail-item">
+              <span class="detail-label">{{ 'profile.role' | translate }}</span>
+              <span class="detail-value">{{ user()?.role }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <button class="btn btn-primary" routerLink="/purchase">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            />
+          </svg>
+          {{ 'profile.view_orders' | translate }}
+        </button>
+
+        <button class="btn btn-secondary" (click)="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+          {{ 'profile.logout' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

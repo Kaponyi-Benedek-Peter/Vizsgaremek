@@ -1,103 +1,143 @@
-<div class="auth-container">
-  <div class="auth-card verification-card">
-    @if (!token() && !isVerifying() && !isVerified() && !errorMessage()) {
-      <div class="verification-content">
-        <div class="icon-wrapper">
-          <svg class="mail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            />
-          </svg>
-        </div>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roy's Shack Email</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+    "
+  >
+    <table
+      role="presentation"
+      cellpadding="0"
+      cellspacing="0"
+      width="100%"
+      style="background-color: #f5f5f5; padding: 40px 20px"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            cellpadding="0"
+            cellspacing="0"
+            width="100%"
+            style="
+              max-width: 600px;
+              background-color: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            "
+          >
+            <!-- Header with logo and brand -->
+            <tr>
+              <td
+                style="
+                  background: linear-gradient(135deg, #067a45 0%, #048a4f 100%);
+                  padding: 40px 20px;
+                  text-align: center;
+                "
+              >
+                <div
+                  style="
+                    background-color: rgba(255, 255, 255, 0.2);
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 50%;
+                    margin: 0 auto 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 3px solid rgba(255, 255, 255, 0.3);
+                  "
+                >
+                  <span style="color: white; font-size: 24px; font-weight: bold">🏪</span>
+                </div>
+                <h1
+                  style="
+                    margin: 0;
+                    color: white;
+                    font-size: 28px;
+                    font-weight: 700;
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                  "
+                >
+                  Roy's Shack
+                </h1>
+              </td>
+            </tr>
 
-        <h1>{{ 'auth.email.check_inbox' | translate }}</h1>
-        <p class="verification-text">{{ 'auth.email.sent_message' | translate }}</p>
+            <!-- Main content -->
+            <tr>
+              <td style="padding: 40px 30px; text-align: center">
+                <h2 style="margin: 0 0 20px; color: #067a45; font-size: 24px; font-weight: 700">
+                  Welcome Back!
+                </h2>
 
-        <div class="verification-steps">
-          <div class="step">
-            <span class="step-number">1</span>
-            <p>{{ 'auth.email.step_1' | translate }}</p>
-          </div>
-          <div class="step">
-            <span class="step-number">2</span>
-            <p>{{ 'auth.email.step_2' | translate }}</p>
-          </div>
-          <div class="step">
-            <span class="step-number">3</span>
-            <p>{{ 'auth.email.step_3' | translate }}</p>
-          </div>
-        </div>
+                <p style="margin: 0 0 16px; color: #333333; font-size: 16px; line-height: 1.6">
+                  Hello there,
+                </p>
 
-        <div class="verification-help">
-          <p>{{ 'auth.email.no_email' | translate }}</p>
-          <button class="link-btn" (click)="resendEmail()">
-            {{ 'auth.email.resend' | translate }}
-          </button>
-        </div>
+                <p style="margin: 0 0 30px; color: #666666; font-size: 15px; line-height: 1.6">
+                  We received a request to log in to your Roy's Shack account.<br />
+                  Click the button below to securely sign in:
+                </p>
 
-        <a routerLink="/login" class="back-link">
-          {{ 'auth.email.back_to_login' | translate }}
-        </a>
-      </div>
-    }
+                <!-- CTA Button - ngNonBindable használata -->
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto">
+                  <tr>
+                    <td
+                      style="
+                        border-radius: 8px;
+                        background: linear-gradient(135deg, #067a45 0%, #048a4f 100%);
+                        box-shadow: 0 4px 12px rgba(6, 122, 69, 0.3);
+                      "
+                    >
+                      <a
+                        ngNonBindable
+                        href="XXXX"
+                        style="
+                          display: inline-block;
+                          padding: 16px 48px;
+                          color: white;
+                          text-decoration: none;
+                          font-size: 16px;
+                          font-weight: 600;
+                          border-radius: 8px;
+                        "
+                      >
+                        Log in
+                      </a>
+                    </td>
+                  </tr>
+                </table>
 
-    @if (isVerifying()) {
-      <div class="verification-content">
-        <div class="icon-wrapper">
-          <div class="spinner-large"></div>
-        </div>
+                <p style="margin: 30px 0 0; color: #999999; font-size: 14px; line-height: 1.6">
+                  If you didn't request this login, you can safely ignore this email.
+                </p>
+              </td>
+            </tr>
 
-        <h1>{{ 'auth.email.verifying' | translate }}</h1>
-        <p class="verification-text">{{ 'auth.email.verifying_message' | translate }}</p>
-      </div>
-    }
-
-    @if (isVerified() && !errorMessage()) {
-      <div class="verification-content">
-        <div class="icon-wrapper success">
-          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="3"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-        </div>
-
-        <h1>{{ 'auth.email.verified' | translate }}</h1>
-        <p class="verification-text">{{ 'auth.email.verified_message' | translate }}</p>
-
-        <div class="redirect-info">
-          <p>{{ 'auth.email.redirecting' | translate }}</p>
-        </div>
-      </div>
-    }
-
-    @if (errorMessage()) {
-      <div class="verification-content">
-        <div class="icon-wrapper error">
-          <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10" stroke-width="2" />
-            <path stroke-linecap="round" stroke-width="2" d="M12 8v4M12 16h.01" />
-          </svg>
-        </div>
-
-        <h1>{{ 'auth.email.verification_failed' | translate }}</h1>
-        <p class="error-message">{{ errorMessage() | translate }}</p>
-
-        <div class="error-actions">
-          <button class="submit-btn" (click)="resendEmail()">
-            {{ 'auth.email.try_again' | translate }}
-          </button>
-          <a routerLink="/register" class="link">
-            {{ 'auth.email.back_to_register' | translate }}
-          </a>
-        </div>
-      </div>
-    }
-  </div>
-</div>
+            <!-- Footer -->
+            <tr>
+              <td style="padding: 30px; text-align: center; border-top: 1px solid #eeeeee">
+                <p style="margin: 0 0 8px; color: #999999; font-size: 13px">
+                  © 2025 Roy's Shack. All rights reserved.
+                </p>
+                <p style="margin: 0; color: #bbbbbb; font-size: 12px">
+                  This is an automated message, please do not reply.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
@@ -16,6 +16,7 @@ import {
   ApiErrorResponse,
 } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,8 @@ export class AuthService {
   private readonly USER_KEY = 'auth_user';
   private readonly EXPIRES_KEY = 'auth_expires';
   private readonly STORAGE_TYPE_KEY = 'auth_storage_type';
+
+  private toastService = inject(ToastService);
 
   private authStateSignal = signal<AuthState>({
     isAuthenticated: false,
@@ -247,8 +250,8 @@ export class AuthService {
           email:
             decoded.email ||
             decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-          firstname: '',
-          lastname: '',
+          firstname: decoded.firstname || '',
+          lastname: decoded.lastname || '',
         };
       }
     }
@@ -268,6 +271,11 @@ export class AuthService {
     });
 
     this.router.navigate(['/home']);
+
+    setTimeout(() => {
+      const userName = userData?.firstname || userData?.email || 'User';
+      this.toastService.success(`auth.success.welcome_back`);
+    }, 300);
   }
 
   private updateAuthState(state: AuthState): void {

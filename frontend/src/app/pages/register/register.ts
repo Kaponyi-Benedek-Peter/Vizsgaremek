@@ -67,9 +67,6 @@ export class Register {
         next: () => {
           this.isLoading.set(false);
           this.successMessage.set('auth.register.success_message');
-          setTimeout(() => {
-            this.router.navigate(['/email']);
-          }, 2000);
         },
         error: (error) => {
           this.isLoading.set(false);

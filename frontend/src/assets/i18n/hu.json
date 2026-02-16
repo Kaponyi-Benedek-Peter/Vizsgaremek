@@ -168,6 +168,11 @@
       "firstname": "Keresztnév",
       "lastname": "Vezetéknév"
     },
+    "success": {
+      "welcome_back": "Sikeres bejelentkezés! Üdvözöljük!",
+      "logged_in": "Sikeresen bejelentkezett",
+      "registered": "Sikeres regisztráció! Ellenőrizze e-mail fiókját."
+    },
     "placeholders": {
       "email": "pelda@email.hu",
       "password": "••••••••",
@@ -337,5 +342,14 @@
     "no_results_title": "Nincs találat",
     "no_results_description": "Próbálj meg más keresési kifejezést vagy kategóriát választani.",
     "reset_filters": "Szűrők visszaállítása"
+  },
+  "profile": {
+    "account_details": "Fiók adatok",
+    "first_name": "Keresztnév",
+    "last_name": "Vezetéknév",
+    "email": "E-mail cím",
+    "role": "Szerepkör",
+    "view_orders": "Rendeléseim megtekintése",
+    "logout": "Kijelentkezés"
   }
 }
