@@ -95,7 +95,12 @@
     "search": "Suchen",
     "filter": "Filtern",
     "add_to_cart": "In den Warenkorb",
-    "close": "Schließen"
+    "close": "Schließen",
+    "clear": "Löschen",
+    "minutes": "Min",
+    "ok": "OK",
+    "previous_page": "Vorherige Seite",
+    "next_page": "Nächste Seite"
   },
   "filter": {
     "sort_by": "Sortieren nach",
@@ -140,7 +145,7 @@
     "previous_image": "Vorheriges Bild",
     "next_image": "Nächstes Bild",
     "view_image": "Bild {{number}} ansehen",
-    "no_products_found": "Keine Produkte gefunden",
+    "no_products_found": "Es gibt keine produkte festhalten",
     "try_different_filters": "Versuchen Sie andere Filter"
   },
   "pagination": {
@@ -287,8 +292,50 @@
       "of": "von",
       "products": "Produkte"
     },
-    "empty": "Keine Produkte gefunden",
+    "empty": "Es gibt keine produkte festhalten",
     "addToCart": "In den Warenkorb",
     "viewDetails": "Details anzeigen"
+  },
+  "forum": {
+    "title": "Forum",
+    "description": "Teilen Sie Fragen, Antworten und Erfahrungen mit unserer Community",
+    "search_placeholder": "Forenbeiträge durchsuchen...",
+    "sort_by": "Sortieren nach",
+    "new_post": "Neuer Beitrag",
+    "all_categories": "Alle Kategorien",
+    "no_results_title": "Keine Ergebnisse gefunden",
+    "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
+    "reset_filters": "Filter zurücksetzen",
+    "pinned": "Angepinnt",
+    "featured": "Hervorgehoben",
+    "question": "Frage",
+    "answered": "Beantwortet",
+    "verified": "Verifiziert",
+    "role": {
+      "admin": "Administrator",
+      "pharmacist": "Apotheker",
+      "user": "Benutzer"
+    },
+    "category": {
+      "medicines": "Medikamente",
+      "natural_remedies": "Natürliche Heilmittel",
+      "baby_mother": "Baby & Mutter",
+      "healthy_lifestyle": "Gesunder Lebensstil",
+      "seasonal_health": "Saisonale Gesundheit",
+      "qa": "Fragen & Antworten",
+      "general": "Allgemein"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Gesundheitstipps, Fachartikel und nützliche Informationen von unseren Apothekern",
+    "search_placeholder": "Blog-Beiträge durchsuchen...",
+    "sort_by": "Sortieren nach",
+    "all_categories": "Alle Kategorien",
+    "articles": "Artikel",
+    "featured_posts": "Hervorgehobene Beiträge",
+    "no_results_title": "Keine Ergebnisse gefunden",
+    "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
+    "reset_filters": "Filter zurücksetzen"
   }
 }

@@ -95,7 +95,12 @@
     "search": "Keresés",
     "filter": "Szűrés",
     "add_to_cart": "Kosárba",
-    "close": "Bezár"
+    "close": "Bezár",
+    "clear": "Törlés",
+    "minutes": "perc",
+    "ok": "Rendben",
+    "previous_page": "Előző oldal",
+    "next_page": "Következő oldal"
   },
   "filter": {
     "sort_by": "Rendezés",
@@ -290,5 +295,47 @@
     "empty": "Nincsenek termékek",
     "addToCart": "Kosárba",
     "viewDetails": "Részletek"
+  },
+  "forum": {
+    "title": "Fórum",
+    "description": "Kérdések, válaszok és tapasztalatok megosztása közösségünkkel",
+    "search_placeholder": "Keresés a fórum bejegyzései között...",
+    "sort_by": "Rendezés",
+    "new_post": "Új bejegyzés",
+    "all_categories": "Minden kategória",
+    "no_results_title": "Nincs találat",
+    "no_results_description": "Próbálj meg más keresési kifejezést vagy kategóriát választani.",
+    "reset_filters": "Szűrők visszaállítása",
+    "pinned": "Rögzítve",
+    "featured": "Kiemelt",
+    "question": "Kérdés",
+    "answered": "Megválaszolva",
+    "verified": "Hitelesített",
+    "role": {
+      "admin": "Admin",
+      "pharmacist": "Gyógyszerész",
+      "user": "Felhasználó"
+    },
+    "category": {
+      "medicines": "Gyógyszerek",
+      "natural_remedies": "Természetes gyógymódok",
+      "baby_mother": "Babák és anyák",
+      "healthy_lifestyle": "Egészséges életmód",
+      "seasonal_health": "Szezonális egészség",
+      "qa": "Kérdések & Válaszok",
+      "general": "Általános"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Egészségtippek, szakmai cikkek és hasznos információk gyógyszerészeinktől",
+    "search_placeholder": "Keresés a blog bejegyzései között...",
+    "sort_by": "Rendezés",
+    "all_categories": "Minden kategória",
+    "articles": "cikk",
+    "featured_posts": "Kiemelt bejegyzések",
+    "no_results_title": "Nincs találat",
+    "no_results_description": "Próbálj meg más keresési kifejezést vagy kategóriát választani.",
+    "reset_filters": "Szűrők visszaállítása"
   }
 }

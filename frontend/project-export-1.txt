@@ -12531,7 +12531,7 @@ FILE: src\assets\i18n\de.json
     "previous_image": "Vorheriges Bild",
     "next_image": "Nächstes Bild",
     "view_image": "Bild {{number}} ansehen",
-    "no_products_found": "Keine Produkte gefunden",
+    "no_products_found": "Es gibt keine produkte festhalten",
     "try_different_filters": "Versuchen Sie andere Filter"
   },
   "pagination": {
@@ -12678,7 +12678,7 @@ FILE: src\assets\i18n\de.json
       "of": "von",
       "products": "Produkte"
     },
-    "empty": "Keine Produkte gefunden",
+    "empty": "Es gibt keine produkte festhalten",
     "addToCart": "In den Warenkorb",
     "viewDetails": "Details anzeigen"
   }

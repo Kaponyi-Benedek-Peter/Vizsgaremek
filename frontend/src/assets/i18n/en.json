@@ -64,7 +64,12 @@
     "search": "Search",
     "filter": "Filter",
     "add_to_cart": "Add to Cart",
-    "close": "Close"
+    "close": "Close",
+    "clear": "Clear",
+    "minutes": "min",
+    "ok": "OK",
+    "previous_page": "Previous page",
+    "next_page": "Next page"
   },
   "filter": {
     "sort_by": "Sort by",
@@ -290,5 +295,47 @@
     "empty": "No products found",
     "addToCart": "Add to Cart",
     "viewDetails": "View Details"
+  },
+  "forum": {
+    "title": "Forum",
+    "description": "Share questions, answers, and experiences with our community",
+    "search_placeholder": "Search forum posts...",
+    "sort_by": "Sort by",
+    "new_post": "New Post",
+    "all_categories": "All Categories",
+    "no_results_title": "No Results Found",
+    "no_results_description": "Try different search terms or select another category.",
+    "reset_filters": "Reset Filters",
+    "pinned": "Pinned",
+    "featured": "Featured",
+    "question": "Question",
+    "answered": "Answered",
+    "verified": "Verified",
+    "role": {
+      "admin": "Admin",
+      "pharmacist": "Pharmacist",
+      "user": "User"
+    },
+    "category": {
+      "medicines": "Medicines",
+      "natural_remedies": "Natural Remedies",
+      "baby_mother": "Baby & Mother",
+      "healthy_lifestyle": "Healthy Lifestyle",
+      "seasonal_health": "Seasonal Health",
+      "qa": "Q&A",
+      "general": "General"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Health tips, professional articles and useful information from our pharmacists",
+    "search_placeholder": "Search blog posts...",
+    "sort_by": "Sort by",
+    "all_categories": "All Categories",
+    "articles": "articles",
+    "featured_posts": "Featured Posts",
+    "no_results_title": "No Results Found",
+    "no_results_description": "Try different search terms or select another category.",
+    "reset_filters": "Reset Filters"
   }
 }

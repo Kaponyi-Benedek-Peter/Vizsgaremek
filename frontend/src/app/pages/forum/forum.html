@@ -1,1 +1,157 @@
-<p>forum works!</p>
+<div class="forum-page">
+  <section class="forum-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">{{ 'forum.title' | translate }}</h1>
+      <p class="hero-description">{{ 'forum.description' | translate }}</p>
+    </div>
+  </section>
+
+  <div class="forum-container">
+    <section class="search-filters">
+      <div class="search-bar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            type="search"
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="applySearch()"
+            [placeholder]="'forum.search_placeholder' | translate"
+            class="search-input"
+          />
+          @if (searchQuery()) {
+            <button
+              class="clear-search"
+              (click)="clearSearch()"
+              [attr.aria-label]="'common.clear' | translate"
+            >
+              ✕
+            </button>
+          }
+        </div>
+        <button class="search-button" (click)="applySearch()">
+          {{ 'common.search' | translate }}
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <div class="sort-controls">
+          <label for="sort-select" class="sort-label"> {{ 'forum.sort_by' | translate }}: </label>
+          <select
+            id="sort-select"
+            [(ngModel)]="selectedSort"
+            (ngModelChange)="changeSort($event)"
+            class="sort-select"
+          >
+            @for (option of sortOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <button class="new-post-button">
+          <span class="icon">✏️</span>
+          {{ 'forum.new_post' | translate }}
+        </button>
+      </div>
+    </section>
+
+    <section class="category-filters">
+      <button
+        class="category-chip"
+        [class.active]="selectedCategory() === 'all'"
+        (click)="selectCategory('all')"
+      >
+        <span class="category-icon">🌐</span>
+        <span class="category-name">{{ 'forum.all_categories' | translate }}</span>
+      </button>
+
+      @for (category of categories; track category.id) {
+        <button
+          class="category-chip"
+          [class.active]="selectedCategory() === category.id"
+          [class]="category.colorClass"
+          (click)="selectCategory(category.id)"
+        >
+          <span class="category-icon">{{ category.icon }}</span>
+          <span class="category-name">{{ category.translationKey | translate }}</span>
+        </button>
+      }
+    </section>
+
+    @if (isLoading()) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>{{ 'common.loading' | translate }}</p>
+      </div>
+    }
+
+    @if (!isLoading()) {
+      @if (posts().length > 0) {
+        <section class="posts-grid">
+          @for (post of posts(); track post.id) {
+            <app-post-card
+              [post]="post"
+              [showExcerpt]="true"
+              [showImage]="true"
+              [showCategory]="true"
+              [showAuthor]="true"
+              [showStats]="true"
+              (cardClick)="onPostClick($event)"
+            >
+            </app-post-card>
+          }
+        </section>
+
+        @if (totalPages() > 1) {
+          <nav class="pagination" aria-label="Pagination">
+            <button
+              class="pagination-button"
+              [disabled]="forumService.currentPage() === 1"
+              (click)="previousPage()"
+              [attr.aria-label]="'common.previous_page' | translate"
+            >
+              ‹ {{ 'pagination.previous' | translate }}
+            </button>
+
+            <div class="page-numbers">
+              @for (pageNum of getPageNumbers(); track pageNum) {
+                @if (pageNum === -1) {
+                  <span class="pagination-ellipsis">...</span>
+                } @else {
+                  <button
+                    class="page-number"
+                    [class.active]="forumService.currentPage() === pageNum"
+                    (click)="goToPage(pageNum)"
+                    [attr.aria-label]="getPageAriaLabel(pageNum)"
+                  >
+                    {{ pageNum }}
+                  </button>
+                }
+              }
+            </div>
+
+            <button
+              class="pagination-button"
+              [disabled]="forumService.currentPage() === totalPages()"
+              (click)="nextPage()"
+              [attr.aria-label]="'common.next_page' | translate"
+            >
+              {{ 'pagination.next' | translate }} ›
+            </button>
+          </nav>
+        }
+      } @else {
+        <div class="no-results">
+          <div class="no-results-icon">🔍</div>
+          <h3 class="no-results-title">{{ 'forum.no_results_title' | translate }}</h3>
+          <p class="no-results-description">{{ 'forum.no_results_description' | translate }}</p>
+          @if (searchQuery() || selectedCategory() !== 'all') {
+            <button class="reset-filters-button" (click)="selectCategory('all'); clearSearch()">
+              {{ 'forum.reset_filters' | translate }}
+            </button>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
