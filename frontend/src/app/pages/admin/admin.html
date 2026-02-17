@@ -1,1 +1,333 @@
-<p>admin works!</p>
+<div class="admin-page">
+  <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed()">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="logo-icon">🏥</span>
+        @if (!sidebarCollapsed()) {
+          <span class="logo-text">Roy's Admin</span>
+        }
+      </div>
+      <button
+        class="sidebar-toggle"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="'admin.toggle_sidebar' | translate"
+      >
+        {{ sidebarCollapsed() ? '▶' : '◀' }}
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (item of navItems; track item.id) {
+        <button
+          [class]="'nav-item' + (activeSection() === item.id ? ' active' : '')"
+          (click)="setSection(item.id)"
+          [attr.title]="item.label | translate"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          @if (!sidebarCollapsed()) {
+            <span class="nav-label">{{ item.label | translate }}</span>
+          }
+        </button>
+      }
+    </nav>
+
+    @if (!sidebarCollapsed()) {
+      <div class="sidebar-footer">
+        <button class="nav-item logout-btn" (click)="logout()">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-label">{{ 'profile.logout' | translate }}</span>
+        </button>
+      </div>
+    }
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button
+          class="mobile-menu-btn"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="'admin.toggle_sidebar' | translate"
+        >
+          ☰
+        </button>
+        <h1 class="page-heading">{{ currentSectionLabel() | translate }}</h1>
+      </div>
+      <div class="topbar-right">
+        <span class="admin-badge">{{ 'admin.role' | translate }}</span>
+        <span class="admin-name">{{ adminName() }}</span>
+      </div>
+    </header>
+
+    @if (activeSection() === 'dashboard') {
+      <div class="section-content">
+        <div class="stats-grid">
+          <div class="stat-card primary">
+            <div class="stat-icon">📦</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ stats.totalOrders }}</span>
+              <span class="stat-label">{{ 'admin.stats.total_orders' | translate }}</span>
+              <span class="stat-change positive"
+                >+12% {{ 'admin.stats.this_month' | translate }}</span
+              >
+            </div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon">💰</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ formatRevenue(stats.revenue) }}</span>
+              <span class="stat-label">{{ 'admin.stats.revenue' | translate }}</span>
+              <span class="stat-change positive"
+                >+8% {{ 'admin.stats.this_month' | translate }}</span
+              >
+            </div>
+          </div>
+          <div class="stat-card info">
+            <div class="stat-icon">👥</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ stats.totalUsers }}</span>
+              <span class="stat-label">{{ 'admin.stats.total_users' | translate }}</span>
+              <span class="stat-change positive"
+                >+24 {{ 'admin.stats.this_week' | translate }}</span
+              >
+            </div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ stats.totalProducts }}</span>
+              <span class="stat-label">{{ 'admin.stats.total_products' | translate }}</span>
+              <span class="stat-change neutral"
+                >{{ stats.lowStock }} {{ 'admin.stats.low_stock' | translate }}</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title">{{ 'admin.recent_orders' | translate }}</h2>
+            <button class="view-all-btn" (click)="setSection('orders')">
+              {{ 'admin.view_all' | translate }} →
+            </button>
+          </div>
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>{{ 'admin.table.order_id' | translate }}</th>
+                  <th>{{ 'admin.table.customer' | translate }}</th>
+                  <th>{{ 'admin.table.date' | translate }}</th>
+                  <th>{{ 'admin.table.total' | translate }}</th>
+                  <th>{{ 'admin.table.status' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (order of recentOrders.slice(0, 5); track order.id) {
+                  <tr>
+                    <td class="order-id">#{{ order.id }}</td>
+                    <td>{{ order.customer }}</td>
+                    <td class="muted">{{ order.date }}</td>
+                    <td class="font-bold">{{ formatRevenue(order.total) }}</td>
+                    <td>
+                      <span [class]="'status-badge status-' + order.status">
+                        {{ 'admin.status.' + order.status | translate }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeSection() === 'orders') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon-small">🔍</span>
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="orderSearch"
+              [placeholder]="'admin.search_orders' | translate"
+            />
+          </div>
+          <select class="admin-select" [(ngModel)]="orderStatusFilter">
+            <option value="all">{{ 'admin.all_statuses' | translate }}</option>
+            <option value="pending">{{ 'admin.status.pending' | translate }}</option>
+            <option value="processing">{{ 'admin.status.processing' | translate }}</option>
+            <option value="shipped">{{ 'admin.status.shipped' | translate }}</option>
+            <option value="delivered">{{ 'admin.status.delivered' | translate }}</option>
+            <option value="cancelled">{{ 'admin.status.cancelled' | translate }}</option>
+          </select>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>{{ 'admin.table.order_id' | translate }}</th>
+                  <th>{{ 'admin.table.customer' | translate }}</th>
+                  <th>{{ 'admin.table.date' | translate }}</th>
+                  <th>{{ 'admin.table.items' | translate }}</th>
+                  <th>{{ 'admin.table.total' | translate }}</th>
+                  <th>{{ 'admin.table.status' | translate }}</th>
+                  <th>{{ 'admin.table.actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (order of filteredOrders(); track order.id) {
+                  <tr>
+                    <td class="order-id">#{{ order.id }}</td>
+                    <td>{{ order.customer }}</td>
+                    <td class="muted">{{ order.date }}</td>
+                    <td class="muted">{{ order.items }} db</td>
+                    <td class="font-bold">{{ formatRevenue(order.total) }}</td>
+                    <td>
+                      <span [class]="'status-badge status-' + order.status">
+                        {{ 'admin.status.' + order.status | translate }}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="action-btn view-btn" title="Megtekintés">👁</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeSection() === 'users') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon-small">🔍</span>
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="userSearch"
+              [placeholder]="'admin.search_users' | translate"
+            />
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>{{ 'admin.table.user' | translate }}</th>
+                  <th>{{ 'admin.table.email' | translate }}</th>
+                  <th>{{ 'admin.table.role' | translate }}</th>
+                  <th>{{ 'admin.table.registered' | translate }}</th>
+                  <th>{{ 'admin.table.orders' | translate }}</th>
+                  <th>{{ 'admin.table.actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of filteredUsers(); track user.id) {
+                  <tr>
+                    <td>
+                      <div class="user-cell">
+                        <div class="user-avatar">{{ user.name.charAt(0) }}</div>
+                        <span>{{ user.name }}</span>
+                      </div>
+                    </td>
+                    <td class="muted">{{ user.email }}</td>
+                    <td>
+                      <span [class]="'role-badge role-' + user.role">
+                        {{ 'forum.role.' + user.role | translate }}
+                      </span>
+                    </td>
+                    <td class="muted">{{ user.registered }}</td>
+                    <td>{{ user.orders }}</td>
+                    <td>
+                      <button class="action-btn view-btn" title="Megtekintés">👁</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeSection() === 'products') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon-small">🔍</span>
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="productSearch"
+              [placeholder]="'admin.search_products' | translate"
+            />
+          </div>
+          <button class="add-btn">+ {{ 'admin.add_product' | translate }}</button>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>{{ 'admin.table.product' | translate }}</th>
+                  <th>{{ 'admin.table.category' | translate }}</th>
+                  <th>{{ 'admin.table.price' | translate }}</th>
+                  <th>{{ 'admin.table.stock' | translate }}</th>
+                  <th>{{ 'admin.table.status' | translate }}</th>
+                  <th>{{ 'admin.table.actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of filteredProducts(); track product.id) {
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        <div class="product-thumb">💊</div>
+                        <span>{{ product.name }}</span>
+                      </div>
+                    </td>
+                    <td class="muted">{{ product.category }}</td>
+                    <td class="font-bold">{{ formatRevenue(product.price) }}</td>
+                    <td>
+                      <span [class]="product.stock < 10 ? 'stock-low' : 'stock-ok'">
+                        {{ product.stock }} db
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        [class]="
+                          'status-badge status-' + (product.active ? 'delivered' : 'cancelled')
+                        "
+                      >
+                        {{
+                          product.active
+                            ? ('admin.active' | translate)
+                            : ('admin.inactive' | translate)
+                        }}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="action-btn edit-btn" title="Szerkesztés">✏️</button>
+                      <button class="action-btn delete-btn" title="Törlés">🗑️</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</div>

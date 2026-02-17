@@ -35,7 +35,7 @@
 
       <div class="toolbar">
         <div class="sort-controls">
-          <label for="sort-select" class="sort-label"> {{ 'forum.sort_by' | translate }}: </label>
+          <label for="sort-select" class="sort-label">{{ 'forum.sort_by' | translate }}:</label>
           <select
             id="sort-select"
             [(ngModel)]="selectedSort"
@@ -43,7 +43,7 @@
             class="sort-select"
           >
             @for (option of sortOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
+              <option [value]="option.value">{{ option.translateKey | translate }}</option>
             }
           </select>
         </div>
@@ -55,21 +55,26 @@
       </div>
     </section>
 
-    <section class="category-filters">
+    <section
+      class="category-filters"
+      role="group"
+      [attr.aria-label]="'forum.filter_by_category' | translate"
+    >
       <button
-        class="category-chip"
-        [class.active]="selectedCategory() === 'all'"
+        [class]="'category-chip' + (selectedCategory() === 'all' ? ' active' : '')"
         (click)="selectCategory('all')"
       >
-        <span class="category-icon">🌐</span>
+        <span class="category-icon">🌍</span>
         <span class="category-name">{{ 'forum.all_categories' | translate }}</span>
       </button>
 
       @for (category of categories; track category.id) {
         <button
-          class="category-chip"
-          [class.active]="selectedCategory() === category.id"
-          [class]="category.colorClass"
+          [class]="
+            'category-chip ' +
+            category.colorClass +
+            (selectedCategory() === category.id ? ' active' : '')
+          "
           (click)="selectCategory(category.id)"
         >
           <span class="category-icon">{{ category.icon }}</span>
@@ -79,7 +84,7 @@
     </section>
 
     @if (isLoading()) {
-      <div class="loading-container">
+      <div class="loading-container" role="status" [attr.aria-label]="'common.loading' | translate">
         <div class="spinner"></div>
         <p>{{ 'common.loading' | translate }}</p>
       </div>
@@ -97,8 +102,7 @@
               [showAuthor]="true"
               [showStats]="true"
               (cardClick)="onPostClick($event)"
-            >
-            </app-post-card>
+            />
           }
         </section>
 
@@ -123,6 +127,7 @@
                     [class.active]="forumService.currentPage() === pageNum"
                     (click)="goToPage(pageNum)"
                     [attr.aria-label]="getPageAriaLabel(pageNum)"
+                    [attr.aria-current]="forumService.currentPage() === pageNum ? 'page' : null"
                   >
                     {{ pageNum }}
                   </button>

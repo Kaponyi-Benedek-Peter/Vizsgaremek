@@ -34,17 +34,16 @@ export class Blog implements OnInit {
   constructor(public blogService: ForumBlogService) {}
 
   posts = computed(() => this.blogService.paginatedPosts());
-  currentPage = computed(() => this.blogService.currentPage);
   totalPages = computed(() => this.blogService.totalPages());
 
   categories = POST_CATEGORIES;
 
-  sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'newest', label: 'Legújabb' },
-    { value: 'oldest', label: 'Legrégebbi' },
-    { value: 'most-viewed', label: 'Legtöbbet nézett' },
-    { value: 'most-liked', label: 'Legnépszerűbb' },
-    { value: 'trending', label: 'Felkapott' },
+  sortOptions: { value: SortOption; translateKey: string }[] = [
+    { value: 'newest', translateKey: 'forum.sort.newest' },
+    { value: 'oldest', translateKey: 'forum.sort.oldest' },
+    { value: 'most-viewed', translateKey: 'forum.sort.most_viewed' },
+    { value: 'most-liked', translateKey: 'forum.sort.most_liked' },
+    { value: 'trending', translateKey: 'forum.sort.trending' },
   ];
 
   ngOnInit(): void {
@@ -54,9 +53,7 @@ export class Blog implements OnInit {
 
   private loadBlogPosts(): void {
     this.isLoading.set(true);
-
     this.blogService.setFilters({ type: 'blog' });
-
     setTimeout(() => {
       this.isLoading.set(false);
     }, 300);
@@ -75,7 +72,6 @@ export class Blog implements OnInit {
       category:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
-
     this.blogService.setFilters(filters);
   }
 
@@ -121,24 +117,18 @@ export class Blog implements OnInit {
 
     pages.push(1);
 
-    let start = Math.max(2, current - 1);
-    let end = Math.min(total - 1, current + 1);
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
 
-    if (start > 2) {
-      pages.push(-1);
-    }
+    if (start > 2) pages.push(-1);
 
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
 
-    if (end < total - 1) {
-      pages.push(-1);
-    }
+    if (end < total - 1) pages.push(-1);
 
-    if (total > 1) {
-      pages.push(total);
-    }
+    if (total > 1) pages.push(total);
 
     return pages;
   }

@@ -94,6 +94,11 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 password-reset-request.html
 │   │   │   │   ├── 📄 password-reset-request.spec.ts
 │   │   │   │   └── 📄 password-reset-request.ts
+│   │   │   ├── 📁 product-detail/
+│   │   │   │   ├── 📄 product-detail.css
+│   │   │   │   ├── 📄 product-detail.html
+│   │   │   │   ├── 📄 product-detail.spec.ts
+│   │   │   │   └── 📄 product-detail.ts
 │   │   │   ├── 📁 products/
 │   │   │   │   ├── 📄 products.css
 │   │   │   │   ├── 📄 products.html
@@ -623,6 +628,11 @@ export const routes: Routes = [
   { path: 'home', component: Home },
   { path: 'forum', component: Forum },
   { path: 'products', component: Products },
+  {
+    path: 'products/:id',
+    loadComponent: () =>
+      import('./pages/product-detail/product-detail').then((m) => m.ProductDetail),
+  },
   { path: 'profile', component: Profile },
   { path: 'purchase', component: Purchase },
   { path: 'legal', component: Legal },
@@ -2612,11 +2622,7 @@ import {
   ForumPost,
   PostFilters,
   SortOption,
-  PaginationOptions,
-  PostListResponse,
-  Comment,
   Author,
-  POST_CATEGORIES,
 } from '../models/forum-blog.model';
 
 @Injectable({
@@ -2633,35 +2639,24 @@ export class ForumBlogService {
   filters = this.filtersSignal.asReadonly();
   sortBy = this.sortBySignal.asReadonly();
 
+  currentPage = computed(() => this.currentPageSignal());
+
   filteredPosts = computed(() => {
-    let posts = this.postsSignal();
-    const filters = this.filtersSignal();
-    const sortBy = this.sortBySignal();
-
-    posts = this.applyFilters(posts, filters);
-
-    posts = this.applySorting(posts, sortBy);
-
-    return posts;
+    const posts = this.applyFilters(this.postsSignal(), this.filtersSignal());
+    return this.applySorting(posts, this.sortBySignal());
   });
 
   paginatedPosts = computed(() => {
     const posts = this.filteredPosts();
     const page = this.currentPageSignal();
     const pageSize = this.pageSizeSignal();
-
     const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-
-    return posts.slice(startIndex, endIndex);
+    return posts.slice(startIndex, startIndex + pageSize);
   });
 
   totalPages = computed(() => {
-    const total = this.filteredPosts().length;
-    const pageSize = this.pageSizeSignal();
-    return Math.ceil(total / pageSize);
+    return Math.ceil(this.filteredPosts().length / this.pageSizeSignal());
   });
-  currentPage: any;
 
   getAllPosts(): Observable<Post[]> {
     return of(this.postsSignal()).pipe(delay(300));
@@ -2694,11 +2689,9 @@ export class ForumBlogService {
   getRelatedPosts(postId: string, limit = 3): Observable<Post[]> {
     const currentPost = this.postsSignal().find((p) => p.id === postId);
     if (!currentPost) return of([]);
-
     const related = this.postsSignal()
       .filter((p) => p.id !== postId && p.category === currentPost.category)
       .slice(0, limit);
-
     return of(related).pipe(delay(200));
   }
 
@@ -2720,48 +2713,26 @@ export class ForumBlogService {
 
   private applyFilters(posts: Post[], filters: PostFilters): Post[] {
     return posts.filter((post) => {
-      if (filters.category && post.category !== filters.category) {
-        return false;
-      }
-
-      if (filters.type && post.type !== filters.type) {
-        return false;
-      }
-
-      if (filters.authorRole && post.author.role !== filters.authorRole) {
-        return false;
-      }
-
-      if (filters.isFeatured !== undefined && post.isFeatured !== filters.isFeatured) {
-        return false;
-      }
-
-      if (filters.isPinned !== undefined && post.isPinned !== filters.isPinned) {
-        return false;
-      }
-
+      if (filters.category && post.category !== filters.category) return false;
+      if (filters.type && post.type !== filters.type) return false;
+      if (filters.authorRole && post.author.role !== filters.authorRole) return false;
+      if (filters.isFeatured !== undefined && post.isFeatured !== filters.isFeatured) return false;
+      if (filters.isPinned !== undefined && post.isPinned !== filters.isPinned) return false;
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
         const searchable = `${post.title} ${post.excerpt} ${post.content}`.toLowerCase();
-        if (!searchable.includes(query)) {
-          return false;
-        }
+        if (!searchable.includes(query)) return false;
       }
-
       if (filters.tags && filters.tags.length > 0) {
         const hasMatchingTag = filters.tags.some((tag) => post.tags.includes(tag));
-        if (!hasMatchingTag) {
-          return false;
-        }
+        if (!hasMatchingTag) return false;
       }
-
       return true;
     });
   }
 
   private applySorting(posts: Post[], sortBy: SortOption): Post[] {
     const sorted = [...posts];
-
     switch (sortBy) {
       case 'newest':
         return sorted.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -2772,11 +2743,9 @@ export class ForumBlogService {
       case 'most-liked':
         return sorted.sort((a, b) => b.likes - a.likes);
       case 'trending':
-        return sorted.sort((a, b) => {
-          const scoreA = this.calculateTrendingScore(a);
-          const scoreB = this.calculateTrendingScore(b);
-          return scoreB - scoreA;
-        });
+        return sorted.sort(
+          (a, b) => this.calculateTrendingScore(b) - this.calculateTrendingScore(a),
+        );
       default:
         return sorted;
     }
@@ -2786,41 +2755,17 @@ export class ForumBlogService {
     const daysSincePublished = post.publishedAt
       ? (Date.now() - post.publishedAt.getTime()) / (1000 * 60 * 60 * 24)
       : 999;
-
     const recencyScore = Math.max(0, 7 - daysSincePublished);
-
     const activityScore = post.views * 0.1 + post.likes * 2 + post.commentCount * 5;
-
     return recencyScore * 10 + activityScore;
   }
 
-  // Mock
   private getMockPosts(): Post[] {
     const mockAuthors: Author[] = [
-      {
-        id: '1',
-        name: 'Dr. Nagy Katalin',
-        role: 'pharmacist',
-        verified: true,
-      },
-      {
-        id: '2',
-        name: 'Roy patika',
-        role: 'admin',
-        verified: true,
-      },
-      {
-        id: '3',
-        name: 'Kovács Anna',
-        role: 'user',
-        verified: false,
-      },
-      {
-        id: '4',
-        name: 'Dr. Szabó Péter',
-        role: 'pharmacist',
-        verified: true,
-      },
+      { id: '1', name: 'Dr. Nagy Katalin', role: 'pharmacist', verified: true },
+      { id: '2', name: 'Roy patika', role: 'admin', verified: true },
+      { id: '3', name: 'Kovács Anna', role: 'user', verified: false },
+      { id: '4', name: 'Dr. Szabó Péter', role: 'pharmacist', verified: true },
     ];
 
     const blogPosts: BlogPost[] = [
@@ -2831,8 +2776,7 @@ export class ForumBlogService {
         slug: 'teli-influenza-megelozes',
         excerpt:
           'A téli hónapok beköszöntével különösen fontos az influenza elleni védelem. Ebben a cikkben megmutatjuk, hogyan erősítheted immunrendszeredet.',
-        content:
-          'A téli influenza minden évben milliók életét nehezíti meg világszerte. Az influenza vírus könnyen terjed, különösen zárt terekben, ahol sok ember tartózkodik együtt. A megelőzés kulcsa a megfelelő higiénia, az egészséges életmód és a védőoltás.\n\nFontos tudnivalók:\n- Rendszeres kézmosás\n- C-vitamin pótlás\n- Megfelelő folyadékbevitel\n- Elegendő alvás\n- Stressz csökkentés\n\nAz influenza elleni védőoltás évente ajánlott, különösen kockázati csoportokban (idősek, krónikus betegek, kisgyermekek).',
+        content: 'A téli influenza minden évben milliók életét nehezíti meg világszerte.',
         author: mockAuthors[0],
         category: 'seasonal-health',
         tags: ['influenza', 'megelőzés', 'tél', 'vitamin'],
@@ -2846,10 +2790,6 @@ export class ForumBlogService {
         isFeatured: true,
         isPinned: true,
         readingTime: 5,
-        relatedProducts: ['prod-vitamin-c', 'prod-multivitamin'],
-        seoDescription:
-          'Tudj meg mindent az influenza megelőzésről és az immunrendszer erősítésről.',
-        seoKeywords: ['influenza', 'megelőzés', 'immunrendszer', 'vitamin'],
       },
       {
         id: 'blog-2',
@@ -2857,9 +2797,8 @@ export class ForumBlogService {
         title: 'Allergiás tünetek enyhítése természetes módon',
         slug: 'allergias-tunetek-termeszetes-enyhites',
         excerpt:
-          'A tavaszi allergiaszezon kihívást jelenthet sokak számára. Ismerd meg a természetes módszereket a tünetek enyhítésére!',
-        content:
-          'Az allergia egy túlérzékenységi reakció, amikor az immunrendszer túlzottan reagál olyan anyagokra, amelyek általában ártalmatlanok. A tavaszi pollenallergia az egyik leggyakoribb forma.\n\nTermészetes megoldások:\n- Quercetin tartalm élelmiszerek (hagyma, alma)\n- Omega-3 zsírsavak\n- Helyi méz fogyasztása\n- Kamillatea\n- Sóoldatos orrspray\n\nEzek a természetes módszerek kiegészíthetik a hagyományos kezelést, de súlyos allergiás reakció esetén mindig fordulj orvoshoz!',
+          'A tavaszi allergiaszezon kihívást jelenthet sokak számára. Ismerd meg a természetes módszereket!',
+        content: 'Az allergia egy túlérzékenységi reakció.',
         author: mockAuthors[1],
         category: 'natural-remedies',
         tags: ['allergia', 'természetes gyógymód', 'tavasz'],
@@ -2873,7 +2812,6 @@ export class ForumBlogService {
         isFeatured: true,
         isPinned: false,
         readingTime: 4,
-        relatedProducts: ['prod-quercetin', 'prod-omega3'],
       },
       {
         id: 'blog-3',
@@ -2881,9 +2819,8 @@ export class ForumBlogService {
         title: 'Baba bőrápolás: alapvető tudnivalók',
         slug: 'baba-borapolas-alapok',
         excerpt:
-          'Az újszülött bőrápolása különleges figyelmet igényel. Tippek és tanácsok a legkisebbek bőrének védelmére.',
-        content:
-          'A babák bőre rendkívül érzékeny és vékony, ezért különleges gondozást igényel. Az első hónapokban a természetes védőréteg még kialakulóban van.\n\nFontos szabályok:\n- Langyos víz használata fürdéskor\n- Illatmentes, pH semleges termékek\n- Napi 1 fürdés elegendő\n- Puha törölközők használata\n- Rendszeres hidratálás\n\nFigyelem: ha piros foltokat, hámlást vagy kiütéseket észlelsz, fordulj gyermekorvoshoz!',
+          'Az újszülött bőrápolása különleges figyelmet igényel. Tippek a legkisebbek bőrének védelmére.',
+        content: 'A babák bőre rendkívül érzékeny és vékony.',
         author: mockAuthors[0],
         category: 'baby-mother',
         tags: ['baba', 'bőrápolás', 'újszülött'],
@@ -2897,7 +2834,6 @@ export class ForumBlogService {
         isFeatured: false,
         isPinned: false,
         readingTime: 6,
-        relatedProducts: ['prod-baby-lotion', 'prod-baby-shampoo'],
       },
     ];
 
@@ -2908,12 +2844,11 @@ export class ForumBlogService {
         title: 'Melyik fájdalomcsillapítót válasszam?',
         slug: 'melyik-fajdalomcsillapito',
         excerpt:
-          'Gyakran fejfájós vagyok, de nem tudom, hogy paracetamol vagy ibuprofen lenne-e jobb nekem. Van valakinek tapasztalata?',
-        content:
-          'Sziasztok! Rendszeresen küzdök fejfájással, és szeretnék váltani a mostani fájdalomcsillapítómról. Jelenleg paracetamolt szedek, de hallottam, hogy az ibuprofen hatékonyabb lehet. Van valakinek tapasztalata, melyik működik jobban? Milyen mellékhatásokra kell figyelni?',
+          'Gyakran fejfájós vagyok, de nem tudom, hogy paracetamol vagy ibuprofen lenne-e jobb nekem.',
+        content: 'Sziasztok! Rendszeresen küzdök fejfájással...',
         author: mockAuthors[2],
         category: 'qa',
-        tags: ['fájdalomcsillapító', 'paracetamol', 'ibuprofen', 'kérdés'],
+        tags: ['fájdalomcsillapító', 'paracetamol', 'ibuprofen'],
         status: 'published',
         createdAt: new Date('2024-12-10'),
         publishedAt: new Date('2024-12-10'),
@@ -2932,10 +2867,8 @@ export class ForumBlogService {
         type: 'forum',
         title: 'D-vitamin pótlás télen - ki mennyit szed?',
         slug: 'd-vitamin-potlas-telen',
-        excerpt:
-          'A téli hónapokban sokan küzdenek D-vitamin hiánnyal. Megbeszélnénk, hogy ki milyen adagot szed?',
-        content:
-          'Sziasztok! Télen mindig fáradtabb vagyok, és a dokim D-vitamin pótlást ajánlott. Kíváncsi vagyok, hogy ti mennyit szedtek télen, és milyen készítményt használtok. Van valakinek jó tapasztalata egy konkrét márkával?',
+        excerpt: 'A téli hónapokban sokan küzdenek D-vitamin hiánnyal. Ki milyen adagot szed?',
+        content: 'Sziasztok! Télen mindig fáradtabb vagyok...',
         author: mockAuthors[2],
         category: 'healthy-lifestyle',
         tags: ['D-vitamin', 'tél', 'vitamin pótlás'],
@@ -2958,8 +2891,7 @@ export class ForumBlogService {
         slug: 'probiotikumok-antibiotikum-utan',
         excerpt:
           'Antibiotikum kúrát követően érdemes probiotikumot szedni? Mikor kezdjem és meddig?',
-        content:
-          'Nemrég fejeztem be egy 10 napos antibiotikum kúrát, és hallottam, hogy probiotikummal helyre lehet állítani a bélflórát. Mikor kezdjem a szedést - még az antibiotikum kúra alatt vagy utána? És mennyi ideig kellene szedni?',
+        content: 'Nemrég fejeztem be egy 10 napos antibiotikum kúrát...',
         author: mockAuthors[2],
         category: 'medicines',
         tags: ['probiotikum', 'antibiotikum', 'bélflóra'],
@@ -3168,6 +3100,661 @@ export class TranslationService {
 FILE: src\app\pages\admin\admin.css
 ================================================================================
 
+.admin-page {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.admin-sidebar {
+  width: 240px;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  transition: width 0.25s ease;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.admin-sidebar.collapsed {
+  width: 64px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--border-color);
+  min-height: 64px;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow: hidden;
+}
+
+.logo-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-weight: 700;
+  font-size: var(--text-base, 1rem);
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.sidebar-toggle {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 0.375rem);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  color: var(--text-secondary);
+  font-size: 12px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: var(--space-3) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: none;
+  border-radius: var(--radius-lg, 0.75rem);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  min-height: 44px;
+}
+
+.nav-item:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.nav-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.nav-label {
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 500;
+}
+
+.sidebar-footer {
+  padding: var(--space-3) var(--space-2);
+  border-top: 1px solid var(--border-color);
+}
+
+.logout-btn {
+  color: #dc2626 !important;
+}
+.logout-btn:hover {
+  background: rgba(220, 38, 38, 0.08) !important;
+}
+
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  height: 64px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  gap: var(--space-4);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--text-primary);
+  padding: var(--space-2);
+  border-radius: var(--radius-md, 0.5rem);
+}
+
+.page-heading {
+  font-size: var(--text-xl, 1.25rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.admin-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px var(--space-2);
+  background: rgba(6, 122, 69, 0.12);
+  color: var(--color-primary);
+  border-radius: var(--radius-full, 9999px);
+  border: 1px solid rgba(6, 122, 69, 0.2);
+}
+
+.admin-name {
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.section-content {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+.stat-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl, 1rem);
+  padding: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stat-value {
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.stat-change {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.stat-change.positive {
+  color: var(--color-primary);
+}
+.stat-change.negative {
+  color: #dc2626;
+}
+.stat-change.neutral {
+  color: #f59e0b;
+}
+
+.stat-card.primary {
+  border-top: 3px solid var(--color-primary);
+}
+.stat-card.success {
+  border-top: 3px solid #10b981;
+}
+.stat-card.info {
+  border-top: 3px solid #3b82f6;
+}
+.stat-card.warning {
+  border-top: 3px solid #f59e0b;
+}
+
+.admin-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl, 1rem);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card-title {
+  font-size: var(--text-lg, 1.1rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.view-all-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.view-all-btn:hover {
+  opacity: 0.7;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm, 0.9rem);
+  min-width: 600px;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tr:hover td {
+  background: var(--bg-secondary);
+}
+
+.order-id {
+  font-family: 'Inconsolata', monospace;
+  font-weight: 600;
+}
+.muted {
+  color: var(--text-secondary) !important;
+}
+.font-bold {
+  font-weight: 600;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.status-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.status-processing {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.status-shipped {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+.status-delivered {
+  background: rgba(6, 122, 69, 0.12);
+  color: #067a45;
+  border: 1px solid rgba(6, 122, 69, 0.3);
+}
+.status-cancelled {
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.role-admin {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+.role-pharmacist {
+  background: rgba(6, 122, 69, 0.1);
+  color: #067a45;
+}
+.role-user {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.stock-ok {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.stock-low {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm, 0.375rem);
+  font-size: 16px;
+  transition: background 0.15s;
+}
+
+.action-btn:hover {
+  background: var(--bg-secondary);
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.product-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md, 0.5rem);
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+}
+
+.section-toolbar {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-icon-small {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.admin-search {
+  width: 100%;
+  padding: var(--space-2) var(--space-10) var(--space-2) var(--space-8);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 0.75rem);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--text-sm, 0.9rem);
+  min-height: 40px;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.admin-search:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.1);
+}
+
+.admin-select {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 0.75rem);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--text-sm, 0.9rem);
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.add-btn {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg, 0.75rem);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 40px;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    transform 0.15s;
+}
+
+.add-btn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition:
+      transform 0.25s ease,
+      width 0.25s ease;
+    box-shadow: var(--shadow-xl);
+  }
+
+  .admin-sidebar.collapsed {
+    width: 240px;
+    transform: translateX(0);
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+
+  .admin-topbar {
+    padding: 0 var(--space-4);
+  }
+
+  .section-content {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+
+  .stat-icon {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input-wrapper {
+    min-width: unset;
+  }
+
+  .admin-topbar {
+    padding: 0 var(--space-3);
+  }
+
+  .page-heading {
+    font-size: var(--text-base, 1rem);
+  }
+
+  .admin-name {
+    display: none;
+  }
+}
+
+[data-theme='dark'] .admin-table tr:hover td {
+  background: var(--bg-tertiary);
+}
+[data-theme='dark'] .admin-table th {
+  background: var(--bg-tertiary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-sidebar,
+  .stat-card,
+  .nav-item,
+  .add-btn {
+    transition: none;
+  }
+}
 
 
 
@@ -3175,7 +3762,339 @@ FILE: src\app\pages\admin\admin.css
 FILE: src\app\pages\admin\admin.html
 ================================================================================
 
-<p>admin works!</p>
+<div class="admin-page">
+  <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed()">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="logo-icon">🏥</span>
+        @if (!sidebarCollapsed()) {
+          <span class="logo-text">Roy's Admin</span>
+        }
+      </div>
+      <button
+        class="sidebar-toggle"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="'admin.toggle_sidebar' | translate"
+      >
+        {{ sidebarCollapsed() ? '▶' : '◀' }}
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (item of navItems; track item.id) {
+        <button
+          [class]="'nav-item' + (activeSection() === item.id ? ' active' : '')"
+          (click)="setSection(item.id)"
+          [attr.title]="item.label | translate"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          @if (!sidebarCollapsed()) {
+            <span class="nav-label">{{ item.label | translate }}</span>
+          }
+        </button>
+      }
+    </nav>
+
+    @if (!sidebarCollapsed()) {
+      <div class="sidebar-footer">
+        <button class="nav-item logout-btn" (click)="logout()">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-label">{{ 'profile.logout' | translate }}</span>
+        </button>
+      </div>
+    }
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button
+          class="mobile-menu-btn"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="'admin.toggle_sidebar' | translate"
+        >
+          ☰
+        </button>
+        <h1 class="page-heading">{{ currentSectionLabel() | translate }}</h1>
+      </div>
+      <div class="topbar-right">
+        <span class="admin-badge">{{ 'admin.role' | translate }}</span>
+        <span class="admin-name">{{ adminName() }}</span>
+      </div>
+    </header>
+
+    @if (activeSection() === 'dashboard') {
+      <div class="section-content">
+        <div class="stats-grid">
+          <div class="stat-card primary">
+            <div class="stat-icon">📦</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ stats.totalOrders }}</span>
+              <span class="stat-label">{{ 'admin.stats.total_orders' | translate }}</span>
+              <span class="stat-change positive"
+                >+12% {{ 'admin.stats.this_month' | translate }}</span
+              >
+            </div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon">💰</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ formatRevenue(stats.revenue) }}</span>
+              <span class="stat-label">{{ 'admin.stats.revenue' | translate }}</span>
+              <span class="stat-change positive"
+                >+8% {{ 'admin.stats.this_month' | translate }}</span
+              >
+            </div>
+          </div>
+          <div class="stat-card info">
+            <div class="stat-icon">👥</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ stats.totalUsers }}</span>
+              <span class="stat-label">{{ 'admin.stats.total_users' | translate }}</span>
+              <span class="stat-change positive"
+                >+24 {{ 'admin.stats.this_week' | translate }}</span
+              >
+            </div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-body">
+              <span class="stat-value">{{ stats.totalProducts }}</span>
+              <span class="stat-label">{{ 'admin.stats.total_products' | translate }}</span>
+              <span class="stat-change neutral"
+                >{{ stats.lowStock }} {{ 'admin.stats.low_stock' | translate }}</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title">{{ 'admin.recent_orders' | translate }}</h2>
+            <button class="view-all-btn" (click)="setSection('orders')">
+              {{ 'admin.view_all' | translate }} →
+            </button>
+          </div>
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>{{ 'admin.table.order_id' | translate }}</th>
+                  <th>{{ 'admin.table.customer' | translate }}</th>
+                  <th>{{ 'admin.table.date' | translate }}</th>
+                  <th>{{ 'admin.table.total' | translate }}</th>
+                  <th>{{ 'admin.table.status' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (order of recentOrders.slice(0, 5); track order.id) {
+                  <tr>
+                    <td class="order-id">#{{ order.id }}</td>
+                    <td>{{ order.customer }}</td>
+                    <td class="muted">{{ order.date }}</td>
+                    <td class="font-bold">{{ formatRevenue(order.total) }}</td>
+                    <td>
+                      <span [class]="'status-badge status-' + order.status">
+                        {{ 'admin.status.' + order.status | translate }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeSection() === 'orders') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon-small">🔍</span>
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="orderSearch"
+              [placeholder]="'admin.search_orders' | translate"
+            />
+          </div>
+          <select class="admin-select" [(ngModel)]="orderStatusFilter">
+            <option value="all">{{ 'admin.all_statuses' | translate }}</option>
+            <option value="pending">{{ 'admin.status.pending' | translate }}</option>
+            <option value="processing">{{ 'admin.status.processing' | translate }}</option>
+            <option value="shipped">{{ 'admin.status.shipped' | translate }}</option>
+            <option value="delivered">{{ 'admin.status.delivered' | translate }}</option>
+            <option value="cancelled">{{ 'admin.status.cancelled' | translate }}</option>
+          </select>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>{{ 'admin.table.order_id' | translate }}</th>
+                  <th>{{ 'admin.table.customer' | translate }}</th>
+                  <th>{{ 'admin.table.date' | translate }}</th>
+                  <th>{{ 'admin.table.items' | translate }}</th>
+                  <th>{{ 'admin.table.total' | translate }}</th>
+                  <th>{{ 'admin.table.status' | translate }}</th>
+                  <th>{{ 'admin.table.actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (order of filteredOrders(); track order.id) {
+                  <tr>
+                    <td class="order-id">#{{ order.id }}</td>
+                    <td>{{ order.customer }}</td>
+                    <td class="muted">{{ order.date }}</td>
+                    <td class="muted">{{ order.items }} db</td>
+                    <td class="font-bold">{{ formatRevenue(order.total) }}</td>
+                    <td>
+                      <span [class]="'status-badge status-' + order.status">
+                        {{ 'admin.status.' + order.status | translate }}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="action-btn view-btn" title="Megtekintés">👁</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeSection() === 'users') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon-small">🔍</span>
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="userSearch"
+              [placeholder]="'admin.search_users' | translate"
+            />
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>{{ 'admin.table.user' | translate }}</th>
+                  <th>{{ 'admin.table.email' | translate }}</th>
+                  <th>{{ 'admin.table.role' | translate }}</th>
+                  <th>{{ 'admin.table.registered' | translate }}</th>
+                  <th>{{ 'admin.table.orders' | translate }}</th>
+                  <th>{{ 'admin.table.actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of filteredUsers(); track user.id) {
+                  <tr>
+                    <td>
+                      <div class="user-cell">
+                        <div class="user-avatar">{{ user.name.charAt(0) }}</div>
+                        <span>{{ user.name }}</span>
+                      </div>
+                    </td>
+                    <td class="muted">{{ user.email }}</td>
+                    <td>
+                      <span [class]="'role-badge role-' + user.role">
+                        {{ 'forum.role.' + user.role | translate }}
+                      </span>
+                    </td>
+                    <td class="muted">{{ user.registered }}</td>
+                    <td>{{ user.orders }}</td>
+                    <td>
+                      <button class="action-btn view-btn" title="Megtekintés">👁</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeSection() === 'products') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon-small">🔍</span>
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="productSearch"
+              [placeholder]="'admin.search_products' | translate"
+            />
+          </div>
+          <button class="add-btn">+ {{ 'admin.add_product' | translate }}</button>
+        </div>
+
+        <div class="admin-card">
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>{{ 'admin.table.product' | translate }}</th>
+                  <th>{{ 'admin.table.category' | translate }}</th>
+                  <th>{{ 'admin.table.price' | translate }}</th>
+                  <th>{{ 'admin.table.stock' | translate }}</th>
+                  <th>{{ 'admin.table.status' | translate }}</th>
+                  <th>{{ 'admin.table.actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of filteredProducts(); track product.id) {
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        <div class="product-thumb">💊</div>
+                        <span>{{ product.name }}</span>
+                      </div>
+                    </td>
+                    <td class="muted">{{ product.category }}</td>
+                    <td class="font-bold">{{ formatRevenue(product.price) }}</td>
+                    <td>
+                      <span [class]="product.stock < 10 ? 'stock-low' : 'stock-ok'">
+                        {{ product.stock }} db
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        [class]="
+                          'status-badge status-' + (product.active ? 'delivered' : 'cancelled')
+                        "
+                      >
+                        {{
+                          product.active
+                            ? ('admin.active' | translate)
+                            : ('admin.inactive' | translate)
+                        }}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="action-btn edit-btn" title="Szerkesztés">✏️</button>
+                      <button class="action-btn delete-btn" title="Törlés">🗑️</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</div>
 
 
 
@@ -3213,16 +4132,308 @@ describe('Admin', () => {
 FILE: src\app\pages\admin\admin.ts
 ================================================================================
 
-import { Component } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../core/services/auth.service';
+
+type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
+
+interface NavItem {
+  id: AdminSection;
+  icon: string;
+  label: string;
+}
+
+interface Order {
+  id: string;
+  customer: string;
+  date: string;
+  items: number;
+  total: number;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+}
+
+interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'pharmacist' | 'user';
+  registered: string;
+  orders: number;
+}
+
+interface AdminProduct {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  active: boolean;
+}
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })
-export class Admin {}
+export class Admin implements OnInit {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  activeSection = signal<AdminSection>('dashboard');
+  sidebarCollapsed = signal(false);
+
+  orderSearch = '';
+  orderStatusFilter = 'all';
+  userSearch = '';
+  productSearch = '';
+
+  adminName = computed(() => {
+    const user = this.authService.currentUser();
+    return user ? `${user.firstname} ${user.lastname}`.trim() : 'Admin';
+  });
+
+  navItems: NavItem[] = [
+    { id: 'dashboard', icon: '📊', label: 'admin.nav.dashboard' },
+    { id: 'orders', icon: '📦', label: 'admin.nav.orders' },
+    { id: 'users', icon: '👥', label: 'admin.nav.users' },
+    { id: 'products', icon: '🏷️', label: 'admin.nav.products' },
+  ];
+
+  stats = {
+    totalOrders: 248,
+    revenue: 1_840_500,
+    totalUsers: 1_203,
+    totalProducts: 86,
+    lowStock: 7,
+  };
+
+  recentOrders: Order[] = [
+    {
+      id: '1042',
+      customer: 'Kovács Anna',
+      date: '2025. jan. 15.',
+      items: 3,
+      total: 12500,
+      status: 'delivered',
+    },
+    {
+      id: '1041',
+      customer: 'Nagy Péter',
+      date: '2025. jan. 15.',
+      items: 1,
+      total: 4200,
+      status: 'shipped',
+    },
+    {
+      id: '1040',
+      customer: 'Kiss Mária',
+      date: '2025. jan. 14.',
+      items: 5,
+      total: 28900,
+      status: 'processing',
+    },
+    {
+      id: '1039',
+      customer: 'Szabó István',
+      date: '2025. jan. 14.',
+      items: 2,
+      total: 7600,
+      status: 'pending',
+    },
+    {
+      id: '1038',
+      customer: 'Fekete Zoltán',
+      date: '2025. jan. 13.',
+      items: 4,
+      total: 15300,
+      status: 'cancelled',
+    },
+    {
+      id: '1037',
+      customer: 'Tóth Éva',
+      date: '2025. jan. 13.',
+      items: 2,
+      total: 9800,
+      status: 'delivered',
+    },
+    {
+      id: '1036',
+      customer: 'Varga László',
+      date: '2025. jan. 12.',
+      items: 1,
+      total: 3500,
+      status: 'delivered',
+    },
+  ];
+
+  mockUsers: AdminUser[] = [
+    {
+      id: '1',
+      name: 'Dr. Nagy Katalin',
+      email: 'nagy.katalin@roys.hu',
+      role: 'pharmacist',
+      registered: '2024. márc. 1.',
+      orders: 0,
+    },
+    {
+      id: '2',
+      name: 'Roy Admin',
+      email: 'admin@roys.hu',
+      role: 'admin',
+      registered: '2024. jan. 1.',
+      orders: 0,
+    },
+    {
+      id: '3',
+      name: 'Kovács Anna',
+      email: 'kovacs.anna@example.hu',
+      role: 'user',
+      registered: '2024. nov. 15.',
+      orders: 5,
+    },
+    {
+      id: '4',
+      name: 'Dr. Szabó Péter',
+      email: 'szabo.peter@roys.hu',
+      role: 'pharmacist',
+      registered: '2024. márc. 1.',
+      orders: 0,
+    },
+    {
+      id: '5',
+      name: 'Kiss Mária',
+      email: 'kiss.maria@example.hu',
+      role: 'user',
+      registered: '2024. dec. 3.',
+      orders: 3,
+    },
+    {
+      id: '6',
+      name: 'Nagy Péter',
+      email: 'nagy.peter@example.hu',
+      role: 'user',
+      registered: '2025. jan. 10.',
+      orders: 1,
+    },
+  ];
+
+  mockProducts: AdminProduct[] = [
+    {
+      id: '1',
+      name: 'Vitamin C 1000mg',
+      category: 'Vitaminok',
+      price: 3490,
+      stock: 142,
+      active: true,
+    },
+    {
+      id: '2',
+      name: 'D3-vitamin 2000NE',
+      category: 'Vitaminok',
+      price: 2990,
+      stock: 87,
+      active: true,
+    },
+    {
+      id: '3',
+      name: 'Ibuprofén 400mg',
+      category: 'Fájdalomcsillapítók',
+      price: 1290,
+      stock: 6,
+      active: true,
+    },
+    {
+      id: '4',
+      name: 'Probiotikum komplex',
+      category: 'Étrend-kiegészítők',
+      price: 5490,
+      stock: 34,
+      active: true,
+    },
+    {
+      id: '5',
+      name: 'Omega-3 halolaj',
+      category: 'Étrend-kiegészítők',
+      price: 4290,
+      stock: 4,
+      active: false,
+    },
+    {
+      id: '6',
+      name: 'Magnézium 375mg',
+      category: 'Ásványi anyagok',
+      price: 2790,
+      stock: 56,
+      active: true,
+    },
+  ];
+
+  filteredOrders = computed(() => {
+    let orders = this.recentOrders;
+    if (this.orderSearch) {
+      const q = this.orderSearch.toLowerCase();
+      orders = orders.filter((o) => o.customer.toLowerCase().includes(q) || o.id.includes(q));
+    }
+    if (this.orderStatusFilter !== 'all') {
+      orders = orders.filter((o) => o.status === this.orderStatusFilter);
+    }
+    return orders;
+  });
+
+  filteredUsers = computed(() => {
+    if (!this.userSearch) return this.mockUsers;
+    const q = this.userSearch.toLowerCase();
+    return this.mockUsers.filter(
+      (u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q),
+    );
+  });
+
+  filteredProducts = computed(() => {
+    if (!this.productSearch) return this.mockProducts;
+    const q = this.productSearch.toLowerCase();
+    return this.mockProducts.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q),
+    );
+  });
+
+  currentSectionLabel = computed(() => {
+    const item = this.navItems.find((n) => n.id === this.activeSection());
+    return item?.label || 'admin.nav.dashboard';
+  });
+
+  ngOnInit(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  setSection(section: AdminSection): void {
+    this.activeSection.set(section);
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed.update((v) => !v);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  formatRevenue(amount: number): string {
+    return new Intl.NumberFormat('hu-HU', {
+      style: 'currency',
+      currency: 'HUF',
+      maximumFractionDigits: 0,
+    }).format(amount);
+  }
+}
 
 
 
@@ -3852,14 +5063,14 @@ FILE: src\app\pages\blog\blog.html
             <div class="featured-card" [routerLink]="['/blog', post.slug]">
               @if (post.imageUrl) {
                 <div class="featured-image">
-                  <img [src]="post.imageUrl" [alt]="post.title" />
+                  <img [src]="post.imageUrl" [alt]="post.title" loading="lazy" />
                 </div>
               }
               <div class="featured-content">
                 <div class="featured-category">
                   @for (category of categories; track category.id) {
                     @if (category.id === post.category) {
-                      <span [class]="category.colorClass">
+                      <span [class]="'featured-category-label ' + category.colorClass">
                         {{ category.icon }} {{ category.translationKey | translate }}
                       </span>
                     }
@@ -3869,9 +5080,9 @@ FILE: src\app\pages\blog\blog.html
                 <p class="featured-excerpt">{{ post.excerpt }}</p>
                 <div class="featured-meta">
                   <span class="author">{{ post.author.name }}</span>
-                  <span class="reading-time"
-                    >📖 {{ post.readingTime }} {{ 'common.minutes' | translate }}</span
-                  >
+                  <span class="reading-time">
+                    📖 {{ post.readingTime }} {{ 'common.minutes' | translate }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -3910,15 +5121,15 @@ FILE: src\app\pages\blog\blog.html
 
       <div class="toolbar">
         <div class="sort-controls">
-          <label for="sort-select" class="sort-label"> {{ 'blog.sort_by' | translate }}: </label>
+          <label for="blog-sort-select" class="sort-label">{{ 'blog.sort_by' | translate }}:</label>
           <select
-            id="sort-select"
+            id="blog-sort-select"
             [(ngModel)]="selectedSort"
             (ngModelChange)="changeSort($event)"
             class="sort-select"
           >
             @for (option of sortOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
+              <option [value]="option.value">{{ option.translateKey | translate }}</option>
             }
           </select>
         </div>
@@ -3927,21 +5138,26 @@ FILE: src\app\pages\blog\blog.html
       </div>
     </section>
 
-    <section class="category-filters">
+    <section
+      class="category-filters"
+      role="group"
+      [attr.aria-label]="'blog.filter_by_category' | translate"
+    >
       <button
-        class="category-chip"
-        [class.active]="selectedCategory() === 'all'"
+        [class]="'category-chip' + (selectedCategory() === 'all' ? ' active' : '')"
         (click)="selectCategory('all')"
       >
-        <span class="category-icon">🌐</span>
+        <span class="category-icon">🌍</span>
         <span class="category-name">{{ 'blog.all_categories' | translate }}</span>
       </button>
 
       @for (category of categories; track category.id) {
         <button
-          class="category-chip"
-          [class.active]="selectedCategory() === category.id"
-          [class]="category.colorClass"
+          [class]="
+            'category-chip ' +
+            category.colorClass +
+            (selectedCategory() === category.id ? ' active' : '')
+          "
           (click)="selectCategory(category.id)"
         >
           <span class="category-icon">{{ category.icon }}</span>
@@ -3951,7 +5167,7 @@ FILE: src\app\pages\blog\blog.html
     </section>
 
     @if (isLoading()) {
-      <div class="loading-container">
+      <div class="loading-container" role="status">
         <div class="spinner"></div>
         <p>{{ 'common.loading' | translate }}</p>
       </div>
@@ -3969,8 +5185,7 @@ FILE: src\app\pages\blog\blog.html
               [showAuthor]="true"
               [showStats]="true"
               (cardClick)="onPostClick($event)"
-            >
-            </app-post-card>
+            />
           }
         </section>
 
@@ -3995,6 +5210,7 @@ FILE: src\app\pages\blog\blog.html
                     [class.active]="blogService.currentPage() === pageNum"
                     (click)="goToPage(pageNum)"
                     [attr.aria-label]="getPageAriaLabel(pageNum)"
+                    [attr.aria-current]="blogService.currentPage() === pageNum ? 'page' : null"
                   >
                     {{ pageNum }}
                   </button>
@@ -4014,7 +5230,7 @@ FILE: src\app\pages\blog\blog.html
         }
       } @else {
         <div class="no-results">
-          <div class="no-results-icon">📝</div>
+          <div class="no-results-icon">🔍</div>
           <h3 class="no-results-title">{{ 'blog.no_results_title' | translate }}</h3>
           <p class="no-results-description">{{ 'blog.no_results_description' | translate }}</p>
           @if (searchQuery() || selectedCategory() !== 'all') {
@@ -4100,17 +5316,16 @@ export class Blog implements OnInit {
   constructor(public blogService: ForumBlogService) {}
 
   posts = computed(() => this.blogService.paginatedPosts());
-  currentPage = computed(() => this.blogService.currentPage);
   totalPages = computed(() => this.blogService.totalPages());
 
   categories = POST_CATEGORIES;
 
-  sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'newest', label: 'Legújabb' },
-    { value: 'oldest', label: 'Legrégebbi' },
-    { value: 'most-viewed', label: 'Legtöbbet nézett' },
-    { value: 'most-liked', label: 'Legnépszerűbb' },
-    { value: 'trending', label: 'Felkapott' },
+  sortOptions: { value: SortOption; translateKey: string }[] = [
+    { value: 'newest', translateKey: 'forum.sort.newest' },
+    { value: 'oldest', translateKey: 'forum.sort.oldest' },
+    { value: 'most-viewed', translateKey: 'forum.sort.most_viewed' },
+    { value: 'most-liked', translateKey: 'forum.sort.most_liked' },
+    { value: 'trending', translateKey: 'forum.sort.trending' },
   ];
 
   ngOnInit(): void {
@@ -4120,9 +5335,7 @@ export class Blog implements OnInit {
 
   private loadBlogPosts(): void {
     this.isLoading.set(true);
-
     this.blogService.setFilters({ type: 'blog' });
-
     setTimeout(() => {
       this.isLoading.set(false);
     }, 300);
@@ -4141,7 +5354,6 @@ export class Blog implements OnInit {
       category:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
-
     this.blogService.setFilters(filters);
   }
 
@@ -4187,24 +5399,18 @@ export class Blog implements OnInit {
 
     pages.push(1);
 
-    let start = Math.max(2, current - 1);
-    let end = Math.min(total - 1, current + 1);
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
 
-    if (start > 2) {
-      pages.push(-1);
-    }
+    if (start > 2) pages.push(-1);
 
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
 
-    if (end < total - 1) {
-      pages.push(-1);
-    }
+    if (end < total - 1) pages.push(-1);
 
-    if (total > 1) {
-      pages.push(total);
-    }
+    if (total > 1) pages.push(total);
 
     return pages;
   }
@@ -4506,26 +5712,39 @@ FILE: src\app\pages\forum\forum.css
 .forum-hero {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   color: white;
-  padding: var(--space-16) var(--space-4);
+  padding: var(--space-16) var(--space-4) var(--space-12);
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.forum-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
 }
 
 .hero-content {
-  max-width: 800px;
+  max-width: 680px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .hero-title {
-  font-size: var(--text-3xl);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
   font-weight: var(--font-bold);
-  margin: 0 0 var(--space-4) 0;
+  margin: 0 0 var(--space-3) 0;
   line-height: var(--leading-tight);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .hero-description {
-  font-size: var(--text-lg);
+  font-size: clamp(1rem, 2vw, 1.125rem);
   margin: 0;
-  opacity: 0.95;
+  opacity: 0.92;
   line-height: var(--leading-relaxed);
 }
 
@@ -4561,6 +5780,7 @@ FILE: src\app\pages\forum\forum.css
   font-size: 18px;
   pointer-events: none;
   color: var(--color-text-secondary);
+  line-height: 1;
 }
 
 .search-input {
@@ -4571,13 +5791,15 @@ FILE: src\app\pages\forum\forum.css
   font-size: var(--text-base);
   background: var(--color-surface);
   color: var(--color-text-primary);
-  transition: all var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.12);
 }
 
 .clear-search {
@@ -4587,19 +5809,22 @@ FILE: src\app\pages\forum\forum.css
   border: none;
   color: var(--color-text-secondary);
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
   padding: var(--space-2);
   border-radius: 50%;
-  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .clear-search:hover {
   background: var(--color-neutral-200);
   color: var(--color-text-primary);
-}
-
-[data-theme='dark'] .clear-search:hover {
-  background: var(--color-neutral-700);
 }
 
 .search-button {
@@ -4611,14 +5836,22 @@ FILE: src\app\pages\forum\forum.css
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
   white-space: nowrap;
+  min-height: 44px;
 }
 
 .search-button:hover {
   background: var(--color-primary-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+.search-button:active {
+  transform: translateY(0);
 }
 
 .toolbar {
@@ -4638,6 +5871,7 @@ FILE: src\app\pages\forum\forum.css
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
 .sort-select {
@@ -4648,7 +5882,8 @@ FILE: src\app\pages\forum\forum.css
   color: var(--color-text-primary);
   font-size: var(--text-sm);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast);
+  min-height: 40px;
 }
 
 .sort-select:focus {
@@ -4668,7 +5903,12 @@ FILE: src\app\pages\forum\forum.css
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  min-height: 40px;
+  white-space: nowrap;
 }
 
 .new-post-button:hover {
@@ -4701,11 +5941,14 @@ FILE: src\app\pages\forum\forum.css
   font-weight: var(--font-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
+  min-height: 40px;
 }
 
-.category-chip:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+@media (hover: hover) {
+  .category-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 .category-chip.active {
@@ -4756,6 +5999,7 @@ FILE: src\app\pages\forum\forum.css
   justify-content: center;
   padding: var(--space-16) var(--space-4);
   gap: var(--space-4);
+  color: var(--color-text-secondary);
 }
 
 .spinner {
@@ -4764,7 +6008,7 @@ FILE: src\app\pages\forum\forum.css
   border: 4px solid var(--color-border);
   border-top-color: var(--color-primary);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin {
@@ -4775,7 +6019,7 @@ FILE: src\app\pages\forum\forum.css
 
 .posts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: var(--space-6);
   margin-bottom: var(--space-8);
 }
@@ -4789,6 +6033,7 @@ FILE: src\app\pages\forum\forum.css
   font-size: 64px;
   margin-bottom: var(--space-4);
   opacity: 0.5;
+  display: block;
 }
 
 .no-results-title {
@@ -4813,13 +6058,15 @@ FILE: src\app\pages\forum\forum.css
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
+  min-height: 44px;
 }
 
 .reset-filters-button:hover {
   background: var(--color-primary-dark);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
 }
 
 .pagination {
@@ -4840,6 +6087,7 @@ FILE: src\app\pages\forum\forum.css
   color: var(--color-text-primary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  min-height: 40px;
 }
 
 .pagination-button:hover:not(:disabled) {
@@ -4849,7 +6097,7 @@ FILE: src\app\pages\forum\forum.css
 }
 
 .pagination-button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -4877,10 +6125,6 @@ FILE: src\app\pages\forum\forum.css
   border-color: var(--color-primary);
 }
 
-[data-theme='dark'] .page-number:hover {
-  background: var(--color-neutral-700);
-}
-
 .page-number.active {
   background: var(--color-primary);
   color: white;
@@ -4895,19 +6139,12 @@ FILE: src\app\pages\forum\forum.css
   height: 40px;
   color: var(--color-text-secondary);
   font-weight: var(--font-semibold);
+  pointer-events: none;
 }
 
 @media (max-width: 768px) {
   .forum-hero {
-    padding: var(--space-10) var(--space-4);
-  }
-
-  .hero-title {
-    font-size: var(--text-2xl);
-  }
-
-  .hero-description {
-    font-size: var(--text-base);
+    padding: var(--space-10) var(--space-4) var(--space-8);
   }
 
   .forum-container {
@@ -4916,6 +6153,10 @@ FILE: src\app\pages\forum\forum.css
 
   .search-bar {
     flex-direction: column;
+  }
+
+  .search-button {
+    width: 100%;
   }
 
   .toolbar {
@@ -4942,28 +6183,61 @@ FILE: src\app\pages\forum\forum.css
 
   .pagination {
     flex-wrap: wrap;
+    gap: var(--space-2);
   }
 
   .page-numbers {
     order: -1;
     width: 100%;
     justify-content: center;
+    flex-wrap: wrap;
   }
 }
 
 @media (max-width: 480px) {
+  .forum-hero {
+    padding: var(--space-8) var(--space-3) var(--space-6);
+  }
+
   .category-chip {
     font-size: 12px;
     padding: var(--space-1) var(--space-3);
+    min-height: 36px;
+    gap: var(--space-1);
   }
 
   .category-icon {
     font-size: 14px;
   }
+
+  .page-number,
+  .pagination-button {
+    min-width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 375px) {
+  .forum-container {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .search-input {
+    font-size: var(--text-sm);
+  }
+
+  .no-results-icon {
+    font-size: 48px;
+  }
+
+  .no-results-title {
+    font-size: var(--text-xl);
+  }
 }
 
 [data-theme='dark'] .forum-hero {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #1e3a8a 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #1a4731 100%);
 }
 
 [data-theme='dark'] .category-filters {
@@ -4973,11 +6247,63 @@ FILE: src\app\pages\forum\forum.css
 
 [data-theme='dark'] .category-chip {
   background: var(--color-neutral-900);
-  border-color: var(--color-neutral-700);
+  border-color: var(--color-neutral-600);
+  color: var(--color-neutral-200);
 }
 
 [data-theme='dark'] .category-chip:hover {
   background: var(--color-neutral-800);
+  border-color: var(--color-neutral-500);
+}
+
+[data-theme='dark'] .search-input {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-600);
+  color: var(--color-neutral-100);
+}
+
+[data-theme='dark'] .search-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.2);
+}
+
+[data-theme='dark'] .sort-select {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-600);
+  color: var(--color-neutral-100);
+}
+
+[data-theme='dark'] .pagination-button,
+[data-theme='dark'] .page-number {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-600);
+  color: var(--color-neutral-200);
+}
+
+[data-theme='dark'] .page-number:hover {
+  background: var(--color-neutral-700);
+  border-color: var(--color-primary);
+}
+
+[data-theme='dark'] .clear-search:hover {
+  background: var(--color-neutral-700);
+  color: var(--color-neutral-100);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-top-color: var(--color-primary);
+    opacity: 0.7;
+  }
+
+  .category-chip,
+  .search-button,
+  .new-post-button,
+  .page-number,
+  .pagination-button {
+    transition: none;
+  }
 }
 
 
@@ -5023,7 +6349,7 @@ FILE: src\app\pages\forum\forum.html
 
       <div class="toolbar">
         <div class="sort-controls">
-          <label for="sort-select" class="sort-label"> {{ 'forum.sort_by' | translate }}: </label>
+          <label for="sort-select" class="sort-label">{{ 'forum.sort_by' | translate }}:</label>
           <select
             id="sort-select"
             [(ngModel)]="selectedSort"
@@ -5031,7 +6357,7 @@ FILE: src\app\pages\forum\forum.html
             class="sort-select"
           >
             @for (option of sortOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
+              <option [value]="option.value">{{ option.translateKey | translate }}</option>
             }
           </select>
         </div>
@@ -5043,21 +6369,26 @@ FILE: src\app\pages\forum\forum.html
       </div>
     </section>
 
-    <section class="category-filters">
+    <section
+      class="category-filters"
+      role="group"
+      [attr.aria-label]="'forum.filter_by_category' | translate"
+    >
       <button
-        class="category-chip"
-        [class.active]="selectedCategory() === 'all'"
+        [class]="'category-chip' + (selectedCategory() === 'all' ? ' active' : '')"
         (click)="selectCategory('all')"
       >
-        <span class="category-icon">🌐</span>
+        <span class="category-icon">🌍</span>
         <span class="category-name">{{ 'forum.all_categories' | translate }}</span>
       </button>
 
       @for (category of categories; track category.id) {
         <button
-          class="category-chip"
-          [class.active]="selectedCategory() === category.id"
-          [class]="category.colorClass"
+          [class]="
+            'category-chip ' +
+            category.colorClass +
+            (selectedCategory() === category.id ? ' active' : '')
+          "
           (click)="selectCategory(category.id)"
         >
           <span class="category-icon">{{ category.icon }}</span>
@@ -5067,7 +6398,7 @@ FILE: src\app\pages\forum\forum.html
     </section>
 
     @if (isLoading()) {
-      <div class="loading-container">
+      <div class="loading-container" role="status" [attr.aria-label]="'common.loading' | translate">
         <div class="spinner"></div>
         <p>{{ 'common.loading' | translate }}</p>
       </div>
@@ -5085,8 +6416,7 @@ FILE: src\app\pages\forum\forum.html
               [showAuthor]="true"
               [showStats]="true"
               (cardClick)="onPostClick($event)"
-            >
-            </app-post-card>
+            />
           }
         </section>
 
@@ -5111,6 +6441,7 @@ FILE: src\app\pages\forum\forum.html
                     [class.active]="forumService.currentPage() === pageNum"
                     (click)="goToPage(pageNum)"
                     [attr.aria-label]="getPageAriaLabel(pageNum)"
+                    [attr.aria-current]="forumService.currentPage() === pageNum ? 'page' : null"
                   >
                     {{ pageNum }}
                   </button>
@@ -5214,17 +6545,16 @@ export class Forum implements OnInit {
   constructor(public forumService: ForumBlogService) {}
 
   posts = computed(() => this.forumService.paginatedPosts());
-  currentPage = computed(() => this.forumService.currentPage);
   totalPages = computed(() => this.forumService.totalPages());
 
   categories = POST_CATEGORIES;
 
-  sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'newest', label: 'Legújabb' },
-    { value: 'oldest', label: 'Legrégebbi' },
-    { value: 'most-viewed', label: 'Legtöbbet nézett' },
-    { value: 'most-liked', label: 'Legnépszerűbb' },
-    { value: 'trending', label: 'Felkapott' },
+  sortOptions: { value: SortOption; translateKey: string }[] = [
+    { value: 'newest', translateKey: 'forum.sort.newest' },
+    { value: 'oldest', translateKey: 'forum.sort.oldest' },
+    { value: 'most-viewed', translateKey: 'forum.sort.most_viewed' },
+    { value: 'most-liked', translateKey: 'forum.sort.most_liked' },
+    { value: 'trending', translateKey: 'forum.sort.trending' },
   ];
 
   ngOnInit(): void {
@@ -5233,9 +6563,7 @@ export class Forum implements OnInit {
 
   private loadForumPosts(): void {
     this.isLoading.set(true);
-
     this.forumService.setFilters({ type: 'forum' });
-
     setTimeout(() => {
       this.isLoading.set(false);
     }, 300);
@@ -5248,7 +6576,6 @@ export class Forum implements OnInit {
       category:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
-
     this.forumService.setFilters(filters);
   }
 
@@ -5294,24 +6621,18 @@ export class Forum implements OnInit {
 
     pages.push(1);
 
-    let start = Math.max(2, current - 1);
-    let end = Math.min(total - 1, current + 1);
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
 
-    if (start > 2) {
-      pages.push(-1);
-    }
+    if (start > 2) pages.push(-1);
 
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
 
-    if (end < total - 1) {
-      pages.push(-1);
-    }
+    if (end < total - 1) pages.push(-1);
 
-    if (total > 1) {
-      pages.push(total);
-    }
+    if (total > 1) pages.push(total);
 
     return pages;
   }
@@ -5322,6 +6643,10 @@ export class Forum implements OnInit {
 
   onPostClick(post: Post): void {
     console.log('Post clicked:', post.title);
+  }
+
+  getCategoryChipClass(colorClass: string): string {
+    return `category-chip ${colorClass}`;
   }
 }
 
@@ -5341,9 +6666,7 @@ FILE: src\app\pages\home\home.css
 
 .hero {
   background-image: url('../../../assets/images/herobg.webp');
-
   background-color: var(--color-primary);
-
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -5380,6 +6703,8 @@ FILE: src\app\pages\home\home.css
   color: var(--text-inverse);
   margin-bottom: 16px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  line-height: 1.2;
 }
 
 .hero h2 {
@@ -5387,6 +6712,8 @@ FILE: src\app\pages\home\home.css
   color: var(--text-inverse);
   margin-bottom: 16px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: clamp(1.1rem, 2.5vw, 1.75rem);
+  line-height: 1.3;
 }
 
 .hero p {
@@ -5397,6 +6724,7 @@ FILE: src\app\pages\home\home.css
   color: var(--text-inverse);
   line-height: 1.8;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  font-size: clamp(0.875rem, 1.5vw, 1.1rem);
 }
 
 @media (max-width: 1024px) {
@@ -5406,50 +6734,83 @@ FILE: src\app\pages\home\home.css
 }
 
 @media (max-width: 768px) {
-  .hero-content {
-    align-items: flex-start;
-    text-align: left;
-    max-width: 520px;
-    gap: 12px;
+  .home {
+    width: 100%;
   }
 
-  .hero h1,
-  .hero h2,
-  .hero p {
-    margin: 0;
+  .hero {
+    min-height: 480px;
+    padding: 32px 16px;
+    align-items: flex-start;
   }
 
   .hero h1 {
+    text-align: left;
     font-size: 1.6rem;
     line-height: 1.2;
+    margin-bottom: 10px;
   }
 
   .hero h2 {
+    text-align: left;
     font-size: 1.2rem;
     opacity: 0.9;
+    margin-bottom: 10px;
   }
 
   .hero p {
+    text-align: left;
     font-size: 0.95rem;
     line-height: 1.7;
+    max-width: 100%;
+    padding: 0;
+    margin: 0 0 10px;
   }
 }
 
 @media (max-width: 480px) {
   .hero {
-    height: 450px;
+    min-height: 380px;
+    padding: 24px 16px;
   }
 
   .hero h1 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 
   .hero h2 {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 
   .hero p {
-    font-size: 0.9rem;
+    font-size: 0.875rem;
+    line-height: 1.65;
+  }
+}
+
+@media (max-width: 375px) {
+  .hero {
+    min-height: 340px;
+    padding: 20px 14px;
+  }
+
+  .hero h1 {
+    font-size: 1.25rem;
+  }
+
+  .hero h2 {
+    font-size: 1rem;
+  }
+
+  .hero p {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero * {
+    animation: none !important;
+    transition: none !important;
   }
 }
 
@@ -5707,6 +7068,353 @@ export class Home {
 FILE: src\app\pages\legal\legal.css
 ================================================================================
 
+.legal-page {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.legal-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white;
+  padding: var(--space-16) var(--space-4) var(--space-12);
+  text-align: center;
+}
+
+.hero-content {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.hero-description {
+  font-size: clamp(1rem, 2vw, 1.1rem);
+  opacity: 0.85;
+  margin: 0;
+}
+
+.legal-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4) var(--space-16);
+}
+
+.legal-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  background: var(--bg-primary);
+  padding: var(--space-2);
+  border-radius: var(--radius-xl, 1rem);
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-radius: var(--radius-lg, 0.75rem);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(6, 122, 69, 0.3);
+}
+
+.legal-content {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl, 1rem);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.legal-header {
+  padding: var(--space-6) var(--space-8);
+  border-bottom: 2px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.legal-section-title {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.legal-updated {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.legal-body {
+  padding: var(--space-6) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.legal-block h3 {
+  font-size: var(--text-lg, 1.1rem);
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0 0 var(--space-3) 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.legal-block p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.legal-block p:last-child {
+  margin-bottom: 0;
+}
+
+.legal-block ul {
+  margin: var(--space-3) 0 0 var(--space-5);
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.legal-block ul li {
+  margin-bottom: var(--space-1);
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.info-item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: var(--text-sm, 0.9rem);
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 100px;
+}
+.info-item span:last-child {
+  color: var(--text-secondary);
+}
+
+.data-table {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 0.5rem);
+  overflow: hidden;
+}
+
+.data-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+  font-size: var(--text-sm, 0.9rem);
+  color: var(--text-secondary);
+}
+
+.data-row:last-child {
+  border-bottom: none;
+}
+
+.data-row.header {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cookie-card {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--space-4);
+}
+
+.cookie-card:last-child {
+  margin-bottom: 0;
+}
+
+.cookie-card.essential {
+  border-left: 4px solid var(--color-primary);
+}
+.cookie-card.analytics {
+  border-left: 4px solid #2563eb;
+}
+.cookie-card.preferences {
+  border-left: 4px solid #7c3aed;
+}
+
+.cookie-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.cookie-type-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full, 9999px);
+}
+
+.cookie-type-badge.essential {
+  background: rgba(6, 122, 69, 0.12);
+  color: var(--color-primary);
+}
+.cookie-type-badge.analytics {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+}
+.cookie-type-badge.preferences {
+  background: rgba(124, 58, 237, 0.12);
+  color: #7c3aed;
+}
+
+.cookie-required {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.cookie-card h4 {
+  font-size: var(--text-base, 1rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.cookie-card p {
+  font-size: var(--text-sm, 0.9rem);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.cookie-examples {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.cookie-examples code {
+  font-size: 0.75rem;
+  padding: 2px var(--space-2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 0.375rem);
+  color: var(--text-primary);
+  font-family: 'Inconsolata', monospace;
+}
+
+@media (max-width: 768px) {
+  .legal-hero {
+    padding: var(--space-10) var(--space-4) var(--space-8);
+  }
+  .legal-container {
+    padding: var(--space-6) var(--space-3) var(--space-10);
+  }
+  .legal-header {
+    padding: var(--space-5) var(--space-4);
+  }
+  .legal-body {
+    padding: var(--space-5) var(--space-4);
+    gap: var(--space-6);
+  }
+  .data-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+  .data-row.header span:not(:first-child) {
+    display: none;
+  }
+  .legal-tabs {
+    gap: var(--space-1);
+  }
+  .tab-btn {
+    min-width: unset;
+    font-size: 0.8rem;
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+@media (max-width: 480px) {
+  .legal-header {
+    flex-direction: column;
+  }
+  .legal-updated {
+    font-size: 0.75rem;
+  }
+  .info-item {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .info-label {
+    min-width: unset;
+  }
+}
+
+[data-theme='dark'] .legal-hero {
+  background: linear-gradient(135deg, #0d0d1a 0%, #0a0f1e 100%);
+}
+[data-theme='dark'] .cookie-examples code {
+  background: var(--bg-tertiary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legal-content {
+    animation: none;
+  }
+}
 
 
 
@@ -5714,7 +7422,267 @@ FILE: src\app\pages\legal\legal.css
 FILE: src\app\pages\legal\legal.html
 ================================================================================
 
-<p>legal works!</p>
+<div class="legal-page">
+  <div class="legal-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">{{ 'legal.title' | translate }}</h1>
+      <p class="hero-description">{{ 'legal.description' | translate }}</p>
+    </div>
+  </div>
+
+  <div class="legal-container">
+    <nav class="legal-tabs" role="tablist">
+      <button
+        role="tab"
+        [class]="'tab-btn' + (activeTab() === 'terms' ? ' active' : '')"
+        [attr.aria-selected]="activeTab() === 'terms'"
+        (click)="setTab('terms')"
+      >
+        📄 {{ 'legal.tabs.terms' | translate }}
+      </button>
+      <button
+        role="tab"
+        [class]="'tab-btn' + (activeTab() === 'privacy' ? ' active' : '')"
+        [attr.aria-selected]="activeTab() === 'privacy'"
+        (click)="setTab('privacy')"
+      >
+        🔒 {{ 'legal.tabs.privacy' | translate }}
+      </button>
+      <button
+        role="tab"
+        [class]="'tab-btn' + (activeTab() === 'cookies' ? ' active' : '')"
+        [attr.aria-selected]="activeTab() === 'cookies'"
+        (click)="setTab('cookies')"
+      >
+        🍪 {{ 'legal.tabs.cookies' | translate }}
+      </button>
+    </nav>
+
+    @if (activeTab() === 'terms') {
+      <article class="legal-content" role="tabpanel">
+        <div class="legal-header">
+          <h2 class="legal-section-title">{{ 'legal.terms.title' | translate }}</h2>
+          <p class="legal-updated">{{ 'legal.last_updated' | translate }}: 2025. január 1.</p>
+        </div>
+
+        <div class="legal-body">
+          <section class="legal-block">
+            <h3>1. Az általános szerződési feltételek hatálya</h3>
+            <p>
+              Jelen Általános Szerződési Feltételek (továbbiakban: ÁSZF) a Roy's Shack Est. 1888
+              webáruház (továbbiakban: Webáruház) használatára vonatkoznak, és a Webáruházon
+              keresztül lebonyolított valamennyi vásárlásra alkalmazandók.
+            </p>
+          </section>
+
+          <section class="legal-block">
+            <h3>2. A szolgáltató adatai</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Név:</span><span>Roy's Shack Est. 1888</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Székhely:</span><span>1000 Budapest, Példa utca 1.</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Email:</span><span>info&#64;roys-shack.hu</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Telefon:</span><span>+36 1 234 5678</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>3. A vásárlás folyamata</h3>
+            <p>
+              A Webáruházban történő vásárláshoz regisztráció szükséges. A megrendelés leadásával a
+              Vásárló elfogadja jelen ÁSZF feltételeit. A megrendelés visszaigazolása emailben
+              történik.
+            </p>
+            <ul>
+              <li>A termékek kiválasztása és a kosárba helyezése</li>
+              <li>A szállítási adatok megadása</li>
+              <li>A megrendelés véglegesítése</li>
+              <li>Email visszaigazolás fogadása</li>
+            </ul>
+          </section>
+
+          <section class="legal-block">
+            <h3>4. Árak és fizetés</h3>
+            <p>
+              A feltüntetett árak forintban (HUF) értendők és az általános forgalmi adót (ÁFA)
+              tartalmazzák. A szállítási díj a rendelés összegétől függően változhat. 10 000 Ft
+              feletti rendelésnél az ingyenes szállítás érvényes.
+            </p>
+          </section>
+
+          <section class="legal-block">
+            <h3>5. Szállítás és átvétel</h3>
+            <p>
+              A megrendelt termékek kiszállítása munkanapokon, általában 3–5 munkanapon belül
+              történik. A szállítást futárszolgálat végzi.
+            </p>
+          </section>
+
+          <section class="legal-block">
+            <h3>6. Elállási jog</h3>
+            <p>
+              A Vásárló a termék átvételétől számított 14 napon belül indoklás nélkül elállhat a
+              szerződéstől. Gyógyszerek és egészségügyi termékek esetén az elállási jog korlátozott
+              lehet.
+            </p>
+          </section>
+        </div>
+      </article>
+    }
+
+    @if (activeTab() === 'privacy') {
+      <article class="legal-content" role="tabpanel">
+        <div class="legal-header">
+          <h2 class="legal-section-title">{{ 'legal.privacy.title' | translate }}</h2>
+          <p class="legal-updated">{{ 'legal.last_updated' | translate }}: 2025. január 1.</p>
+        </div>
+
+        <div class="legal-body">
+          <section class="legal-block">
+            <h3>1. Az adatkezelő</h3>
+            <p>
+              Az adatkezelő a Roy's Shack Est. 1888 (1000 Budapest, Példa utca 1.). Az adatvédelmi
+              tisztviselő elérhető: adatvedelem&#64;roys-shack.hu
+            </p>
+          </section>
+
+          <section class="legal-block">
+            <h3>2. Gyűjtött adatok köre</h3>
+            <div class="data-table">
+              <div class="data-row header">
+                <span>Adatkategória</span><span>Célok</span><span>Megőrzési idő</span>
+              </div>
+              <div class="data-row">
+                <span>Azonosító adatok (név, email)</span>
+                <span>Regisztráció, kommunikáció</span>
+                <span>Fiók törlésig</span>
+              </div>
+              <div class="data-row">
+                <span>Szállítási adatok</span>
+                <span>Rendelés teljesítése</span>
+                <span>5 év</span>
+              </div>
+              <div class="data-row">
+                <span>Vásárlási előzmények</span>
+                <span>Számlázás, ügyfélszolgálat</span>
+                <span>8 év (számviteli)</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>3. Az érintett jogai</h3>
+            <p>A GDPR értelmében az érintett személyek az alábbi jogokkal rendelkeznek:</p>
+            <ul>
+              <li><strong>Hozzáférési jog</strong> – tájékoztatás kérése a kezelt adatokról</li>
+              <li><strong>Helyesbítési jog</strong> – pontatlan adatok javítása</li>
+              <li><strong>Törlési jog</strong> – „elfeledtetéshez való jog"</li>
+              <li>
+                <strong>Adathordozhatóság</strong> – adatok géppel olvasható formában kérhetők
+              </li>
+              <li><strong>Tiltakozási jog</strong> – közvetlen üzletszerzés esetén</li>
+            </ul>
+          </section>
+
+          <section class="legal-block">
+            <h3>4. Adatbiztonság</h3>
+            <p>
+              A személyes adatok védelme érdekében technikai és szervezési intézkedéseket
+              alkalmazunk, beleértve az SSL titkosítást, a hozzáférési jogosultságok korlátozását és
+              a rendszeres biztonsági felülvizsgálatokat.
+            </p>
+          </section>
+        </div>
+      </article>
+    }
+
+    @if (activeTab() === 'cookies') {
+      <article class="legal-content" role="tabpanel">
+        <div class="legal-header">
+          <h2 class="legal-section-title">{{ 'legal.cookies.title' | translate }}</h2>
+          <p class="legal-updated">{{ 'legal.last_updated' | translate }}: 2025. január 1.</p>
+        </div>
+
+        <div class="legal-body">
+          <section class="legal-block">
+            <h3>Mi az a süti?</h3>
+            <p>
+              A sütik (cookie-k) kis szöveges fájlok, amelyeket a weboldal tárol a böngészőjében.
+              Lehetővé teszik a weboldal számára, hogy megjegyezze a beállításait és javítsa a
+              felhasználói élményt.
+            </p>
+          </section>
+
+          <section class="legal-block">
+            <h3>Általunk használt sütik</h3>
+
+            <div class="cookie-card essential">
+              <div class="cookie-card-header">
+                <span class="cookie-type-badge essential">Elengedhetetlen</span>
+                <span class="cookie-required">Mindig aktív</span>
+              </div>
+              <h4>Funkcionális sütik</h4>
+              <p>
+                A weboldal megfelelő működéséhez szükségesek. Tartalmazzák a munkamenet-azonosítót
+                és a biztonsági tokeneket. Ezek nélkül a weboldal nem működik megfelelően.
+              </p>
+              <div class="cookie-examples">
+                <code>session_id</code>
+                <code>auth_token</code>
+                <code>csrf_token</code>
+              </div>
+            </div>
+
+            <div class="cookie-card analytics">
+              <div class="cookie-card-header">
+                <span class="cookie-type-badge analytics">Elemzési</span>
+              </div>
+              <h4>Teljesítmény sütik</h4>
+              <p>
+                Segítenek megérteni, hogyan interakcióba lépnek a látogatók a weboldallal. Az
+                összegyűjtött adatokat anonim formában kezeljük statisztikai célokra.
+              </p>
+              <div class="cookie-examples">
+                <code>_ga</code>
+                <code>_gid</code>
+              </div>
+            </div>
+
+            <div class="cookie-card preferences">
+              <div class="cookie-card-header">
+                <span class="cookie-type-badge preferences">Beállítások</span>
+              </div>
+              <h4>Preferencia sütik</h4>
+              <p>
+                Megjegyzik a felhasználó által kiválasztott beállításokat, mint a nyelv és a
+                megjelenési téma.
+              </p>
+              <div class="cookie-examples">
+                <code>preferredLanguage</code>
+                <code>preferredTheme</code>
+              </div>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>Sütik kezelése</h3>
+            <p>
+              A sütik kezelhetők a böngésző beállításain keresztül. A funkcionális sütiket nem lehet
+              letiltani, de az elemzési és preferencia sütiket igen.
+            </p>
+          </section>
+        </div>
+      </article>
+    }
+  </div>
+</div>
 
 
 
@@ -5752,16 +7720,27 @@ describe('Legal', () => {
 FILE: src\app\pages\legal\legal.ts
 ================================================================================
 
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
+
+type LegalTab = 'terms' | 'privacy' | 'cookies';
 
 @Component({
   selector: 'app-legal',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './legal.html',
   styleUrl: './legal.css',
 })
-export class Legal {}
+export class Legal {
+  activeTab = signal<LegalTab>('terms');
+
+  setTab(tab: LegalTab): void {
+    this.activeTab.set(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
 
 
 
@@ -5770,7 +7749,7 @@ FILE: src\app\pages\login\login.css
 ================================================================================
 
 .auth-container {
-  min-height: calc(100vh - 55px - 200px); /* Viewport - header - footer */
+  min-height: calc(100vh - 55px - 200px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5827,7 +7806,7 @@ FILE: src\app\pages\login\login.css
 .form-input {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  font-size: var(--text-base);
+  font-size: 1rem;
   font-family: var(--font-primary);
   color: var(--input-text);
   background-color: var(--input-bg);
@@ -5835,6 +7814,8 @@ FILE: src\app\pages\login\login.css
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
   outline: none;
+  min-height: 48px;
+  box-sizing: border-box;
 }
 
 .form-input:focus {
@@ -5863,21 +7844,25 @@ FILE: src\app\pages\login\login.css
 
 .password-toggle {
   position: absolute;
-  right: var(--space-3);
+  right: 0;
+  width: 44px;
+  height: 44px;
   background: none;
   border: none;
   cursor: pointer;
   font-size: var(--text-xl);
-  padding: var(--space-2);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
   transition: color var(--transition-fast);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
-.password-toggle:hover {
-  color: var(--text-primary);
+@media (hover: hover) and (pointer: fine) {
+  .password-toggle:hover {
+    color: var(--text-primary);
+  }
 }
 
 .password-toggle:disabled {
@@ -5899,13 +7884,15 @@ FILE: src\app\pages\login\login.css
   font-size: var(--text-sm);
   color: var(--text-primary);
   user-select: none;
+  min-height: 44px;
 }
 
 .checkbox-label input[type='checkbox'] {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
   accent-color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .checkbox-label input[type='checkbox']:disabled {
@@ -5938,12 +7925,15 @@ FILE: src\app\pages\login\login.css
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  min-height: 48px;
 }
 
-.submit-btn:hover:not(:disabled) {
-  background-color: var(--btn-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+@media (hover: hover) and (pointer: fine) {
+  .submit-btn:hover:not(:disabled) {
+    background-color: var(--btn-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
 }
 
 .submit-btn:active:not(:disabled) {
@@ -5962,6 +7952,7 @@ FILE: src\app\pages\login\login.css
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
 }
 
 @keyframes spin {
@@ -5981,11 +7972,15 @@ FILE: src\app\pages\login\login.css
   color: var(--text-secondary);
   text-decoration: none;
   transition: color var(--transition-fast);
+  padding: var(--space-2) 0;
+  display: inline-block;
 }
 
-.link:hover {
-  color: var(--color-primary);
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
 }
 
 .auth-divider {
@@ -6024,17 +8019,126 @@ FILE: src\app\pages\login\login.css
   text-decoration: none;
   font-weight: var(--font-semibold);
   transition: color var(--transition-fast);
+  padding: var(--space-1) 0;
+  display: inline-block;
 }
 
-.link-primary:hover {
-  color: var(--color-primary-hover);
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .link-primary:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+  }
 }
 
-/* Responsive Design */
+.verification-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+}
+
+.icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgba(6, 122, 69, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-wrapper.success {
+  background-color: rgba(6, 122, 69, 0.15);
+}
+
+.mail-icon,
+.check-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--color-primary);
+  stroke: var(--color-primary);
+}
+
+.verification-content h1 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.verification-text {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 340px;
+  line-height: 1.6;
+}
+
+.verification-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: left;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.step-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.step p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  padding-top: var(--space-1);
+  line-height: 1.5;
+}
+
+.redirect-info {
+  padding: var(--space-3) var(--space-4);
+  background-color: rgba(6, 122, 69, 0.08);
+  border-radius: var(--radius-md);
+  width: 100%;
+}
+
+.redirect-info p {
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+  margin: 0;
+  font-weight: var(--font-medium);
+}
+
+.form-hint {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+  margin-bottom: 0;
+}
+
 @media (max-width: 768px) {
   .auth-container {
     padding: var(--space-4) var(--space-3);
+    align-items: flex-start;
+    padding-top: var(--space-8);
   }
 
   .auth-card {
@@ -6044,23 +8148,93 @@ FILE: src\app\pages\login\login.css
   .auth-header h1 {
     font-size: var(--text-2xl);
   }
+
+  .auth-header {
+    margin-bottom: var(--space-6);
+  }
 }
 
 @media (max-width: 480px) {
+  .auth-container {
+    padding: var(--space-3) var(--space-3);
+    padding-top: var(--space-6);
+    align-items: flex-start;
+  }
+
   .auth-card {
     padding: var(--space-6) var(--space-4);
+    border-radius: var(--radius-md);
   }
 
   .auth-header h1 {
     font-size: var(--text-xl);
   }
 
-  .form-input {
+  .auth-subtitle {
     font-size: var(--text-sm);
   }
 
-  .submit-btn {
-    padding: var(--space-3) var(--space-4);
+  .auth-form {
+    gap: var(--space-4);
+  }
+
+  .auth-divider {
+    margin: var(--space-4) 0 var(--space-3);
+  }
+
+  .verification-content h1 {
+    font-size: var(--text-xl);
+  }
+
+  .icon-wrapper {
+    width: 64px;
+    height: 64px;
+  }
+
+  .mail-icon,
+  .check-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 375px) {
+  .auth-container {
+    padding: var(--space-2) var(--space-2);
+    padding-top: var(--space-4);
+  }
+
+  .auth-card {
+    padding: var(--space-5) var(--space-3);
+  }
+
+  .auth-header h1 {
+    font-size: var(--text-lg);
+  }
+
+  .auth-form {
+    gap: var(--space-3);
+  }
+
+  .step-number {
+    width: 24px;
+    height: 24px;
+    font-size: var(--text-xs);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-top-color: white;
+    opacity: 0.7;
+  }
+
+  .submit-btn,
+  .link,
+  .link-primary,
+  .password-toggle {
+    transition: none;
   }
 }
 
@@ -6817,9 +8991,1157 @@ export class PasswordResetRequest {
 
 
 ================================================================================
+FILE: src\app\pages\product-detail\product-detail.css
+================================================================================
+
+.product-detail-page {
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-16) var(--space-6);
+  min-height: 60vh;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  color: var(--color-text-secondary);
+  font-size: var(--text-base);
+}
+
+.not-found-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-16) var(--space-6);
+  min-height: 60vh;
+  text-align: center;
+}
+
+.not-found-icon {
+  font-size: 4rem;
+  opacity: 0.5;
+}
+
+.not-found-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.not-found-desc {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 400px;
+}
+
+.back-btn {
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  font-family: var(--font-primary);
+  min-height: 44px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .back-btn:hover {
+    background: var(--color-primary-hover);
+  }
+}
+
+.detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-sm);
+}
+
+.breadcrumb-link {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .breadcrumb-link:hover {
+    color: var(--color-primary);
+  }
+}
+
+.breadcrumb-sep {
+  color: var(--color-text-tertiary);
+}
+
+.breadcrumb-current {
+  color: var(--color-text-primary);
+  font-weight: var(--font-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .detail-layout {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+@media (min-width: 1024px) {
+  .detail-layout {
+    grid-template-columns: 5fr 6fr;
+    gap: var(--space-12);
+  }
+}
+
+.image-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: sticky;
+  top: var(--space-6);
+}
+
+@media (max-width: 767px) {
+  .image-section {
+    position: static;
+  }
+}
+
+.main-image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.main-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.image-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  font-size: 28px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
+  z-index: 5;
+  font-family: var(--font-primary);
+  line-height: 1;
+  user-select: none;
+}
+
+.image-nav.prev {
+  left: 10px;
+}
+.image-nav.next {
+  right: 10px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .image-nav:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.8);
+  }
+}
+
+.image-nav:disabled,
+.image-nav.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.image-counter {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  color: white;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  user-select: none;
+}
+
+.rx-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--color-primary);
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: var(--font-bold);
+  box-shadow: var(--shadow-md);
+  z-index: 2;
+}
+
+.discount-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--color-error);
+  color: white;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  box-shadow: var(--shadow-sm);
+  z-index: 2;
+}
+
+.thumbnail-strip {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding: var(--space-1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) var(--color-surface-elevated);
+}
+
+.thumbnail-strip::-webkit-scrollbar {
+  height: 4px;
+}
+.thumbnail-strip::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+.thumb {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--color-surface-elevated);
+  padding: 0;
+  transition:
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .thumb:hover {
+    border-color: var(--color-primary);
+    transform: scale(1.05);
+  }
+}
+
+.thumb.active {
+  border-color: var(--color-primary);
+  border-width: 3px;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.info-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.category-badge {
+  display: inline-block;
+  width: fit-content;
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.product-title {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: var(--leading-tight);
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.rating-stars {
+  color: var(--color-warning);
+  font-size: var(--text-lg);
+}
+
+.rating-value {
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.rating-count {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.price-block {
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.price {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+}
+
+.price-with-discount {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.original-price {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+}
+
+.discounted-price {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: var(--font-bold);
+  color: var(--color-error);
+}
+
+.meta-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.meta-row:last-child {
+  border-bottom: none;
+}
+
+.meta-row:nth-child(even) {
+  background: var(--color-surface-elevated);
+}
+
+.meta-label {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-medium);
+  flex-shrink: 0;
+  margin-right: var(--space-4);
+}
+
+.meta-value {
+  color: var(--color-text-primary);
+  font-weight: var(--font-semibold);
+  text-align: right;
+}
+
+.meta-value.sku {
+  font-family: monospace;
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+}
+
+.meta-value.in-stock {
+  color: var(--color-success);
+}
+
+.meta-value.out-of-stock {
+  color: var(--color-error);
+}
+
+.cart-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-lg);
+}
+
+.quantity-controls.disabled {
+  opacity: 0.5;
+}
+
+.qty-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  border: none;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
+  font-family: var(--font-primary);
+  line-height: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .qty-btn:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    transform: scale(1.08);
+  }
+}
+
+.qty-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qty-value {
+  min-width: 56px;
+  text-align: center;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+}
+
+.total-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-primary-light);
+  border-radius: var(--radius-lg);
+}
+
+.total-label {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+}
+
+.total-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+}
+
+.add-to-cart-btn {
+  width: 100%;
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  font-family: var(--font-primary);
+  min-height: 52px;
+  box-shadow: var(--shadow-md);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .add-to-cart-btn:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+}
+
+.add-to-cart-btn.added {
+  background: var(--color-success, #16a34a);
+}
+
+.add-to-cart-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-icon {
+  font-size: var(--text-xl);
+}
+
+.prescription-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-info, #0ea5e9);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.description-block,
+.pharma-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.section-heading {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--color-primary);
+  display: inline-block;
+}
+
+.description-text {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.pharma-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  border-left: 3px solid var(--color-primary);
+}
+
+.pharma-item strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-semibold);
+}
+
+.pharma-item span {
+  color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
+}
+
+@media (max-width: 480px) {
+  .detail-container {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .breadcrumb {
+    font-size: var(--text-xs);
+    margin-bottom: var(--space-4);
+  }
+
+  .breadcrumb-current {
+    max-width: 140px;
+  }
+
+  .thumb {
+    width: 60px;
+    height: 60px;
+  }
+
+  .cart-section {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .qty-value {
+    min-width: 44px;
+    font-size: var(--text-xl);
+  }
+
+  .total-value {
+    font-size: var(--text-xl);
+  }
+
+  .add-to-cart-btn {
+    font-size: var(--text-base);
+    padding: var(--space-3) var(--space-4);
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 375px) {
+  .detail-container {
+    padding: var(--space-3) var(--space-2);
+  }
+
+  .qty-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .total-display {
+    flex-direction: column;
+    gap: var(--space-1);
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+  .add-to-cart-btn,
+  .qty-btn,
+  .thumb,
+  .image-nav {
+    transition: none;
+  }
+}
+
+
+
+================================================================================
+FILE: src\app\pages\product-detail\product-detail.html
+================================================================================
+
+<div class="product-detail-page">
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p class="loading-text">{{ 'common.loading' | translate }}</p>
+    </div>
+  }
+
+  @if (!isLoading() && notFound()) {
+    <div class="not-found-state">
+      <div class="not-found-icon">🔍</div>
+      <h2 class="not-found-title">{{ 'product.not_found' | translate }}</h2>
+      <p class="not-found-desc">{{ 'product.not_found_desc' | translate }}</p>
+      <button class="back-btn" (click)="goBack()">
+        ← {{ 'product.back_to_products' | translate }}
+      </button>
+    </div>
+  }
+
+  @if (!isLoading() && product()) {
+    <div class="detail-container">
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a [routerLink]="['/home']" class="breadcrumb-link">{{ 'nav.home' | translate }}</a>
+        <span class="breadcrumb-sep">›</span>
+        <a [routerLink]="['/products']" class="breadcrumb-link">{{ 'nav.products' | translate }}</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">{{ product()!.name }}</span>
+      </nav>
+
+      <div class="detail-layout">
+        <div class="image-section">
+          <div class="main-image-wrapper">
+            @if (images.length > 1) {
+              <button
+                class="image-nav prev"
+                [class.disabled]="!canGoPrevious()"
+                [disabled]="!canGoPrevious()"
+                (click)="previousImage()"
+                [attr.aria-label]="'product.previous_image' | translate"
+              >
+                ‹
+              </button>
+            }
+
+            <img [src]="selectedImage" [alt]="product()!.name" class="main-image" loading="eager" />
+
+            @if (product()!.requiresPrescription) {
+              <span class="rx-badge" [title]="'product.requires_prescription' | translate">℞</span>
+            }
+
+            @if (hasDiscount) {
+              <span class="discount-badge">-{{ product()!.discountPercentage }}%</span>
+            }
+
+            @if (images.length > 1) {
+              <button
+                class="image-nav next"
+                [class.disabled]="!canGoNext()"
+                [disabled]="!canGoNext()"
+                (click)="nextImage()"
+                [attr.aria-label]="'product.next_image' | translate"
+              >
+                ›
+              </button>
+
+              <div class="image-counter">{{ selectedImageIndex() + 1 }} / {{ images.length }}</div>
+            }
+          </div>
+
+          @if (images.length > 1) {
+            <div class="thumbnail-strip">
+              @for (img of images; track $index) {
+                <button
+                  class="thumb"
+                  [class.active]="selectedImageIndex() === $index"
+                  (click)="selectImage($index)"
+                  [attr.aria-label]="('product.view_image' | translate) + ' ' + ($index + 1)"
+                >
+                  <img [src]="img" [alt]="product()!.name" loading="lazy" />
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="info-section">
+          <div class="info-header">
+            <span class="category-badge">
+              {{ 'category.' + product()!.category | translate }}
+            </span>
+
+            <h1 class="product-title">{{ product()!.name }}</h1>
+
+            @if (product()!.rating) {
+              <div class="rating-row">
+                <span class="rating-stars">{{ getRatingStars() }}</span>
+                <span class="rating-value">{{ product()!.rating }}</span>
+                <span class="rating-count"
+                  >({{ product()!.reviewCount }} {{ 'product.reviews' | translate }})</span
+                >
+              </div>
+            }
+          </div>
+
+          <div class="price-block">
+            @if (hasDiscount) {
+              <div class="price-with-discount">
+                <span class="original-price">{{ formattedPrice }}</span>
+                <span class="discounted-price">{{ formattedDiscountedPrice }}</span>
+              </div>
+            } @else {
+              <span class="price">{{ formattedPrice }}</span>
+            }
+          </div>
+
+          <div class="meta-grid">
+            @if (product()!.manufacturer) {
+              <div class="meta-row">
+                <span class="meta-label">{{ 'product.manufacturer' | translate }}</span>
+                <span class="meta-value">{{ product()!.manufacturer }}</span>
+              </div>
+            }
+            @if (product()!.brand) {
+              <div class="meta-row">
+                <span class="meta-label">{{ 'product.brand' | translate }}</span>
+                <span class="meta-value">{{ product()!.brand }}</span>
+              </div>
+            }
+            @if (product()!.sku) {
+              <div class="meta-row">
+                <span class="meta-label">{{ 'product.sku' | translate }}</span>
+                <span class="meta-value sku">{{ product()!.sku }}</span>
+              </div>
+            }
+            <div class="meta-row">
+              <span class="meta-label">{{ 'product.availability' | translate }}</span>
+              <span
+                class="meta-value availability"
+                [class.in-stock]="product()!.inStock"
+                [class.out-of-stock]="!product()!.inStock"
+              >
+                {{
+                  product()!.inStock
+                    ? ('product.in_stock' | translate)
+                    : ('product.out_of_stock' | translate)
+                }}
+                @if (product()!.inStock && product()!.stockQuantity) {
+                  ({{ product()!.stockQuantity }} {{ 'product.pieces' | translate }})
+                }
+              </span>
+            </div>
+          </div>
+
+          <div class="cart-section">
+            <div class="quantity-controls" [class.disabled]="!product()!.inStock">
+              <button
+                class="qty-btn"
+                (click)="decreaseQuantity()"
+                [disabled]="quantity() <= 1 || !product()!.inStock"
+                [attr.aria-label]="'product.decrease_quantity' | translate"
+              >
+                −
+              </button>
+              <span class="qty-value">{{ quantity() }}</span>
+              <button
+                class="qty-btn"
+                (click)="increaseQuantity()"
+                [disabled]="quantity() >= product()!.stockQuantity || !product()!.inStock"
+                [attr.aria-label]="'product.increase_quantity' | translate"
+              >
+                +
+              </button>
+            </div>
+
+            <div class="total-display">
+              <span class="total-label">{{ 'product.total' | translate }}:</span>
+              <span class="total-value">{{ formattedTotalPrice }}</span>
+            </div>
+
+            <button
+              class="add-to-cart-btn"
+              [class.added]="addedToCart()"
+              [disabled]="!canAddToCart"
+              (click)="handleAddToCart()"
+            >
+              @if (addedToCart()) {
+                <span class="btn-icon">✓</span>
+                {{ 'common.added_to_cart' | translate }}
+              } @else {
+                <span class="btn-icon">🛒</span>
+                {{ 'common.add_to_cart' | translate }}
+              }
+            </button>
+
+            @if (product()!.requiresPrescription) {
+              <div class="prescription-notice">
+                <span>ℹ️</span>
+                <span>{{ 'product.prescription_required_notice' | translate }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="description-block">
+            <h2 class="section-heading">{{ 'product.description' | translate }}</h2>
+            <p class="description-text">{{ product()!.description }}</p>
+          </div>
+
+          @if (product()!.activeIngredients || product()!.dosage || product()!.packaging) {
+            <div class="pharma-block">
+              <h2 class="section-heading">{{ 'product.pharmaceutical_details' | translate }}</h2>
+
+              @if (product()!.activeIngredients) {
+                <div class="pharma-item">
+                  <strong>{{ 'product.active_ingredients' | translate }}:</strong>
+                  <span>{{ product()!.activeIngredients }}</span>
+                </div>
+              }
+              @if (product()!.dosage) {
+                <div class="pharma-item">
+                  <strong>{{ 'product.dosage' | translate }}:</strong>
+                  <span>{{ product()!.dosage }}</span>
+                </div>
+              }
+              @if (product()!.packaging) {
+                <div class="pharma-item">
+                  <strong>{{ 'product.packaging' | translate }}:</strong>
+                  <span>{{ product()!.packaging }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+
+
+================================================================================
+FILE: src\app\pages\product-detail\product-detail.spec.ts
+================================================================================
+
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { ProductDetail } from './product-detail';
+
+describe('ProductDetail', () => {
+  let component: ProductDetail;
+  let fixture: ComponentFixture<ProductDetail>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ProductDetail]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(ProductDetail);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+
+
+================================================================================
+FILE: src\app\pages\product-detail\product-detail.ts
+================================================================================
+
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
+import { ProductWithHelpers } from '../../core/models/product.model';
+import { ProductService } from '../../services/product.service';
+import { CartService } from '../../core/services/cart.service';
+import { CurrencyService } from '../../core/services/currency.service';
+
+@Component({
+  selector: 'app-product-detail',
+  standalone: true,
+  imports: [CommonModule, TranslateModule, RouterLink],
+  templateUrl: './product-detail.html',
+  styleUrl: './product-detail.css',
+})
+export class ProductDetail implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private productService = inject(ProductService);
+  private cartService = inject(CartService);
+  private currencyService = inject(CurrencyService);
+
+  product = signal<ProductWithHelpers | null>(null);
+  isLoading = signal(true);
+  notFound = signal(false);
+  quantity = signal(1);
+  selectedImageIndex = signal(0);
+  addedToCart = signal(false);
+
+  canGoPrevious = computed(() => this.selectedImageIndex() > 0);
+  canGoNext = computed(
+    () => this.product() !== null && this.selectedImageIndex() < this.product()!.images.length - 1,
+  );
+
+  get images(): string[] {
+    return this.product()?.images ?? [];
+  }
+
+  get selectedImage(): string {
+    return this.images[this.selectedImageIndex()] ?? '';
+  }
+
+  get hasDiscount(): boolean {
+    return this.product()?.hasDiscount ?? false;
+  }
+
+  get formattedPrice(): string {
+    const p = this.product();
+    if (!p) return '';
+    return this.currencyService.formatPrice(p.priceNumber);
+  }
+
+  get formattedDiscountedPrice(): string {
+    const p = this.product();
+    if (!p) return '';
+    return this.currencyService.formatPrice(p.price);
+  }
+
+  get formattedTotalPrice(): string {
+    const p = this.product();
+    if (!p) return '';
+    const basePrice = p.hasDiscount ? p.price : p.priceNumber;
+    return this.currencyService.formatPrice(basePrice * this.quantity());
+  }
+
+  get canAddToCart(): boolean {
+    const p = this.product();
+    return !!(p?.inStock && !p?.requiresPrescription && this.quantity() <= p.stockQuantity);
+  }
+
+  async ngOnInit(): Promise<void> {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.router.navigate(['/products']);
+      return;
+    }
+
+    await this.productService.loadProducts();
+    const all = this.productService.products();
+    const found = all.find((p) => p.id === id);
+
+    if (found) {
+      this.product.set(found);
+    } else {
+      this.notFound.set(true);
+    }
+
+    this.isLoading.set(false);
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
+  }
+
+  selectImage(index: number): void {
+    this.selectedImageIndex.set(index);
+  }
+
+  nextImage(): void {
+    if (this.canGoNext()) {
+      this.selectedImageIndex.update((i) => i + 1);
+    }
+  }
+
+  previousImage(): void {
+    if (this.canGoPrevious()) {
+      this.selectedImageIndex.update((i) => i - 1);
+    }
+  }
+
+  increaseQuantity(): void {
+    const p = this.product();
+    if (p && this.quantity() < p.stockQuantity) {
+      this.quantity.update((q) => q + 1);
+    }
+  }
+
+  decreaseQuantity(): void {
+    if (this.quantity() > 1) {
+      this.quantity.update((q) => q - 1);
+    }
+  }
+
+  handleAddToCart(): void {
+    const p = this.product();
+    if (this.canAddToCart && p) {
+      this.cartService.addToCart(p, this.quantity());
+      this.addedToCart.set(true);
+      setTimeout(() => this.addedToCart.set(false), 2500);
+    }
+  }
+
+  getRatingStars(): string {
+    const p = this.product();
+    if (!p?.ratingNumber) return '';
+    const full = Math.floor(p.ratingNumber);
+    const half = p.ratingNumber % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
+  }
+
+  goBack(): void {
+    this.router.navigate(['/products']);
+  }
+}
+
+
+
+================================================================================
 FILE: src\app\pages\products\products.css
 ================================================================================
 
+.products-page {
+  min-height: 100vh;
+  background: var(--color-background);
+}
 
 
 
@@ -6890,32 +10212,39 @@ export class Products {
 FILE: src\app\pages\profile\profile.css
 ================================================================================
 
-.profile-container {
+.profile-page {
   min-height: calc(100vh - 140px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  background: linear-gradient(
-    135deg,
-    var(--background-primary) 0%,
-    var(--background-secondary) 100%
-  );
+  background: var(--bg-secondary);
+  padding: var(--space-8) var(--space-4);
 }
 
-.profile-wrapper {
-  width: 100%;
-  max-width: 800px;
-  background: var(--background-primary);
-  border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+.profile-container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.profile-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
-  animation: slideUp 0.6s ease-out;
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .profile-header {
   background: linear-gradient(135deg, #067a45 0%, #048a4f 100%);
-  padding: 3rem 2rem;
+  padding: var(--space-10) var(--space-8) var(--space-8);
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -6924,37 +10253,34 @@ FILE: src\app\pages\profile\profile.css
 .profile-header::before {
   content: '';
   position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-  animation: pulse 15s ease-in-out infinite;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
 }
 
 .profile-avatar {
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto var(--space-4);
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
-  border: 4px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  border: 3px solid rgba(255, 255, 255, 0.35);
   position: relative;
   z-index: 1;
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-normal);
 }
 
 .profile-avatar:hover {
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
 .profile-avatar svg {
-  width: 60px;
-  height: 60px;
+  width: 54px;
+  height: 54px;
   color: white;
 }
 
@@ -6964,97 +10290,165 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .profile-name {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: var(--font-bold, 700);
   color: white;
-  margin: 0 0 0.5rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 0 var(--space-1) 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .profile-email {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--text-sm, 0.9rem);
+  color: rgba(255, 255, 255, 0.88);
   margin: 0;
 }
 
-.profile-content {
-  padding: 2.5rem 2rem;
+.profile-role-badge {
+  display: inline-block;
+  margin-top: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.profile-body {
+  padding: var(--space-8) var(--space-8) var(--space-6);
 }
 
 .profile-section {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-8);
 }
 
-.profile-section h2 {
-  font-size: 1.25rem;
+.section-title {
+  font-size: var(--text-base, 1rem);
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 1.5rem 0;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--border-primary);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin: 0 0 var(--space-4) 0;
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.section-icon {
+  font-size: 18px;
 }
 
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
 }
 
 .detail-item {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem;
-  background: var(--background-secondary);
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-fast, 0.15s);
 }
 
 .detail-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary);
 }
 
 .detail-label {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .detail-value {
-  font-size: 1rem;
+  font-size: var(--text-base, 1rem);
   font-weight: 600;
   color: var(--text-primary);
+  word-break: break-word;
+}
+
+.detail-value.placeholder {
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.stat-card {
+  text-align: center;
+  padding: var(--space-5) var(--space-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid var(--border-color);
+}
+
+.stat-value {
+  font-size: var(--text-2xl, 1.5rem);
+  font-weight: 700;
+  color: var(--color-primary);
+  display: block;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: var(--space-1);
+  display: block;
 }
 
 .profile-actions {
   display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: var(--space-3);
   flex-wrap: wrap;
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-color);
 }
 
 .btn {
   flex: 1;
-  min-width: 200px;
-  padding: 1rem 1.5rem;
+  min-width: 160px;
+  padding: var(--space-3) var(--space-5);
   border: none;
-  border-radius: 12px;
-  font-size: 1rem;
+  border-radius: var(--radius-lg, 0.75rem);
+  font-size: var(--text-base, 1rem);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast, 0.15s);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
+  min-height: 48px;
+  text-decoration: none;
 }
 
 .btn svg {
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
 }
 
 .btn-primary {
@@ -7073,76 +10467,67 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .btn-secondary {
-  background: var(--background-secondary);
+  background: var(--bg-secondary);
   color: var(--text-primary);
-  border: 2px solid var(--border-primary);
+  border: 2px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-  background: var(--background-tertiary);
+  background: var(--bg-tertiary);
+  border-color: var(--color-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.btn-secondary:active {
-  transform: translateY(0);
+.btn-danger {
+  background: transparent;
+  color: #dc2626;
+  border: 2px solid #dc2626;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.btn-danger:hover {
+  background: rgba(220, 38, 38, 0.08);
+  transform: translateY(-2px);
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-10%, -10%) scale(1.1);
-  }
+.not-authenticated {
+  text-align: center;
+  padding: var(--space-16) var(--space-4);
+  color: var(--text-secondary);
+}
+
+.not-authenticated .icon {
+  font-size: 64px;
+  display: block;
+  margin-bottom: var(--space-4);
+  opacity: 0.5;
 }
 
 @media (max-width: 768px) {
-  .profile-container {
-    padding: 1rem;
-  }
-
-  .profile-wrapper {
-    border-radius: 16px;
+  .profile-page {
+    padding: var(--space-4) var(--space-3);
   }
 
   .profile-header {
-    padding: 2rem 1.5rem;
+    padding: var(--space-8) var(--space-4) var(--space-6);
+  }
+
+  .profile-body {
+    padding: var(--space-6) var(--space-4) var(--space-5);
   }
 
   .profile-avatar {
-    width: 100px;
-    height: 100px;
+    width: 90px;
+    height: 90px;
   }
 
   .profile-avatar svg {
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
   }
 
-  .profile-name {
-    font-size: 1.5rem;
-  }
-
-  .profile-content {
-    padding: 1.5rem 1rem;
-  }
-
-  .detail-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+  .profile-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
   }
 
   .profile-actions {
@@ -7155,16 +10540,64 @@ FILE: src\app\pages\profile\profile.css
 }
 
 @media (max-width: 480px) {
-  .profile-name {
-    font-size: 1.25rem;
+  .detail-grid {
+    grid-template-columns: 1fr;
   }
 
-  .profile-email {
-    font-size: 0.9rem;
+  .profile-stats {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
   }
 
-  .profile-section h2 {
-    font-size: 1.1rem;
+  .stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    text-align: left;
+    padding: var(--space-4);
+  }
+
+  .stat-value {
+    font-size: var(--text-xl, 1.25rem);
+  }
+}
+
+[data-theme='dark'] .profile-card {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='dark'] .detail-item {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+[data-theme='dark'] .detail-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='dark'] .stat-card {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+[data-theme='dark'] .btn-secondary {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .btn-secondary:hover {
+  background: var(--bg-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-card {
+    animation: none;
+  }
+  .profile-avatar,
+  .detail-item,
+  .btn {
+    transition: none;
   }
 }
 
@@ -7174,81 +10607,128 @@ FILE: src\app\pages\profile\profile.css
 FILE: src\app\pages\profile\profile.html
 ================================================================================
 
-<div class="profile-container">
-  <div class="profile-wrapper">
-    <div class="profile-header">
-      <div class="profile-avatar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-          />
-        </svg>
+<div class="profile-page">
+  <div class="profile-container">
+    @if (!isAuthenticated()) {
+      <div class="not-authenticated">
+        <span class="icon">🔒</span>
+        <p>{{ 'profile.not_authenticated' | translate }}</p>
       </div>
+    }
 
-      <div class="profile-info">
-        <h1 class="profile-name">{{ fullName() }}</h1>
-        <p class="profile-email">{{ email() }}</p>
-      </div>
-    </div>
-
-    <div class="profile-content">
-      <div class="profile-section">
-        <h2>{{ 'profile.account_details' | translate }}</h2>
-
-        <div class="detail-grid">
-          <div class="detail-item">
-            <span class="detail-label">{{ 'profile.first_name' | translate }}</span>
-            <span class="detail-value">{{ user()?.firstname }}</span>
+    @if (isAuthenticated() && user()) {
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="profile-avatar" [attr.aria-hidden]="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
           </div>
 
-          <div class="detail-item">
-            <span class="detail-label">{{ 'profile.last_name' | translate }}</span>
-            <span class="detail-value">{{ user()?.lastname }}</span>
+          <div class="profile-info">
+            <h1 class="profile-name">{{ fullName() }}</h1>
+            <p class="profile-email">{{ email() }}</p>
+            @if (user()?.role) {
+              <span class="profile-role-badge">
+                {{ 'profile.role_' + user()?.role | translate }}
+              </span>
+            }
           </div>
+        </div>
 
-          <div class="detail-item">
-            <span class="detail-label">{{ 'profile.email' | translate }}</span>
-            <span class="detail-value">{{ user()?.email }}</span>
-          </div>
-
-          @if (user()?.role) {
-            <div class="detail-item">
-              <span class="detail-label">{{ 'profile.role' | translate }}</span>
-              <span class="detail-value">{{ user()?.role }}</span>
+        <div class="profile-body">
+          <div class="profile-stats">
+            <div class="stat-card">
+              <span class="stat-value">0</span>
+              <span class="stat-label">{{ 'profile.stats.orders' | translate }}</span>
             </div>
-          }
+            <div class="stat-card">
+              <span class="stat-value">0</span>
+              <span class="stat-label">{{ 'profile.stats.wishlist' | translate }}</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value">0</span>
+              <span class="stat-label">{{ 'profile.stats.reviews' | translate }}</span>
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h2 class="section-title">
+              <span class="section-icon">👤</span>
+              {{ 'profile.account_details' | translate }}
+            </h2>
+
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">{{ 'profile.first_name' | translate }}</span>
+                <span class="detail-value">{{ user()?.firstname || '—' }}</span>
+              </div>
+
+              <div class="detail-item">
+                <span class="detail-label">{{ 'profile.last_name' | translate }}</span>
+                <span class="detail-value">{{ user()?.lastname || '—' }}</span>
+              </div>
+
+              <div class="detail-item">
+                <span class="detail-label">{{ 'profile.email' | translate }}</span>
+                <span class="detail-value">{{ user()?.email }}</span>
+              </div>
+
+              @if (user()?.role) {
+                <div class="detail-item">
+                  <span class="detail-label">{{ 'profile.role' | translate }}</span>
+                  <span class="detail-value">{{ 'profile.role_' + user()?.role | translate }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <a class="btn btn-primary" routerLink="/purchase">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                />
+              </svg>
+              {{ 'profile.view_orders' | translate }}
+            </a>
+
+            <button class="btn btn-secondary" (click)="goToSettings()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              {{ 'profile.settings' | translate }}
+            </button>
+
+            <button class="btn btn-danger" (click)="logout()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              {{ 'profile.logout' | translate }}
+            </button>
+          </div>
         </div>
       </div>
-
-      <div class="profile-actions">
-        <button class="btn btn-primary" routerLink="/purchase">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            />
-          </svg>
-          {{ 'profile.view_orders' | translate }}
-        </button>
-
-        <button class="btn btn-secondary" (click)="logout()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
-          </svg>
-          {{ 'profile.logout' | translate }}
-        </button>
-      </div>
-    </div>
+    }
   </div>
 </div>
 
@@ -7324,6 +10804,11 @@ export class Profile implements OnInit {
 
   logout(): void {
     this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  goToSettings(): void {
+    console.log('Settings not yet implemented');
   }
 }
 
@@ -8257,7 +11742,27 @@ FILE: src\app\pages\register\register.css
 @media (max-width: 640px) {
   .form-row {
     grid-template-columns: 1fr;
-    gap: var(--space-5);
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-form {
+    gap: var(--space-3);
+  }
+
+  .auth-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 375px) {
+  .auth-form {
+    gap: var(--space-2);
+  }
+
+  .form-hint {
+    font-size: 0.6875rem;
   }
 }
 
@@ -8553,7 +12058,105 @@ export class Register {
 FILE: src\app\pages\registration-promise\registration-promise.css
 ================================================================================
 
-@import '../email/email.css';
+@import '../login/login.css';
+
+.verification-card {
+  max-width: 500px;
+}
+
+.spinner-large {
+  width: 56px;
+  height: 56px;
+  border: 4px solid rgba(6, 122, 69, 0.15);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+.icon-wrapper.error {
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+.error-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--color-error);
+  stroke: var(--color-error);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  text-decoration: underline;
+  padding: var(--space-2) 0;
+  font-family: var(--font-primary);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link-btn:hover {
+    color: var(--color-primary-hover);
+  }
+}
+
+.back-link {
+  color: var(--color-primary);
+  font-size: var(--text-sm);
+  text-decoration: none;
+  font-weight: var(--font-medium);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .back-link:hover {
+    text-decoration: underline;
+  }
+}
+
+.error-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.verification-help {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .verification-card {
+    max-width: 100%;
+  }
+
+  .spinner-large {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner-large {
+    animation: none;
+    border-top-color: var(--color-primary);
+    opacity: 0.6;
+  }
+}
 
 
 
@@ -9640,14 +13243,23 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   transition: opacity 0.35s ease;
 }
 
-.featured-product-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--color-primary);
+@media (hover: hover) and (pointer: fine) {
+  .featured-product-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);
+  }
+
+  .featured-product-card:hover::before {
+    opacity: 1;
+  }
 }
 
-.featured-product-card:hover::before {
-  opacity: 1;
+@media (hover: none) {
+  .featured-product-card:active {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-lg);
+  }
 }
 
 .featured-product-image-wrapper {
@@ -9762,6 +13374,7 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .featured-stock-in .featured-stock-indicator {
@@ -9826,30 +13439,25 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 :host:nth-child(1) {
   animation-delay: 0.15s;
 }
-
 :host:nth-child(2) {
   animation-delay: 0.3s;
 }
-
 :host:nth-child(3) {
   animation-delay: 0.45s;
 }
-
 :host:nth-child(4) {
   animation-delay: 0.6s;
 }
-
 :host:nth-child(5) {
   animation-delay: 0.75s;
 }
-
 :host:nth-child(6) {
   animation-delay: 0.9s;
 }
 
 @media (max-width: 768px) {
   .featured-product-card {
-    min-height: 320px;
+    min-height: 300px;
   }
 
   .featured-product-image-wrapper {
@@ -9859,6 +13467,7 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 
   .featured-product-info {
     padding: 12px;
+    gap: 6px;
   }
 
   .featured-product-name {
@@ -9867,6 +13476,53 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 
   .featured-product-price {
     font-size: 1.25rem;
+  }
+
+  .featured-product-old-price {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .featured-product-card {
+    min-height: 280px;
+    border-radius: 10px;
+  }
+
+  .featured-product-image-wrapper {
+    height: 180px;
+    padding: 10px;
+  }
+
+  .featured-product-info {
+    padding: 10px 12px;
+  }
+
+  .featured-product-name {
+    font-size: 0.9375rem;
+  }
+
+  .featured-product-price {
+    font-size: 1.125rem;
+  }
+
+  .featured-stock-indicator {
+    width: 7px;
+    height: 7px;
+  }
+
+  .featured-product-stock {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    animation: none;
+  }
+
+  .featured-product-card {
+    transition: none;
   }
 }
 
@@ -12256,10 +15912,23 @@ FILE: src\app\shared\components\product-card\product-card.css
   height: 100%;
 }
 
-.product-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-4px);
-  border-color: var(--color-primary);
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+    border-color: var(--color-primary);
+  }
+
+  .product-card:hover .product-image {
+    transform: scale(1.05);
+  }
+}
+
+@media (hover: none) {
+  .product-card:active {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+  }
 }
 
 .product-card.out-of-stock {
@@ -12283,7 +15952,6 @@ FILE: src\app\shared\components\product-card\product-card.css
   flex-direction: row;
 }
 
-/* Image Section */
 .product-image-wrapper {
   position: relative;
   width: 100%;
@@ -12303,10 +15971,6 @@ FILE: src\app\shared\components\product-card\product-card.css
   height: 100%;
   object-fit: cover;
   transition: transform var(--transition-normal);
-}
-
-.product-card:hover .product-image {
-  transform: scale(1.05);
 }
 
 .badges {
@@ -12370,7 +16034,6 @@ FILE: src\app\shared\components\product-card\product-card.css
   font-size: var(--text-sm);
 }
 
-/* Content Section */
 .product-content {
   padding: var(--space-4);
   flex: 1;
@@ -12455,7 +16118,6 @@ FILE: src\app\shared\components\product-card\product-card.css
   font-size: var(--text-xs);
 }
 
-/* Price Section */
 .product-price-section {
   margin-top: auto;
   padding-top: var(--space-2);
@@ -12494,7 +16156,6 @@ FILE: src\app\shared\components\product-card\product-card.css
   font-size: var(--text-lg);
 }
 
-/* Actions Section */
 .product-actions {
   padding: var(--space-4);
   padding-top: 0;
@@ -12526,8 +16187,8 @@ FILE: src\app\shared\components\product-card\product-card.css
 }
 
 .quantity-btn {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-sm);
   background: var(--color-primary);
   color: var(--color-text-on-primary);
@@ -12543,9 +16204,11 @@ FILE: src\app\shared\components\product-card\product-card.css
   line-height: 1;
 }
 
-.quantity-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-  transform: scale(1.05);
+@media (hover: hover) and (pointer: fine) {
+  .quantity-btn:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    transform: scale(1.05);
+  }
 }
 
 .quantity-btn:disabled {
@@ -12554,7 +16217,7 @@ FILE: src\app\shared\components\product-card\product-card.css
 }
 
 .quantity-value {
-  min-width: 32px;
+  min-width: 36px;
   text-align: center;
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
@@ -12577,17 +16240,21 @@ FILE: src\app\shared\components\product-card\product-card.css
   justify-content: center;
   gap: var(--space-2);
   font-family: var(--font-primary);
+  min-height: 44px;
 }
 
 .add-to-cart-button.compact {
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-sm);
+  min-height: 44px;
 }
 
-.add-to-cart-button:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .add-to-cart-button:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
 }
 
 .add-to-cart-button:disabled {
@@ -12611,14 +16278,16 @@ FILE: src\app\shared\components\product-card\product-card.css
   cursor: pointer;
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
+  min-height: 44px;
 }
 
-.details-button:hover {
-  background: var(--color-primary-light);
+@media (hover: hover) and (pointer: fine) {
+  .details-button:hover {
+    background: var(--color-primary-light);
+  }
 }
 
-/* Responsive */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .product-card.compact .product-image-wrapper {
     width: 100px;
     min-width: 100px;
@@ -12635,6 +16304,41 @@ FILE: src\app\shared\components\product-card\product-card.css
   .product-actions {
     padding: var(--space-3);
     padding-top: 0;
+  }
+}
+
+@media (max-width: 375px) {
+  .product-card.compact .product-image-wrapper {
+    width: 80px;
+    min-width: 80px;
+  }
+
+  .product-content {
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-1);
+  }
+
+  .product-title {
+    font-size: var(--text-sm);
+  }
+
+  .price,
+  .discounted-price {
+    font-size: var(--text-lg);
+  }
+
+  .product-actions {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card,
+  .product-image,
+  .quantity-btn,
+  .add-to-cart-button,
+  .details-button {
+    transition: none;
   }
 }
 
@@ -12927,8 +16631,8 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
   position: absolute;
   top: var(--space-4, 16px);
   right: var(--space-4, 16px);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
@@ -12944,11 +16648,13 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
   line-height: 1;
 }
 
-.modal-close:hover {
-  background: var(--color-error);
-  border-color: var(--color-error);
-  color: white;
-  transform: rotate(90deg);
+@media (hover: hover) and (pointer: fine) {
+  .modal-close:hover {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+    transform: rotate(90deg);
+  }
 }
 
 .modal-content {
@@ -13006,15 +16712,16 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
 .image-nav-btn.prev {
   left: 12px;
 }
-
 .image-nav-btn.next {
   right: 12px;
 }
 
-.image-nav-btn:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.8);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-50%) scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+  .image-nav-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-50%) scale(1.1);
+  }
 }
 
 .image-nav-btn:disabled,
@@ -13088,12 +16795,10 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
 .thumbnail-list::-webkit-scrollbar {
   height: 6px;
 }
-
 .thumbnail-list::-webkit-scrollbar-track {
   background: var(--color-surface-elevated);
   border-radius: 3px;
 }
-
 .thumbnail-list::-webkit-scrollbar-thumb {
   background: var(--color-primary);
   border-radius: 3px;
@@ -13112,9 +16817,11 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
   padding: 0;
 }
 
-.thumbnail:hover {
-  border-color: var(--color-primary);
-  transform: scale(1.05);
+@media (hover: hover) and (pointer: fine) {
+  .thumbnail:hover {
+    border-color: var(--color-primary);
+    transform: scale(1.05);
+  }
 }
 
 .thumbnail.active {
@@ -13241,7 +16948,6 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
 .meta-value.in-stock {
   color: var(--color-success);
 }
-
 .meta-value.out-of-stock {
   color: var(--color-error);
 }
@@ -13322,9 +17028,11 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
   line-height: 1;
 }
 
-.quantity-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-  transform: scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+  .quantity-btn:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    transform: scale(1.1);
+  }
 }
 
 .quantity-btn:disabled {
@@ -13378,12 +17086,15 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
   gap: var(--space-3, 12px);
   font-family: var(--font-primary);
   box-shadow: var(--shadow-md);
+  min-height: 52px;
 }
 
-.add-to-cart-button:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .add-to-cart-button:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
 }
 
 .add-to-cart-button:disabled {
@@ -13409,7 +17120,6 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
 .notice-icon {
   font-size: var(--text-lg, 18px);
 }
-
 .notice-text {
   font-weight: var(--font-medium);
 }
@@ -13424,9 +17134,6 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
   .modal-close {
     top: var(--space-3, 12px);
     right: var(--space-3, 12px);
-    width: 36px;
-    height: 36px;
-    font-size: var(--text-xl, 20px);
   }
 
   .modal-title {
@@ -13439,62 +17146,115 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
   }
 
   .image-nav-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 28px;
+    width: 44px;
+    height: 44px;
+    font-size: 26px;
   }
 
   .image-nav-btn.prev {
     left: 8px;
   }
-
   .image-nav-btn.next {
     right: 8px;
   }
 
   .thumbnail {
-    width: 60px;
-    height: 60px;
+    width: 64px;
+    height: 64px;
   }
 }
 
 @media (max-width: 480px) {
   .modal-backdrop {
     padding: 0;
+    align-items: flex-end;
   }
 
   .modal-container {
-    max-height: 100vh;
-    border-radius: 0;
+    max-height: 96vh;
+    border-radius: var(--radius-xl, 16px) var(--radius-xl, 16px) 0 0;
+    width: 100%;
   }
 
   .modal-content {
     padding: var(--space-4, 16px);
   }
 
+  .modal-title {
+    font-size: var(--text-xl, 20px);
+  }
+
+  .price,
+  .discounted-price {
+    font-size: var(--text-xl, 20px);
+  }
+
   .quantity-controls {
     gap: var(--space-3, 12px);
   }
 
-  .quantity-btn {
-    width: 40px;
-    height: 40px;
-  }
-
   .quantity-value {
-    min-width: 50px;
+    min-width: 48px;
     font-size: var(--text-xl, 20px);
   }
 
   .image-nav-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
   }
 
   .thumbnail {
-    width: 50px;
-    height: 50px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .total-label {
+    font-size: var(--text-base, 16px);
+  }
+
+  .total-value {
+    font-size: var(--text-xl, 20px);
+  }
+
+  .add-to-cart-button {
+    font-size: var(--text-base, 16px);
+    padding: var(--space-3, 12px) var(--space-4, 16px);
+  }
+}
+
+@media (max-width: 375px) {
+  .modal-content {
+    padding: var(--space-3, 12px);
+    gap: var(--space-4, 16px);
+  }
+
+  .modal-title {
+    font-size: var(--text-lg, 18px);
+  }
+
+  .section-title {
+    font-size: var(--text-base, 16px);
+  }
+
+  .description-text {
+    font-size: var(--text-sm, 14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop {
+    animation: none;
+  }
+  .modal-container {
+    animation: none;
+  }
+  .modal-close,
+  .image-nav-btn,
+  .thumbnail,
+  .quantity-btn,
+  .add-to-cart-button {
+    transition: none;
   }
 }
 
@@ -13910,6 +17670,7 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   appearance: none;
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
+  min-height: 44px;
 }
 
 .sort-select:hover {
@@ -13946,11 +17707,14 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
   white-space: nowrap;
+  min-height: 44px;
 }
 
-.expand-button:hover {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary);
+@media (hover: hover) and (pointer: fine) {
+  .expand-button:hover {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+  }
 }
 
 .expand-icon {
@@ -13972,7 +17736,6 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   border-radius: 50%;
 }
 
-/* Expanded Filters */
 .expanded-filters {
   border-top: 1px solid var(--color-border);
   padding: var(--space-5);
@@ -13986,7 +17749,7 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   }
   to {
     opacity: 1;
-    max-height: 500px;
+    max-height: 600px;
   }
 }
 
@@ -14015,12 +17778,15 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   cursor: pointer;
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
+  min-height: 44px;
 }
 
-.clear-all-button:hover {
-  background: var(--color-error);
-  border-color: var(--color-error);
-  color: white;
+@media (hover: hover) and (pointer: fine) {
+  .clear-all-button:hover {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+  }
 }
 
 .filters-grid {
@@ -14041,7 +17807,6 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   color: var(--color-text-primary);
 }
 
-/* Price Inputs */
 .price-inputs {
   display: flex;
   align-items: center;
@@ -14058,6 +17823,7 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   color: var(--color-text-primary);
   font-family: var(--font-primary);
   transition: all var(--transition-fast);
+  min-height: 44px;
 }
 
 .price-input:hover {
@@ -14077,6 +17843,7 @@ FILE: src\app\shared\components\product-filter\product-filter.css
 .price-separator {
   color: var(--color-text-secondary);
   font-weight: var(--font-medium);
+  flex-shrink: 0;
 }
 
 .checkbox-label {
@@ -14085,6 +17852,7 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   gap: var(--space-2);
   cursor: pointer;
   user-select: none;
+  min-height: 44px;
 }
 
 .checkbox-input {
@@ -14092,6 +17860,7 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   height: 20px;
   cursor: pointer;
   accent-color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .checkbox-text {
@@ -14119,16 +17888,61 @@ FILE: src\app\shared\components\product-filter\product-filter.css
 }
 
 @media (max-width: 480px) {
+  .quick-filter-bar {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .expanded-filters {
+    padding: var(--space-4) var(--space-3);
+  }
+
   .sort-label {
     font-size: var(--text-xs);
   }
 
   .price-inputs {
-    flex-direction: column;
+    flex-direction: row;
+    gap: var(--space-2);
   }
 
   .price-separator {
-    transform: rotate(90deg);
+    font-size: var(--text-sm);
+  }
+
+  .price-input {
+    font-size: var(--text-xs);
+    padding: var(--space-2);
+  }
+
+  .filters-title {
+    font-size: var(--text-base);
+  }
+}
+
+@media (max-width: 375px) {
+  .quick-filter-bar {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .price-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .price-separator {
+    text-align: center;
+    display: block;
+  }
+
+  .price-input {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .expanded-filters {
+    animation: none;
   }
 }
 
@@ -14377,7 +18191,7 @@ FILE: src\app\shared\components\product-list\product-list.css
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-20) var(--space-6);
+  padding: var(--space-16) var(--space-6);
   text-align: center;
 }
 
@@ -14420,12 +18234,15 @@ FILE: src\app\shared\components\product-list\product-list.css
   cursor: pointer;
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
+  min-height: 44px;
 }
 
-.clear-filters-button:hover {
-  background: var(--color-primary-hover);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .clear-filters-button:hover {
+    background: var(--color-primary-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
 }
 
 @media (min-width: 1024px) {
@@ -14443,15 +18260,70 @@ FILE: src\app\shared\components\product-list\product-list.css
   }
 
   .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: var(--space-4);
+  }
+
+  .empty-state {
+    padding: var(--space-12) var(--space-4);
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+  }
+
+  .empty-title,
+  .empty-title-no-products {
+    font-size: var(--text-xl);
   }
 }
 
 @media (max-width: 480px) {
+  .filter-section,
+  .products-section {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+
   .products-grid {
     grid-template-columns: 1fr;
-    gap: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .empty-state {
+    padding: var(--space-10) var(--space-3);
+  }
+
+  .empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-3);
+  }
+
+  .empty-title,
+  .empty-title-no-products {
+    font-size: var(--text-lg);
+  }
+
+  .empty-description {
+    font-size: var(--text-sm);
+  }
+}
+
+@media (max-width: 375px) {
+  .filter-section,
+  .products-section {
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
+
+  .products-grid {
+    gap: var(--space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clear-filters-button {
+    transition: none;
   }
 }
 
@@ -14677,11 +18549,18 @@ FILE: src\app\shared\components\product-pagination\product-pagination.css
   cursor: pointer;
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.items-option:hover {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary);
+@media (hover: hover) and (pointer: fine) {
+  .items-option:hover {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+  }
 }
 
 .items-option.active {
@@ -14707,16 +18586,19 @@ FILE: src\app\shared\components\product-pagination\product-pagination.css
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .page-numbers {
   display: flex;
   gap: var(--space-1);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .page-button {
-  min-width: 40px;
-  height: 40px;
+  min-width: 44px;
+  height: 44px;
   padding: 0 var(--space-2);
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
@@ -14733,10 +18615,12 @@ FILE: src\app\shared\components\product-pagination\product-pagination.css
   font-family: var(--font-primary);
 }
 
-.page-button:hover:not(:disabled):not(.active) {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .page-button:hover:not(:disabled):not(.active) {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+  }
 }
 
 .page-button:disabled {
@@ -14758,8 +18642,8 @@ FILE: src\app\shared\components\product-pagination\product-pagination.css
 }
 
 .ellipsis {
-  min-width: 40px;
-  height: 40px;
+  min-width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14771,6 +18655,7 @@ FILE: src\app\shared\components\product-pagination\product-pagination.css
 @media (max-width: 768px) {
   .pagination-wrapper {
     padding: var(--space-4);
+    gap: var(--space-3);
   }
 
   .items-per-page {
@@ -14778,35 +18663,63 @@ FILE: src\app\shared\components\product-pagination\product-pagination.css
     gap: var(--space-2);
   }
 
-  .page-button {
-    min-width: 36px;
-    height: 36px;
+  .pagination-info {
     font-size: var(--text-xs);
-  }
-
-  .nav-button {
-    font-size: var(--text-lg);
-  }
-
-  .ellipsis {
-    min-width: 36px;
-    height: 36px;
   }
 }
 
 @media (max-width: 480px) {
+  .pagination-wrapper {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+  }
+
   .page-numbers {
-    gap: 0;
+    gap: 2px;
   }
 
   .page-button {
+    min-width: 40px;
+    height: 40px;
+    font-size: var(--text-xs);
+  }
+
+  .ellipsis {
     min-width: 32px;
-    height: 32px;
-    border-radius: var(--radius-sm);
+    height: 40px;
   }
 
   .items-option {
     padding: var(--space-1) var(--space-3);
+    min-height: 40px;
+    min-width: 40px;
+    font-size: var(--text-xs);
+  }
+
+  .items-label {
+    font-size: var(--text-xs);
+  }
+}
+
+@media (max-width: 375px) {
+  .page-button {
+    min-width: 36px;
+    height: 38px;
+  }
+
+  .ellipsis {
+    min-width: 28px;
+  }
+
+  .page-numbers {
+    gap: 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-button,
+  .items-option {
+    transition: none;
   }
 }
 
@@ -15027,7 +18940,7 @@ export class SecondaryBtn {
 FILE: src\app\shared\components\slide\slide.css
 ================================================================================
 
-h.slider {
+.slider {
   position: relative;
   width: 100%;
   height: 600px;
@@ -15113,16 +19026,33 @@ h.slider {
   cursor: pointer;
   transition: all 0.3s ease;
   padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.dot:hover {
+.dot::after {
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.dot:hover::after {
   background: rgba(255, 255, 255, 0.5);
   transform: scale(1.2);
 }
 
-.dot.active {
+.dot.active::after {
   background: white;
   transform: scale(1.3);
+  border-color: white;
 }
 
 @media (max-width: 768px) {
@@ -15131,12 +19061,12 @@ h.slider {
   }
 
   .arrow {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
   }
 
   .arrow-icon {
-    font-size: 32px;
+    font-size: 28px;
   }
 
   .arrow-left {
@@ -15147,15 +19077,49 @@ h.slider {
     right: 10px;
   }
 
+  .arrow:hover {
+    transform: translateY(-50%);
+  }
+
   .dot {
-    width: 10px;
-    height: 10px;
+    min-width: 36px;
+    min-height: 36px;
   }
 }
 
 @media (max-width: 480px) {
   .slider {
-    height: 300px;
+    height: 280px;
+  }
+
+  .arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  .arrow-icon {
+    font-size: 22px;
+  }
+
+  .dots {
+    bottom: 10px;
+    gap: 4px;
+  }
+
+  .dot {
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .dot::after {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+@media (max-width: 375px) {
+  .slider {
+    height: 240px;
   }
 
   .arrow {
@@ -15164,17 +19128,7 @@ h.slider {
   }
 
   .arrow-icon {
-    font-size: 24px;
-  }
-
-  .dots {
-    bottom: 10px;
-    gap: 8px;
-  }
-
-  .dot {
-    width: 8px;
-    height: 8px;
+    font-size: 18px;
   }
 }
 
@@ -15186,7 +19140,7 @@ h.slider {
 
 @media (prefers-reduced-motion: reduce) {
   .arrow,
-  .dot,
+  .dot::after,
   .slide-img {
     transition: none;
   }

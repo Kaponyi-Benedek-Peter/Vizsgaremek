@@ -3,20 +3,30 @@
   (mouseenter)="pause()"
   (mouseleave)="resume()"
   role="region"
-  aria-label="Hero slider"
+  [attr.aria-label]="'slider.aria_label' | translate"
 >
-  <button class="arrow arrow-left" (click)="prev()" aria-label="Előző slide" title="Előző">
+  <button
+    class="arrow arrow-left"
+    (click)="prev()"
+    [attr.aria-label]="'slider.previous' | translate"
+    [title]="'slider.previous' | translate"
+  >
     <span class="arrow-icon">{{ prevIcon }}</span>
   </button>
 
-  <button class="arrow arrow-right" (click)="next()" aria-label="Következő slide" title="Következő">
+  <button
+    class="arrow arrow-right"
+    (click)="next()"
+    [attr.aria-label]="'slider.next' | translate"
+    [title]="'slider.next' | translate"
+  >
     <span class="arrow-icon">{{ nextIcon }}</span>
   </button>
 
   <div class="slides">
     <img
       [src]="slides[currentIndex].image"
-      [alt]="'Slide ' + (currentIndex + 1)"
+      [alt]="'slider.slide_alt' | translate: { number: currentIndex + 1 }"
       class="slide-img"
       loading="lazy"
     />
@@ -33,14 +43,13 @@
     -->
   </div>
 
-  <!-- DOTS (slide indicators) -->
-  <div class="dots" role="tablist" aria-label="Slide navigation">
+  <div class="dots" role="tablist" [attr.aria-label]="'slider.navigation' | translate">
     <button
       *ngFor="let slide of slides; let i = index"
       class="dot"
       [class.active]="isActive(i)"
       (click)="goTo(i)"
-      [attr.aria-label]="'Ugrás a ' + (i + 1) + '. slide-ra'"
+      [attr.aria-label]="'slider.go_to' | translate: { number: i + 1 }"
       [attr.aria-selected]="isActive(i)"
       role="tab"
     ></button>

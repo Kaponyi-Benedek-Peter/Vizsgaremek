@@ -42,6 +42,7 @@
   appearance: none;
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
+  min-height: 44px;
 }
 
 .sort-select:hover {
@@ -78,11 +79,14 @@
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
   white-space: nowrap;
+  min-height: 44px;
 }
 
-.expand-button:hover {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary);
+@media (hover: hover) and (pointer: fine) {
+  .expand-button:hover {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+  }
 }
 
 .expand-icon {
@@ -104,7 +108,6 @@
   border-radius: 50%;
 }
 
-/* Expanded Filters */
 .expanded-filters {
   border-top: 1px solid var(--color-border);
   padding: var(--space-5);
@@ -118,7 +121,7 @@
   }
   to {
     opacity: 1;
-    max-height: 500px;
+    max-height: 600px;
   }
 }
 
@@ -147,12 +150,15 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
+  min-height: 44px;
 }
 
-.clear-all-button:hover {
-  background: var(--color-error);
-  border-color: var(--color-error);
-  color: white;
+@media (hover: hover) and (pointer: fine) {
+  .clear-all-button:hover {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: white;
+  }
 }
 
 .filters-grid {
@@ -173,7 +179,6 @@
   color: var(--color-text-primary);
 }
 
-/* Price Inputs */
 .price-inputs {
   display: flex;
   align-items: center;
@@ -190,6 +195,7 @@
   color: var(--color-text-primary);
   font-family: var(--font-primary);
   transition: all var(--transition-fast);
+  min-height: 44px;
 }
 
 .price-input:hover {
@@ -209,6 +215,7 @@
 .price-separator {
   color: var(--color-text-secondary);
   font-weight: var(--font-medium);
+  flex-shrink: 0;
 }
 
 .checkbox-label {
@@ -217,6 +224,7 @@
   gap: var(--space-2);
   cursor: pointer;
   user-select: none;
+  min-height: 44px;
 }
 
 .checkbox-input {
@@ -224,6 +232,7 @@
   height: 20px;
   cursor: pointer;
   accent-color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .checkbox-text {
@@ -251,15 +260,60 @@
 }
 
 @media (max-width: 480px) {
+  .quick-filter-bar {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .expanded-filters {
+    padding: var(--space-4) var(--space-3);
+  }
+
   .sort-label {
     font-size: var(--text-xs);
   }
 
   .price-inputs {
-    flex-direction: column;
+    flex-direction: row;
+    gap: var(--space-2);
   }
 
   .price-separator {
-    transform: rotate(90deg);
+    font-size: var(--text-sm);
+  }
+
+  .price-input {
+    font-size: var(--text-xs);
+    padding: var(--space-2);
+  }
+
+  .filters-title {
+    font-size: var(--text-base);
+  }
+}
+
+@media (max-width: 375px) {
+  .quick-filter-bar {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .price-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .price-separator {
+    text-align: center;
+    display: block;
+  }
+
+  .price-input {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .expanded-filters {
+    animation: none;
   }
 }

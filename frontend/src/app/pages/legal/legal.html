@@ -1,1 +1,261 @@
-<p>legal works!</p>
+<div class="legal-page">
+  <div class="legal-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">{{ 'legal.title' | translate }}</h1>
+      <p class="hero-description">{{ 'legal.description' | translate }}</p>
+    </div>
+  </div>
+
+  <div class="legal-container">
+    <nav class="legal-tabs" role="tablist">
+      <button
+        role="tab"
+        [class]="'tab-btn' + (activeTab() === 'terms' ? ' active' : '')"
+        [attr.aria-selected]="activeTab() === 'terms'"
+        (click)="setTab('terms')"
+      >
+        📄 {{ 'legal.tabs.terms' | translate }}
+      </button>
+      <button
+        role="tab"
+        [class]="'tab-btn' + (activeTab() === 'privacy' ? ' active' : '')"
+        [attr.aria-selected]="activeTab() === 'privacy'"
+        (click)="setTab('privacy')"
+      >
+        🔒 {{ 'legal.tabs.privacy' | translate }}
+      </button>
+      <button
+        role="tab"
+        [class]="'tab-btn' + (activeTab() === 'cookies' ? ' active' : '')"
+        [attr.aria-selected]="activeTab() === 'cookies'"
+        (click)="setTab('cookies')"
+      >
+        🍪 {{ 'legal.tabs.cookies' | translate }}
+      </button>
+    </nav>
+
+    @if (activeTab() === 'terms') {
+      <article class="legal-content" role="tabpanel">
+        <div class="legal-header">
+          <h2 class="legal-section-title">{{ 'legal.terms.title' | translate }}</h2>
+          <p class="legal-updated">{{ 'legal.last_updated' | translate }}: 2025. január 1.</p>
+        </div>
+
+        <div class="legal-body">
+          <section class="legal-block">
+            <h3>1. Az általános szerződési feltételek hatálya</h3>
+            <p>
+              Jelen Általános Szerződési Feltételek (továbbiakban: ÁSZF) a Roy's Shack Est. 1888
+              webáruház (továbbiakban: Webáruház) használatára vonatkoznak, és a Webáruházon
+              keresztül lebonyolított valamennyi vásárlásra alkalmazandók.
+            </p>
+          </section>
+
+          <section class="legal-block">
+            <h3>2. A szolgáltató adatai</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Név:</span><span>Roy's Shack Est. 1888</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Székhely:</span><span>1000 Budapest, Példa utca 1.</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Email:</span><span>info&#64;roys-shack.hu</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Telefon:</span><span>+36 1 234 5678</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>3. A vásárlás folyamata</h3>
+            <p>
+              A Webáruházban történő vásárláshoz regisztráció szükséges. A megrendelés leadásával a
+              Vásárló elfogadja jelen ÁSZF feltételeit. A megrendelés visszaigazolása emailben
+              történik.
+            </p>
+            <ul>
+              <li>A termékek kiválasztása és a kosárba helyezése</li>
+              <li>A szállítási adatok megadása</li>
+              <li>A megrendelés véglegesítése</li>
+              <li>Email visszaigazolás fogadása</li>
+            </ul>
+          </section>
+
+          <section class="legal-block">
+            <h3>4. Árak és fizetés</h3>
+            <p>
+              A feltüntetett árak forintban (HUF) értendők és az általános forgalmi adót (ÁFA)
+              tartalmazzák. A szállítási díj a rendelés összegétől függően változhat. 10 000 Ft
+              feletti rendelésnél az ingyenes szállítás érvényes.
+            </p>
+          </section>
+
+          <section class="legal-block">
+            <h3>5. Szállítás és átvétel</h3>
+            <p>
+              A megrendelt termékek kiszállítása munkanapokon, általában 3–5 munkanapon belül
+              történik. A szállítást futárszolgálat végzi.
+            </p>
+          </section>
+
+          <section class="legal-block">
+            <h3>6. Elállási jog</h3>
+            <p>
+              A Vásárló a termék átvételétől számított 14 napon belül indoklás nélkül elállhat a
+              szerződéstől. Gyógyszerek és egészségügyi termékek esetén az elállási jog korlátozott
+              lehet.
+            </p>
+          </section>
+        </div>
+      </article>
+    }
+
+    @if (activeTab() === 'privacy') {
+      <article class="legal-content" role="tabpanel">
+        <div class="legal-header">
+          <h2 class="legal-section-title">{{ 'legal.privacy.title' | translate }}</h2>
+          <p class="legal-updated">{{ 'legal.last_updated' | translate }}: 2025. január 1.</p>
+        </div>
+
+        <div class="legal-body">
+          <section class="legal-block">
+            <h3>1. Az adatkezelő</h3>
+            <p>
+              Az adatkezelő a Roy's Shack Est. 1888 (1000 Budapest, Példa utca 1.). Az adatvédelmi
+              tisztviselő elérhető: adatvedelem&#64;roys-shack.hu
+            </p>
+          </section>
+
+          <section class="legal-block">
+            <h3>2. Gyűjtött adatok köre</h3>
+            <div class="data-table">
+              <div class="data-row header">
+                <span>Adatkategória</span><span>Célok</span><span>Megőrzési idő</span>
+              </div>
+              <div class="data-row">
+                <span>Azonosító adatok (név, email)</span>
+                <span>Regisztráció, kommunikáció</span>
+                <span>Fiók törlésig</span>
+              </div>
+              <div class="data-row">
+                <span>Szállítási adatok</span>
+                <span>Rendelés teljesítése</span>
+                <span>5 év</span>
+              </div>
+              <div class="data-row">
+                <span>Vásárlási előzmények</span>
+                <span>Számlázás, ügyfélszolgálat</span>
+                <span>8 év (számviteli)</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>3. Az érintett jogai</h3>
+            <p>A GDPR értelmében az érintett személyek az alábbi jogokkal rendelkeznek:</p>
+            <ul>
+              <li><strong>Hozzáférési jog</strong> – tájékoztatás kérése a kezelt adatokról</li>
+              <li><strong>Helyesbítési jog</strong> – pontatlan adatok javítása</li>
+              <li><strong>Törlési jog</strong> – „elfeledtetéshez való jog"</li>
+              <li>
+                <strong>Adathordozhatóság</strong> – adatok géppel olvasható formában kérhetők
+              </li>
+              <li><strong>Tiltakozási jog</strong> – közvetlen üzletszerzés esetén</li>
+            </ul>
+          </section>
+
+          <section class="legal-block">
+            <h3>4. Adatbiztonság</h3>
+            <p>
+              A személyes adatok védelme érdekében technikai és szervezési intézkedéseket
+              alkalmazunk, beleértve az SSL titkosítást, a hozzáférési jogosultságok korlátozását és
+              a rendszeres biztonsági felülvizsgálatokat.
+            </p>
+          </section>
+        </div>
+      </article>
+    }
+
+    @if (activeTab() === 'cookies') {
+      <article class="legal-content" role="tabpanel">
+        <div class="legal-header">
+          <h2 class="legal-section-title">{{ 'legal.cookies.title' | translate }}</h2>
+          <p class="legal-updated">{{ 'legal.last_updated' | translate }}: 2025. január 1.</p>
+        </div>
+
+        <div class="legal-body">
+          <section class="legal-block">
+            <h3>Mi az a süti?</h3>
+            <p>
+              A sütik (cookie-k) kis szöveges fájlok, amelyeket a weboldal tárol a böngészőjében.
+              Lehetővé teszik a weboldal számára, hogy megjegyezze a beállításait és javítsa a
+              felhasználói élményt.
+            </p>
+          </section>
+
+          <section class="legal-block">
+            <h3>Általunk használt sütik</h3>
+
+            <div class="cookie-card essential">
+              <div class="cookie-card-header">
+                <span class="cookie-type-badge essential">Elengedhetetlen</span>
+                <span class="cookie-required">Mindig aktív</span>
+              </div>
+              <h4>Funkcionális sütik</h4>
+              <p>
+                A weboldal megfelelő működéséhez szükségesek. Tartalmazzák a munkamenet-azonosítót
+                és a biztonsági tokeneket. Ezek nélkül a weboldal nem működik megfelelően.
+              </p>
+              <div class="cookie-examples">
+                <code>session_id</code>
+                <code>auth_token</code>
+                <code>csrf_token</code>
+              </div>
+            </div>
+
+            <div class="cookie-card analytics">
+              <div class="cookie-card-header">
+                <span class="cookie-type-badge analytics">Elemzési</span>
+              </div>
+              <h4>Teljesítmény sütik</h4>
+              <p>
+                Segítenek megérteni, hogyan interakcióba lépnek a látogatók a weboldallal. Az
+                összegyűjtött adatokat anonim formában kezeljük statisztikai célokra.
+              </p>
+              <div class="cookie-examples">
+                <code>_ga</code>
+                <code>_gid</code>
+              </div>
+            </div>
+
+            <div class="cookie-card preferences">
+              <div class="cookie-card-header">
+                <span class="cookie-type-badge preferences">Beállítások</span>
+              </div>
+              <h4>Preferencia sütik</h4>
+              <p>
+                Megjegyzik a felhasználó által kiválasztott beállításokat, mint a nyelv és a
+                megjelenési téma.
+              </p>
+              <div class="cookie-examples">
+                <code>preferredLanguage</code>
+                <code>preferredTheme</code>
+              </div>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>Sütik kezelése</h3>
+            <p>
+              A sütik kezelhetők a böngésző beállításain keresztül. A funkcionális sütiket nem lehet
+              letiltani, de az elemzési és preferencia sütiket igen.
+            </p>
+          </section>
+        </div>
+      </article>
+    }
+  </div>
+</div>

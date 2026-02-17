@@ -25,6 +25,26 @@
 @media (max-width: 640px) {
   .form-row {
     grid-template-columns: 1fr;
-    gap: var(--space-5);
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-form {
+    gap: var(--space-3);
+  }
+
+  .auth-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 375px) {
+  .auth-form {
+    gap: var(--space-2);
+  }
+
+  .form-hint {
+    font-size: 0.6875rem;
   }
 }

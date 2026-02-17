@@ -16,7 +16,7 @@
   min-width: 320px;
   max-width: 420px;
   padding: 16px;
-  background: var(--background-primary);
+  background: var(--bg-primary);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   pointer-events: auto;
@@ -102,7 +102,7 @@
 }
 
 .toast-close:hover {
-  background: var(--background-secondary);
+  background: var(--bg-secondary);
   color: var(--text-primary);
 }
 

@@ -19,6 +19,11 @@ export const routes: Routes = [
   { path: 'home', component: Home },
   { path: 'forum', component: Forum },
   { path: 'products', component: Products },
+  {
+    path: 'products/:id',
+    loadComponent: () =>
+      import('./pages/product-detail/product-detail').then((m) => m.ProductDetail),
+  },
   { path: 'profile', component: Profile },
   { path: 'purchase', component: Purchase },
   { path: 'legal', component: Legal },

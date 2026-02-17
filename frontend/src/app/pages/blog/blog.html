@@ -13,14 +13,14 @@
             <div class="featured-card" [routerLink]="['/blog', post.slug]">
               @if (post.imageUrl) {
                 <div class="featured-image">
-                  <img [src]="post.imageUrl" [alt]="post.title" />
+                  <img [src]="post.imageUrl" [alt]="post.title" loading="lazy" />
                 </div>
               }
               <div class="featured-content">
                 <div class="featured-category">
                   @for (category of categories; track category.id) {
                     @if (category.id === post.category) {
-                      <span [class]="category.colorClass">
+                      <span [class]="'featured-category-label ' + category.colorClass">
                         {{ category.icon }} {{ category.translationKey | translate }}
                       </span>
                     }
@@ -30,9 +30,9 @@
                 <p class="featured-excerpt">{{ post.excerpt }}</p>
                 <div class="featured-meta">
                   <span class="author">{{ post.author.name }}</span>
-                  <span class="reading-time"
-                    >📖 {{ post.readingTime }} {{ 'common.minutes' | translate }}</span
-                  >
+                  <span class="reading-time">
+                    📖 {{ post.readingTime }} {{ 'common.minutes' | translate }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -71,15 +71,15 @@
 
       <div class="toolbar">
         <div class="sort-controls">
-          <label for="sort-select" class="sort-label"> {{ 'blog.sort_by' | translate }}: </label>
+          <label for="blog-sort-select" class="sort-label">{{ 'blog.sort_by' | translate }}:</label>
           <select
-            id="sort-select"
+            id="blog-sort-select"
             [(ngModel)]="selectedSort"
             (ngModelChange)="changeSort($event)"
             class="sort-select"
           >
             @for (option of sortOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
+              <option [value]="option.value">{{ option.translateKey | translate }}</option>
             }
           </select>
         </div>
@@ -88,21 +88,26 @@
       </div>
     </section>
 
-    <section class="category-filters">
+    <section
+      class="category-filters"
+      role="group"
+      [attr.aria-label]="'blog.filter_by_category' | translate"
+    >
       <button
-        class="category-chip"
-        [class.active]="selectedCategory() === 'all'"
+        [class]="'category-chip' + (selectedCategory() === 'all' ? ' active' : '')"
         (click)="selectCategory('all')"
       >
-        <span class="category-icon">🌐</span>
+        <span class="category-icon">🌍</span>
         <span class="category-name">{{ 'blog.all_categories' | translate }}</span>
       </button>
 
       @for (category of categories; track category.id) {
         <button
-          class="category-chip"
-          [class.active]="selectedCategory() === category.id"
-          [class]="category.colorClass"
+          [class]="
+            'category-chip ' +
+            category.colorClass +
+            (selectedCategory() === category.id ? ' active' : '')
+          "
           (click)="selectCategory(category.id)"
         >
           <span class="category-icon">{{ category.icon }}</span>
@@ -112,7 +117,7 @@
     </section>
 
     @if (isLoading()) {
-      <div class="loading-container">
+      <div class="loading-container" role="status">
         <div class="spinner"></div>
         <p>{{ 'common.loading' | translate }}</p>
       </div>
@@ -130,8 +135,7 @@
               [showAuthor]="true"
               [showStats]="true"
               (cardClick)="onPostClick($event)"
-            >
-            </app-post-card>
+            />
           }
         </section>
 
@@ -156,6 +160,7 @@
                     [class.active]="blogService.currentPage() === pageNum"
                     (click)="goToPage(pageNum)"
                     [attr.aria-label]="getPageAriaLabel(pageNum)"
+                    [attr.aria-current]="blogService.currentPage() === pageNum ? 'page' : null"
                   >
                     {{ pageNum }}
                   </button>
@@ -175,7 +180,7 @@
         }
       } @else {
         <div class="no-results">
-          <div class="no-results-icon">📝</div>
+          <div class="no-results-icon">🔍</div>
           <h3 class="no-results-title">{{ 'blog.no_results_title' | translate }}</h3>
           <p class="no-results-description">{{ 'blog.no_results_description' | translate }}</p>
           @if (searchQuery() || selectedCategory() !== 'all') {

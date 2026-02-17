@@ -34,5 +34,10 @@ export class Profile implements OnInit {
 
   logout(): void {
     this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  goToSettings(): void {
+    console.log('Settings not yet implemented');
   }
 }
