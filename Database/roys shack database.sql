@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 13, 2026 at 10:01 AM
+-- Generation Time: Feb 17, 2026 at 03:05 PM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -97,9 +97,9 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order_item` (IN `p_order_id`
     CALL calculate_order_price(p_order_id);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_body` TEXT, IN `p_title` VARCHAR(255), IN `p_user_id` INT, IN `p_image_source` VARCHAR(255))   BEGIN
-    INSERT INTO roy.posts (title, body, user_id, image_source, created_at)
-    VALUES (p_title, p_body, p_user_id, p_image_source, NOW());
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_body` TEXT, IN `p_title` VARCHAR(255), IN `p_user_id` INT, IN `p_image_source` VARCHAR(255), IN `p_category` VARCHAR(255))   BEGIN
+    INSERT INTO roy.posts (title, body, user_id, image_source, created_at, category)
+    VALUES (p_title, p_body, p_user_id, p_image_source, NOW(), p_category);
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255), IN `p_featured` TINYINT)   BEGIN
@@ -234,6 +234,10 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_all_users` ()   BEGIN
 DELETE FROM roy.users;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmations_by_user_id` (IN `p_user_id` INT)   BEGIN
+    DELETE FROM roy.confirmations WHERE user_id = p_user_id;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmations_by_user_id_and_type` (IN `p_user_id` INT, IN `p_confirmation_type` VARCHAR(255))   BEGIN
 DELETE from roy.confirmations
 where confirmations.user_id = p_user_id AND confirmations.confirmation_type = p_confirmation_type;
@@ -241,10 +245,6 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_id` (IN `p_id` INT)   BEGIN
     DELETE FROM roy.confirmations WHERE id = p_id;
-END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_confirmation_by_user_id` (IN `p_user_id` INT)   BEGIN
-    DELETE FROM roy.confirmations WHERE user_id = p_user_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_expired_confirmations` ()   BEGIN
@@ -276,6 +276,13 @@ sesstoken = 'deleted field',
 sesstoken_expire = NOW(),
 account_state = 'deleted'
 WHERE id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_admins` ()   BEGIN
+SELECT *
+    FROM roy.users
+    WHERE account_state = 'admin'
+    ORDER BY id ASC;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_confirmations` ()   BEGIN
@@ -536,6 +543,11 @@ SELECT * from roy.users
 where users.id = p_id;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `received_current_newsletter_false_all` ()   BEGIN
+    UPDATE roy.newsletter_recipients
+    SET received_current_newsletter = '0';
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `received_current_newsletter_true_by_id` (IN `p_id` INT)   BEGIN
 	UPDATE roy.newsletter_recipients
     SET received_current_newsletter = '1'
@@ -595,9 +607,9 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_password_by_id` (IN `p_id` I
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, IN `p_body` TEXT, IN `p_image_source` VARCHAR(255), IN `p_title` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, IN `p_body` TEXT, IN `p_image_source` VARCHAR(255), IN `p_title` VARCHAR(255), IN `p_category` VARCHAR(255))   BEGIN
    	UPDATE roy.posts
-	SET body = p_body, image_source = p_image_source, 	title = p_title
+	SET body = p_body, image_source = p_image_source, 	title = p_title, category = p_category
     WHERE id = p_id;
 END$$
 
@@ -708,7 +720,7 @@ CREATE TABLE `newsletter_recipients` (
 --
 
 INSERT INTO `newsletter_recipients` (`user_id`, `news_level`, `received_current_newsletter`, `id`) VALUES
-(38, 1, 1, 1);
+(38, 1, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -772,7 +784,8 @@ CREATE TABLE `posts` (
   `user_id` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `image_source` varchar(255) NOT NULL,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `category` enum('medicine','natural-remedies','baby-mother','healthy-lifestyle','seasonal-health','qa','general') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
