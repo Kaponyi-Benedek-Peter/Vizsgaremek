@@ -273,9 +273,24 @@ export class Admin implements OnInit {
     return item?.label || 'admin.nav.dashboard';
   });
 
-  ngOnInit(): void {
+  isDevMode = signal(false);
+
+  async ngOnInit(): Promise<void> {
     if (!this.authService.isAuthenticated()) {
+      // Try dev admin login (only works when backend is unavailable)
+      const devLoginSuccess = await this.authService.devAdminLogin();
+      if (devLoginSuccess) {
+        this.isDevMode.set(true);
+        return;
+      }
+      // Backend is available but user is not authenticated — redirect to login
       this.router.navigate(['/login']);
+      return;
+    }
+
+    // Already authenticated — check if it's a dev session
+    if (this.authService.isDevAdminSession()) {
+      this.isDevMode.set(true);
     }
   }
 

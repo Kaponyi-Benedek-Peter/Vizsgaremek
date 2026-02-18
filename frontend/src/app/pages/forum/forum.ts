@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ForumBlogService } from '../../core/services/forum-blog.service';
+import { AuthService } from '../../core/services/auth.service';
 import { PostCardComponent } from '../../shared/components/post-card/post-card';
 import {
   Post,
@@ -28,6 +29,9 @@ export class Forum implements OnInit {
   selectedSort = signal<SortOption>('newest');
 
   private translate = inject(TranslateService);
+  private authService = inject(AuthService);
+
+  isAuthenticated = computed(() => this.authService.isAuthenticated());
 
   constructor(public forumService: ForumBlogService) {}
 

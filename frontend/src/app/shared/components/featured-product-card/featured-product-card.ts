@@ -31,7 +31,7 @@ export class FeaturedProductCard {
 
   altText = computed(() => {
     const name = this.productName();
-    return name || 'Termék kép';
+    return name || this.translateService.instant('product.product_image');
   });
 
   price = computed(() => {

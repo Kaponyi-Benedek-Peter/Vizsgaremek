@@ -30,6 +30,16 @@ export const routes: Routes = [
   { path: 'bracket', component: Bracket },
   { path: 'admin', component: Admin },
   { path: 'blog', component: Blog },
+  {
+    path: 'blog/:slug',
+    loadComponent: () =>
+      import('./pages/blog-detail/blog-detail').then((m) => m.BlogDetail),
+  },
+  {
+    path: 'forum/:slug',
+    loadComponent: () =>
+      import('./pages/blog-detail/blog-detail').then((m) => m.BlogDetail),
+  },
   { path: 'login', loadComponent: () => import('./pages/login/login').then((m) => m.Login) },
   {
     path: 'register',

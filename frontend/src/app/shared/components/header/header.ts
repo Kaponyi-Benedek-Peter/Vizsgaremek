@@ -28,6 +28,7 @@ export class Header implements OnInit {
   currentUser: User | null = null;
   showUserMenu = signal(false);
   showCartDropdown = signal(false);
+  showMobileMenu = signal(false);
 
   cartItemCount = computed(() => this.cartService.itemCount());
   cartItems = computed(() => this.cartService.items());
@@ -49,6 +50,18 @@ export class Header implements OnInit {
       this.isAuthenticated = state.isAuthenticated;
       this.currentUser = state.user;
     });
+  }
+
+  toggleMobileMenu(): void {
+    this.showMobileMenu.update((v) => !v);
+    if (this.showMobileMenu()) {
+      this.showUserMenu.set(false);
+      this.showCartDropdown.set(false);
+    }
+  }
+
+  closeMobileMenu(): void {
+    this.showMobileMenu.set(false);
   }
 
   toggleTheme(): void {
@@ -90,6 +103,10 @@ export class Header implements OnInit {
     this.cartService.updateQuantity(productId, quantity);
   }
 
+  clearCart(): void {
+    this.cartService.clearCart();
+  }
+
   goToCheckout(): void {
     this.closeCartDropdown();
   }
@@ -99,6 +116,7 @@ export class Header implements OnInit {
     const target = event.target as HTMLElement;
     const userMenuWrapper = target.closest('.user-menu-wrapper');
     const cartMenuWrapper = target.closest('.cart-menu-wrapper');
+    const mobileMenuWrapper = target.closest('.mobile-menu-wrapper');
 
     if (!userMenuWrapper && this.showUserMenu()) {
       this.closeUserMenu();
@@ -106,6 +124,10 @@ export class Header implements OnInit {
 
     if (!cartMenuWrapper && this.showCartDropdown()) {
       this.closeCartDropdown();
+    }
+
+    if (!mobileMenuWrapper && this.showMobileMenu()) {
+      this.closeMobileMenu();
     }
   }
 }

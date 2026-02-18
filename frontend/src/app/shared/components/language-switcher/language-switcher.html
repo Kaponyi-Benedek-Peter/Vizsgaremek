@@ -3,7 +3,7 @@
     class="lang-button"
     (click)="toggleDropdown()"
     [attr.aria-expanded]="isOpen"
-    aria-label="Nyelv váltás"
+    [attr.aria-label]="'language.switch' | translate"
   >
     <img
       [src]="currentLang.flagImage"

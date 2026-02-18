@@ -5,7 +5,8 @@
 }
 
 .forum-hero {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background:
+    linear-gradient(135deg, #065f36 0%, #067a45 25%, #0b5f39 50%, #044d2c 75%, #023a21 100%);
   color: white;
   padding: var(--space-16) var(--space-4) var(--space-12);
   text-align: center;
@@ -17,7 +18,21 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(114, 228, 240, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 60% 80%, rgba(255, 255, 255, 0.04) 0%, transparent 45%);
+  pointer-events: none;
+}
+
+.forum-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
   pointer-events: none;
 }
 
@@ -532,7 +547,8 @@
 }
 
 [data-theme='dark'] .forum-hero {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #1a4731 100%);
+  background:
+    linear-gradient(135deg, #044d2c 0%, #065f36 25%, #0b5f39 50%, #033d23 75%, #022b18 100%);
 }
 
 [data-theme='dark'] .category-filters {

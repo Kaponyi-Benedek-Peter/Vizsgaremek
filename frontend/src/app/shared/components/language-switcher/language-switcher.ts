@@ -1,5 +1,6 @@
 import { NgFor, NgIf } from '@angular/common';
 import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService, SupportedLanguage } from '../../../core/services/translation.service';
 
 interface Language {
@@ -11,7 +12,7 @@ interface Language {
 @Component({
   selector: 'app-language-switcher',
   standalone: true,
-  imports: [NgIf, NgFor],
+  imports: [NgIf, NgFor, TranslateModule],
   templateUrl: './language-switcher.html',
   styleUrl: './language-switcher.css',
 })

@@ -8,7 +8,9 @@
     "profile": "Profil",
     "my_profile": "Mein Profil",
     "my_orders": "Meine Bestellungen",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "blog": "Blog",
+    "menu": "Menü"
   },
   "cart": {
     "title": "Warenkorb",
@@ -16,7 +18,8 @@
     "empty": "Ihr Warenkorb ist leer",
     "remove": "Entfernen",
     "total": "Gesamt",
-    "checkout": "Zur Kasse"
+    "checkout": "Zur Kasse",
+    "clear_all": "Warenkorb leeren"
   },
   "checkout": {
     "title": "Kasse",
@@ -59,7 +62,8 @@
     "newsletter": "Abonnieren Sie unseren Newsletter!",
     "emailPlaceholder": "Ihre E-Mail-Adresse",
     "send": "Senden",
-    "legal": "Rechtliches"
+    "legal": "Rechtliches",
+    "no_social_link": "Wir sind auf dieser Plattform noch nicht verfügbar"
   },
   "home": {
     "hero": {
@@ -75,7 +79,8 @@
   "language": {
     "hu": "Ungarisch",
     "en": "Englisch",
-    "de": "Deutsch"
+    "de": "Deutsch",
+    "switch": "Sprache wechseln"
   },
   "theme": {
     "light": "Heller Modus",
@@ -100,7 +105,20 @@
     "minutes": "Min",
     "ok": "OK",
     "previous_page": "Vorherige Seite",
-    "next_page": "Nächste Seite"
+    "next_page": "Nächste Seite",
+    "view": "Anzeigen",
+    "items_unit": "Stk",
+    "scroll_left": "Nach links scrollen",
+    "scroll_right": "Nach rechts scrollen"
+  },
+  "time": {
+    "minutes_ago": "vor {{count}} Minuten",
+    "hours_ago": "vor {{count}} Stunden",
+    "yesterday": "Gestern",
+    "days_ago": "vor {{count}} Tagen",
+    "weeks_ago": "vor {{count}} Wochen",
+    "months_ago": "vor {{count}} Monaten",
+    "years_ago": "vor {{count}} Jahren"
   },
   "filter": {
     "sort_by": "Sortieren nach",
@@ -145,8 +163,10 @@
     "previous_image": "Vorheriges Bild",
     "next_image": "Nächstes Bild",
     "view_image": "Bild {{number}} ansehen",
-    "no_products_found": "Es gibt keine produkte festhalten",
-    "try_different_filters": "Versuchen Sie andere Filter"
+    "no_products_found": "Keine Produkte gefunden",
+    "try_different_filters": "Versuchen Sie andere Filtereinstellungen",
+    "no_image": "Kein Bild",
+    "product_image": "Produktbild"
   },
   "pagination": {
     "items_per_page": "Artikel pro Seite",
@@ -263,6 +283,8 @@
   "category": {
     "select": "Kategorie auswählen",
     "clearAll": "Alle löschen",
+    "filter_by": "Nach Kategorie filtern",
+    "clear_all": "Alle löschen",
     "medicine": "Medikamente",
     "vitamins": "Vitamine",
     "supplements": "Nahrungsergänzungsmittel",
@@ -297,7 +319,7 @@
       "of": "von",
       "products": "Produkte"
     },
-    "empty": "Es gibt keine produkte festhalten",
+    "empty": "Keine Produkte vorhanden",
     "addToCart": "In den Warenkorb",
     "viewDetails": "Details anzeigen"
   },
@@ -308,9 +330,17 @@
     "sort_by": "Sortieren nach",
     "new_post": "Neuer Beitrag",
     "all_categories": "Alle Kategorien",
+    "filter_by_category": "Nach Kategorie filtern",
     "no_results_title": "Keine Ergebnisse gefunden",
     "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
     "reset_filters": "Filter zurücksetzen",
+    "sort": {
+      "newest": "Neueste",
+      "oldest": "Älteste",
+      "most_viewed": "Am meisten angesehen",
+      "most_liked": "Am meisten geliked",
+      "trending": "Im Trend"
+    },
     "pinned": "Angepinnt",
     "featured": "Hervorgehoben",
     "question": "Frage",
@@ -336,12 +366,17 @@
     "description": "Gesundheitstipps, Fachartikel und nützliche Informationen von unseren Apothekern",
     "search_placeholder": "Blog-Beiträge durchsuchen...",
     "sort_by": "Sortieren nach",
+    "filter_by_category": "Nach Kategorie filtern",
     "all_categories": "Alle Kategorien",
     "articles": "Artikel",
     "featured_posts": "Hervorgehobene Beiträge",
     "no_results_title": "Keine Ergebnisse gefunden",
     "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
-    "reset_filters": "Filter zurücksetzen"
+    "reset_filters": "Filter zurücksetzen",
+    "read_more": "Vollständigen Artikel lesen",
+    "related_posts": "Weitere Beiträge",
+    "back_to_blog": "Zurück zum Blog",
+    "post_not_found": "Beitrag nicht gefunden"
   },
   "profile": {
     "account_details": "Kontodetails",
@@ -351,5 +386,150 @@
     "role": "Rolle",
     "view_orders": "Meine Bestellungen anzeigen",
     "logout": "Abmelden"
+  },
+  "legal": {
+    "title": "Rechtliche Informationen",
+    "description": "Allgemeine Geschäftsbedingungen, Datenschutzrichtlinie und Cookie-Hinweis",
+    "last_updated": "Zuletzt aktualisiert",
+    "tabs": {
+      "terms": "Geschäftsbedingungen",
+      "privacy": "Datenschutz",
+      "cookies": "Cookies"
+    },
+    "terms": {
+      "title": "Allgemeine Geschäftsbedingungen",
+      "section1_title": "1. Geltungsbereich der AGB",
+      "section1_text": "Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für die Nutzung des Online-Shops Roy's Shack Est. 1888 (nachfolgend: Online-Shop) und sind auf alle über den Online-Shop getätigten Einkäufe anwendbar.",
+      "section2_title": "2. Angaben zum Anbieter",
+      "info_name": "Name:",
+      "info_name_value": "Roy's Shack Est. 1888",
+      "info_address": "Sitz:",
+      "info_address_value": "1000 Budapest, Beispielstraße 1.",
+      "info_email": "E-Mail:",
+      "info_email_value": "info@roys-shack.hu",
+      "info_phone": "Telefon:",
+      "info_phone_value": "+36 1 234 5678",
+      "section3_title": "3. Bestellvorgang",
+      "section3_text": "Für den Einkauf im Online-Shop ist eine Registrierung erforderlich. Mit der Aufgabe einer Bestellung akzeptiert der Käufer diese AGB. Die Bestellbestätigung erfolgt per E-Mail.",
+      "section3_step1": "Auswahl der Produkte und Hinzufügen zum Warenkorb",
+      "section3_step2": "Eingabe der Lieferadresse",
+      "section3_step3": "Abschluss der Bestellung",
+      "section3_step4": "Empfang der E-Mail-Bestätigung",
+      "section4_title": "4. Preise und Zahlung",
+      "section4_text": "Alle angegebenen Preise sind in Forint (HUF) und enthalten die Mehrwertsteuer (MwSt). Die Versandkosten können je nach Bestellwert variieren. Ab einem Bestellwert von 10.000 Ft ist der Versand kostenlos.",
+      "section5_title": "5. Lieferung und Empfang",
+      "section5_text": "Die Lieferung der bestellten Produkte erfolgt an Werktagen in der Regel innerhalb von 3–5 Werktagen. Die Zustellung erfolgt durch einen Kurierdienst.",
+      "section6_title": "6. Widerrufsrecht",
+      "section6_text": "Der Käufer kann innerhalb von 14 Tagen nach Erhalt der Ware ohne Angabe von Gründen vom Vertrag zurücktreten. Bei Arzneimitteln und Gesundheitsprodukten kann das Widerrufsrecht eingeschränkt sein."
+    },
+    "privacy": {
+      "title": "Datenschutzrichtlinie",
+      "section1_title": "1. Verantwortlicher für die Datenverarbeitung",
+      "section1_text": "Verantwortlicher ist Roy's Shack Est. 1888 (1000 Budapest, Beispielstraße 1.). Der Datenschutzbeauftragte ist erreichbar unter: datenschutz@roys-shack.hu",
+      "section2_title": "2. Umfang der erhobenen Daten",
+      "table_header_category": "Datenkategorie",
+      "table_header_purpose": "Zweck",
+      "table_header_retention": "Aufbewahrungsdauer",
+      "table_row1_category": "Identifikationsdaten (Name, E-Mail)",
+      "table_row1_purpose": "Registrierung, Kommunikation",
+      "table_row1_retention": "Bis zur Kontolöschung",
+      "table_row2_category": "Lieferdaten",
+      "table_row2_purpose": "Auftragsabwicklung",
+      "table_row2_retention": "5 Jahre",
+      "table_row3_category": "Kaufhistorie",
+      "table_row3_purpose": "Rechnungsstellung, Kundenservice",
+      "table_row3_retention": "8 Jahre (buchhalterisch)",
+      "section3_title": "3. Rechte der Betroffenen",
+      "section3_text": "Gemäß der DSGVO haben betroffene Personen folgende Rechte:",
+      "right_access": "Auskunftsrecht",
+      "right_access_desc": "Auskunft über die verarbeiteten Daten anfordern",
+      "right_rectification": "Berichtigungsrecht",
+      "right_rectification_desc": "Korrektur unrichtiger Daten",
+      "right_erasure": "Löschungsrecht",
+      "right_erasure_desc": "„Recht auf Vergessenwerden"",
+      "right_portability": "Datenübertragbarkeit",
+      "right_portability_desc": "Daten in maschinenlesbarem Format anfordern",
+      "right_objection": "Widerspruchsrecht",
+      "right_objection_desc": "bei Direktwerbung",
+      "section4_title": "4. Datensicherheit",
+      "section4_text": "Zum Schutz personenbezogener Daten setzen wir technische und organisatorische Maßnahmen ein, darunter SSL-Verschlüsselung, Zugriffsbeschränkungen und regelmäßige Sicherheitsüberprüfungen."
+    },
+    "cookies": {
+      "title": "Cookie-Hinweis",
+      "what_title": "Was sind Cookies?",
+      "what_text": "Cookies sind kleine Textdateien, die von der Website in Ihrem Browser gespeichert werden. Sie ermöglichen es der Website, Ihre Einstellungen zu speichern und das Nutzungserlebnis zu verbessern.",
+      "types_title": "Von uns verwendete Cookies",
+      "essential_badge": "Notwendig",
+      "essential_always_active": "Immer aktiv",
+      "essential_title": "Funktionale Cookies",
+      "essential_text": "Für den ordnungsgemäßen Betrieb der Website erforderlich. Sie enthalten die Sitzungs-ID und Sicherheits-Tokens. Ohne diese funktioniert die Website nicht korrekt.",
+      "analytics_badge": "Analytisch",
+      "analytics_title": "Leistungs-Cookies",
+      "analytics_text": "Helfen zu verstehen, wie Besucher mit der Website interagieren. Die gesammelten Daten werden anonym zu statistischen Zwecken verarbeitet.",
+      "preferences_badge": "Einstellungen",
+      "preferences_title": "Präferenz-Cookies",
+      "preferences_text": "Speichern die vom Benutzer gewählten Einstellungen wie Sprache und Darstellungsthema.",
+      "manage_title": "Cookies verwalten",
+      "manage_text": "Cookies können über die Browser-Einstellungen verwaltet werden. Funktionale Cookies können nicht deaktiviert werden, aber analytische und Präferenz-Cookies schon."
+    }
+  },
+  "admin": {
+    "role": "Admin",
+    "toggle_sidebar": "Seitenleiste umschalten",
+    "greeting": "Willkommen, {{name}}!",
+    "nav": {
+      "dashboard": "Dashboard",
+      "orders": "Bestellungen",
+      "users": "Benutzer",
+      "products": "Produkte"
+    },
+    "stats": {
+      "total_orders": "Gesamtbestellungen",
+      "revenue": "Umsatz",
+      "total_users": "Gesamtbenutzer",
+      "total_products": "Gesamtprodukte",
+      "low_stock": "niedriger Bestand",
+      "this_month": "in diesem Monat",
+      "this_week": "diese Woche"
+    },
+    "recent_orders": "Neueste Bestellungen",
+    "view_all": "Alle anzeigen",
+    "table": {
+      "order_id": "Bestell-ID",
+      "customer": "Kunde",
+      "date": "Datum",
+      "total": "Gesamt",
+      "status": "Status",
+      "items": "Artikel",
+      "actions": "Aktionen",
+      "user": "Benutzer",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "registered": "Registriert",
+      "orders": "Bestellungen",
+      "product": "Produkt",
+      "category": "Kategorie",
+      "price": "Preis",
+      "stock": "Bestand"
+    },
+    "status": {
+      "pending": "Ausstehend",
+      "processing": "In Bearbeitung",
+      "shipped": "Versendet",
+      "delivered": "Zugestellt",
+      "cancelled": "Storniert"
+    },
+    "search_orders": "Bestellungen suchen...",
+    "search_users": "Benutzer suchen...",
+    "search_products": "Produkte suchen...",
+    "all_statuses": "Alle Status",
+    "add_product": "Neues Produkt",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "dev_mode": {
+      "title": "⚠️ ENTWICKLERMODUS",
+      "description": "Test-Admin-Sitzung — Backend nicht erreichbar. Diese Funktion funktioniert nicht in der Produktion.",
+      "exit": "Beenden"
+    }
   }
 }

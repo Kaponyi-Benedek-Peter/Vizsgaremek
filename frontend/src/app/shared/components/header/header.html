@@ -9,6 +9,7 @@
     <app-primary-btn routerLink="/home">{{ 'header.home' | translate }}</app-primary-btn>
     <app-primary-btn routerLink="/forum">{{ 'header.forum' | translate }}</app-primary-btn>
     <app-primary-btn routerLink="/products">{{ 'header.products' | translate }}</app-primary-btn>
+    <app-primary-btn routerLink="/blog">{{ 'header.blog' | translate }}</app-primary-btn>
   </div>
 
   <div class="header-right">
@@ -138,9 +139,14 @@
             </div>
 
             <div class="cart-dropdown-footer">
-              <div class="cart-total">
-                <span>{{ 'cart.total' | translate }}:</span>
-                <strong>{{ currencyService.formatPrice(cartTotal()) }}</strong>
+              <div class="cart-footer-actions">
+                <div class="cart-total">
+                  <span>{{ 'cart.total' | translate }}:</span>
+                  <strong>{{ currencyService.formatPrice(cartTotal()) }}</strong>
+                </div>
+                <button class="clear-cart-btn" (click)="clearCart()">
+                  {{ 'cart.clear_all' | translate }}
+                </button>
               </div>
               <button class="checkout-btn" routerLink="/purchase" (click)="goToCheckout()">
                 {{ 'cart.checkout' | translate }}
@@ -159,5 +165,45 @@
     </app-icon-btn>
 
     <app-language-switcher></app-language-switcher>
+
+    <!-- HAMBURGER MENU BUTTON (mobile only) -->
+    <div class="mobile-menu-wrapper">
+      <button
+        class="hamburger-btn"
+        (click)="toggleMobileMenu()"
+        [attr.aria-label]="'header.menu' | translate"
+        [attr.aria-expanded]="showMobileMenu()"
+      >
+        <span class="hamburger-line" [class.open]="showMobileMenu()"></span>
+        <span class="hamburger-line" [class.open]="showMobileMenu()"></span>
+        <span class="hamburger-line" [class.open]="showMobileMenu()"></span>
+      </button>
+
+      @if (showMobileMenu()) {
+        <nav class="mobile-dropdown" role="navigation">
+          <a routerLink="/home" class="mobile-nav-item" (click)="closeMobileMenu()">
+            {{ 'header.home' | translate }}
+          </a>
+          <a routerLink="/forum" class="mobile-nav-item" (click)="closeMobileMenu()">
+            {{ 'header.forum' | translate }}
+          </a>
+          <a routerLink="/products" class="mobile-nav-item" (click)="closeMobileMenu()">
+            {{ 'header.products' | translate }}
+          </a>
+          <a routerLink="/blog" class="mobile-nav-item" (click)="closeMobileMenu()">
+            {{ 'header.blog' | translate }}
+          </a>
+          @if (isAuthenticated) {
+            <div class="mobile-nav-divider"></div>
+            <a routerLink="/profile" class="mobile-nav-item" (click)="closeMobileMenu()">
+              {{ 'header.my_profile' | translate }}
+            </a>
+            <a routerLink="/purchase" class="mobile-nav-item" (click)="closeMobileMenu()">
+              {{ 'header.my_orders' | translate }}
+            </a>
+          }
+        </nav>
+      }
+    </div>
   </div>
 </header>

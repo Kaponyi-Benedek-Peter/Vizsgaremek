@@ -8,7 +8,9 @@
     "profile": "Profile",
     "my_profile": "My Profile",
     "my_orders": "My Orders",
-    "logout": "Logout"
+    "logout": "Logout",
+    "blog": "Blog",
+    "menu": "Menu"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -16,7 +18,39 @@
     "empty": "Your cart is empty",
     "remove": "Remove",
     "total": "Total",
-    "checkout": "Go to Checkout"
+    "checkout": "Go to Checkout",
+    "clear_all": "Clear Cart"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "order_summary": "Order Summary",
+    "shipping_info": "Shipping Information",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "free_shipping": "Free",
+    "total": "Total",
+    "city": "City",
+    "city_placeholder": "Enter your city",
+    "zipcode": "Zip Code",
+    "zipcode_placeholder": "e.g. 7600",
+    "address": "Street Address",
+    "address_placeholder": "Enter your street address",
+    "house_number": "House Number",
+    "house_number_placeholder": "e.g. 42",
+    "apartment_number": "Apartment",
+    "apartment_placeholder": "Optional",
+    "phone": "Phone Number",
+    "phone_placeholder": "+36 30 123 4567",
+    "note": "Order Notes",
+    "note_placeholder": "Any special instructions? (optional)",
+    "continue_shopping": "Continue Shopping",
+    "place_order": "Place Order",
+    "processing": "Processing...",
+    "success": "Order placed successfully! Redirecting...",
+    "error": "Failed to place order. Please try again.",
+    "validation_error": "Please fill in all required fields.",
+    "invalid_zipcode": "Please enter a valid zip code.",
+    "invalid_phone": "Please enter a valid phone number."
   },
   "footer": {
     "copyright": "Copyright © 2025 Roy's shack",
@@ -28,7 +62,8 @@
     "newsletter": "Subscribe to our newsletter!",
     "emailPlaceholder": "Your e-mail address",
     "send": "Send",
-    "legal": "Legal"
+    "legal": "Legal",
+    "no_social_link": "We are not yet available on this platform"
   },
   "home": {
     "hero": {
@@ -44,7 +79,8 @@
   "language": {
     "hu": "Hungarian",
     "en": "English",
-    "de": "German"
+    "de": "German",
+    "switch": "Switch language"
   },
   "theme": {
     "light": "Light mode",
@@ -69,7 +105,20 @@
     "minutes": "min",
     "ok": "OK",
     "previous_page": "Previous page",
-    "next_page": "Next page"
+    "next_page": "Next page",
+    "view": "View",
+    "items_unit": "pcs",
+    "scroll_left": "Scroll left",
+    "scroll_right": "Scroll right"
+  },
+  "time": {
+    "minutes_ago": "{{count}} minutes ago",
+    "hours_ago": "{{count}} hours ago",
+    "yesterday": "Yesterday",
+    "days_ago": "{{count}} days ago",
+    "weeks_ago": "{{count}} weeks ago",
+    "months_ago": "{{count}} months ago",
+    "years_ago": "{{count}} years ago"
   },
   "filter": {
     "sort_by": "Sort by",
@@ -115,7 +164,9 @@
     "next_image": "Next image",
     "view_image": "View image {{number}}",
     "no_products_found": "No products found",
-    "try_different_filters": "Try adjusting your filters"
+    "try_different_filters": "Try adjusting your filters",
+    "no_image": "No image",
+    "product_image": "Product image"
   },
   "pagination": {
     "items_per_page": "Items per page",
@@ -229,40 +280,11 @@
       "invalid_reset_link": "Invalid or expired reset link"
     }
   },
-  "checkout": {
-    "title": "Checkout",
-    "order_summary": "Order Summary",
-    "shipping_info": "Shipping Information",
-    "subtotal": "Subtotal",
-    "shipping": "Shipping",
-    "free_shipping": "Free",
-    "total": "Total",
-    "city": "City",
-    "city_placeholder": "Enter your city",
-    "zipcode": "Zip Code",
-    "zipcode_placeholder": "e.g. 7600",
-    "address": "Street Address",
-    "address_placeholder": "Enter your street address",
-    "house_number": "House Number",
-    "house_number_placeholder": "e.g. 42",
-    "apartment_number": "Apartment",
-    "apartment_placeholder": "Optional",
-    "phone": "Phone Number",
-    "phone_placeholder": "+36 30 123 4567",
-    "note": "Order Notes",
-    "note_placeholder": "Any special instructions? (optional)",
-    "continue_shopping": "Continue Shopping",
-    "place_order": "Place Order",
-    "processing": "Processing...",
-    "success": "Order placed successfully! Redirecting...",
-    "error": "Failed to place order. Please try again.",
-    "validation_error": "Please fill in all required fields.",
-    "invalid_zipcode": "Please enter a valid zip code.",
-    "invalid_phone": "Please enter a valid phone number."
-  },
   "category": {
     "select": "Select category",
     "clearAll": "Clear all",
+    "filter_by": "Filter by category",
+    "clear_all": "Clear all",
     "medicine": "Medicines",
     "vitamins": "Vitamins",
     "supplements": "Supplements",
@@ -308,9 +330,17 @@
     "sort_by": "Sort by",
     "new_post": "New Post",
     "all_categories": "All Categories",
+    "filter_by_category": "Filter by category",
     "no_results_title": "No Results Found",
     "no_results_description": "Try different search terms or select another category.",
     "reset_filters": "Reset Filters",
+    "sort": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "most_viewed": "Most Viewed",
+      "most_liked": "Most Liked",
+      "trending": "Trending"
+    },
     "pinned": "Pinned",
     "featured": "Featured",
     "question": "Question",
@@ -336,12 +366,17 @@
     "description": "Health tips, professional articles and useful information from our pharmacists",
     "search_placeholder": "Search blog posts...",
     "sort_by": "Sort by",
+    "filter_by_category": "Filter by category",
     "all_categories": "All Categories",
     "articles": "articles",
     "featured_posts": "Featured Posts",
     "no_results_title": "No Results Found",
     "no_results_description": "Try different search terms or select another category.",
-    "reset_filters": "Reset Filters"
+    "reset_filters": "Reset Filters",
+    "read_more": "Read full article",
+    "related_posts": "Related Posts",
+    "back_to_blog": "Back to Blog",
+    "post_not_found": "Post not found"
   },
   "profile": {
     "account_details": "Account Details",
@@ -351,5 +386,150 @@
     "role": "Role",
     "view_orders": "View My Orders",
     "logout": "Sign Out"
+  },
+  "legal": {
+    "title": "Legal Information",
+    "description": "Terms and Conditions, Privacy Policy, and Cookie Policy",
+    "last_updated": "Last updated",
+    "tabs": {
+      "terms": "Terms & Conditions",
+      "privacy": "Privacy Policy",
+      "cookies": "Cookies"
+    },
+    "terms": {
+      "title": "Terms and Conditions",
+      "section1_title": "1. Scope of Terms and Conditions",
+      "section1_text": "These Terms and Conditions (hereinafter: T&C) apply to the use of the Roy's Shack Est. 1888 online store (hereinafter: Store), and to all purchases made through the Store.",
+      "section2_title": "2. Service Provider Information",
+      "info_name": "Name:",
+      "info_name_value": "Roy's Shack Est. 1888",
+      "info_address": "Headquarters:",
+      "info_address_value": "1000 Budapest, Example Street 1.",
+      "info_email": "Email:",
+      "info_email_value": "info@roys-shack.hu",
+      "info_phone": "Phone:",
+      "info_phone_value": "+36 1 234 5678",
+      "section3_title": "3. Purchasing Process",
+      "section3_text": "Registration is required to make a purchase in the Store. By placing an order, the Customer accepts these T&C. Order confirmation is sent by email.",
+      "section3_step1": "Select products and add them to the cart",
+      "section3_step2": "Enter shipping details",
+      "section3_step3": "Finalize the order",
+      "section3_step4": "Receive email confirmation",
+      "section4_title": "4. Prices and Payment",
+      "section4_text": "All listed prices are in Hungarian Forint (HUF) and include VAT. Shipping costs may vary depending on the order amount. Free shipping applies for orders over 10,000 HUF.",
+      "section5_title": "5. Shipping and Delivery",
+      "section5_text": "Ordered products are shipped on business days, generally within 3-5 business days. Delivery is carried out by courier service.",
+      "section6_title": "6. Right of Withdrawal",
+      "section6_text": "The Customer may withdraw from the contract within 14 days of receiving the product without giving a reason. For pharmaceutical and healthcare products, the right of withdrawal may be limited."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "section1_title": "1. Data Controller",
+      "section1_text": "The data controller is Roy's Shack Est. 1888 (1000 Budapest, Example Street 1.). The data protection officer can be reached at: privacy@roys-shack.hu",
+      "section2_title": "2. Scope of Collected Data",
+      "table_header_category": "Data Category",
+      "table_header_purpose": "Purpose",
+      "table_header_retention": "Retention Period",
+      "table_row1_category": "Identification data (name, email)",
+      "table_row1_purpose": "Registration, communication",
+      "table_row1_retention": "Until account deletion",
+      "table_row2_category": "Shipping data",
+      "table_row2_purpose": "Order fulfillment",
+      "table_row2_retention": "5 years",
+      "table_row3_category": "Purchase history",
+      "table_row3_purpose": "Invoicing, customer service",
+      "table_row3_retention": "8 years (accounting)",
+      "section3_title": "3. Rights of Data Subjects",
+      "section3_text": "Under the GDPR, data subjects have the following rights:",
+      "right_access": "Right of access",
+      "right_access_desc": "request information about processed data",
+      "right_rectification": "Right to rectification",
+      "right_rectification_desc": "correction of inaccurate data",
+      "right_erasure": "Right to erasure",
+      "right_erasure_desc": "the 'right to be forgotten'",
+      "right_portability": "Data portability",
+      "right_portability_desc": "request data in machine-readable format",
+      "right_objection": "Right to object",
+      "right_objection_desc": "in the case of direct marketing",
+      "section4_title": "4. Data Security",
+      "section4_text": "We employ technical and organizational measures to protect personal data, including SSL encryption, access control restrictions, and regular security audits."
+    },
+    "cookies": {
+      "title": "Cookie Policy",
+      "what_title": "What are cookies?",
+      "what_text": "Cookies are small text files stored by the website in your browser. They allow the website to remember your settings and improve the user experience.",
+      "types_title": "Cookies we use",
+      "essential_badge": "Essential",
+      "essential_always_active": "Always active",
+      "essential_title": "Functional Cookies",
+      "essential_text": "Required for the proper functioning of the website. They include session identifiers and security tokens. The website cannot function properly without them.",
+      "analytics_badge": "Analytics",
+      "analytics_title": "Performance Cookies",
+      "analytics_text": "Help us understand how visitors interact with the website. The collected data is processed anonymously for statistical purposes.",
+      "preferences_badge": "Preferences",
+      "preferences_title": "Preference Cookies",
+      "preferences_text": "Remember the settings selected by the user, such as language and display theme.",
+      "manage_title": "Managing Cookies",
+      "manage_text": "Cookies can be managed through your browser settings. Functional cookies cannot be disabled, but analytics and preference cookies can."
+    }
+  },
+  "admin": {
+    "role": "Admin",
+    "toggle_sidebar": "Toggle sidebar",
+    "greeting": "Welcome, {{name}}!",
+    "nav": {
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "users": "Users",
+      "products": "Products"
+    },
+    "stats": {
+      "total_orders": "Total Orders",
+      "revenue": "Revenue",
+      "total_users": "Total Users",
+      "total_products": "Total Products",
+      "low_stock": "low stock",
+      "this_month": "this month",
+      "this_week": "this week"
+    },
+    "recent_orders": "Recent Orders",
+    "view_all": "View All",
+    "table": {
+      "order_id": "Order ID",
+      "customer": "Customer",
+      "date": "Date",
+      "total": "Total",
+      "status": "Status",
+      "items": "Items",
+      "actions": "Actions",
+      "user": "User",
+      "email": "Email",
+      "role": "Role",
+      "registered": "Registered",
+      "orders": "Orders",
+      "product": "Product",
+      "category": "Category",
+      "price": "Price",
+      "stock": "Stock"
+    },
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "search_orders": "Search orders...",
+    "search_users": "Search users...",
+    "search_products": "Search products...",
+    "all_statuses": "All Statuses",
+    "add_product": "Add Product",
+    "active": "Active",
+    "inactive": "Inactive",
+    "dev_mode": {
+      "title": "⚠️ DEV MODE",
+      "description": "Test admin session — backend unavailable. This feature will not work in production.",
+      "exit": "Exit"
+    }
   }
 }

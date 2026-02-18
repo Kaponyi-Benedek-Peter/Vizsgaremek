@@ -1,0 +1,146 @@
+<div class="blog-detail-page">
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>{{ 'common.loading' | translate }}</p>
+    </div>
+  }
+
+  @if (!isLoading() && post()) {
+    <!-- Hero / Header -->
+    <article class="article">
+      @if (post()!.imageUrl) {
+        <div class="article-hero">
+          <img [src]="post()!.imageUrl" [alt]="post()!.title" class="hero-image" />
+          <div class="hero-overlay"></div>
+        </div>
+      }
+
+      <div class="article-container">
+        <header class="article-header">
+          @if (getCategoryInfo(post()!.category); as cat) {
+            <div class="article-category" [class]="cat.colorClass">
+              <span>{{ cat.icon }}</span>
+              <span>{{ cat.translationKey | translate }}</span>
+            </div>
+          }
+
+          <h1 class="article-title">{{ post()!.title }}</h1>
+
+          <div class="article-meta">
+            <div class="meta-author">
+              @if (post()!.author.avatar) {
+                <img [src]="post()!.author.avatar" [alt]="post()!.author.name" class="author-avatar" />
+              } @else {
+                <div class="author-avatar-placeholder">
+                  {{ post()!.author.name.charAt(0).toUpperCase() }}
+                </div>
+              }
+              <div class="author-info">
+                <span class="author-name">{{ post()!.author.name }}</span>
+                @if (post()!.author.verified) {
+                  <span class="verified-badge">✓</span>
+                }
+                <span class="author-role">{{ 'forum.role.' + post()!.author.role | translate }}</span>
+              </div>
+            </div>
+
+            <div class="meta-details">
+              <span class="meta-date">📅 {{ formatDate(post()!.createdAt) }}</span>
+              @if (getReadingTime()) {
+                <span class="meta-reading">📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span>
+              }
+            </div>
+          </div>
+        </header>
+
+        <!-- Article content -->
+        <div class="article-body" [class.collapsed]="!contentExpanded()">
+          <p class="article-excerpt">{{ post()!.excerpt }}</p>
+          <div class="article-content">
+            <p>{{ post()!.content }}</p>
+          </div>
+        </div>
+
+        @if (!contentExpanded()) {
+          <div class="read-more-section">
+            <button class="read-more-btn" (click)="toggleContent()">
+              <span class="dots">•••</span>
+              <span>{{ 'blog.read_more' | translate }}</span>
+            </button>
+          </div>
+        }
+
+        <!-- Stats -->
+        <div class="article-stats">
+          <div class="stat">
+            <span class="stat-icon">👁️</span>
+            <span>{{ post()!.views }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">❤️</span>
+            <span>{{ post()!.likes }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">💬</span>
+            <span>{{ post()!.commentCount }}</span>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        @if (post()!.tags.length > 0) {
+          <div class="article-tags">
+            @for (tag of post()!.tags; track tag) {
+              <span class="tag">#{{ tag }}</span>
+            }
+          </div>
+        }
+      </div>
+    </article>
+
+    <!-- Related posts -->
+    @if (relatedPosts().length > 0) {
+      <section class="related-section">
+        <div class="related-container">
+          <h2 class="related-title">{{ 'blog.related_posts' | translate }}</h2>
+          <div class="related-grid">
+            @for (related of relatedPosts(); track related.id) {
+              <a
+                class="related-card"
+                [routerLink]="['/' + related.type, related.slug]"
+              >
+                @if (related.imageUrl) {
+                  <div class="related-image">
+                    <img [src]="related.imageUrl" [alt]="related.title" loading="lazy" />
+                  </div>
+                }
+                <div class="related-info">
+                  <h3 class="related-post-title">{{ related.title }}</h3>
+                  <p class="related-excerpt">{{ related.excerpt }}</p>
+                  <div class="related-meta">
+                    <span>{{ related.author.name }}</span>
+                    <span>{{ formatDate(related.createdAt) }}</span>
+                  </div>
+                </div>
+              </a>
+            }
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- Back link -->
+    <div class="back-section">
+      <a routerLink="/blog" class="back-link">
+        ← {{ 'blog.back_to_blog' | translate }}
+      </a>
+    </div>
+  }
+
+  @if (!isLoading() && !post()) {
+    <div class="not-found">
+      <h2>{{ 'blog.post_not_found' | translate }}</h2>
+      <a routerLink="/blog" class="back-link">← {{ 'blog.back_to_blog' | translate }}</a>
+    </div>
+  }
+</div>

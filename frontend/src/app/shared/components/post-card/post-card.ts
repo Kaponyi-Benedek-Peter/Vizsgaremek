@@ -1,7 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Post, POST_CATEGORIES } from '../../../core/models/forum-blog.model';
 
 @Component({
@@ -21,6 +21,8 @@ export class PostCardComponent {
   @Input() compactMode = false;
 
   @Output() cardClick = new EventEmitter<Post>();
+
+  private translateService = inject(TranslateService);
 
   get categoryInfo() {
     return POST_CATEGORIES.find((cat) => cat.id === this.post.category);
@@ -49,22 +51,22 @@ export class PostCardComponent {
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
       if (diffHours === 0) {
         const diffMinutes = Math.floor(diffMs / (1000 * 60));
-        return `${diffMinutes} perce`;
+        return this.translateService.instant('time.minutes_ago', { count: diffMinutes });
       }
-      return `${diffHours} órája`;
+      return this.translateService.instant('time.hours_ago', { count: diffHours });
     } else if (diffDays === 1) {
-      return 'Tegnap';
+      return this.translateService.instant('time.yesterday');
     } else if (diffDays < 7) {
-      return `${diffDays} napja`;
+      return this.translateService.instant('time.days_ago', { count: diffDays });
     } else if (diffDays < 30) {
       const diffWeeks = Math.floor(diffDays / 7);
-      return `${diffWeeks} hete`;
+      return this.translateService.instant('time.weeks_ago', { count: diffWeeks });
     } else if (diffDays < 365) {
       const diffMonths = Math.floor(diffDays / 30);
-      return `${diffMonths} hónapja`;
+      return this.translateService.instant('time.months_ago', { count: diffMonths });
     } else {
       const diffYears = Math.floor(diffDays / 365);
-      return `${diffYears} éve`;
+      return this.translateService.instant('time.years_ago', { count: diffYears });
     }
   }
 

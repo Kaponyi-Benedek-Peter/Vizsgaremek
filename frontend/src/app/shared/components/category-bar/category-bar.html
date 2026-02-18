@@ -14,7 +14,7 @@
   </div>
 
   <div class="category-bar-wrapper">
-    <button class="scroll-button scroll-left" (click)="scrollLeft()" aria-label="Scroll left">
+    <button class="scroll-button scroll-left" (click)="scrollLeft()" [attr.aria-label]="'common.scroll_left' | translate">
       ‹
     </button>
 
@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <button class="scroll-button scroll-right" (click)="scrollRight()" aria-label="Scroll right">
+    <button class="scroll-button scroll-right" (click)="scrollRight()" [attr.aria-label]="'common.scroll_right' | translate">
       ›
     </button>
   </div>

@@ -5,27 +5,57 @@
 }
 
 .legal-hero {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background:
+    linear-gradient(135deg, #065f36 0%, #067a45 25%, #0b5f39 50%, #044d2c 75%, #023a21 100%);
   color: white;
   padding: var(--space-16) var(--space-4) var(--space-12);
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.legal-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(114, 228, 240, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 60% 80%, rgba(255, 255, 255, 0.04) 0%, transparent 45%);
+  pointer-events: none;
+}
+
+.legal-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  pointer-events: none;
 }
 
 .hero-content {
   max-width: 680px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .hero-title {
   font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 700;
+  font-weight: var(--font-bold);
   margin: 0 0 var(--space-3) 0;
+  line-height: var(--leading-tight);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .hero-description {
-  font-size: clamp(1rem, 2vw, 1.1rem);
-  opacity: 0.85;
+  font-size: clamp(1rem, 2vw, 1.125rem);
   margin: 0;
+  opacity: 0.92;
+  line-height: var(--leading-relaxed);
 }
 
 .legal-container {
@@ -334,7 +364,8 @@
 }
 
 [data-theme='dark'] .legal-hero {
-  background: linear-gradient(135deg, #0d0d1a 0%, #0a0f1e 100%);
+  background:
+    linear-gradient(135deg, #044d2c 0%, #065f36 25%, #0b5f39 50%, #033d23 75%, #022b18 100%);
 }
 [data-theme='dark'] .cookie-examples code {
   background: var(--bg-tertiary);

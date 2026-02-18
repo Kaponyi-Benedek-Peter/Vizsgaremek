@@ -1,14 +1,27 @@
 <div class="newsletter">
   <div class="social-icons">
-    <a href="#" target="_blank" [attr.aria-label]="'Facebook'">
-      <img [src]="ICONS.facebook" alt="facebook" />
-    </a>
-    <a href="#" target="_blank" [attr.aria-label]="'Instagram'">
-      <img [src]="ICONS.instagram" alt="instagram" />
-    </a>
-    <a href="#" target="_blank" [attr.aria-label]="'X (Twitter)'">
-      <img [src]="ICONS.x" alt="X" />
-    </a>
+    @for (social of socialLinks; track social.name) {
+      <div class="social-icon-wrapper">
+        @if (social.url) {
+          <a [href]="social.url" target="_blank" [attr.aria-label]="social.name">
+            <img [src]="social.icon" [alt]="social.name" />
+          </a>
+        } @else {
+          <button
+            class="social-icon-btn"
+            (click)="toggleSocialTooltip(social.name)"
+            [attr.aria-label]="social.name"
+          >
+            <img [src]="social.icon" [alt]="social.name" />
+          </button>
+          @if (activeSocialTooltip === social.name) {
+            <div class="social-tooltip">
+              {{ 'footer.no_social_link' | translate }}
+            </div>
+          }
+        }
+      </div>
+    }
   </div>
   
   <p>{{ 'footer.newsletter' | translate }}</p>

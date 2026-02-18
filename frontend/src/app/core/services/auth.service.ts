@@ -328,6 +328,7 @@ export class AuthService {
       storage.removeItem(this.USER_KEY);
       storage.removeItem(this.EXPIRES_KEY);
       storage.removeItem(this.STORAGE_TYPE_KEY);
+      storage.removeItem(this.DEV_ADMIN_KEY); // DEV-ONLY: clean up dev admin flag
     });
   }
 
@@ -348,6 +349,87 @@ export class AuthService {
       return atob(value);
     }
   }
+
+  // ============================================================
+  // DEV-ONLY: Test admin login when backend is unavailable
+  // REMOVE BEFORE PRODUCTION DEPLOYMENT
+  // ============================================================
+  private readonly DEV_ADMIN_KEY = 'dev_admin_mode';
+
+  /**
+   * Check if backend is reachable (5 second timeout).
+   * Returns true if reachable, false otherwise.
+   */
+  async isBackendAvailable(): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const response = await fetch(`${this.API_URL}/api/login`, {
+        method: 'OPTIONS',
+        mode: 'cors',
+        signal: controller.signal,
+      }).catch(() => null);
+      clearTimeout(timeoutId);
+      // Only consider backend available if we get an actual HTTP response
+      // CORS errors, network failures, and timeouts all result in null
+      return response !== null && response.status < 500;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Creates a fake admin session for local development.
+   * ONLY works when the backend is unreachable.
+   * Returns true if dev login succeeded, false if backend is available
+   * (meaning you should use real login).
+   */
+  async devAdminLogin(): Promise<boolean> {
+    const backendAvailable = await this.isBackendAvailable();
+    if (backendAvailable) {
+      return false;
+    }
+
+    const devUser: User = {
+      id: 'dev-admin-000',
+      email: 'dev@admin.local',
+      firstname: '[DEV]',
+      lastname: 'Admin',
+      role: 'admin',
+      account_state: 'admin',
+    };
+
+    const devToken = 'dev-token-not-a-real-jwt';
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    sessionStorage.setItem(this.DEV_ADMIN_KEY, 'true');
+
+    this.storeToken(devToken, expiresAt, false); // session only, not persistent
+    this.storeUser(devUser, false);
+
+    this.updateAuthState({
+      isAuthenticated: true,
+      user: devUser,
+      token: devToken,
+      expiresAt,
+    });
+
+    console.warn(
+      '⚠️ [DEV MODE] Logged in as test admin. This session is for local development only. REMOVE devAdminLogin() before production.',
+    );
+
+    return true;
+  }
+
+  /**
+   * Check if current session is a dev admin session.
+   */
+  isDevAdminSession(): boolean {
+    return sessionStorage.getItem(this.DEV_ADMIN_KEY) === 'true';
+  }
+  // ============================================================
+  // END DEV-ONLY SECTION
+  // ============================================================
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unknown error occurred';

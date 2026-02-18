@@ -4,7 +4,7 @@
   z-index: 1000;
   background-color: var(--color-primary);
   color: var(--color-white);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: none;
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
@@ -42,6 +42,97 @@
   align-items: center;
   flex-shrink: 0;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   HAMBURGER MENU (hidden on desktop, visible on mobile)
+   ══════════════════════════════════════════════════════════════ */
+
+.mobile-menu-wrapper {
+  display: none;
+  position: relative;
+}
+
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.hamburger-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.hamburger-line {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background-color: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.hamburger-line.open:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger-line.open:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hamburger-line.open:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.mobile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  min-width: 220px;
+  z-index: 1001;
+  animation: slideDown 0.2s ease;
+  overflow: hidden;
+}
+
+.mobile-nav-item {
+  display: block;
+  padding: 0.85rem 1.25rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-nav-item:hover {
+  background-color: var(--bg-secondary);
+  color: var(--color-primary);
+}
+
+.mobile-nav-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0.25rem 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   USER MENU
+   ══════════════════════════════════════════════════════════════ */
 
 .user-menu-wrapper {
   position: relative;
@@ -125,6 +216,10 @@
 .logout-btn .dropdown-icon {
   color: #dc2626;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   CART
+   ══════════════════════════════════════════════════════════════ */
 
 .cart-menu-wrapper {
   position: relative;
@@ -393,6 +488,39 @@
   box-shadow: 0 4px 8px rgba(6, 122, 69, 0.3);
 }
 
+.cart-footer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cart-footer-actions .cart-total {
+  flex: 1;
+}
+
+.clear-cart-btn {
+  background: none;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #dc2626;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.clear-cart-btn:hover {
+  background-color: rgba(220, 38, 38, 0.1);
+  border-color: #dc2626;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════════════════════════════ */
+
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -403,6 +531,10 @@
     transform: translateY(0);
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 1024px) {
   .header-center {
@@ -418,6 +550,10 @@
 
   .header-center {
     display: none;
+  }
+
+  .mobile-menu-wrapper {
+    display: block;
   }
 
   .cart-dropdown {
@@ -440,12 +576,21 @@
   }
 
   .cart-dropdown {
-    width: calc(100vw - 40px);
-    right: -10px;
+    position: fixed;
+    top: 70px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-height: calc(100vh - 90px);
   }
 
   .user-dropdown {
     width: 240px;
+    right: -10px;
+  }
+
+  .mobile-dropdown {
+    min-width: 200px;
     right: -10px;
   }
 }

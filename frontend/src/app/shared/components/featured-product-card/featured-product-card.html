@@ -9,7 +9,7 @@
       <span
         *ngIf="requiresPrescription()"
         class="featured-badge featured-badge-prescription"
-        title="Vény szükséges"
+        [title]="'product.requires_prescription' | translate"
       >
         ℞
       </span>
@@ -18,7 +18,7 @@
 
   <div *ngIf="!imageUrl()" class="featured-product-card-placeholder">
     <div class="featured-placeholder-icon">?</div>
-    <div class="featured-placeholder-text">Nincs kép</div>
+    <div class="featured-placeholder-text">{{ 'product.no_image' | translate }}</div>
   </div>
 
   <div class="featured-product-info" *ngIf="productName()">
@@ -37,7 +37,7 @@
       [class.featured-stock-out]="!inStock()"
     >
       <span class="featured-stock-indicator"></span>
-      <span>{{ inStock() ? 'Raktáron' : 'Elfogyott' }}</span>
+      <span>{{ (inStock() ? 'product.in_stock' : 'product.out_of_stock') | translate }}</span>
     </div>
   </div>
 </div>

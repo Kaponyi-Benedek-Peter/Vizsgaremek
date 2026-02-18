@@ -27,17 +27,16 @@
     <app-slide></app-slide>
   </div>
 
-  <div appScrollReveal [animationType]="'fade-scale'" [threshold]="0.2">
-    <app-featured>
-      <app-featured-product-card
-        *ngFor="let product of products(); let i = index"
-        [product]="product"
-        (cardClick)="onProductClick(product.id)"
-        appScrollReveal
-        [animationType]="'slide-up'"
-        [animationDelay]="i * 100"
-      >
-      </app-featured-product-card>
-    </app-featured>
-  </div>
+  <app-featured>
+    <app-featured-product-card
+      *ngFor="let product of products; let i = index"
+      [product]="product"
+      (cardClick)="onProductClick(product.id)"
+      appScrollReveal
+      [animationType]="'slide-up'"
+      [animationDelay]="i * 150"
+      [threshold]="0.1"
+    >
+    </app-featured-product-card>
+  </app-featured>
 </div>

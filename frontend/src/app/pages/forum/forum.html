@@ -48,10 +48,12 @@
           </select>
         </div>
 
-        <button class="new-post-button">
-          <span class="icon">✏️</span>
-          {{ 'forum.new_post' | translate }}
-        </button>
+        @if (isAuthenticated()) {
+          <button class="new-post-button">
+            <span class="icon">✏️</span>
+            {{ 'forum.new_post' | translate }}
+          </button>
+        }
       </div>
     </section>
 

@@ -59,8 +59,24 @@
       </div>
     </header>
 
+    @if (isDevMode()) {
+      <div class="dev-mode-banner">
+        <span class="dev-mode-icon">⚠️</span>
+        <span class="dev-mode-text">
+          {{ 'admin.dev_mode.title' | translate }}
+          — {{ 'admin.dev_mode.description' | translate }}
+        </span>
+        <button class="dev-mode-close" (click)="logout()">
+          {{ 'admin.dev_mode.exit' | translate }} ✕
+        </button>
+      </div>
+    }
+
     @if (activeSection() === 'dashboard') {
       <div class="section-content">
+        <div class="dashboard-greeting">
+          <h2>{{ 'admin.greeting' | translate: { name: adminName() } }}</h2>
+        </div>
         <div class="stats-grid">
           <div class="stat-card primary">
             <div class="stat-icon">📦</div>
@@ -185,7 +201,7 @@
                     <td class="order-id">#{{ order.id }}</td>
                     <td>{{ order.customer }}</td>
                     <td class="muted">{{ order.date }}</td>
-                    <td class="muted">{{ order.items }} db</td>
+                    <td class="muted">{{ order.items }} {{ 'common.items_unit' | translate }}</td>
                     <td class="font-bold">{{ formatRevenue(order.total) }}</td>
                     <td>
                       <span [class]="'status-badge status-' + order.status">
@@ -193,7 +209,7 @@
                       </span>
                     </td>
                     <td>
-                      <button class="action-btn view-btn" title="Megtekintés">👁</button>
+                      <button class="action-btn view-btn" [title]="'common.view' | translate">👁</button>
                     </td>
                   </tr>
                 }
@@ -249,7 +265,7 @@
                     <td class="muted">{{ user.registered }}</td>
                     <td>{{ user.orders }}</td>
                     <td>
-                      <button class="action-btn view-btn" title="Megtekintés">👁</button>
+                      <button class="action-btn view-btn" [title]="'common.view' | translate">👁</button>
                     </td>
                   </tr>
                 }
@@ -301,7 +317,7 @@
                     <td class="font-bold">{{ formatRevenue(product.price) }}</td>
                     <td>
                       <span [class]="product.stock < 10 ? 'stock-low' : 'stock-ok'">
-                        {{ product.stock }} db
+                        {{ product.stock }} {{ 'common.items_unit' | translate }}
                       </span>
                     </td>
                     <td>
@@ -318,8 +334,8 @@
                       </span>
                     </td>
                     <td>
-                      <button class="action-btn edit-btn" title="Szerkesztés">✏️</button>
-                      <button class="action-btn delete-btn" title="Törlés">🗑️</button>
+                      <button class="action-btn edit-btn" [title]="'common.edit' | translate">✏️</button>
+                      <button class="action-btn delete-btn" [title]="'common.delete' | translate">🗑️</button>
                     </td>
                   </tr>
                 }
