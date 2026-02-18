@@ -16,6 +16,14 @@ public static class jwt_handler
         secret_key = Servo.service.shared.conf("r", "jwt_secret_key");
     }
 
+    public static string generate_expiration_string()
+    {
+        int expires_in = 604800; // 7 nap  
+        DateTime target = DateTime.Now.AddMinutes(expires_in);
+        string expires_in_formatted = target.ToString("yyyy-MM-dd HH:mm:ss");
+        return expires_in_formatted;
+    }
+
     public static string generate_token(string email)
     {
         string session_token = Servo.model.shared.get_token_by_id(Servo.model.shared.get_id_by_email(email));

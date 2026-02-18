@@ -1,0 +1,350 @@
+{
+  "header": {
+    "home": "Kezdőlap",
+    "forum": "Fórum",
+    "products": "Termékek",
+    "login": "Bejelentkezés",
+    "cart": "Kosár",
+    "profile": "Profil",
+    "my_profile": "Profilom",
+    "my_orders": "Rendeléseim",
+    "logout": "Kijelentkezés"
+  },
+  "cart": {
+    "title": "Kosár",
+    "items": "termék",
+    "empty": "A kosarad üres",
+    "remove": "Eltávolítás",
+    "total": "Összesen",
+    "checkout": "Fizetés"
+  },
+  "checkout": {
+    "title": "Fizetés",
+    "order_summary": "Rendelés összegzése",
+    "shipping_info": "Szállítási adatok",
+    "subtotal": "Részösszeg",
+    "shipping": "Szállítás",
+    "free_shipping": "Ingyenes",
+    "total": "Összesen",
+    "city": "Város",
+    "city_placeholder": "Add meg a várost",
+    "zipcode": "Irányítószám",
+    "zipcode_placeholder": "pl. 7600",
+    "address": "Utca",
+    "address_placeholder": "Add meg az utca nevet",
+    "house_number": "Házszám",
+    "house_number_placeholder": "pl. 42",
+    "apartment_number": "Emelet/Ajtó",
+    "apartment_placeholder": "Opcionális",
+    "phone": "Telefonszám",
+    "phone_placeholder": "+36 30 123 4567",
+    "note": "Megjegyzés",
+    "note_placeholder": "Egyéb információk (opcionális)",
+    "continue_shopping": "Vásárlás folytatása",
+    "place_order": "Rendelés leadása",
+    "processing": "Feldolgozás...",
+    "success": "Rendelés sikeresen leadva! Átirányítás...",
+    "error": "Nem sikerült leadni a rendelést. Kérlek próbáld újra.",
+    "validation_error": "Kérlek töltsd ki az összes kötelező mezőt.",
+    "invalid_zipcode": "Kérlek adj meg egy érvényes irányítószámot.",
+    "invalid_phone": "Kérlek adj meg egy érvényes telefonszámot."
+  },
+  "footer": {
+    "copyright": "Szerzői jog © 2025 Roy's shack",
+    "info": "Az oldalon található információk, adatok vagy dokumentumok kizárólag tájékoztató jellegűek",
+    "contact": "Kapcsolat",
+    "contactInfo": "Kapcsolati információk",
+    "email": "Contact@roysshack.hu",
+    "followUs": "Kövess minket!",
+    "newsletter": "Iratkozz fel a hírlevélre!",
+    "emailPlaceholder": "E-mail címed",
+    "send": "Küldés",
+    "legal": "Jogi információk"
+  },
+  "home": {
+    "hero": {
+      "title": "Roy's Shack Est. 1888",
+      "subtitle": "Küldetésünk",
+      "description": "Lorem ipsum dolor sit amet consectetur. Euismod eget ut suspendisse leo faucibus sit dui. Aliquet egestas tincidunt nibh massa sed tellus aliquam. Amet auctor odio sit nibh at. Vel sed ipsum interdum vel nulla ornare. Ullamcorper egestas in viverra consequat. Vitae enim pellentesque a cras ornare dui nulla. Leo nam felis aliquet cras vel nulla mi bibendum non. Velit pretium non mi mi justo senectus leo. In congue aliquam adipiscing fames. Turpis orci odio mauris augue lacus mi non nibh. Etiam a in quis commodo vivamus. Gravida luctus risus egestas aliquam scelerisque vitae turpis viverra quisque."
+    },
+    "featured": {
+      "title": "Kiemelt termékek",
+      "viewAll": "Összes megtekintése"
+    }
+  },
+  "language": {
+    "hu": "Magyar",
+    "en": "Angol",
+    "de": "Német"
+  },
+  "theme": {
+    "light": "Világos mód",
+    "dark": "Sötét mód",
+    "toggle": "Téma váltása"
+  },
+  "common": {
+    "loading": "Betöltés...",
+    "error": "Hiba történt",
+    "success": "Sikeres művelet",
+    "cancel": "Mégse",
+    "confirm": "Megerősítés",
+    "save": "Mentés",
+    "delete": "Törlés",
+    "edit": "Szerkesztés",
+    "add": "Hozzáadás",
+    "search": "Keresés",
+    "filter": "Szűrés",
+    "add_to_cart": "Kosárba",
+    "close": "Bezár",
+    "clear": "Törlés",
+    "minutes": "perc",
+    "ok": "Rendben",
+    "previous_page": "Előző oldal",
+    "next_page": "Következő oldal"
+  },
+  "filter": {
+    "sort_by": "Rendezés",
+    "filters": "Szűrők",
+    "advanced_filters": "Részletes szűrés",
+    "clear_all": "Szűrők törlése",
+    "toggle_filters": "Szűrők megjelenítése/elrejtése",
+    "price_range": "Ár tartomány",
+    "min_price": "Min. ár",
+    "max_price": "Max. ár",
+    "in_stock_only": "Csak raktáron lévő termékek",
+    "sort": {
+      "popularity": "Népszerűség",
+      "name_asc": "Név (A-Z)",
+      "name_desc": "Név (Z-A)",
+      "price_asc": "Ár (növekvő)",
+      "price_desc": "Ár (csökkenő)",
+      "rating": "Értékelés",
+      "newest": "Legújabb"
+    }
+  },
+  "product": {
+    "out_of_stock": "Nincs raktáron",
+    "in_stock": "Raktáron",
+    "requires_prescription": "Vényköteles",
+    "prescription_required_notice": "Ez a termék vényköteles. Rendeléshez recept feltöltése szükséges.",
+    "manufacturer": "Gyártó",
+    "brand": "Márka",
+    "sku": "Cikkszám",
+    "availability": "Elérhetőség",
+    "pieces": "db",
+    "reviews": "értékelés",
+    "description": "Leírás",
+    "pharmaceutical_details": "Gyógyászati információk",
+    "active_ingredients": "Hatóanyag",
+    "dosage": "Adagolás",
+    "packaging": "Kiszerelés",
+    "total": "Összesen",
+    "view_details": "Részletek",
+    "decrease_quantity": "Mennyiség csökkentése",
+    "increase_quantity": "Mennyiség növelése",
+    "previous_image": "Előző kép",
+    "next_image": "Következő kép",
+    "view_image": "{{number}}. kép megtekintése",
+    "no_products_found": "Nem található termék",
+    "try_different_filters": "Próbáljon meg más szűrési feltételeket alkalmazni"
+  },
+  "pagination": {
+    "items_per_page": "Termék oldalanként",
+    "showing": "Megjelenítve",
+    "of": "/",
+    "navigation": "Lapozás",
+    "previous": "Előző",
+    "next": "Következő",
+    "page": "Oldal"
+  },
+  "auth": {
+    "or": "vagy",
+    "show_password": "Jelszó megjelenítése",
+    "fields": {
+      "email": "E-mail cím",
+      "password": "Jelszó",
+      "new_password": "Új jelszó",
+      "confirm_password": "Jelszó megerősítése",
+      "firstname": "Keresztnév",
+      "lastname": "Vezetéknév"
+    },
+    "placeholders": {
+      "email": "pelda@email.hu",
+      "password": "••••••••",
+      "new_password": "Új jelszó",
+      "confirm_password": "Jelszó újra",
+      "firstname": "János",
+      "lastname": "Kiss"
+    },
+    "login": {
+      "title": "Bejelentkezés",
+      "subtitle": "Üdvözöljük újra!",
+      "stay_logged_in": "Maradjak bejelentkezve",
+      "button": "Bejelentkezés",
+      "logging_in": "Bejelentkezés...",
+      "forgot_password": "Elfelejtette jelszavát?",
+      "no_account": "Nincs még fiókja?",
+      "sign_up": "Regisztráció"
+    },
+    "register": {
+      "title": "Regisztráció",
+      "subtitle": "Hozzon létre egy új fiókot",
+      "password_hint": "Minimum 8 karakter hosszú jelszó szükséges",
+      "button": "Fiók létrehozása",
+      "creating_account": "Fiók létrehozása...",
+      "have_account": "Már van fiókja?",
+      "sign_in": "Bejelentkezés",
+      "success_message": "Regisztráció sikeres! Ellenőrizze e-mail fiókját a megerősítéshez."
+    },
+    "email": {
+      "check_inbox": "Ellenőrizze a postafiókját",
+      "sent_message": "E-mail megerősítő linket küldtünk a megadott címre.",
+      "step_1": "Nyissa meg az elküldött e-mailt",
+      "step_2": "Kattintson a megerősítő linkre",
+      "step_3": "Automatikusan bejelentkezik",
+      "no_email": "Nem kapta meg az e-mailt?",
+      "resend": "Újraküldés",
+      "back_to_login": "Vissza a bejelentkezéshez",
+      "verifying": "Ellenőrzés folyamatban",
+      "verifying_message": "Kérjük várjon, amíg megerősítjük e-mail címét...",
+      "verified": "E-mail megerősítve!",
+      "verified_message": "E-mail címe sikeresen megerősítve. Automatikusan bejelentkezik.",
+      "redirecting": "Átirányítás a főoldalra...",
+      "verification_failed": "Ellenőrzés sikertelen",
+      "try_again": "Próbálja újra",
+      "back_to_register": "Vissza a regisztrációhoz"
+    },
+    "password_reset": {
+      "title": "Jelszó visszaállítása",
+      "subtitle": "Adja meg e-mail címét a visszaállítási linkért",
+      "button": "Visszaállítási link küldése",
+      "sending": "Küldés...",
+      "back_to_login": "Vissza a bejelentkezéshez",
+      "email_sent": "E-mail elküldve",
+      "email_sent_message": "Jelszó visszaállítási linket küldtünk e-mail címére.",
+      "step_1": "Ellenőrizze e-mail fiókját",
+      "step_2": "Kattintson a visszaállítási linkre",
+      "step_3": "Állítson be új jelszót"
+    },
+    "password_change": {
+      "title": "Új jelszó beállítása",
+      "subtitle": "Adja meg új jelszavát",
+      "button": "Jelszó megváltoztatása",
+      "updating": "Frissítés...",
+      "back_to_login": "Vissza a bejelentkezéshez",
+      "success": "Jelszó megváltoztatva!",
+      "success_message": "Jelszava sikeresen megváltoztatva. Most már bejelentkezhet az új jelszavával.",
+      "redirecting": "Átirányítás a bejelentkezéshez..."
+    },
+    "errors": {
+      "empty_fields": "Kérjük töltse ki az összes mezőt",
+      "invalid_email": "Érvénytelen e-mail cím",
+      "email_required": "E-mail cím megadása kötelező",
+      "password_too_short": "A jelszónak legalább 8 karakter hosszúnak kell lennie",
+      "passwords_dont_match": "A jelszavak nem egyeznek",
+      "bad_request": "Hibás kérés",
+      "invalid_credentials": "Hibás e-mail cím vagy jelszó",
+      "not_found": "Nem található",
+      "email_exists": "Ez az e-mail cím már regisztrálva van",
+      "server_error": "Szerver hiba. Kérjük próbálja újra később.",
+      "login_failed": "Bejelentkezés sikertelen",
+      "registration_failed": "Regisztráció sikertelen",
+      "verification_failed": "E-mail megerősítés sikertelen",
+      "request_failed": "Kérés sikertelen",
+      "password_reset_failed": "Jelszó visszaállítás sikertelen",
+      "invalid_reset_link": "Érvénytelen vagy lejárt visszaállítási link"
+    }
+  },
+  "category": {
+    "select": "Kategória kiválasztása",
+    "clearAll": "Összes törlése",
+    "medicine": "Gyógyszerek",
+    "vitamins": "Vitaminok",
+    "supplements": "Táplálékkiegészítők",
+    "cosmetics": "Kozmetikumok",
+    "baby-care": "Babaápolás",
+    "medical-devices": "Orvosi eszközök"
+  },
+  "products": {
+    "title": "Termékek",
+    "filter": {
+      "title": "Termékek szűrése",
+      "priceRange": "Ártartomány",
+      "inStockOnly": "Csak raktáron",
+      "hasDiscount": "Akciós",
+      "sortBy": "Rendezés",
+      "clear": "Szűrők törlése",
+      "apply": "Szűrők alkalmazása"
+    },
+    "sort": {
+      "popularity": "Népszerűség",
+      "default": "Alapértelmezett",
+      "price-asc": "Ár: olcsótól drágáig",
+      "price-desc": "Ár: drágától olcsóig",
+      "name-asc": "Név: A-Z",
+      "name-desc": "Név: Z-A",
+      "newest": "Legújabb",
+      "rating": "Értékelés"
+    },
+    "pagination": {
+      "itemsPerPage": "Termék oldalanként:",
+      "showing": "Megjelenítve",
+      "of": "/",
+      "products": "termék"
+    },
+    "empty": "Nincsenek termékek",
+    "addToCart": "Kosárba",
+    "viewDetails": "Részletek"
+  },
+  "forum": {
+    "title": "Fórum",
+    "description": "Kérdések, válaszok és tapasztalatok megosztása közösségünkkel",
+    "search_placeholder": "Keresés a fórum bejegyzései között...",
+    "sort_by": "Rendezés",
+    "new_post": "Új bejegyzés",
+    "all_categories": "Minden kategória",
+    "no_results_title": "Nincs találat",
+    "no_results_description": "Próbálj meg más keresési kifejezést vagy kategóriát választani.",
+    "reset_filters": "Szűrők visszaállítása",
+    "pinned": "Rögzítve",
+    "featured": "Kiemelt",
+    "question": "Kérdés",
+    "answered": "Megválaszolva",
+    "verified": "Hitelesített",
+    "role": {
+      "admin": "Admin",
+      "pharmacist": "Gyógyszerész",
+      "user": "Felhasználó"
+    },
+    "category": {
+      "medicines": "Gyógyszerek",
+      "natural_remedies": "Természetes gyógymódok",
+      "baby_mother": "Babák és anyák",
+      "healthy_lifestyle": "Egészséges életmód",
+      "seasonal_health": "Szezonális egészség",
+      "qa": "Kérdések & Válaszok",
+      "general": "Általános"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Egészségtippek, szakmai cikkek és hasznos információk gyógyszerészeinktől",
+    "search_placeholder": "Keresés a blog bejegyzései között...",
+    "sort_by": "Rendezés",
+    "all_categories": "Minden kategória",
+    "articles": "cikk",
+    "featured_posts": "Kiemelt bejegyzések",
+    "no_results_title": "Nincs találat",
+    "no_results_description": "Próbálj meg más keresési kifejezést vagy kategóriát választani.",
+    "reset_filters": "Szűrők visszaállítása"
+  },
+  "profile": {
+    "account_details": "Fiók adatok",
+    "first_name": "Keresztnév",
+    "last_name": "Vezetéknév",
+    "email": "E-mail cím",
+    "role": "Szerepkör",
+    "view_orders": "Rendeléseim megtekintése",
+    "logout": "Kijelentkezés"
+  }
+}

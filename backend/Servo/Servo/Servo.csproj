@@ -184,9 +184,10 @@
     <Compile Include="controller\delacc_promise.cs" />
     <Compile Include="controller\delacc_request.cs" />
     <Compile Include="controller\get_all_products.cs" />
+    <Compile Include="controller\login_promise.cs" />
     <Compile Include="controller\router.cs" />
     <Compile Include="controller\ban_user.cs" />
-    <Compile Include="controller\login.cs" />
+    <Compile Include="controller\login_request.cs" />
     <Compile Include="controller\registration_promise.cs" />
     <Compile Include="controller\registration_request.cs" />
     <Compile Include="Form1.cs">
@@ -213,7 +214,8 @@
     <Compile Include="service\delacc_request.cs" />
     <Compile Include="service\get_all_products.cs" />
     <Compile Include="service\jwt_handler.cs" />
-    <Compile Include="service\login.cs" />
+    <Compile Include="service\login_request.cs" />
+    <Compile Include="service\login_promise.cs" />
     <Compile Include="service\nonapi_test.cs" />
     <Compile Include="service\registration_promise.cs" />
     <Compile Include="service\registration_request.cs" />

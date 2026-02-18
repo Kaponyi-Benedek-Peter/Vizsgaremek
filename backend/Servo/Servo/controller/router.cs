@@ -80,10 +80,7 @@ namespace Servo.controller
                         data.Response.StatusCode = 401;
                         byte[] buffer = Encoding.UTF8.GetBytes("hianyzo_auth_header");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-
-
                         data= endconnection(data);
-
 
                         return;
                     }
@@ -92,7 +89,6 @@ namespace Servo.controller
                         data.Response.StatusCode = 401;
                         byte[] buffer = Encoding.UTF8.GetBytes("hianyzo_auth_header");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-
                         data = endconnection(data);
 
                         return;
@@ -105,16 +101,10 @@ namespace Servo.controller
                         data.Response.StatusCode = 401;
                         byte[] buffer = Encoding.UTF8.GetBytes("wrong_token");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-
                         data = endconnection(data);
 
                         return;
                     }
-
-
-
-
-
                 }
 
 
@@ -124,9 +114,17 @@ namespace Servo.controller
                 service.shared.log(">api kérés: " +lenyeg+"");
                 // =========== GETTOKen =========== 
 
-                if (lenyeg.Contains("login"))
+                if (lenyeg.Contains("login_request"))
                 {
-                    controller.login.main(data, lenyeg);
+                    controller.login_request.main(data, lenyeg);
+                }
+
+                else if (lenyeg.Contains("login_promise"))
+                {
+                    controller.login_promise.main(data, lenyeg);
+
+
+
                 }
 
 
@@ -190,7 +188,7 @@ namespace Servo.controller
                 else if (lenyeg.Contains("tesztapi1"))
                 {
 
-                    controller.login.main(data, lenyeg);
+                    controller.login_request.main(data, lenyeg);
 
                    
 

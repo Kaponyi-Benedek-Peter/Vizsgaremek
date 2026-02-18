@@ -1,0 +1,350 @@
+{
+  "header": {
+    "home": "Startseite",
+    "forum": "Forum",
+    "products": "Produkte",
+    "login": "Anmelden",
+    "cart": "Warenkorb",
+    "profile": "Profil",
+    "my_profile": "Mein Profil",
+    "my_orders": "Meine Bestellungen",
+    "logout": "Abmelden"
+  },
+  "cart": {
+    "title": "Warenkorb",
+    "items": "Artikel",
+    "empty": "Ihr Warenkorb ist leer",
+    "remove": "Entfernen",
+    "total": "Gesamt",
+    "checkout": "Zur Kasse"
+  },
+  "checkout": {
+    "title": "Kasse",
+    "order_summary": "Bestellübersicht",
+    "shipping_info": "Versandinformationen",
+    "subtotal": "Zwischensumme",
+    "shipping": "Versand",
+    "free_shipping": "Kostenlos",
+    "total": "Gesamt",
+    "city": "Stadt",
+    "city_placeholder": "Stadt eingeben",
+    "zipcode": "Postleitzahl",
+    "zipcode_placeholder": "z.B. 7600",
+    "address": "Straßenadresse",
+    "address_placeholder": "Straße eingeben",
+    "house_number": "Hausnummer",
+    "house_number_placeholder": "z.B. 42",
+    "apartment_number": "Wohnung",
+    "apartment_placeholder": "Optional",
+    "phone": "Telefonnummer",
+    "phone_placeholder": "+49 176 123 4567",
+    "note": "Bestellhinweise",
+    "note_placeholder": "Besondere Anweisungen? (optional)",
+    "continue_shopping": "Weiter einkaufen",
+    "place_order": "Bestellung aufgeben",
+    "processing": "Wird verarbeitet...",
+    "success": "Bestellung erfolgreich aufgegeben! Weiterleitung...",
+    "error": "Bestellung konnte nicht aufgegeben werden. Bitte versuchen Sie es erneut.",
+    "validation_error": "Bitte füllen Sie alle Pflichtfelder aus.",
+    "invalid_zipcode": "Bitte geben Sie eine gültige Postleitzahl ein.",
+    "invalid_phone": "Bitte geben Sie eine gültige Telefonnummer ein."
+  },
+  "footer": {
+    "copyright": "Urheberrecht © 2025 Roy's shack",
+    "info": "Die Informationen, Daten oder Dokumente auf der Website dienen nur zu Informationszwecken",
+    "contact": "Kontakt",
+    "contactInfo": "Kontaktinformationen",
+    "email": "Contact@roysshack.hu",
+    "followUs": "Folgen Sie uns!",
+    "newsletter": "Abonnieren Sie unseren Newsletter!",
+    "emailPlaceholder": "Ihre E-Mail-Adresse",
+    "send": "Senden",
+    "legal": "Rechtliches"
+  },
+  "home": {
+    "hero": {
+      "title": "Roy's Shack Est. 1888",
+      "subtitle": "Unsere Mission",
+      "description": "Lorem ipsum dolor sit amet consectetur. Euismod eget ut suspendisse leo faucibus sit dui. Aliquet egestas tincidunt nibh massa sed tellus aliquam. Amet auctor odio sit nibh at. Vel sed ipsum interdum vel nulla ornare. Ullamcorper egestas in viverra consequat. Vitae enim pellentesque a cras ornare dui nulla. Leo nam felis aliquet cras vel nulla mi bibendum non. Velit pretium non mi mi justo senectus leo. In congue aliquam adipiscing fames. Turpis orci odio mauris augue lacus mi non nibh. Etiam a in quis commodo vivamus. Gravida luctus risus egestas aliquam scelerisque vitae turpis viverra quisque."
+    },
+    "featured": {
+      "title": "Ausgewählte Produkte",
+      "viewAll": "Alle anzeigen"
+    }
+  },
+  "language": {
+    "hu": "Ungarisch",
+    "en": "Englisch",
+    "de": "Deutsch"
+  },
+  "theme": {
+    "light": "Heller Modus",
+    "dark": "Dunkler Modus",
+    "toggle": "Thema wechseln"
+  },
+  "common": {
+    "loading": "Wird geladen...",
+    "error": "Ein Fehler ist aufgetreten",
+    "success": "Vorgang erfolgreich",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "add": "Hinzufügen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "add_to_cart": "In den Warenkorb",
+    "close": "Schließen",
+    "clear": "Löschen",
+    "minutes": "Min",
+    "ok": "OK",
+    "previous_page": "Vorherige Seite",
+    "next_page": "Nächste Seite"
+  },
+  "filter": {
+    "sort_by": "Sortieren nach",
+    "filters": "Filter",
+    "advanced_filters": "Erweiterte Filter",
+    "clear_all": "Filter löschen",
+    "toggle_filters": "Filter ein-/ausblenden",
+    "price_range": "Preisspanne",
+    "min_price": "Min. Preis",
+    "max_price": "Max. Preis",
+    "in_stock_only": "Nur auf Lager",
+    "sort": {
+      "popularity": "Beliebtheit",
+      "name_asc": "Name (A-Z)",
+      "name_desc": "Name (Z-A)",
+      "price_asc": "Preis (aufsteigend)",
+      "price_desc": "Preis (absteigend)",
+      "rating": "Bewertung",
+      "newest": "Neueste"
+    }
+  },
+  "product": {
+    "out_of_stock": "Nicht vorrätig",
+    "in_stock": "Auf Lager",
+    "requires_prescription": "Verschreibungspflichtig",
+    "prescription_required_notice": "Dieses Produkt ist verschreibungspflichtig. Bitte laden Sie Ihr Rezept beim Bestellen hoch.",
+    "manufacturer": "Hersteller",
+    "brand": "Marke",
+    "sku": "Artikelnummer",
+    "availability": "Verfügbarkeit",
+    "pieces": "Stk",
+    "reviews": "Bewertungen",
+    "description": "Beschreibung",
+    "pharmaceutical_details": "Pharmazeutische Details",
+    "active_ingredients": "Wirkstoffe",
+    "dosage": "Dosierung",
+    "packaging": "Verpackung",
+    "total": "Gesamt",
+    "view_details": "Details ansehen",
+    "decrease_quantity": "Menge verringern",
+    "increase_quantity": "Menge erhöhen",
+    "previous_image": "Vorheriges Bild",
+    "next_image": "Nächstes Bild",
+    "view_image": "Bild {{number}} ansehen",
+    "no_products_found": "Es gibt keine produkte festhalten",
+    "try_different_filters": "Versuchen Sie andere Filter"
+  },
+  "pagination": {
+    "items_per_page": "Artikel pro Seite",
+    "showing": "Anzeigen",
+    "of": "von",
+    "navigation": "Seitennavigation",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "page": "Seite"
+  },
+  "auth": {
+    "or": "oder",
+    "show_password": "Passwort anzeigen",
+    "fields": {
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "new_password": "Neues Passwort",
+      "confirm_password": "Passwort bestätigen",
+      "firstname": "Vorname",
+      "lastname": "Nachname"
+    },
+    "placeholders": {
+      "email": "beispiel@email.de",
+      "password": "••••••••",
+      "new_password": "Neues Passwort",
+      "confirm_password": "Passwort bestätigen",
+      "firstname": "Max",
+      "lastname": "Mustermann"
+    },
+    "login": {
+      "title": "Anmelden",
+      "subtitle": "Willkommen zurück!",
+      "stay_logged_in": "Angemeldet bleiben",
+      "button": "Anmelden",
+      "logging_in": "Anmeldung läuft...",
+      "forgot_password": "Passwort vergessen?",
+      "no_account": "Noch kein Konto?",
+      "sign_up": "Registrieren"
+    },
+    "register": {
+      "title": "Konto erstellen",
+      "subtitle": "Erstellen Sie ein neues Konto",
+      "password_hint": "Passwort muss mindestens 8 Zeichen lang sein",
+      "button": "Konto erstellen",
+      "creating_account": "Konto wird erstellt...",
+      "have_account": "Bereits ein Konto?",
+      "sign_in": "Anmelden",
+      "success_message": "Registrierung erfolgreich! Bitte überprüfen Sie Ihre E-Mail zur Bestätigung."
+    },
+    "email": {
+      "check_inbox": "Überprüfen Sie Ihr Postfach",
+      "sent_message": "Wir haben eine Bestätigungs-E-Mail an Ihre Adresse gesendet.",
+      "step_1": "Öffnen Sie die gesendete E-Mail",
+      "step_2": "Klicken Sie auf den Bestätigungslink",
+      "step_3": "Sie werden automatisch angemeldet",
+      "no_email": "E-Mail nicht erhalten?",
+      "resend": "Erneut senden",
+      "back_to_login": "Zurück zur Anmeldung",
+      "verifying": "Überprüfung läuft",
+      "verifying_message": "Bitte warten Sie, während wir Ihre E-Mail-Adresse überprüfen...",
+      "verified": "E-Mail bestätigt!",
+      "verified_message": "Ihre E-Mail wurde erfolgreich bestätigt. Sie werden automatisch angemeldet.",
+      "redirecting": "Weiterleitung zur Startseite...",
+      "verification_failed": "Überprüfung fehlgeschlagen",
+      "try_again": "Erneut versuchen",
+      "back_to_register": "Zurück zur Registrierung"
+    },
+    "password_reset": {
+      "title": "Passwort zurücksetzen",
+      "subtitle": "Geben Sie Ihre E-Mail ein, um einen Reset-Link zu erhalten",
+      "button": "Reset-Link senden",
+      "sending": "Wird gesendet...",
+      "back_to_login": "Zurück zur Anmeldung",
+      "email_sent": "E-Mail gesendet",
+      "email_sent_message": "Wir haben einen Passwort-Reset-Link an Ihre E-Mail gesendet.",
+      "step_1": "Überprüfen Sie Ihr E-Mail-Postfach",
+      "step_2": "Klicken Sie auf den Reset-Link",
+      "step_3": "Legen Sie Ihr neues Passwort fest"
+    },
+    "password_change": {
+      "title": "Neues Passwort festlegen",
+      "subtitle": "Geben Sie Ihr neues Passwort ein",
+      "button": "Passwort ändern",
+      "updating": "Aktualisierung läuft...",
+      "back_to_login": "Zurück zur Anmeldung",
+      "success": "Passwort geändert!",
+      "success_message": "Ihr Passwort wurde erfolgreich geändert. Sie können sich nun mit Ihrem neuen Passwort anmelden.",
+      "redirecting": "Weiterleitung zur Anmeldung..."
+    },
+    "errors": {
+      "empty_fields": "Bitte füllen Sie alle Felder aus",
+      "invalid_email": "Ungültige E-Mail-Adresse",
+      "email_required": "E-Mail-Adresse ist erforderlich",
+      "password_too_short": "Passwort muss mindestens 8 Zeichen lang sein",
+      "passwords_dont_match": "Passwörter stimmen nicht überein",
+      "bad_request": "Ungültige Anfrage",
+      "invalid_credentials": "Ungültige E-Mail oder Passwort",
+      "not_found": "Nicht gefunden",
+      "email_exists": "Diese E-Mail-Adresse ist bereits registriert",
+      "server_error": "Serverfehler. Bitte versuchen Sie es später erneut.",
+      "login_failed": "Anmeldung fehlgeschlagen",
+      "registration_failed": "Registrierung fehlgeschlagen",
+      "verification_failed": "E-Mail-Überprüfung fehlgeschlagen",
+      "request_failed": "Anfrage fehlgeschlagen",
+      "password_reset_failed": "Passwort-Reset fehlgeschlagen",
+      "invalid_reset_link": "Ungültiger oder abgelaufener Reset-Link"
+    }
+  },
+  "category": {
+    "select": "Kategorie auswählen",
+    "clearAll": "Alle löschen",
+    "medicine": "Medikamente",
+    "vitamins": "Vitamine",
+    "supplements": "Nahrungsergänzungsmittel",
+    "cosmetics": "Kosmetika",
+    "baby-care": "Babypflege",
+    "medical-devices": "Medizinische Geräte"
+  },
+  "products": {
+    "title": "Produkte",
+    "filter": {
+      "title": "Produkte filtern",
+      "priceRange": "Preisspanne",
+      "inStockOnly": "Nur auf Lager",
+      "hasDiscount": "Im Angebot",
+      "sortBy": "Sortieren nach",
+      "clear": "Filter löschen",
+      "apply": "Filter anwenden"
+    },
+    "sort": {
+      "popularity": "Beliebtheit",
+      "default": "Standard",
+      "price-asc": "Preis: Niedrig bis Hoch",
+      "price-desc": "Preis: Hoch bis Niedrig",
+      "name-asc": "Name: A-Z",
+      "name-desc": "Name: Z-A",
+      "newest": "Neueste",
+      "rating": "Bewertung"
+    },
+    "pagination": {
+      "itemsPerPage": "Artikel pro Seite:",
+      "showing": "Anzeigen",
+      "of": "von",
+      "products": "Produkte"
+    },
+    "empty": "Es gibt keine produkte festhalten",
+    "addToCart": "In den Warenkorb",
+    "viewDetails": "Details anzeigen"
+  },
+  "forum": {
+    "title": "Forum",
+    "description": "Teilen Sie Fragen, Antworten und Erfahrungen mit unserer Community",
+    "search_placeholder": "Forenbeiträge durchsuchen...",
+    "sort_by": "Sortieren nach",
+    "new_post": "Neuer Beitrag",
+    "all_categories": "Alle Kategorien",
+    "no_results_title": "Keine Ergebnisse gefunden",
+    "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
+    "reset_filters": "Filter zurücksetzen",
+    "pinned": "Angepinnt",
+    "featured": "Hervorgehoben",
+    "question": "Frage",
+    "answered": "Beantwortet",
+    "verified": "Verifiziert",
+    "role": {
+      "admin": "Administrator",
+      "pharmacist": "Apotheker",
+      "user": "Benutzer"
+    },
+    "category": {
+      "medicines": "Medikamente",
+      "natural_remedies": "Natürliche Heilmittel",
+      "baby_mother": "Baby & Mutter",
+      "healthy_lifestyle": "Gesunder Lebensstil",
+      "seasonal_health": "Saisonale Gesundheit",
+      "qa": "Fragen & Antworten",
+      "general": "Allgemein"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Gesundheitstipps, Fachartikel und nützliche Informationen von unseren Apothekern",
+    "search_placeholder": "Blog-Beiträge durchsuchen...",
+    "sort_by": "Sortieren nach",
+    "all_categories": "Alle Kategorien",
+    "articles": "Artikel",
+    "featured_posts": "Hervorgehobene Beiträge",
+    "no_results_title": "Keine Ergebnisse gefunden",
+    "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
+    "reset_filters": "Filter zurücksetzen"
+  },
+  "profile": {
+    "account_details": "Kontodetails",
+    "first_name": "Vorname",
+    "last_name": "Nachname",
+    "email": "E-Mail-Adresse",
+    "role": "Rolle",
+    "view_orders": "Meine Bestellungen anzeigen",
+    "logout": "Abmelden"
+  }
+}

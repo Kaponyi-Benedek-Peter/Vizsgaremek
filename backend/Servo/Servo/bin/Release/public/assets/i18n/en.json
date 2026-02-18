@@ -1,0 +1,350 @@
+{
+  "header": {
+    "home": "Home",
+    "forum": "Forum",
+    "products": "Products",
+    "login": "Login",
+    "cart": "Shopping Cart",
+    "profile": "Profile",
+    "my_profile": "My Profile",
+    "my_orders": "My Orders",
+    "logout": "Logout"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "items": "items",
+    "empty": "Your cart is empty",
+    "remove": "Remove",
+    "total": "Total",
+    "checkout": "Go to Checkout"
+  },
+  "footer": {
+    "copyright": "Copyright © 2025 Roy's shack",
+    "info": "The information, data or documents on the site are for informational purposes only",
+    "contact": "Contact",
+    "contactInfo": "Contact information",
+    "email": "Contact@roysshack.hu",
+    "followUs": "Follow us!",
+    "newsletter": "Subscribe to our newsletter!",
+    "emailPlaceholder": "Your e-mail address",
+    "send": "Send",
+    "legal": "Legal"
+  },
+  "home": {
+    "hero": {
+      "title": "Roy's Shack Est. 1888",
+      "subtitle": "Our mission",
+      "description": "Lorem ipsum dolor sit amet consectetur. Euismod eget ut suspendisse leo faucibus sit dui. Aliquet egestas tincidunt nibh massa sed tellus aliquam. Amet auctor odio sit nibh at. Vel sed ipsum interdum vel nulla ornare. Ullamcorper egestas in viverra consequat. Vitae enim pellentesque a cras ornare dui nulla. Leo nam felis aliquet cras vel nulla mi bibendum non. Velit pretium non mi mi justo senectus leo. In congue aliquam adipiscing fames. Turpis orci odio mauris augue lacus mi non nibh. Etiam a in quis commodo vivamus. Gravida luctus risus egestas aliquam scelerisque vitae turpis viverra quisque."
+    },
+    "featured": {
+      "title": "Featured products",
+      "viewAll": "View all"
+    }
+  },
+  "language": {
+    "hu": "Hungarian",
+    "en": "English",
+    "de": "German"
+  },
+  "theme": {
+    "light": "Light mode",
+    "dark": "Dark mode",
+    "toggle": "Toggle theme"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Operation successful",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "add_to_cart": "Add to Cart",
+    "close": "Close",
+    "clear": "Clear",
+    "minutes": "min",
+    "ok": "OK",
+    "previous_page": "Previous page",
+    "next_page": "Next page"
+  },
+  "filter": {
+    "sort_by": "Sort by",
+    "filters": "Filters",
+    "advanced_filters": "Advanced filters",
+    "clear_all": "Clear filters",
+    "toggle_filters": "Toggle filters",
+    "price_range": "Price range",
+    "min_price": "Min. price",
+    "max_price": "Max. price",
+    "in_stock_only": "In stock only",
+    "sort": {
+      "popularity": "Popularity",
+      "name_asc": "Name (A-Z)",
+      "name_desc": "Name (Z-A)",
+      "price_asc": "Price (Low to High)",
+      "price_desc": "Price (High to Low)",
+      "rating": "Rating",
+      "newest": "Newest"
+    }
+  },
+  "product": {
+    "out_of_stock": "Out of Stock",
+    "in_stock": "In Stock",
+    "requires_prescription": "Prescription Required",
+    "prescription_required_notice": "This product requires a prescription. Please upload your prescription when ordering.",
+    "manufacturer": "Manufacturer",
+    "brand": "Brand",
+    "sku": "SKU",
+    "availability": "Availability",
+    "pieces": "pcs",
+    "reviews": "reviews",
+    "description": "Description",
+    "pharmaceutical_details": "Pharmaceutical Details",
+    "active_ingredients": "Active Ingredients",
+    "dosage": "Dosage",
+    "packaging": "Packaging",
+    "total": "Total",
+    "view_details": "View Details",
+    "decrease_quantity": "Decrease quantity",
+    "increase_quantity": "Increase quantity",
+    "previous_image": "Previous image",
+    "next_image": "Next image",
+    "view_image": "View image {{number}}",
+    "no_products_found": "No products found",
+    "try_different_filters": "Try adjusting your filters"
+  },
+  "pagination": {
+    "items_per_page": "Items per page",
+    "showing": "Showing",
+    "of": "of",
+    "navigation": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page"
+  },
+  "auth": {
+    "or": "or",
+    "show_password": "Show password",
+    "fields": {
+      "email": "Email address",
+      "password": "Password",
+      "new_password": "New password",
+      "confirm_password": "Confirm password",
+      "firstname": "First name",
+      "lastname": "Last name"
+    },
+    "placeholders": {
+      "email": "example@email.com",
+      "password": "••••••••",
+      "new_password": "New password",
+      "confirm_password": "Confirm password",
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "login": {
+      "title": "Sign In",
+      "subtitle": "Welcome back!",
+      "stay_logged_in": "Stay logged in",
+      "button": "Sign In",
+      "logging_in": "Signing in...",
+      "forgot_password": "Forgot your password?",
+      "no_account": "Don't have an account?",
+      "sign_up": "Sign up"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Create a new account",
+      "password_hint": "Password must be at least 8 characters long",
+      "button": "Create Account",
+      "creating_account": "Creating account...",
+      "have_account": "Already have an account?",
+      "sign_in": "Sign in",
+      "success_message": "Registration successful! Please check your email to verify your account."
+    },
+    "email": {
+      "check_inbox": "Check your inbox",
+      "sent_message": "We've sent a verification email to your address.",
+      "step_1": "Open the email we sent you",
+      "step_2": "Click the verification link",
+      "step_3": "You'll be automatically logged in",
+      "no_email": "Didn't receive the email?",
+      "resend": "Resend",
+      "back_to_login": "Back to login",
+      "verifying": "Verifying",
+      "verifying_message": "Please wait while we verify your email address...",
+      "verified": "Email Verified!",
+      "verified_message": "Your email has been successfully verified. You will be automatically logged in.",
+      "redirecting": "Redirecting to homepage...",
+      "verification_failed": "Verification Failed",
+      "try_again": "Try Again",
+      "back_to_register": "Back to registration"
+    },
+    "password_reset": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email to receive a reset link",
+      "button": "Send Reset Link",
+      "sending": "Sending...",
+      "back_to_login": "Back to login",
+      "email_sent": "Email Sent",
+      "email_sent_message": "We've sent a password reset link to your email.",
+      "step_1": "Check your email inbox",
+      "step_2": "Click the reset link",
+      "step_3": "Set your new password"
+    },
+    "password_change": {
+      "title": "Set New Password",
+      "subtitle": "Enter your new password",
+      "button": "Change Password",
+      "updating": "Updating...",
+      "back_to_login": "Back to login",
+      "success": "Password Changed!",
+      "success_message": "Your password has been successfully changed. You can now log in with your new password.",
+      "redirecting": "Redirecting to login..."
+    },
+    "errors": {
+      "empty_fields": "Please fill in all fields",
+      "invalid_email": "Invalid email address",
+      "email_required": "Email address is required",
+      "password_too_short": "Password must be at least 8 characters long",
+      "passwords_dont_match": "Passwords do not match",
+      "bad_request": "Bad request",
+      "invalid_credentials": "Invalid email or password",
+      "not_found": "Not found",
+      "email_exists": "This email address is already registered",
+      "server_error": "Server error. Please try again later.",
+      "login_failed": "Login failed",
+      "registration_failed": "Registration failed",
+      "verification_failed": "Email verification failed",
+      "request_failed": "Request failed",
+      "password_reset_failed": "Password reset failed",
+      "invalid_reset_link": "Invalid or expired reset link"
+    }
+  },
+  "checkout": {
+    "title": "Checkout",
+    "order_summary": "Order Summary",
+    "shipping_info": "Shipping Information",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "free_shipping": "Free",
+    "total": "Total",
+    "city": "City",
+    "city_placeholder": "Enter your city",
+    "zipcode": "Zip Code",
+    "zipcode_placeholder": "e.g. 7600",
+    "address": "Street Address",
+    "address_placeholder": "Enter your street address",
+    "house_number": "House Number",
+    "house_number_placeholder": "e.g. 42",
+    "apartment_number": "Apartment",
+    "apartment_placeholder": "Optional",
+    "phone": "Phone Number",
+    "phone_placeholder": "+36 30 123 4567",
+    "note": "Order Notes",
+    "note_placeholder": "Any special instructions? (optional)",
+    "continue_shopping": "Continue Shopping",
+    "place_order": "Place Order",
+    "processing": "Processing...",
+    "success": "Order placed successfully! Redirecting...",
+    "error": "Failed to place order. Please try again.",
+    "validation_error": "Please fill in all required fields.",
+    "invalid_zipcode": "Please enter a valid zip code.",
+    "invalid_phone": "Please enter a valid phone number."
+  },
+  "category": {
+    "select": "Select category",
+    "clearAll": "Clear all",
+    "medicine": "Medicines",
+    "vitamins": "Vitamins",
+    "supplements": "Supplements",
+    "cosmetics": "Cosmetics",
+    "baby-care": "Baby Care",
+    "medical-devices": "Medical Devices"
+  },
+  "products": {
+    "title": "Products",
+    "filter": {
+      "title": "Filter Products",
+      "priceRange": "Price Range",
+      "inStockOnly": "In Stock Only",
+      "hasDiscount": "On Sale",
+      "sortBy": "Sort By",
+      "clear": "Clear Filters",
+      "apply": "Apply Filters"
+    },
+    "sort": {
+      "popularity": "Popularity",
+      "default": "Default",
+      "price-asc": "Price: Low to High",
+      "price-desc": "Price: High to Low",
+      "name-asc": "Name: A-Z",
+      "name-desc": "Name: Z-A",
+      "newest": "Newest",
+      "rating": "Rating"
+    },
+    "pagination": {
+      "itemsPerPage": "Items per page:",
+      "showing": "Showing",
+      "of": "of",
+      "products": "products"
+    },
+    "empty": "No products found",
+    "addToCart": "Add to Cart",
+    "viewDetails": "View Details"
+  },
+  "forum": {
+    "title": "Forum",
+    "description": "Share questions, answers, and experiences with our community",
+    "search_placeholder": "Search forum posts...",
+    "sort_by": "Sort by",
+    "new_post": "New Post",
+    "all_categories": "All Categories",
+    "no_results_title": "No Results Found",
+    "no_results_description": "Try different search terms or select another category.",
+    "reset_filters": "Reset Filters",
+    "pinned": "Pinned",
+    "featured": "Featured",
+    "question": "Question",
+    "answered": "Answered",
+    "verified": "Verified",
+    "role": {
+      "admin": "Admin",
+      "pharmacist": "Pharmacist",
+      "user": "User"
+    },
+    "category": {
+      "medicines": "Medicines",
+      "natural_remedies": "Natural Remedies",
+      "baby_mother": "Baby & Mother",
+      "healthy_lifestyle": "Healthy Lifestyle",
+      "seasonal_health": "Seasonal Health",
+      "qa": "Q&A",
+      "general": "General"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "description": "Health tips, professional articles and useful information from our pharmacists",
+    "search_placeholder": "Search blog posts...",
+    "sort_by": "Sort by",
+    "all_categories": "All Categories",
+    "articles": "articles",
+    "featured_posts": "Featured Posts",
+    "no_results_title": "No Results Found",
+    "no_results_description": "Try different search terms or select another category.",
+    "reset_filters": "Reset Filters"
+  },
+  "profile": {
+    "account_details": "Account Details",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "email": "Email Address",
+    "role": "Role",
+    "view_orders": "View My Orders",
+    "logout": "Sign Out"
+  }
+}

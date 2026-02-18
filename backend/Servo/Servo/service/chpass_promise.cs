@@ -42,7 +42,7 @@ namespace Servo.service
 
 
             string fetched_token = model.shared.get_token_by_id(controller_id);
-            string model_password = model.shared.get_sesstoken_expiration_by_id(controller_id);
+            string sesstoken_expiration = model.shared.get_sesstoken_expiration_by_id(controller_id);
             string accstate = model.shared.get_account_state_by_id(controller_id);
 
             //service.shared.log(controller_confirmation_token);
@@ -78,13 +78,24 @@ namespace Servo.service
                         string new_sesstoken = service.shared.gen_code(false);
 
                         string model_session_token = model.shared.refresh_token(controller_id,new_sesstoken);
+                        string expiration = model.shared.get_sesstoken_expiration_by_id(controller_id);
+
+                        
+
+
 
                         if (model_session_token != "404")
                         {
                             var respon = new
                             {
                                 jwt_token = jwt_handler.generate_token(model_email),
+                                jwt_token_expiration = 604800,
+
                                 session_token = new_sesstoken,
+                                session_token_expiration = expiration,
+
+
+
                                 status = "success",
                                 statuscode = "200"
                             };
@@ -92,7 +103,7 @@ namespace Servo.service
                             string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                            return (200, "error");
+                            return (200, "success");
                         }
                         else
                         {
