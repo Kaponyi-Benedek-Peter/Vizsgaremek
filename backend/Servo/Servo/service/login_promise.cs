@@ -15,7 +15,9 @@ namespace Servo.service
         public static (int responsecode, string responsedata) process_login_promise(string controller_id, string controller_confirmation_token)
         {
 
-            controller_confirmation_token = controller_confirmation_token;
+
+
+            shared.log($"Debug 0: {controller_id} --service.login_promise.process_login_promise");
 
 
 
@@ -24,13 +26,25 @@ namespace Servo.service
 
             try
             {
-                resp = model.shared.get_full_confirmation_by_user_id(controller_id, "password_change");
+                resp = model.shared.get_full_confirmation_by_user_id(controller_id, "login");
             }
-            catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.chpass_promise.process_chpass_promise"); }
+            catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.login_promise.process_login_promise"); }
 
             string recieved_token = "";
             string expirationdate = "";
             string new_value = "";
+
+
+
+           
+            if (!resp.ContainsKey("confirmation_token") ||
+                !resp.ContainsKey("confirmation_token_expire") ||
+                !resp.ContainsKey("new_value"))
+            {
+                service.shared.log($"Error 2: Missing confirmation data for user {controller_id}");
+                return (401, "error");
+            }
+
 
             try
             {
@@ -40,7 +54,7 @@ namespace Servo.service
                 new_value = resp["new_value"];
 
             }
-            catch (Exception ex) { service.shared.log($"Error 2: {ex.Message} --service.chpass_promise.process_chpass_promise"); }
+            catch (Exception ex) { service.shared.log($"Error 2: {ex.Message} --service.login_promise.process_login_promise"); }
 
 
             string fetched_token = model.shared.get_token_by_id(controller_id);
@@ -52,12 +66,16 @@ namespace Servo.service
 
 
 
-            DateTime expirationDate = DateTime.Parse(expirationdate);
+            if (!DateTime.TryParse(expirationdate, out DateTime expirationDate))
+            {
+                service.shared.log($"Error 3: {expirationdate} --service.login_promise.process_login_promise");
+                return (410, "error");
+            }
             DateTime currentDate = DateTime.Now;
 
             if (resp["error"] == "true" && resp["type"] != "login")
             {
-                shared.log($"Debug 1: {resp["type"]} --service.chpass_promise.process_login_promise");
+                shared.log($"Debug 1: {resp["type"]} --service.login_promise.process_login_promise");
                 return (401, "error");
             }
             else
@@ -73,8 +91,7 @@ namespace Servo.service
                     if (controller_confirmation_token == recieved_token)
                     {
 
-                        model.shared.delete_confirmations_by_user_id_and_type(controller_id, "login");
-
+                        
                         //return confirmation data
 
 
@@ -82,7 +99,11 @@ namespace Servo.service
 
 
                         string new_sesstoken = service.shared.gen_code(false);
-                        string model_session_token = model.shared.refresh_token(controller_id, new_sesstoken);
+                        model.shared.refresh_token(controller_id, new_sesstoken);
+                        string model_session_token = model.shared.get_token_by_id(controller_id);
+
+                        shared.log($"Debug 1.5: {model_session_token} --service.login_promise.process_login_promise");
+
                         string expiration = model.shared.get_sesstoken_expiration_by_id(controller_id);
                         string new_jwt_token = jwt_handler.generate_token(model_email);
                         string jwt_expiration = jwt_handler.generate_expiration_string();
@@ -99,20 +120,21 @@ namespace Servo.service
 
                                 session_token = new_sesstoken,
                                 session_token_expiration = expiration,
-
-
-
                                 status = "success",
                                 statuscode = "200"
                             };
 
                             string jsonrespon = JsonSerializer.Serialize(respon);
 
+                            model.shared.delete_confirmations_by_user_id_and_type(controller_id, "login");
 
-                            return (200, "success");
+
+                            return (200, jsonrespon);
                         }
                         else
                         {
+                            shared.log($"Debug 1: {model_session_token} --service.login_promise.process_login_promise X");
+
                             return (500, "error");
                         }
 
@@ -120,7 +142,7 @@ namespace Servo.service
                     }
                     else
                     {
-                        shared.log($"Debug 1: {controller_confirmation_token} > {recieved_token} --service.chpass_promise.process_chpass_promise X");
+                        shared.log($"Debug 2: {controller_confirmation_token} > {recieved_token} --service.login_promise.process_login_promise X");
                         return (401, "error");
 
                     }

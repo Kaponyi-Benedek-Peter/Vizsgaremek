@@ -64,7 +64,7 @@ namespace Servo.service
                 {
                     confirmation_token = service.shared.gen_code(false),
                      value = (i).ToString(),
-                     type = "account_deletion",
+                    confirmation_type = "account_deletion",
                      user_id = (i+start_id).ToString(),
 
 

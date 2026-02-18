@@ -22,7 +22,7 @@ namespace Servo.model
             public string confirmation_token { get; set; } = "";
             public string user_id { get; set; } = "";
             public string value { get; set; } = "";
-            public string type { get; set; } = "";
+            public string confirmation_type { get; set; } = "";
 
         }
 
@@ -540,7 +540,7 @@ namespace Servo.model
                     cmd.Parameters.AddWithValue("@p_confirmation_token", con.confirmation_token);
                     cmd.Parameters.AddWithValue("@p_user_id", con.user_id);
                     cmd.Parameters.AddWithValue("@p_new_value", con.value);
-                    cmd.Parameters.AddWithValue("@p_type", con.type);
+                    cmd.Parameters.AddWithValue("@p_type", con.confirmation_type);
                     cmd.ExecuteNonQuery();
 
                     return 200;

@@ -21,7 +21,7 @@ namespace Servo.service
             {
                 confirmation_token = confirmation_token,
                 value = newpasshash,
-                type = "password_change",
+                confirmation_type = "password_change",
                 user_id =id,
 
 

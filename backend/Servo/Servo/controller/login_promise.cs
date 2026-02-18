@@ -81,22 +81,10 @@ namespace Servo.controller
                     data.Response.ContentType = "application/json";
 
 
-                    var respon = new
-                    {
-                        /*session_token = model.shared.get_token_by_id(model.shared.get_id_by_email(email)),
-                        jwttoken = token,
-                        expires_in = 604800, // 7 nap  */
-                        status = "success",
-                        statuscode = "200"
-                    };
-
-                    string jsonrespon = JsonSerializer.Serialize(respon);
-
-
 
 
                     data.Response.StatusCode = 200;
-                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
+                    byte[] buffer = Encoding.UTF8.GetBytes(resp.responsedata);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
                 else if (resp.responsecode == 401)

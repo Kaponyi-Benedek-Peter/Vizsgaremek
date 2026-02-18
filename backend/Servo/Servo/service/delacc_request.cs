@@ -82,7 +82,7 @@ namespace Servo.service
                                 {
                                     confirmation_token = confirmation_token,
                                     value = "-",
-                                    type = "account_deletion",
+                                    confirmation_type = "account_deletion",
                                     user_id = controller_id,
 
 

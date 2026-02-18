@@ -30,17 +30,20 @@ namespace Servo.service
 
                
 
+
                     model.shared.confirmation con = new model.shared.confirmation
                     {
                         confirmation_token = new_confirmation_token,
                         value = "-",
-                        type = "login",
+                        confirmation_type = "login",
                         user_id = model_user_id,
 
 
                     };
 
-                    int result = model.shared.add_confirmation(con);
+
+
+                int result = model.shared.add_confirmation(con);
 
                     if (result != 200)
                     {
