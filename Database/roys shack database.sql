@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 17, 2026 at 03:05 PM
+-- Generation Time: Feb 18, 2026 at 09:23 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -692,7 +692,7 @@ CREATE TABLE `confirmations` (
   `new_value` varchar(255) DEFAULT NULL,
   `confirmation_token` varchar(255) NOT NULL,
   `confirmation_token_expire` datetime NOT NULL,
-  `confirmation_type` enum('password_change','account_deletion','account_creation') NOT NULL
+  `confirmation_type` enum('password_change','account_deletion','account_creation','login') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
