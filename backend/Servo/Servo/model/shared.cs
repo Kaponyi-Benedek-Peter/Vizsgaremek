@@ -14,7 +14,6 @@ namespace Servo.model
     internal class shared
     {
 
-
         public class confirmation
         {
 
@@ -23,6 +22,18 @@ namespace Servo.model
             public string user_id { get; set; } = "";
             public string value { get; set; } = "";
             public string confirmation_type { get; set; } = "";
+
+        }
+
+
+        public class newsletter_recipient
+        {
+
+
+            public string email { get; set; } = "";
+            public string news_level { get; set; } = "";
+            public string received_current_newsletter { get; set; } = "";
+            public string id { get; set; } = "";
 
         }
 
@@ -86,10 +97,14 @@ namespace Servo.model
             public string updated_at { get; set; } = "";
             public string packaging { get; set; } = "";
             public string thumbnail_url { get; set; } = "";
+
+            public string featured { get; set; } = "";
+
+
         }
 
 
-            public class review
+        public class review
             {
                 public string product_id { get; set; } = "";
                 public string title { get; set; } = "";
@@ -626,6 +641,7 @@ namespace Servo.model
                     cmd.Parameters.AddWithValue("@p_updated_at", prod.updated_at);
                     cmd.Parameters.AddWithValue("@p_thumbnail_url", prod.thumbnail_url);
 
+                    cmd.Parameters.AddWithValue("@p_featured", prod.featured);
 
 
 
@@ -1003,7 +1019,31 @@ namespace Servo.model
 
 
 
+        public static int add_newsletter_recipient(newsletter_recipient recip)
+        {
 
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("create_newsletter_recipient", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    service.shared.log($"Adding newsletter recipient: email={recip.email}, news_level={recip.news_level}");
+
+                    cmd.Parameters.AddWithValue("@p_email", recip.email);
+                    cmd.Parameters.AddWithValue("@p_news_level", recip.news_level);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_newsletter_recipient");
+                return 500;
+            }
+        }
 
 
 

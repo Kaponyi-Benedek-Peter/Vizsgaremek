@@ -3,6 +3,38 @@
   "WorkspaceRootPath": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\service\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\service\\registration_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\registration_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\service\\login_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\login_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\service\\delacc_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\delacc_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\service\\chpass_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\chpass_request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\service\\newsletter_subscription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\newsletter_subscription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\controller\\newsletter_subscription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\newsletter_subscription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\model\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\model\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\controller\\router.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\router.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -23,14 +55,118 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "shared.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\shared.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\shared.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\shared.cs",
+              "RelativeToolTip": "Servo\\service\\shared.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAAABcAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T10:30:06.07Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "registration_request.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\registration_request.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\registration_request.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\registration_request.cs",
+              "RelativeToolTip": "Servo\\service\\registration_request.cs",
+              "ViewState": "AgIAAEEAAAAAAAAAAAAAAFAAAAB5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T10:30:04.649Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "login_request.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\login_request.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\login_request.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\login_request.cs",
+              "RelativeToolTip": "Servo\\service\\login_request.cs",
+              "ViewState": "AgIAAGEAAAAAAAAAAAAAAG0AAABoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T10:30:03.452Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "delacc_request.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\delacc_request.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\delacc_request.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\delacc_request.cs",
+              "RelativeToolTip": "Servo\\service\\delacc_request.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAqwBQAAABzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T10:30:01.122Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "chpass_request.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\chpass_request.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\chpass_request.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\chpass_request.cs",
+              "RelativeToolTip": "Servo\\service\\chpass_request.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAuwCIAAABxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T10:29:58.544Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "newsletter_subscription.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\newsletter_subscription.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\newsletter_subscription.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\newsletter_subscription.cs",
+              "RelativeToolTip": "Servo\\service\\newsletter_subscription.cs",
+              "ViewState": "AgIAADEAAAAAAAAAAAAQwEIAAABzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T10:29:15.87Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "shared.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\model\\shared.cs",
+              "RelativeDocumentMoniker": "Servo\\model\\shared.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\model\\shared.cs",
+              "RelativeToolTip": "Servo\\model\\shared.cs",
+              "ViewState": "AgIAAPsDAAAAAAAAAAAAAAYEAAB7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T10:26:48.722Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "router.cs",
               "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\router.cs",
               "RelativeDocumentMoniker": "Servo\\controller\\router.cs",
               "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\router.cs",
               "RelativeToolTip": "Servo\\controller\\router.cs",
-              "ViewState": "AgIAADMAAAAAAAAAAAAiwPwAAABmAAAAAAAAAA==",
+              "ViewState": "AgIAAEQAAAAAAAAAAAAAwBYAAACVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-18T12:30:15.076Z",
+              "WhenOpened": "2026-02-19T10:23:44.524Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "newsletter_subscription.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\newsletter_subscription.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\newsletter_subscription.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\newsletter_subscription.cs",
+              "RelativeToolTip": "Servo\\controller\\newsletter_subscription.cs",
+              "ViewState": "AgIAAEAAAAAAAAAAAAAQwEsAAABsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-19T10:20:44.013Z",
               "EditorCaption": ""
             }
           ]

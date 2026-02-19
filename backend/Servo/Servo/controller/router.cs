@@ -20,7 +20,7 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription"
         };
 
 
@@ -214,6 +214,24 @@ namespace Servo.controller
 
 
                 }
+                else if (lenyeg.Contains("get_all_orders"))
+                {
+
+                    controller.get_all_orders.main(data, lenyeg);
+
+
+
+
+                }
+                else if (lenyeg.Contains("newsletter_subscription"))
+                {
+
+                    controller.newsletter_subscription.main(data, lenyeg);
+
+
+
+
+                }
 
 
 
@@ -249,7 +267,7 @@ namespace Servo.controller
                         data.Response.ContentType = service.shared.mime(Path.GetExtension(hely));
                         data.Response.OutputStream.Write(fileBytes, 0, fileBytes.Length);
 
-                        Form1.Instance.updatefilesserved();
+                        //Form1.Instance.updatefilesserved();
                         service.shared.log($"{data.Request.RemoteEndPoint.Address} --> {kert} || OK");
                     }
                     else
@@ -267,7 +285,7 @@ namespace Servo.controller
                     byte[] buffer = Encoding.UTF8.GetBytes("Internal error");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
-                    Form1.Instance.updateerrorcount();
+                   // Form1.Instance.updateerrorcount();
                     service.shared.log($"ERROR 2: {ex.Message} --controller.router.main");
                 }
 

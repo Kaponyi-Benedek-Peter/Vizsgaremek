@@ -20,11 +20,11 @@ namespace Servo.service
             string model_sesstoken = model.shared.get_token_by_id(controller_user_id);
 
             
-            service.shared.log("Password change request: " + controller_user_id + "   -> " + controller_sesstoken);
+            service.shared.log("Get all users request: " + controller_user_id + "   -> " + controller_sesstoken);
 
             string accstate = model.shared.get_account_state_by_id(controller_user_id);
 
-            service.shared.log($"Debug 1: {accstate} --service.chpass_request.process_chpas_request ");
+            service.shared.log($"Debug 1: {accstate} --service.get_all_users.process_get_all_users ");
 
 
 

@@ -104,10 +104,12 @@ namespace Servo.service
                   manufacturer     = "manufacturer",
                   brand     = "brand",
                   rating     = 0.0,
-                  sku     = "sku",
+                  sku     = (i*1000).ToString(),
                   active_ingredient     = "active_ingredient",
                   packaging     = "valami",
                   thumbnail_url = $"https://www.roysshack.hu/assets/products/{i}/tumbnail.webp",
+
+                    featured = $"0"
                 };
 
                 model.shared.add_product(prod);

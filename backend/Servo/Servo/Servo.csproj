@@ -183,9 +183,11 @@
     <Compile Include="controller\chpass_request.cs" />
     <Compile Include="controller\delacc_promise.cs" />
     <Compile Include="controller\delacc_request.cs" />
+    <Compile Include="controller\get_all_orders.cs" />
     <Compile Include="controller\get_all_products.cs" />
     <Compile Include="controller\get_all_users.cs" />
     <Compile Include="controller\login_promise.cs" />
+    <Compile Include="controller\newsletter_subscription.cs" />
     <Compile Include="controller\router.cs" />
     <Compile Include="controller\ban_user.cs" />
     <Compile Include="controller\login_request.cs" />
@@ -200,6 +202,7 @@
     <Compile Include="lib.cs" />
     <Compile Include="model\delacc_promise.cs" />
     <Compile Include="model\delacc_request.cs" />
+    <Compile Include="model\get_all_orders.cs" />
     <Compile Include="model\get_all_products.cs" />
     <Compile Include="model\get_all_users.cs" />
     <Compile Include="model\registration_request.cs" />
@@ -212,6 +215,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="service\chpass_promise.cs" />
     <Compile Include="service\chpass_request.cs" />
+    <Compile Include="service\get_all_orders.cs" />
     <Compile Include="service\get_all_users.cs" />
     <Compile Include="service\delacc_promise.cs" />
     <Compile Include="service\delacc_request.cs" />
@@ -219,6 +223,7 @@
     <Compile Include="service\jwt_handler.cs" />
     <Compile Include="service\login_request.cs" />
     <Compile Include="service\login_promise.cs" />
+    <Compile Include="service\newsletter_subscription.cs" />
     <Compile Include="service\nonapi_test.cs" />
     <Compile Include="service\registration_promise.cs" />
     <Compile Include="service\registration_request.cs" />

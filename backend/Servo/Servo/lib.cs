@@ -53,7 +53,7 @@ namespace Servo
                         HttpListenerContext context = hallgatozo.GetContext();
                         ThreadPool.QueueUserWorkItem(o => controller.router.main(context, service.shared.baseDir));
 
-                        Form1.Instance.updateconnections();
+                        //Form1.Instance.updateconnections();
                         //service.shared.log("[starting server 5]");
                     }
                     catch (HttpListenerException ex) when (token.IsCancellationRequested)

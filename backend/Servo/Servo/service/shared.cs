@@ -21,7 +21,7 @@ namespace Servo.service
                 Directory.CreateDirectory(baseDir);
         }
 
-        public static string current_url = "http://localhost:4200/registration-promise/"; //https://www.roysshack.hu
+        public static string current_url = "http://localhost:4200/"; //https://www.roysshack.hu
 
 
         public static string b64enc(string str)
