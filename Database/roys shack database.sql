@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 18, 2026 at 09:23 AM
+-- Generation Time: Feb 19, 2026 at 10:08 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -54,6 +54,17 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `calculate_order_price` (IN `p_id` I
     WHERE orders.id = p_id;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `calculate_product_category_number_of_products` ()   BEGIN
+
+    UPDATE roy.product_categories pc
+    SET number_of_products = (
+        SELECT COUNT(*)
+        FROM roy.products p
+        WHERE p.category_id = pc.id
+    );
+
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_account` (IN `p_first_name` VARCHAR(16), IN `p_last_name` VARCHAR(16), IN `p_email` VARCHAR(255), IN `p_sesstoken` VARCHAR(255), IN `p_passhash` VARCHAR(255), IN `p_account_state` VARCHAR(11))   BEGIN
     INSERT INTO roy.users (first_name, last_name, email, sesstoken, passhash, sesstoken_expire , account_state)
     VALUES (p_first_name, p_last_name, p_email, p_sesstoken, p_passhash, NOW() + INTERVAL 1 week, p_account_state);
@@ -64,9 +75,9 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_confirmation` (IN `p_confirm
     VALUES (p_confirmation_token, NOW() + INTERVAL 1 WEEK, p_user_id, p_new_value, p_type);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_newsletter_recipient` (IN `p_news_level` INT, IN `p_user_id` INT)   BEGIN
-INSERT INTO roy.newsletter_recipients (news_level, user_id, received_current_newsletter)
-VALUES (p_news_level, p_user_id, '0');
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_newsletter_recipient` (IN `p_news_level` INT, IN `p_email` VARCHAR(255))   BEGIN
+INSERT INTO roy.newsletter_recipients (news_level, email, received_current_newsletter)
+VALUES (p_news_level, p_email, '0');
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(10), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(20))   BEGIN
@@ -102,7 +113,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_body` TEXT, IN 
     VALUES (p_title, p_body, p_user_id, p_image_source, NOW(), p_category);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255), IN `p_featured` TINYINT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product` (IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` DECIMAL(11,0), IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category_id` INT(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_rating` DOUBLE, IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255), IN `p_featured` TINYINT)   BEGIN
 
 INSERT INTO roy.products(
     name_de,
@@ -118,7 +129,7 @@ INSERT INTO roy.products(
     description_de,
     description_preview_hu,
     description_preview_de,
-    category,
+    category_id,
     manufacturer,
     brand,
     rating,
@@ -144,7 +155,7 @@ VALUES(
     p_description_de,
     p_description_preview_hu,
     p_description_preview_de,
-    p_category,
+    p_category_id,
     p_manufacturer,
     p_brand,
     '0',
@@ -157,6 +168,11 @@ VALUES(
     p_featured
 );
 
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product_category` (IN `p_category` VARCHAR(255), IN `p_emoji` VARCHAR(255), IN `p_color` VARCHAR(255))   BEGIN
+    INSERT INTO roy.product_categories (category, emoji, color, number_of_products)
+    VALUES (p_category, p_emoji, p_color, 0);
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product_image` (IN `p_alt_text_de` VARCHAR(255), IN `p_alt_text_en` VARCHAR(255), IN `p_alt_text_hu` VARCHAR(255), IN `p_image_url` VARCHAR(255), IN `p_sort_id` INT, IN `p_product_id` INT)   BEGIN
@@ -252,6 +268,10 @@ DELETE FROM roy.confirmations
     WHERE confirmation_token_expire < NOW();
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_newsletter_recipient_by_id` (IN `p_id` INT)   BEGIN
+    DELETE FROM roy.newsletter_recipients WHERE id = p_id;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_order_by_id` (IN `p_id` INT)   BEGIN
     DELETE FROM roy.orders WHERE id = p_id;
 END$$
@@ -262,6 +282,14 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_post_by_id` (IN `p_id` INT)   BEGIN
     DELETE FROM roy.posts WHERE id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_product_by_id` (IN `p_id` INT)   BEGIN
+    DELETE FROM roy.products WHERE id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_product_category_by_id` (IN `p_id` INT)   BEGIN
+    DELETE FROM roy.product_categories WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_review_by_id` (IN `p_id` INT(11))   BEGIN
@@ -410,6 +438,11 @@ SET p_count_out = (
 
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_product_categories` ()   BEGIN
+SELECT *
+    FROM roy.product_categories;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_product_images` ()   BEGIN
 SELECT *
     FROM roy.product_images;
@@ -523,6 +556,31 @@ SELECT * from roy.posts
 where posts.id = p_id;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_products_by_category_id` (IN `p_category_id` INT)   BEGIN
+    SELECT *
+    FROM roy.products
+    WHERE category_id = p_category_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_products_by_category_id_page` (IN `p_category_id` INT, IN `p_page` INT, IN `p_amount` INT, OUT `p_count_out` INT)   BEGIN
+
+    DECLARE page INT DEFAULT 0;
+
+    SET page = (p_page - 1) * p_amount;
+
+    SELECT *
+    FROM roy.products
+    WHERE category_id = p_category_id
+    LIMIT p_amount OFFSET page;
+
+    SET p_count_out = (
+        SELECT COUNT(*)
+        FROM roy.products
+        WHERE category_id = p_category_id
+    );
+
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_product_by_id` (IN `p_id` INT)   BEGIN
 SELECT * from roy.products
 where products.id = p_id;
@@ -613,7 +671,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, 
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_by_id` (IN `p_id` INT, IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` INT, IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category` VARCHAR(255), IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255), IN `p_featured` TINYINT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_by_id` (IN `p_id` INT, IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` INT, IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category_id` INT, IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging` VARCHAR(255), IN `p_name` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255), IN `p_featured` TINYINT)   BEGIN
 
 UPDATE roy.products
 SET
@@ -630,7 +688,7 @@ SET
     description_de = p_description_de,
     description_preview_hu = p_description_preview_hu,
     description_preview_de = p_description_preview_de,
-    category = p_category,
+    category_id = p_category_id,
     manufacturer = p_manufacturer,
     brand = p_brand,
     sku = p_sku,
@@ -641,6 +699,14 @@ SET
     featured = p_featured
 WHERE id = p_id;
 
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_category_by_id` (IN `p_id` INT, IN `p_category` VARCHAR(255), IN `p_color` VARCHAR(255), IN `p_emoji` VARCHAR(255))   BEGIN
+	UPDATE roy.product_categories
+    SET category = p_category,
+    color = p_color,
+    emoji = p_emoji
+    WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_image_sort_by_id` (IN `p_id` INT, IN `p_sort_id` INT)   BEGIN
@@ -709,7 +775,7 @@ INSERT INTO `confirmations` (`id`, `user_id`, `new_value`, `confirmation_token`,
 --
 
 CREATE TABLE `newsletter_recipients` (
-  `user_id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
   `news_level` int(11) NOT NULL,
   `received_current_newsletter` int(11) NOT NULL,
   `id` int(11) NOT NULL
@@ -719,8 +785,8 @@ CREATE TABLE `newsletter_recipients` (
 -- Dumping data for table `newsletter_recipients`
 --
 
-INSERT INTO `newsletter_recipients` (`user_id`, `news_level`, `received_current_newsletter`, `id`) VALUES
-(38, 1, 0, 1);
+INSERT INTO `newsletter_recipients` (`email`, `news_level`, `received_current_newsletter`, `id`) VALUES
+('38', 1, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -763,14 +829,6 @@ CREATE TABLE `order_items` (
   `price` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---
--- Dumping data for table `order_items`
---
-
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`) VALUES
-(1, 1, 1, 2, '1800.00'),
-(2, 1, 2, 3, '3.00');
-
 -- --------------------------------------------------------
 
 --
@@ -809,7 +867,7 @@ CREATE TABLE `products` (
   `description_de` text NOT NULL,
   `description_preview_hu` text NOT NULL,
   `description_preview_de` text NOT NULL,
-  `category` varchar(255) NOT NULL,
+  `category_id` int(11) NOT NULL,
   `manufacturer` varchar(255) NOT NULL,
   `brand` varchar(255) NOT NULL,
   `rating` double(3,2) NOT NULL,
@@ -827,9 +885,29 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_percentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging`, `created_at`, `updated_at`, `name`, `thumbnail_url`, `featured`) VALUES
-(1, 'test_name_de', 'test_description_en', 1000, 5, 50, '10', 'test_description_preview_en', 'test_name_hu', 'test_name_en', 'test_description_hu', 'test_description_de', 'test_description_preview_hu', 'test_description_preview_de', 'test_category', 'test_manufacturer', 'test_brand', 2.90, 'test_sku', 'test_active_ingredients', 'test_packaging', '2026-02-10 09:37:40', '2026-02-13 09:44:43', 'test_name', 'test_thumbnail_url', 1),
-(2, 'name_de', 'product1_en', 1, 0, 10, '0', 'description_preview_en', 'name_hu', 'name_en', 'product1_hu', 'product1_de', 'description_preview_hu', 'description_preview_en', 'category', 'manufacturer', 'brand', 2.00, 'sku', 'active_ingredient', 'valami', '2026-02-10 09:37:40', '2026-02-11 10:48:06', 'product1', '', 0);
+INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_percentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category_id`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging`, `created_at`, `updated_at`, `name`, `thumbnail_url`, `featured`) VALUES
+(35, 'name', 'desc', 2000, 1, 1, '0', 'desc', 'name', 'name', 'desc', 'desc', 'desc', 'desc', 1, 'man', 'brand', 0.00, 'a', 'active_ingredients', 'packaging', '2026-02-18 13:14:55', '2026-02-18 12:14:55', 'name', 'thumbnail_url', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_categories`
+--
+
+CREATE TABLE `product_categories` (
+  `category` varchar(255) NOT NULL,
+  `emoji` varchar(255) NOT NULL,
+  `color` varchar(255) NOT NULL,
+  `number_of_products` int(11) NOT NULL,
+  `id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `product_categories`
+--
+
+INSERT INTO `product_categories` (`category`, `emoji`, `color`, `number_of_products`, `id`) VALUES
+('test_category', 'color', 'emoji', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -846,14 +924,6 @@ CREATE TABLE `product_images` (
   `product_id` int(11) NOT NULL,
   `sort_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `product_images`
---
-
-INSERT INTO `product_images` (`id`, `alt_text_de`, `alt_text_hu`, `alt_text_en`, `image_url`, `product_id`, `sort_id`) VALUES
-(1, 'altde', 'althu', 'alten', 'test_url', 1, 3),
-(2, 'alt_text_de', 'alt_text_hu', 'alt_text_en', 'image_url', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -944,7 +1014,8 @@ ALTER TABLE `confirmations`
 --
 ALTER TABLE `newsletter_recipients`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_newsletter_recipients_user` (`user_id`);
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `fk_newsletter_recipients_user` (`email`);
 
 --
 -- Indexes for table `orders`
@@ -973,7 +1044,14 @@ ALTER TABLE `posts`
 --
 ALTER TABLE `products`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `sku` (`sku`);
+  ADD UNIQUE KEY `sku` (`sku`),
+  ADD KEY `fk_products_category` (`category_id`);
+
+--
+-- Indexes for table `product_categories`
+--
+ALTER TABLE `product_categories`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `product_images`
@@ -1036,7 +1114,13 @@ ALTER TABLE `posts`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+
+--
+-- AUTO_INCREMENT for table `product_categories`
+--
+ALTER TABLE `product_categories`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `product_images`
@@ -1067,13 +1151,6 @@ ALTER TABLE `confirmations`
   ADD CONSTRAINT `fk_confirmations_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `newsletter_recipients`
---
-ALTER TABLE `newsletter_recipients`
-  ADD CONSTRAINT `fk_newsletter_recipients_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_newsletter_recipients_user_complete` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
 -- Constraints for table `orders`
 --
 ALTER TABLE `orders`
@@ -1092,6 +1169,12 @@ ALTER TABLE `order_items`
 ALTER TABLE `posts`
   ADD CONSTRAINT `fk_posts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_posts_user_complete` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `products`
+--
+ALTER TABLE `products`
+  ADD CONSTRAINT `fk_products_category` FOREIGN KEY (`category_id`) REFERENCES `product_categories` (`id`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `product_images`
