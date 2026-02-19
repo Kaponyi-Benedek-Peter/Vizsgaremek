@@ -20,8 +20,8 @@ export interface LoginRequestResponse {
 }
 
 export interface LoginPromiseRequest {
-  id: string; // Base64 encoded user id
-  confirmation_token: string; // Base64 encoded confirmation token from email link
+  id: string; // Base64 encoded user id (already B64 from email link — do NOT re-encode!)
+  confirmation_token: string; // Base64 encoded confirmation token (already B64 from email link)
 }
 
 export interface LoginResponse {
@@ -41,8 +41,8 @@ export interface RegistrationRequest {
 }
 
 export interface RegistrationPromiseRequest {
-  id: string; // Base64 encoded user ID
-  token: string; // Base64 encoded confirmation token
+  id: string; // Base64 encoded user ID (from URL — do NOT re-encode!)
+  token: string; // Base64 encoded confirmation token (from URL — do NOT re-encode!)
 }
 
 export interface RegistrationResponse {
@@ -52,17 +52,19 @@ export interface RegistrationResponse {
   jwt_token_expiration: string;
   session_token: string;
   session_token_expiration: string;
-  user?: User; // Optional user data
+  user?: User;
 }
 
+// chpass_request: docs specify plain strings (no B64!)
 export interface PasswordChangeRequest {
-  email: string; // Base64 encoded email
-  password: string; // Base64 encoded new password
+  email: string; // plain string — docs do NOT require B64 here
+  password: string; // plain string — docs do NOT require B64 here
 }
 
+// chpass_promise: id and token come pre-encoded from URL — do NOT re-encode
 export interface PasswordChangePromiseRequest {
-  id: string; // Base64 encoded user ID
-  token: string; // Base64 encoded confirmation token
+  id: string; // from URL, already in the format the backend expects
+  token: string; // from URL, already in the format the backend expects
 }
 
 export interface AccountDeletionRequest {
@@ -71,33 +73,33 @@ export interface AccountDeletionRequest {
 }
 
 export interface AccountDeletionPromiseRequest {
-  id: string; // Base64 encoded user ID
-  token: string; // Base64 encoded confirmation token
+  id: string; // Base64 encoded — value comes from URL, do NOT re-encode
+  token: string; // Base64 encoded — value comes from URL, do NOT re-encode
 }
 
 export interface ApiErrorResponse {
-  error: string; // Error code (e.g., "hianyzo_auth_header", "hibas_token")
-  message?: string; // Optional error message
-  statusCode?: number; // HTTP status code
+  error: string;
+  message?: string;
+  statusCode?: number;
 }
 
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null; // JWT token
-  expiresAt: Date | null; // Token expiration time
+  sessionToken: string | null; // Session token (stored for admin API calls)
+  expiresAt: Date | null;
 }
 
 export interface JWTPayload {
-  sub?: string; // Subject (user ID)
+  sub?: string;
   email?: string;
   name?: string;
-  exp?: number; // Expiration timestamp
-  iat?: number; // Issued at timestamp
-  iss?: string; // Issuer
-  aud?: string; // Audience
-  jti?: string; // JWT ID
-  // .NET specific claims
+  exp?: number;
+  iat?: number;
+  iss?: string;
+  aud?: string;
+  jti?: string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'?: string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string;
 }

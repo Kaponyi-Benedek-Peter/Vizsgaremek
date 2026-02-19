@@ -40,6 +40,47 @@ export interface CreateOrderRequest {
   items: OrderItem[];
 }
 
+// --- Admin API response types ---
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  created_at: string;
+  first_name: string;
+  last_name: string;
+  /** unverified | verified | admin | banned | deleted */
+  account_state: string;
+}
+
+export interface AdminUsersResponse {
+  statuscode: string;
+  status: string;
+  users: AdminUser[];
+}
+
+export interface AdminOrder {
+  id: string;
+  user_id: string;
+  created_at: string;
+  price: string;
+  city: string;
+  apartment_number: string;
+  note: string;
+  house_number: string;
+  phone_number: string;
+}
+
+export interface AdminOrdersResponse {
+  statuscode: string;
+  status: string;
+  orders: AdminOrder[];
+}
+
+export interface AdminAuthBody {
+  id: string; // B64(admin user id)
+  token: string; // B64(admin session token or jwt token)
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -76,9 +117,8 @@ export class AccountService {
   }
 
   /**
-   * Request account deletion
-   * Requires JWT authentication
-   * Sends confirmation email
+   * Request account deletion — JWT required
+   * Sends B64(userId) and B64(password) in body
    */
   deleteAccountRequest(userId: string, password: string): Observable<ApiResponse> {
     const request: DeleteAccountRequest = {
@@ -87,19 +127,20 @@ export class AccountService {
     };
 
     return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_request`, request).pipe(
-      tap(() => console.log('Account deletion requested - confirmation email sent')),
+      tap(() => console.log('Account deletion requested — confirmation email sent')),
       catchError(this.handleError),
     );
   }
 
   /**
-   * Confirm account deletion with token from email
-   * Requires JWT authentication
+   * Confirm account deletion — JWT required
+   * IMPORTANT: id and token come already B64-encoded from the email URL.
+   * Note: The email link sends B64(email) as "id"
    */
-  confirmAccountDeletion(userId: string, token: string): Observable<ApiResponse> {
+  confirmAccountDeletion(encodedId: string, encodedToken: string): Observable<ApiResponse> {
     const request = {
-      id: this.encodeBase64(userId),
-      token: this.encodeBase64(token),
+      id: encodedId, // B64 from URL
+      token: encodedToken, // B64 from URL
     };
 
     return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_promise`, request).pipe(
@@ -112,8 +153,7 @@ export class AccountService {
   }
 
   /**
-   * Change user password
-   * Requires JWT authentication
+   * Change user password — JWT required
    */
   changePassword(
     userId: string,
@@ -133,8 +173,7 @@ export class AccountService {
   }
 
   /**
-   * Create a new order
-   * Requires JWT authentication
+   * Create a new order — JWT required
    */
   createOrder(order: CreateOrderRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.API_URL}/api/create_order`, order).pipe(
@@ -155,7 +194,47 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  // Helper methods
+  // ─── Admin API methods ───────────────────────────────────────────────────────
+
+  /**
+   * Get all users — JWT required, admin only
+   * Sends admin user id and token (session token) in the request body
+   */
+  getAllUsersAdmin(): Observable<AdminUsersResponse> {
+    const body = this.buildAdminAuthBody();
+    return this.http
+      .post<AdminUsersResponse>(`${this.API_URL}/api/get_all_users`, body)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Get all orders — JWT required, admin only
+   * Sends admin user id and token (session token) in the request body
+   */
+  getAllOrdersAdmin(): Observable<AdminOrdersResponse> {
+    const body = this.buildAdminAuthBody();
+    return this.http
+      .post<AdminOrdersResponse>(`${this.API_URL}/api/get_all_orders`, body)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Builds the body required by admin-only endpoints:
+   * { id: B64(admin_user_id), token: B64(session_token || jwt_token) }
+   */
+  private buildAdminAuthBody(): AdminAuthBody {
+    const user = this.authService.currentUser();
+    const sessionToken = this.authService.getSessionToken();
+    const jwtToken = this.authService.getToken();
+
+    const tokenToSend = sessionToken ?? jwtToken ?? '';
+    const userId = user?.id ?? '';
+
+    return {
+      id: this.encodeBase64(userId),
+      token: this.encodeBase64(tokenToSend),
+    };
+  }
 
   private encodeBase64(value: string): string {
     try {
@@ -163,15 +242,6 @@ export class AccountService {
     } catch (error) {
       console.error('Base64 encoding error:', error);
       return btoa(value);
-    }
-  }
-
-  private decodeBase64(value: string): string {
-    try {
-      return decodeURIComponent(escape(atob(value)));
-    } catch (error) {
-      console.error('Base64 decoding error:', error);
-      return atob(value);
     }
   }
 

@@ -63,7 +63,9 @@
     "emailPlaceholder": "Your e-mail address",
     "send": "Send",
     "legal": "Legal",
-    "no_social_link": "We are not yet available on this platform"
+    "no_social_link": "We are not yet available on this platform",
+    "newsletter_success": "Successfully subscribed!",
+    "newsletter_error": "Failed to subscribe. Please try again."
   },
   "home": {
     "hero": {
@@ -112,7 +114,9 @@
     "scroll_right": "Scroll right",
     "go_home": "Go to Homepage",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "retry": "Retry",
+    "refresh": "Refresh"
   },
   "time": {
     "minutes_ago": "{{count}} minutes ago",
@@ -310,7 +314,19 @@
     "supplements": "Supplements",
     "cosmetics": "Cosmetics",
     "baby-care": "Baby Care",
-    "medical-devices": "Medical Devices"
+    "medical-devices": "Medical Devices",
+    "gyogyszerek": "Medicines",
+    "vitaminok": "Vitamins",
+    "taplelkiegeszitok": "Supplements",
+    "kozmetikumok": "Cosmetics",
+    "babaapolas": "Baby Care",
+    "orvosi-eszkozok": "Medical Devices",
+    "1": "Medicines",
+    "2": "Vitamins",
+    "3": "Supplements",
+    "4": "Cosmetics",
+    "5": "Baby Care",
+    "6": "Medical Devices"
   },
   "products": {
     "title": "Products",
@@ -565,7 +581,12 @@
       "product": "Product",
       "category": "Category",
       "price": "Price",
-      "stock": "Stock"
+      "stock": "Stock",
+      "user_id": "User ID",
+      "address": "Address",
+      "phone": "Phone",
+      "note": "Note",
+      "rating": "Rating"
     },
     "status": {
       "pending": "Pending",
@@ -585,6 +606,15 @@
       "title": "⚠️ DEV MODE",
       "description": "Test admin session — backend unavailable. This feature will not work in production.",
       "exit": "Exit"
+    },
+    "loading": "Loading data...",
+    "no_orders": "No orders found.",
+    "no_users": "No users found.",
+    "no_products": "No products found.",
+    "errors": {
+      "users_load_failed": "Failed to load user data.",
+      "orders_load_failed": "Failed to load order data.",
+      "products_load_failed": "Failed to load product data."
     }
   }
 }

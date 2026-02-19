@@ -1298,6 +1298,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/chpass_request',
     '/chpass_promise',
     '/get_all_products',
+    '/get_all_featured_products',
+    '/newsletter_subscription',
   ];
 
   const isPublicEndpoint = publicEndpoints.some((endpoint) => req.url.includes(endpoint));
@@ -1378,8 +1380,8 @@ export interface LoginRequestResponse {
 }
 
 export interface LoginPromiseRequest {
-  id: string; // Base64 encoded user id
-  confirmation_token: string; // Base64 encoded confirmation token from email link
+  id: string; // Base64 encoded user id (already B64 from email link — do NOT re-encode!)
+  confirmation_token: string; // Base64 encoded confirmation token (already B64 from email link)
 }
 
 export interface LoginResponse {
@@ -1399,8 +1401,8 @@ export interface RegistrationRequest {
 }
 
 export interface RegistrationPromiseRequest {
-  id: string; // Base64 encoded user ID
-  token: string; // Base64 encoded confirmation token
+  id: string; // Base64 encoded user ID (from URL — do NOT re-encode!)
+  token: string; // Base64 encoded confirmation token (from URL — do NOT re-encode!)
 }
 
 export interface RegistrationResponse {
@@ -1410,17 +1412,19 @@ export interface RegistrationResponse {
   jwt_token_expiration: string;
   session_token: string;
   session_token_expiration: string;
-  user?: User; // Optional user data
+  user?: User;
 }
 
+// chpass_request: docs specify plain strings (no B64!)
 export interface PasswordChangeRequest {
-  email: string; // Base64 encoded email
-  password: string; // Base64 encoded new password
+  email: string; // plain string — docs do NOT require B64 here
+  password: string; // plain string — docs do NOT require B64 here
 }
 
+// chpass_promise: id and token come pre-encoded from URL — do NOT re-encode
 export interface PasswordChangePromiseRequest {
-  id: string; // Base64 encoded user ID
-  token: string; // Base64 encoded confirmation token
+  id: string; // from URL, already in the format the backend expects
+  token: string; // from URL, already in the format the backend expects
 }
 
 export interface AccountDeletionRequest {
@@ -1429,33 +1433,33 @@ export interface AccountDeletionRequest {
 }
 
 export interface AccountDeletionPromiseRequest {
-  id: string; // Base64 encoded user ID
-  token: string; // Base64 encoded confirmation token
+  id: string; // Base64 encoded — value comes from URL, do NOT re-encode
+  token: string; // Base64 encoded — value comes from URL, do NOT re-encode
 }
 
 export interface ApiErrorResponse {
-  error: string; // Error code (e.g., "hianyzo_auth_header", "hibas_token")
-  message?: string; // Optional error message
-  statusCode?: number; // HTTP status code
+  error: string;
+  message?: string;
+  statusCode?: number;
 }
 
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null; // JWT token
-  expiresAt: Date | null; // Token expiration time
+  sessionToken: string | null; // Session token (stored for admin API calls)
+  expiresAt: Date | null;
 }
 
 export interface JWTPayload {
-  sub?: string; // Subject (user ID)
+  sub?: string;
   email?: string;
   name?: string;
-  exp?: number; // Expiration timestamp
-  iat?: number; // Issued at timestamp
-  iss?: string; // Issuer
-  aud?: string; // Audience
-  jti?: string; // JWT ID
-  // .NET specific claims
+  exp?: number;
+  iat?: number;
+  iss?: string;
+  aud?: string;
+  jti?: string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'?: string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string;
 }
@@ -1648,7 +1652,8 @@ export interface Product {
   stock: string;
   times_ordered: string;
 
-  category_id: string;
+  category_id?: string;
+  category?: string;
 
   manufacturer: string;
   brand: string;
@@ -1831,6 +1836,8 @@ export function enrichProduct(
         ? [imageUrl]
         : [];
 
+  const resolvedCategory = product.category ?? product.category_id ?? '';
+
   return {
     ...product,
     name,
@@ -1847,7 +1854,7 @@ export function enrichProduct(
     stockQuantity: stockNumber,
     reviewCount: 0,
 
-    category: product.category_id,
+    category: resolvedCategory,
     nameHu: product.name_hu,
     nameEn: product.name_en,
     nameDe: product.name_de,
@@ -1910,6 +1917,47 @@ export interface CreateOrderRequest {
   items: OrderItem[];
 }
 
+// --- Admin API response types ---
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  created_at: string;
+  first_name: string;
+  last_name: string;
+  /** unverified | verified | admin | banned | deleted */
+  account_state: string;
+}
+
+export interface AdminUsersResponse {
+  statuscode: string;
+  status: string;
+  users: AdminUser[];
+}
+
+export interface AdminOrder {
+  id: string;
+  user_id: string;
+  created_at: string;
+  price: string;
+  city: string;
+  apartment_number: string;
+  note: string;
+  house_number: string;
+  phone_number: string;
+}
+
+export interface AdminOrdersResponse {
+  statuscode: string;
+  status: string;
+  orders: AdminOrder[];
+}
+
+export interface AdminAuthBody {
+  id: string; // B64(admin user id)
+  token: string; // B64(admin session token or jwt token)
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -1946,9 +1994,8 @@ export class AccountService {
   }
 
   /**
-   * Request account deletion
-   * Requires JWT authentication
-   * Sends confirmation email
+   * Request account deletion — JWT required
+   * Sends B64(userId) and B64(password) in body
    */
   deleteAccountRequest(userId: string, password: string): Observable<ApiResponse> {
     const request: DeleteAccountRequest = {
@@ -1957,19 +2004,20 @@ export class AccountService {
     };
 
     return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_request`, request).pipe(
-      tap(() => console.log('Account deletion requested - confirmation email sent')),
+      tap(() => console.log('Account deletion requested — confirmation email sent')),
       catchError(this.handleError),
     );
   }
 
   /**
-   * Confirm account deletion with token from email
-   * Requires JWT authentication
+   * Confirm account deletion — JWT required
+   * IMPORTANT: id and token come already B64-encoded from the email URL.
+   * Note: The email link sends B64(email) as "id"
    */
-  confirmAccountDeletion(userId: string, token: string): Observable<ApiResponse> {
+  confirmAccountDeletion(encodedId: string, encodedToken: string): Observable<ApiResponse> {
     const request = {
-      id: this.encodeBase64(userId),
-      token: this.encodeBase64(token),
+      id: encodedId, // B64 from URL
+      token: encodedToken, // B64 from URL
     };
 
     return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_promise`, request).pipe(
@@ -1982,8 +2030,7 @@ export class AccountService {
   }
 
   /**
-   * Change user password
-   * Requires JWT authentication
+   * Change user password — JWT required
    */
   changePassword(
     userId: string,
@@ -2003,8 +2050,7 @@ export class AccountService {
   }
 
   /**
-   * Create a new order
-   * Requires JWT authentication
+   * Create a new order — JWT required
    */
   createOrder(order: CreateOrderRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.API_URL}/api/create_order`, order).pipe(
@@ -2025,7 +2071,47 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  // Helper methods
+  // ─── Admin API methods ───────────────────────────────────────────────────────
+
+  /**
+   * Get all users — JWT required, admin only
+   * Sends admin user id and token (session token) in the request body
+   */
+  getAllUsersAdmin(): Observable<AdminUsersResponse> {
+    const body = this.buildAdminAuthBody();
+    return this.http
+      .post<AdminUsersResponse>(`${this.API_URL}/api/get_all_users`, body)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Get all orders — JWT required, admin only
+   * Sends admin user id and token (session token) in the request body
+   */
+  getAllOrdersAdmin(): Observable<AdminOrdersResponse> {
+    const body = this.buildAdminAuthBody();
+    return this.http
+      .post<AdminOrdersResponse>(`${this.API_URL}/api/get_all_orders`, body)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Builds the body required by admin-only endpoints:
+   * { id: B64(admin_user_id), token: B64(session_token || jwt_token) }
+   */
+  private buildAdminAuthBody(): AdminAuthBody {
+    const user = this.authService.currentUser();
+    const sessionToken = this.authService.getSessionToken();
+    const jwtToken = this.authService.getToken();
+
+    const tokenToSend = sessionToken ?? jwtToken ?? '';
+    const userId = user?.id ?? '';
+
+    return {
+      id: this.encodeBase64(userId),
+      token: this.encodeBase64(tokenToSend),
+    };
+  }
 
   private encodeBase64(value: string): string {
     try {
@@ -2033,15 +2119,6 @@ export class AccountService {
     } catch (error) {
       console.error('Base64 encoding error:', error);
       return btoa(value);
-    }
-  }
-
-  private decodeBase64(value: string): string {
-    try {
-      return decodeURIComponent(escape(atob(value)));
-    } catch (error) {
-      console.error('Base64 decoding error:', error);
-      return atob(value);
     }
   }
 
@@ -2115,6 +2192,7 @@ export class AuthService {
   private readonly USER_KEY = 'auth_user';
   private readonly EXPIRES_KEY = 'auth_expires';
   private readonly STORAGE_TYPE_KEY = 'auth_storage_type';
+  private readonly SESSION_TOKEN_KEY = 'auth_session_token';
 
   private toastService = inject(ToastService);
 
@@ -2122,6 +2200,7 @@ export class AuthService {
     isAuthenticated: false,
     user: null,
     token: null,
+    sessionToken: null,
     expiresAt: null,
   });
 
@@ -2129,11 +2208,13 @@ export class AuthService {
   public isAuthenticated = computed(() => this.authStateSignal().isAuthenticated);
   public currentUser = computed(() => this.authStateSignal().user);
   public token = computed(() => this.authStateSignal().token);
+  public sessionToken = computed(() => this.authStateSignal().sessionToken);
 
   private authStateSubject = new BehaviorSubject<AuthState>({
     isAuthenticated: false,
     user: null,
     token: null,
+    sessionToken: null,
     expiresAt: null,
   });
   public authState$ = this.authStateSubject.asObservable();
@@ -2150,6 +2231,7 @@ export class AuthService {
     const token = this.getStoredToken();
     const user = this.getStoredUser();
     const expiresAt = this.getStoredExpiration();
+    const sessionToken = this.getStoredSessionToken();
 
     if (token && user && expiresAt) {
       if (new Date() < expiresAt) {
@@ -2157,6 +2239,7 @@ export class AuthService {
           isAuthenticated: true,
           user,
           token,
+          sessionToken,
           expiresAt,
         });
       } else {
@@ -2173,6 +2256,7 @@ export class AuthService {
             isAuthenticated: false,
             user: null,
             token: null,
+            sessionToken: null,
             expiresAt: null,
           });
 
@@ -2202,6 +2286,7 @@ export class AuthService {
   /**
    * Step 1 of login: send email + password to backend.
    * Backend sends a confirmation email with a one-time token.
+   * NOTE: docs specify id: B64(int) but email is the user identifier at this stage.
    */
   loginRequest(email: string, password: string): Observable<LoginRequestResponse> {
     const request: LoginRequest = {
@@ -2216,22 +2301,24 @@ export class AuthService {
 
   /**
    * Step 2 of login: validate the token from the email link.
-   * Returns JWT + session tokens on success and logs the user in.
+   * IMPORTANT: id and confirmationToken come already B64-encoded from the email URL.
    */
-  loginPromise(id: string, confirmationToken: string, stayLoggedIn: boolean): Observable<LoginResponse> {
+  loginPromise(
+    id: string,
+    confirmationToken: string,
+    stayLoggedIn: boolean,
+  ): Observable<LoginResponse> {
     const request: LoginPromiseRequest = {
-      id: this.encodeBase64(id),
-      confirmation_token: this.encodeBase64(confirmationToken),
+      id: id, // already B64 from URL
+      confirmation_token: confirmationToken, // already B64 from URL
     };
 
-    return this.http
-      .post<LoginResponse>(`${this.API_URL}/api/login_promise`, request)
-      .pipe(
-        tap((response) => {
-          this.handleLoginSuccess(response, stayLoggedIn);
-        }),
-        catchError(this.handleError.bind(this)),
-      );
+    return this.http.post<LoginResponse>(`${this.API_URL}/api/login_promise`, request).pipe(
+      tap((response) => {
+        this.handleLoginSuccess(response, stayLoggedIn);
+      }),
+      catchError(this.handleError.bind(this)),
+    );
   }
 
   register(email: string, password: string, firstname: string, lastname: string): Observable<void> {
@@ -2247,30 +2334,41 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
+  /**
+   * Step 2 of registration: id and token come already B64-encoded from the email URL.
+   */
   completeRegistration(
     id: string,
     token: string,
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
     const request: RegistrationPromiseRequest = {
-      id: id,
-      token: token,
+      id: id, // already B64 from URL
+      token: token, // already B64 from URL
     };
 
     return this.http
       .post<RegistrationResponse>(`${this.API_URL}/api/registration_promise`, request)
       .pipe(
         tap((response) => {
-          this.handleLoginSuccess(response as unknown as LoginResponse, stayLoggedIn, response.user);
+          this.handleLoginSuccess(
+            response as unknown as LoginResponse,
+            stayLoggedIn,
+            response.user,
+          );
         }),
         catchError(this.handleError.bind(this)),
       );
   }
 
+  /**
+   * Password change request.
+   * IMPORTANT: docs specify plain strings (no B64) for email and password here.
+   */
   requestPasswordChange(email: string, newPassword: string): Observable<void> {
     const request: PasswordChangeRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(newPassword),
+      email: email, // plain string — docs do NOT require B64
+      password: newPassword, // plain string — docs do NOT require B64
     };
 
     return this.http
@@ -2278,6 +2376,10 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
+  /**
+   * Complete password change: id and token come from the URL as-is.
+   * Returns new jwt_token and session_token — currently navigates to /login after success.
+   */
   completePasswordChange(id: string, token: string): Observable<void> {
     const request: PasswordChangePromiseRequest = {
       id: id,
@@ -2295,6 +2397,7 @@ export class AuthService {
       isAuthenticated: false,
       user: null,
       token: null,
+      sessionToken: null,
       expiresAt: null,
     });
     this.router.navigate(['/login']);
@@ -2309,6 +2412,10 @@ export class AuthService {
     }
 
     return token;
+  }
+
+  getSessionToken(): string | null {
+    return this.authStateSignal().sessionToken;
   }
 
   isUserAuthenticated(): boolean {
@@ -2344,6 +2451,7 @@ export class AuthService {
 
   private handleLoginSuccess(response: LoginResponse, stayLoggedIn: boolean, user?: User): void {
     const jwtToken = response.jwt_token;
+    const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 days
@@ -2366,6 +2474,7 @@ export class AuthService {
     this.clearStorage();
 
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
+    this.storeSessionToken(sessionToken, stayLoggedIn);
     if (userData) {
       this.storeUser(userData, stayLoggedIn);
     }
@@ -2374,6 +2483,7 @@ export class AuthService {
       isAuthenticated: true,
       user: userData || this.getStoredUser(),
       token: jwtToken,
+      sessionToken,
       expiresAt,
     });
 
@@ -2396,6 +2506,12 @@ export class AuthService {
     storage.setItem(this.STORAGE_TYPE_KEY, stayLoggedIn ? 'local' : 'session');
   }
 
+  private storeSessionToken(sessionToken: string | null, stayLoggedIn: boolean): void {
+    if (!sessionToken) return;
+    const storage = stayLoggedIn ? localStorage : sessionStorage;
+    storage.setItem(this.SESSION_TOKEN_KEY, sessionToken);
+  }
+
   private storeUser(user: User, stayLoggedIn: boolean): void {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
     storage.setItem(this.USER_KEY, JSON.stringify(user));
@@ -2403,6 +2519,12 @@ export class AuthService {
 
   private getStoredToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY);
+  }
+
+  private getStoredSessionToken(): string | null {
+    return (
+      localStorage.getItem(this.SESSION_TOKEN_KEY) || sessionStorage.getItem(this.SESSION_TOKEN_KEY)
+    );
   }
 
   private getStoredUser(): User | null {
@@ -2434,24 +2556,16 @@ export class AuthService {
       storage.removeItem(this.USER_KEY);
       storage.removeItem(this.EXPIRES_KEY);
       storage.removeItem(this.STORAGE_TYPE_KEY);
+      storage.removeItem(this.SESSION_TOKEN_KEY);
     });
   }
 
-  private encodeBase64(value: string): string {
+  encodeBase64(value: string): string {
     try {
       return btoa(unescape(encodeURIComponent(value)));
     } catch (error) {
       console.error('Base64 encoding error:', error);
       return btoa(value);
-    }
-  }
-
-  private decodeBase64(value: string): string {
-    try {
-      return decodeURIComponent(escape(atob(value)));
-    } catch (error) {
-      console.error('Base64 decoding error:', error);
-      return atob(value);
     }
   }
 
@@ -3960,49 +4074,60 @@ FILE: src\app\pages\admin\admin.html
         <div class="dashboard-greeting">
           <h2>{{ 'admin.greeting' | translate: { name: adminName() } }}</h2>
         </div>
+
         <div class="stats-grid">
           <div class="stat-card primary">
             <div class="stat-icon">📦</div>
             <div class="stat-body">
-              <span class="stat-value">{{ stats.totalOrders }}</span>
+              @if (ordersLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ stats().totalOrders }}</span>
+              }
               <span class="stat-label">{{ 'admin.stats.total_orders' | translate }}</span>
-              <span class="stat-change positive"
-                >+12% {{ 'admin.stats.this_month' | translate }}</span
-              >
             </div>
           </div>
           <div class="stat-card success">
             <div class="stat-icon">💰</div>
             <div class="stat-body">
-              <span class="stat-value">{{ formatRevenue(stats.revenue) }}</span>
+              @if (ordersLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ formatRevenue(stats().revenue) }}</span>
+              }
               <span class="stat-label">{{ 'admin.stats.revenue' | translate }}</span>
-              <span class="stat-change positive"
-                >+8% {{ 'admin.stats.this_month' | translate }}</span
-              >
             </div>
           </div>
           <div class="stat-card info">
             <div class="stat-icon">👥</div>
             <div class="stat-body">
-              <span class="stat-value">{{ stats.totalUsers }}</span>
+              @if (usersLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ stats().totalUsers }}</span>
+              }
               <span class="stat-label">{{ 'admin.stats.total_users' | translate }}</span>
-              <span class="stat-change positive"
-                >+24 {{ 'admin.stats.this_week' | translate }}</span
-              >
             </div>
           </div>
           <div class="stat-card warning">
             <div class="stat-icon">🏷️</div>
             <div class="stat-body">
-              <span class="stat-value">{{ stats.totalProducts }}</span>
+              @if (productsLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ stats().totalProducts }}</span>
+              }
               <span class="stat-label">{{ 'admin.stats.total_products' | translate }}</span>
-              <span class="stat-change neutral"
-                >{{ stats.lowStock }} {{ 'admin.stats.low_stock' | translate }}</span
-              >
+              @if (!productsLoading() && stats().lowStock > 0) {
+                <span class="stat-change warning-text">
+                  {{ stats().lowStock }} {{ 'admin.stats.low_stock' | translate }}
+                </span>
+              }
             </div>
           </div>
         </div>
 
+        <!-- Recent orders preview -->
         <div class="admin-card">
           <div class="card-header">
             <h2 class="card-title">{{ 'admin.recent_orders' | translate }}</h2>
@@ -4010,34 +4135,47 @@ FILE: src\app\pages\admin\admin.html
               {{ 'admin.view_all' | translate }} →
             </button>
           </div>
-          <div class="table-wrapper">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>{{ 'admin.table.order_id' | translate }}</th>
-                  <th>{{ 'admin.table.customer' | translate }}</th>
-                  <th>{{ 'admin.table.date' | translate }}</th>
-                  <th>{{ 'admin.table.total' | translate }}</th>
-                  <th>{{ 'admin.table.status' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (order of recentOrders.slice(0, 5); track order.id) {
+
+          @if (ordersLoading()) {
+            <div class="loading-state">
+              <span class="spinner">⏳</span>
+              <span>{{ 'admin.loading' | translate }}</span>
+            </div>
+          } @else if (ordersError()) {
+            <div class="error-state">
+              <span>⚠️ {{ ordersError()! | translate }}</span>
+              <button class="retry-btn" (click)="loadOrders()">
+                {{ 'common.retry' | translate }}
+              </button>
+            </div>
+          } @else if (recentOrders().length === 0) {
+            <div class="empty-state">{{ 'admin.no_orders' | translate }}</div>
+          } @else {
+            <div class="table-wrapper">
+              <table class="admin-table">
+                <thead>
                   <tr>
-                    <td class="order-id">#{{ order.id }}</td>
-                    <td>{{ order.customer }}</td>
-                    <td class="muted">{{ order.date }}</td>
-                    <td class="font-bold">{{ formatRevenue(order.total) }}</td>
-                    <td>
-                      <span [class]="'status-badge status-' + order.status">
-                        {{ 'admin.status.' + order.status | translate }}
-                      </span>
-                    </td>
+                    <th>{{ 'admin.table.order_id' | translate }}</th>
+                    <th>{{ 'admin.table.user_id' | translate }}</th>
+                    <th>{{ 'admin.table.date' | translate }}</th>
+                    <th>{{ 'admin.table.address' | translate }}</th>
+                    <th>{{ 'admin.table.total' | translate }}</th>
                   </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  @for (order of recentOrders(); track order.id) {
+                    <tr>
+                      <td class="order-id">#{{ order.id }}</td>
+                      <td class="muted">{{ order.user_id }}</td>
+                      <td class="muted">{{ formatDate(order.created_at) }}</td>
+                      <td>{{ getOrderAddressSummary(order) }}</td>
+                      <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         </div>
       </div>
     }
@@ -4054,52 +4192,67 @@ FILE: src\app\pages\admin\admin.html
               [placeholder]="'admin.search_orders' | translate"
             />
           </div>
-          <select class="admin-select" [(ngModel)]="orderStatusFilter">
-            <option value="all">{{ 'admin.all_statuses' | translate }}</option>
-            <option value="pending">{{ 'admin.status.pending' | translate }}</option>
-            <option value="processing">{{ 'admin.status.processing' | translate }}</option>
-            <option value="shipped">{{ 'admin.status.shipped' | translate }}</option>
-            <option value="delivered">{{ 'admin.status.delivered' | translate }}</option>
-            <option value="cancelled">{{ 'admin.status.cancelled' | translate }}</option>
-          </select>
+          <button class="retry-btn" (click)="loadOrders()" [disabled]="ordersLoading()">
+            🔄 {{ 'common.refresh' | translate }}
+          </button>
         </div>
 
-        <div class="admin-card">
-          <div class="table-wrapper">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>{{ 'admin.table.order_id' | translate }}</th>
-                  <th>{{ 'admin.table.customer' | translate }}</th>
-                  <th>{{ 'admin.table.date' | translate }}</th>
-                  <th>{{ 'admin.table.items' | translate }}</th>
-                  <th>{{ 'admin.table.total' | translate }}</th>
-                  <th>{{ 'admin.table.status' | translate }}</th>
-                  <th>{{ 'admin.table.actions' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (order of filteredOrders(); track order.id) {
-                  <tr>
-                    <td class="order-id">#{{ order.id }}</td>
-                    <td>{{ order.customer }}</td>
-                    <td class="muted">{{ order.date }}</td>
-                    <td class="muted">{{ order.items }} {{ 'common.items_unit' | translate }}</td>
-                    <td class="font-bold">{{ formatRevenue(order.total) }}</td>
-                    <td>
-                      <span [class]="'status-badge status-' + order.status">
-                        {{ 'admin.status.' + order.status | translate }}
-                      </span>
-                    </td>
-                    <td>
-                      <button class="action-btn view-btn" [title]="'common.view' | translate">👁</button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+        @if (ordersLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
           </div>
-        </div>
+        } @else if (ordersError()) {
+          <div class="error-state">
+            <span>⚠️ {{ ordersError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadOrders()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredOrders().length === 0) {
+                <div class="empty-state">{{ 'admin.no_orders' | translate }}</div>
+              } @else {
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.table.order_id' | translate }}</th>
+                      <th>{{ 'admin.table.user_id' | translate }}</th>
+                      <th>{{ 'admin.table.date' | translate }}</th>
+                      <th>{{ 'admin.table.address' | translate }}</th>
+                      <th>{{ 'admin.table.phone' | translate }}</th>
+                      <th>{{ 'admin.table.total' | translate }}</th>
+                      <th>{{ 'admin.table.note' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (order of filteredOrders(); track order.id) {
+                      <tr>
+                        <td class="order-id">#{{ order.id }}</td>
+                        <td class="muted">{{ order.user_id }}</td>
+                        <td class="muted">{{ formatDate(order.created_at) }}</td>
+                        <td>
+                          {{ order.city }}
+                          @if (order.house_number) {
+                            <span class="muted">, {{ order.house_number }}</span>
+                          }
+                          @if (order.apartment_number) {
+                            <span class="muted">/{{ order.apartment_number }}</span>
+                          }
+                        </td>
+                        <td class="muted">{{ order.phone_number || '—' }}</td>
+                        <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                        <td class="muted note-cell">{{ order.note || '—' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
       </div>
     }
 
@@ -4115,47 +4268,64 @@ FILE: src\app\pages\admin\admin.html
               [placeholder]="'admin.search_users' | translate"
             />
           </div>
+          <button class="retry-btn" (click)="loadUsers()" [disabled]="usersLoading()">
+            🔄 {{ 'common.refresh' | translate }}
+          </button>
         </div>
 
-        <div class="admin-card">
-          <div class="table-wrapper">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>{{ 'admin.table.user' | translate }}</th>
-                  <th>{{ 'admin.table.email' | translate }}</th>
-                  <th>{{ 'admin.table.role' | translate }}</th>
-                  <th>{{ 'admin.table.registered' | translate }}</th>
-                  <th>{{ 'admin.table.orders' | translate }}</th>
-                  <th>{{ 'admin.table.actions' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (user of filteredUsers(); track user.id) {
-                  <tr>
-                    <td>
-                      <div class="user-cell">
-                        <div class="user-avatar">{{ user.name.charAt(0) }}</div>
-                        <span>{{ user.name }}</span>
-                      </div>
-                    </td>
-                    <td class="muted">{{ user.email }}</td>
-                    <td>
-                      <span [class]="'role-badge role-' + user.role">
-                        {{ 'forum.role.' + user.role | translate }}
-                      </span>
-                    </td>
-                    <td class="muted">{{ user.registered }}</td>
-                    <td>{{ user.orders }}</td>
-                    <td>
-                      <button class="action-btn view-btn" [title]="'common.view' | translate">👁</button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+        @if (usersLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
           </div>
-        </div>
+        } @else if (usersError()) {
+          <div class="error-state">
+            <span>⚠️ {{ usersError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadUsers()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredUsers().length === 0) {
+                <div class="empty-state">{{ 'admin.no_users' | translate }}</div>
+              } @else {
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.table.user' | translate }}</th>
+                      <th>{{ 'admin.table.email' | translate }}</th>
+                      <th>{{ 'admin.table.role' | translate }}</th>
+                      <th>{{ 'admin.table.registered' | translate }}</th>
+                      <th>ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (user of filteredUsers(); track user.id) {
+                      <tr>
+                        <td>
+                          <div class="user-cell">
+                            <div class="user-avatar">{{ getUserInitial(user) }}</div>
+                            <span>{{ getUserFullName(user) }}</span>
+                          </div>
+                        </td>
+                        <td class="muted">{{ user.email }}</td>
+                        <td>
+                          <span [class]="'role-badge ' + getAccountStateClass(user.account_state)">
+                            {{ user.account_state }}
+                          </span>
+                        </td>
+                        <td class="muted">{{ formatDate(user.created_at) }}</td>
+                        <td class="muted">#{{ user.id }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
       </div>
     }
 
@@ -4171,61 +4341,83 @@ FILE: src\app\pages\admin\admin.html
               [placeholder]="'admin.search_products' | translate"
             />
           </div>
-          <button class="add-btn">+ {{ 'admin.add_product' | translate }}</button>
+          <button class="retry-btn" (click)="loadProducts()" [disabled]="productsLoading()">
+            🔄 {{ 'common.refresh' | translate }}
+          </button>
         </div>
 
-        <div class="admin-card">
-          <div class="table-wrapper">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>{{ 'admin.table.product' | translate }}</th>
-                  <th>{{ 'admin.table.category' | translate }}</th>
-                  <th>{{ 'admin.table.price' | translate }}</th>
-                  <th>{{ 'admin.table.stock' | translate }}</th>
-                  <th>{{ 'admin.table.status' | translate }}</th>
-                  <th>{{ 'admin.table.actions' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (product of filteredProducts(); track product.id) {
-                  <tr>
-                    <td>
-                      <div class="product-cell">
-                        <div class="product-thumb">💊</div>
-                        <span>{{ product.name }}</span>
-                      </div>
-                    </td>
-                    <td class="muted">{{ product.category }}</td>
-                    <td class="font-bold">{{ formatRevenue(product.price) }}</td>
-                    <td>
-                      <span [class]="product.stock < 10 ? 'stock-low' : 'stock-ok'">
-                        {{ product.stock }} {{ 'common.items_unit' | translate }}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        [class]="
-                          'status-badge status-' + (product.active ? 'delivered' : 'cancelled')
-                        "
-                      >
-                        {{
-                          product.active
-                            ? ('admin.active' | translate)
-                            : ('admin.inactive' | translate)
-                        }}
-                      </span>
-                    </td>
-                    <td>
-                      <button class="action-btn edit-btn" [title]="'common.edit' | translate">✏️</button>
-                      <button class="action-btn delete-btn" [title]="'common.delete' | translate">🗑️</button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+        @if (productsLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
           </div>
-        </div>
+        } @else if (productsError()) {
+          <div class="error-state">
+            <span>⚠️ {{ productsError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadProducts()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredProducts().length === 0) {
+                <div class="empty-state">{{ 'admin.no_products' | translate }}</div>
+              } @else {
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.table.product' | translate }}</th>
+                      <th>{{ 'admin.table.category' | translate }}</th>
+                      <th>SKU</th>
+                      <th>{{ 'admin.table.price' | translate }}</th>
+                      <th>{{ 'admin.table.stock' | translate }}</th>
+                      <th>{{ 'admin.table.rating' | translate }}</th>
+                      <th>{{ 'admin.table.status' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (product of filteredProducts(); track product.id; let i = $index) {
+                      <tr>
+                        <td>
+                          <div class="product-cell">
+                            <div class="product-thumb">💊</div>
+                            <div class="product-cell-info">
+                              <span class="product-name">{{ product.name }}</span>
+                              <span class="product-brand muted">{{ product.brand }}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="muted">{{ product.category }}</td>
+                        <td class="muted">{{ product.sku }}</td>
+                        <td class="font-bold">{{ formatRevenue(product.price) }}</td>
+                        <td>
+                          <span [class]="product.stockNumber < 10 ? 'stock-low' : 'stock-ok'">
+                            {{ product.stockNumber }} {{ 'common.items_unit' | translate }}
+                          </span>
+                        </td>
+                        <td class="muted">⭐ {{ product.ratingNumber.toFixed(1) }}</td>
+                        <td>
+                          <span
+                            [class]="
+                              'status-badge status-' + (product.inStock ? 'delivered' : 'cancelled')
+                            "
+                          >
+                            {{
+                              product.inStock
+                                ? ('admin.active' | translate)
+                                : ('admin.inactive' | translate)
+                            }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
       </div>
     }
   </main>
@@ -4273,6 +4465,9 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
+import { ProductService } from '../../services/product.service';
+import { ProductWithHelpers } from '../../core/models/product.model';
 
 type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
 
@@ -4280,33 +4475,6 @@ interface NavItem {
   id: AdminSection;
   icon: string;
   label: string;
-}
-
-interface Order {
-  id: string;
-  customer: string;
-  date: string;
-  items: number;
-  total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-}
-
-interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'pharmacist' | 'user';
-  registered: string;
-  orders: number;
-}
-
-interface AdminProduct {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  stock: number;
-  active: boolean;
 }
 
 @Component({
@@ -4318,6 +4486,8 @@ interface AdminProduct {
 })
 export class Admin implements OnInit {
   private authService = inject(AuthService);
+  private accountService = inject(AccountService);
+  private productService = inject(ProductService);
   private router = inject(Router);
 
   activeSection = signal<AdminSection>('dashboard');
@@ -4328,9 +4498,36 @@ export class Admin implements OnInit {
   userSearch = '';
   productSearch = '';
 
+  usersLoading = signal(false);
+  usersError = signal<string | null>(null);
+  ordersLoading = signal(false);
+  ordersError = signal<string | null>(null);
+  productsLoading = signal(false);
+  productsError = signal<string | null>(null);
+
+  apiUsers = signal<AdminUser[]>([]);
+  apiOrders = signal<AdminOrder[]>([]);
+
   adminName = computed(() => {
     const user = this.authService.currentUser();
     return user ? `${user.firstname} ${user.lastname}`.trim() : 'Admin';
+  });
+
+  stats = computed(() => {
+    const orders = this.apiOrders();
+    const users = this.apiUsers();
+    const products = this.productService.products();
+
+    const totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0);
+    const lowStock = products.filter((p) => p.stockNumber > 0 && p.stockNumber < 10).length;
+
+    return {
+      totalOrders: orders.length,
+      revenue: totalRevenue,
+      totalUsers: users.length,
+      totalProducts: products.length,
+      lowStock,
+    };
   });
 
   navItems: NavItem[] = [
@@ -4340,202 +4537,46 @@ export class Admin implements OnInit {
     { id: 'products', icon: '🏷️', label: 'admin.nav.products' },
   ];
 
-  stats = {
-    totalOrders: 248,
-    revenue: 1_840_500,
-    totalUsers: 1_203,
-    totalProducts: 86,
-    lowStock: 7,
-  };
-
-  recentOrders: Order[] = [
-    {
-      id: '1042',
-      customer: 'Kovács Anna',
-      date: '2025. jan. 15.',
-      items: 3,
-      total: 12500,
-      status: 'delivered',
-    },
-    {
-      id: '1041',
-      customer: 'Nagy Péter',
-      date: '2025. jan. 15.',
-      items: 1,
-      total: 4200,
-      status: 'shipped',
-    },
-    {
-      id: '1040',
-      customer: 'Kiss Mária',
-      date: '2025. jan. 14.',
-      items: 5,
-      total: 28900,
-      status: 'processing',
-    },
-    {
-      id: '1039',
-      customer: 'Szabó István',
-      date: '2025. jan. 14.',
-      items: 2,
-      total: 7600,
-      status: 'pending',
-    },
-    {
-      id: '1038',
-      customer: 'Fekete Zoltán',
-      date: '2025. jan. 13.',
-      items: 4,
-      total: 15300,
-      status: 'cancelled',
-    },
-    {
-      id: '1037',
-      customer: 'Tóth Éva',
-      date: '2025. jan. 13.',
-      items: 2,
-      total: 9800,
-      status: 'delivered',
-    },
-    {
-      id: '1036',
-      customer: 'Varga László',
-      date: '2025. jan. 12.',
-      items: 1,
-      total: 3500,
-      status: 'delivered',
-    },
-  ];
-
-  mockUsers: AdminUser[] = [
-    {
-      id: '1',
-      name: 'Dr. Nagy Katalin',
-      email: 'nagy.katalin@roys.hu',
-      role: 'pharmacist',
-      registered: '2024. márc. 1.',
-      orders: 0,
-    },
-    {
-      id: '2',
-      name: 'Roy Admin',
-      email: 'admin@roys.hu',
-      role: 'admin',
-      registered: '2024. jan. 1.',
-      orders: 0,
-    },
-    {
-      id: '3',
-      name: 'Kovács Anna',
-      email: 'kovacs.anna@example.hu',
-      role: 'user',
-      registered: '2024. nov. 15.',
-      orders: 5,
-    },
-    {
-      id: '4',
-      name: 'Dr. Szabó Péter',
-      email: 'szabo.peter@roys.hu',
-      role: 'pharmacist',
-      registered: '2024. márc. 1.',
-      orders: 0,
-    },
-    {
-      id: '5',
-      name: 'Kiss Mária',
-      email: 'kiss.maria@example.hu',
-      role: 'user',
-      registered: '2024. dec. 3.',
-      orders: 3,
-    },
-    {
-      id: '6',
-      name: 'Nagy Péter',
-      email: 'nagy.peter@example.hu',
-      role: 'user',
-      registered: '2025. jan. 10.',
-      orders: 1,
-    },
-  ];
-
-  mockProducts: AdminProduct[] = [
-    {
-      id: '1',
-      name: 'Vitamin C 1000mg',
-      category: 'Vitaminok',
-      price: 3490,
-      stock: 142,
-      active: true,
-    },
-    {
-      id: '2',
-      name: 'D3-vitamin 2000NE',
-      category: 'Vitaminok',
-      price: 2990,
-      stock: 87,
-      active: true,
-    },
-    {
-      id: '3',
-      name: 'Ibuprofén 400mg',
-      category: 'Fájdalomcsillapítók',
-      price: 1290,
-      stock: 6,
-      active: true,
-    },
-    {
-      id: '4',
-      name: 'Probiotikum komplex',
-      category: 'Étrend-kiegészítők',
-      price: 5490,
-      stock: 34,
-      active: true,
-    },
-    {
-      id: '5',
-      name: 'Omega-3 halolaj',
-      category: 'Étrend-kiegészítők',
-      price: 4290,
-      stock: 4,
-      active: false,
-    },
-    {
-      id: '6',
-      name: 'Magnézium 375mg',
-      category: 'Ásványi anyagok',
-      price: 2790,
-      stock: 56,
-      active: true,
-    },
-  ];
-
   filteredOrders = computed(() => {
-    let orders = this.recentOrders;
+    let orders = this.apiOrders();
     if (this.orderSearch) {
       const q = this.orderSearch.toLowerCase();
-      orders = orders.filter((o) => o.customer.toLowerCase().includes(q) || o.id.includes(q));
-    }
-    if (this.orderStatusFilter !== 'all') {
-      orders = orders.filter((o) => o.status === this.orderStatusFilter);
+      orders = orders.filter(
+        (o) =>
+          o.id.includes(q) ||
+          o.user_id.toLowerCase().includes(q) ||
+          o.city.toLowerCase().includes(q),
+      );
     }
     return orders;
   });
 
   filteredUsers = computed(() => {
-    if (!this.userSearch) return this.mockUsers;
+    if (!this.userSearch) return this.apiUsers();
     const q = this.userSearch.toLowerCase();
-    return this.mockUsers.filter(
-      (u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q),
+    return this.apiUsers().filter(
+      (u) =>
+        u.email.toLowerCase().includes(q) ||
+        u.first_name.toLowerCase().includes(q) ||
+        u.last_name.toLowerCase().includes(q) ||
+        u.id.includes(q),
     );
   });
 
   filteredProducts = computed(() => {
-    if (!this.productSearch) return this.mockProducts;
+    const products = this.productService.products();
+    if (!this.productSearch) return products;
     const q = this.productSearch.toLowerCase();
-    return this.mockProducts.filter(
-      (p) => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q),
+    return products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.brand.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q),
     );
   });
+
+  recentOrders = computed(() => this.apiOrders().slice(0, 5));
 
   currentSectionLabel = computed(() => {
     const item = this.navItems.find((n) => n.id === this.activeSection());
@@ -4545,7 +4586,70 @@ export class Admin implements OnInit {
   ngOnInit(): void {
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login']);
+      return;
     }
+
+    this.loadUsers();
+    this.loadOrders();
+    this.loadProducts();
+  }
+
+  loadUsers(): void {
+    this.usersLoading.set(true);
+    this.usersError.set(null);
+
+    this.accountService.getAllUsersAdmin().subscribe({
+      next: (response) => {
+        if (response.statuscode === '200' && Array.isArray(response.users)) {
+          this.apiUsers.set(response.users);
+        } else {
+          this.usersError.set('admin.errors.users_load_failed');
+        }
+        this.usersLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Admin users load error:', err);
+        this.usersError.set('admin.errors.users_load_failed');
+        this.usersLoading.set(false);
+      },
+    });
+  }
+
+  loadOrders(): void {
+    this.ordersLoading.set(true);
+    this.ordersError.set(null);
+
+    this.accountService.getAllOrdersAdmin().subscribe({
+      next: (response) => {
+        if (response.statuscode === '200' && Array.isArray(response.orders)) {
+          this.apiOrders.set(response.orders);
+        } else {
+          this.ordersError.set('admin.errors.orders_load_failed');
+        }
+        this.ordersLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Admin orders load error:', err);
+        this.ordersError.set('admin.errors.orders_load_failed');
+        this.ordersLoading.set(false);
+      },
+    });
+  }
+
+  loadProducts(): void {
+    this.productsLoading.set(true);
+    this.productsError.set(null);
+
+    this.productService
+      .loadProducts()
+      .then(() => {
+        this.productsLoading.set(false);
+      })
+      .catch((err) => {
+        console.error('Admin products load error:', err);
+        this.productsError.set('admin.errors.products_load_failed');
+        this.productsLoading.set(false);
+      });
   }
 
   setSection(section: AdminSection): void {
@@ -4561,12 +4665,59 @@ export class Admin implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  formatRevenue(amount: number): string {
+  formatRevenue(amount: number | string): string {
+    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('hu-HU', {
       style: 'currency',
       currency: 'HUF',
       maximumFractionDigits: 0,
-    }).format(amount);
+    }).format(num || 0);
+  }
+
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '—';
+    try {
+      return new Date(dateStr).toLocaleDateString('hu-HU', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
+  }
+
+  getUserFullName(user: AdminUser): string {
+    const full = `${user.last_name} ${user.first_name}`.trim();
+    return full || user.email;
+  }
+
+  getUserInitial(user: AdminUser): string {
+    return (user.last_name || user.first_name || user.email).charAt(0).toUpperCase();
+  }
+
+  getAccountStateClass(state: string): string {
+    const map: Record<string, string> = {
+      admin: 'role-admin',
+      verified: 'role-pharmacist',
+      unverified: 'role-user',
+      banned: 'role-banned',
+      deleted: 'role-deleted',
+    };
+    return map[state] ?? 'role-user';
+  }
+
+  getOrderAddressSummary(order: AdminOrder): string {
+    const parts = [order.city, order.house_number].filter(Boolean);
+    return parts.join(', ') || '—';
+  }
+
+  trackById(_index: number, item: { id: string }): string {
+    return item.id;
+  }
+
+  trackByProductId(_index: number, item: ProductWithHelpers): string {
+    return item.id;
   }
 }
 
@@ -4845,29 +4996,29 @@ export class DelaccPromise implements OnInit {
         return;
       }
 
-      // The email link sends B64(email);B64(token)
-      // But delacc_promise requires id + token
-      // We decode the email part to get user ID
-      const idOrEmail = parts[0].trim();
-      const token = parts[1].trim();
+      // The backend email link sends: B64(email);B64(confirmation_token)
+      // confirmAccountDeletion() now expects already-B64 values — pass them as-is
+      const encodedId = parts[0].trim();
+      const encodedToken = parts[1].trim();
 
-      if (!idOrEmail || !token) {
+      if (!encodedId || !encodedToken) {
         this.errorMessage.set('auth.errors.invalid_link');
         return;
       }
 
-      const cleanUrl = `/delacc-promise?accdel=${idOrEmail};${token}`;
+      const cleanUrl = `/delacc-promise?accdel=${encodedId};${encodedToken}`;
       this.location.replaceState(cleanUrl);
 
-      this.confirmDeletion(idOrEmail, token);
+      this.confirmDeletion(encodedId, encodedToken);
     });
   }
 
-  confirmDeletion(id: string, token: string): void {
+  confirmDeletion(encodedId: string, encodedToken: string): void {
     this.isProcessing.set(true);
     this.errorMessage.set('');
 
-    this.accountService.confirmAccountDeletion(id, token).subscribe({
+    // Pass the already-B64-encoded values — the service no longer re-encodes
+    this.accountService.confirmAccountDeletion(encodedId, encodedToken).subscribe({
       next: () => {
         this.isProcessing.set(false);
         this.isSuccess.set(true);
@@ -7393,27 +7544,51 @@ FILE: src\app\pages\home\home.css
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  background-attachment: fixed;
   position: relative;
   width: 100%;
-  min-height: 630px;
+  min-height: 680px;
   height: auto;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 40px 20px;
+  padding: 60px 24px 80px;
 }
 
 .hero::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(3, 50, 26, 0.78) 0%,
+    rgba(6, 90, 50, 0.62) 50%,
+    rgba(4, 60, 35, 0.8) 100%
+  );
   z-index: 1;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(114, 228, 240, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(6, 122, 69, 0.12) 0%, transparent 50%);
+  animation: heroFloat 12s ease-in-out infinite alternate;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes heroFloat {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(2%, 3%) scale(1.05);
+  }
 }
 
 .hero > * {
@@ -7423,34 +7598,81 @@ FILE: src\app\pages\home\home.css
 
 .hero h1 {
   text-align: center;
-  color: var(--text-inverse);
-  margin-bottom: 16px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  font-size: clamp(1.75rem, 4vw, 3rem);
-  line-height: 1.2;
+  color: white;
+  margin-bottom: 12px;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+  /* Subtle green tint on text */
+  background: linear-gradient(135deg, #ffffff 60%, #a8f0c8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .hero h2 {
   text-align: center;
-  color: var(--text-inverse);
+  color: rgba(255, 255, 255, 0.88);
   margin-bottom: 16px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  font-size: clamp(1.1rem, 2.5vw, 1.75rem);
-  line-height: 1.3;
+  font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
 }
 
 .hero p {
   text-align: center;
-  margin: 10px auto;
-  max-width: 800px;
+  margin: 0 auto 24px;
+  max-width: 760px;
   padding: 0 20px;
-  color: var(--text-inverse);
+  color: rgba(255, 255, 255, 0.78);
   line-height: 1.8;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  font-size: clamp(0.875rem, 1.5vw, 1.1rem);
+  font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+}
+
+.hero-scroll-indicator {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+  animation: scrollBounce 2s ease-in-out infinite;
+  opacity: 0.6;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-scroll-indicator::after {
+  content: '↓';
+  font-size: 1.2rem;
+  animation: scrollBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes scrollBounce {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(6px);
+  }
 }
 
 @media (max-width: 1024px) {
+  .hero {
+    background-attachment: scroll;
+  }
+
   .hero p {
     max-width: 600px;
   }
@@ -7458,39 +7680,51 @@ FILE: src\app\pages\home\home.css
 
 @media (max-width: 768px) {
   .hero {
-    min-height: auto;
-    padding: 32px 16px;
+    min-height: 520px;
+    padding: 40px 20px 64px;
     align-items: flex-start;
+    background-attachment: scroll;
   }
 
   .hero h1 {
     text-align: left;
-    font-size: 1.6rem;
-    line-height: 1.2;
-    margin-bottom: 10px;
+    font-size: clamp(1.7rem, 6vw, 2.4rem);
+    letter-spacing: -0.01em;
   }
 
   .hero h2 {
     text-align: left;
-    font-size: 1.2rem;
-    opacity: 0.9;
-    margin-bottom: 10px;
+    font-size: 1.1rem;
   }
 
   .hero p {
     text-align: left;
     font-size: 0.95rem;
-    line-height: 1.7;
-    max-width: 100%;
     padding: 0;
-    margin: 0 0 10px;
+    margin: 0 0 16px;
+    max-width: 100%;
+  }
+
+  .hero-scroll-indicator {
+    bottom: 16px;
   }
 }
 
 @media (max-width: 480px) {
   .hero {
+    min-height: 440px;
+    padding: 28px 16px 56px;
+  }
+
+  .hero h1 {
+    font-size: 1.7rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .hero {
     min-height: 380px;
-    padding: 24px 16px;
+    padding: 24px 14px 48px;
   }
 
   .hero h1 {
@@ -7498,38 +7732,25 @@ FILE: src\app\pages\home\home.css
   }
 
   .hero h2 {
-    font-size: 1.1rem;
-  }
-
-  .hero p {
-    font-size: 0.875rem;
-    line-height: 1.65;
-  }
-}
-
-@media (max-width: 375px) {
-  .hero {
-    min-height: 340px;
-    padding: 20px 14px;
-  }
-
-  .hero h1 {
-    font-size: 1.25rem;
-  }
-
-  .hero h2 {
     font-size: 1rem;
   }
 
   .hero p {
-    font-size: 0.8125rem;
+    font-size: 0.85rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero * {
-    animation: none !important;
-    transition: none !important;
+  .hero::after {
+    animation: none;
+  }
+
+  .hero-scroll-indicator {
+    animation: none;
+  }
+
+  .hero {
+    background-attachment: scroll;
   }
 }
 
@@ -9946,12 +10167,12 @@ FILE: src\app\pages\product-detail\product-detail.css
 }
 
 .spinner {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border: 3px solid var(--color-border);
   border-top-color: var(--color-primary);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.75s linear infinite;
 }
 
 @keyframes spin {
@@ -9977,8 +10198,8 @@ FILE: src\app\pages\product-detail\product-detail.css
 }
 
 .not-found-icon {
-  font-size: 4rem;
-  opacity: 0.5;
+  font-size: 5rem;
+  opacity: 0.4;
 }
 
 .not-found-title {
@@ -9996,29 +10217,32 @@ FILE: src\app\pages\product-detail\product-detail.css
 }
 
 .back-btn {
-  padding: var(--space-3) var(--space-6);
-  background: var(--color-primary);
+  padding: var(--space-3) var(--space-8);
+  background: var(--gradient-primary);
   color: var(--color-text-on-primary);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   font-size: var(--text-base);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-semibold);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: all var(--transition-fast);
   font-family: var(--font-primary);
-  min-height: 44px;
+  min-height: 48px;
+  box-shadow: var(--shadow-primary);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .back-btn:hover {
-    background: var(--color-primary-hover);
+    background: var(--gradient-primary-hover);
+    box-shadow: var(--shadow-primary-lg);
+    transform: translateY(-2px);
   }
 }
 
 .detail-container {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: var(--space-6) var(--space-4);
+  padding: var(--space-8) var(--space-6);
 }
 
 .breadcrumb {
@@ -10026,7 +10250,7 @@ FILE: src\app\pages\product-detail\product-detail.css
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-8);
   font-size: var(--text-sm);
 }
 
@@ -10034,6 +10258,7 @@ FILE: src\app\pages\product-detail\product-detail.css
   color: var(--color-text-secondary);
   text-decoration: none;
   transition: color var(--transition-fast);
+  font-weight: var(--font-medium);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -10048,11 +10273,11 @@ FILE: src\app\pages\product-detail\product-detail.css
 
 .breadcrumb-current {
   color: var(--color-text-primary);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-semibold);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 200px;
+  max-width: 220px;
 }
 
 .detail-layout {
@@ -10071,7 +10296,7 @@ FILE: src\app\pages\product-detail\product-detail.css
 @media (min-width: 1024px) {
   .detail-layout {
     grid-template-columns: 5fr 6fr;
-    gap: var(--space-12);
+    gap: var(--space-16);
   }
 }
 
@@ -10093,39 +10318,41 @@ FILE: src\app\pages\product-detail\product-detail.css
   position: relative;
   width: 100%;
   aspect-ratio: 1;
-  background: var(--color-surface-elevated);
-  border-radius: var(--radius-xl);
+  background: var(--gradient-image-bg);
+  border-radius: var(--radius-2xl);
   overflow: hidden;
   border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xl);
 }
 
 .main-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  padding: 12px;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
+  transition: transform var(--transition-slow);
 }
 
 .image-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
   color: white;
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    transform var(--transition-fast);
+  transition: all var(--transition-fast);
   z-index: 5;
   font-family: var(--font-primary);
   line-height: 1;
@@ -10133,68 +10360,71 @@ FILE: src\app\pages\product-detail\product-detail.css
 }
 
 .image-nav.prev {
-  left: 10px;
+  left: 12px;
 }
 .image-nav.next {
-  right: 10px;
+  right: 12px;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .image-nav:hover:not(:disabled) {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(6, 122, 69, 0.8);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-50%) scale(1.08);
   }
 }
 
 .image-nav:disabled,
 .image-nav.disabled {
-  opacity: 0.3;
+  opacity: 0.25;
   cursor: not-allowed;
 }
 
 .image-counter {
   position: absolute;
-  bottom: 12px;
+  bottom: 14px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
   color: white;
-  padding: 4px 14px;
-  border-radius: 20px;
+  padding: 5px 16px;
+  border-radius: var(--radius-full);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   user-select: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .rx-badge {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  background: var(--color-primary);
+  top: 14px;
+  left: 14px;
+  background: var(--gradient-primary);
   color: white;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
   font-weight: var(--font-bold);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-primary);
   z-index: 2;
 }
 
 .discount-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  background: var(--color-error);
+  top: 14px;
+  right: 14px;
+  background: linear-gradient(135deg, #dc2626, #ef4444);
   color: white;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.45);
   z-index: 2;
 }
 
@@ -10210,6 +10440,7 @@ FILE: src\app\pages\product-detail\product-detail.css
 .thumbnail-strip::-webkit-scrollbar {
   height: 4px;
 }
+
 .thumbnail-strip::-webkit-scrollbar-thumb {
   background: var(--color-primary);
   border-radius: 2px;
@@ -10217,35 +10448,35 @@ FILE: src\app\pages\product-detail\product-detail.css
 
 .thumb {
   flex-shrink: 0;
-  width: 72px;
-  height: 72px;
+  width: 76px;
+  height: 76px;
   border: 2px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
-  background: var(--color-surface-elevated);
-  padding: 0;
-  transition:
-    border-color var(--transition-fast),
-    transform var(--transition-fast);
+  background: var(--gradient-image-bg);
+  padding: 4px;
+  transition: all var(--transition-fast);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .thumb:hover {
     border-color: var(--color-primary);
-    transform: scale(1.05);
+    transform: scale(1.06);
+    box-shadow: var(--shadow-primary);
   }
 }
 
 .thumb.active {
   border-color: var(--color-primary);
   border-width: 3px;
+  box-shadow: var(--shadow-primary);
 }
 
 .thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .info-section {
@@ -10263,22 +10494,24 @@ FILE: src\app\pages\product-detail\product-detail.css
 .category-badge {
   display: inline-block;
   width: fit-content;
-  padding: var(--space-1) var(--space-3);
+  padding: 5px 14px;
   background: var(--color-primary-light);
   color: var(--color-primary);
+  border: 1px solid rgba(6, 122, 69, 0.2);
   border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
+  font-size: 0.7rem;
+  font-weight: var(--font-bold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
 .product-title {
-  font-size: clamp(1.4rem, 4vw, 2rem);
-  font-weight: var(--font-bold);
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: var(--font-extrabold);
   color: var(--color-text-primary);
   margin: 0;
-  line-height: var(--leading-tight);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .rating-row {
@@ -10291,10 +10524,11 @@ FILE: src\app\pages\product-detail\product-detail.css
 .rating-stars {
   color: var(--color-warning);
   font-size: var(--text-lg);
+  letter-spacing: -1px;
 }
 
 .rating-value {
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-bold);
   color: var(--color-text-primary);
 }
 
@@ -10304,15 +10538,16 @@ FILE: src\app\pages\product-detail\product-detail.css
 }
 
 .price-block {
-  padding: var(--space-4) 0;
+  padding: var(--space-5) 0;
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
 }
 
 .price {
-  font-size: clamp(1.5rem, 4vw, 2.2rem);
-  font-weight: var(--font-bold);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
   color: var(--color-primary);
+  line-height: 1;
 }
 
 .price-with-discount {
@@ -10322,33 +10557,35 @@ FILE: src\app\pages\product-detail\product-detail.css
 }
 
 .original-price {
-  font-size: var(--text-lg);
-  color: var(--color-text-secondary);
+  font-size: var(--text-base);
+  color: var(--color-text-tertiary);
   text-decoration: line-through;
 }
 
 .discounted-price {
-  font-size: clamp(1.5rem, 4vw, 2.2rem);
-  font-weight: var(--font-bold);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
   color: var(--color-error);
+  line-height: 1;
 }
 
 .meta-grid {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   overflow: hidden;
+  box-shadow: var(--shadow-xs);
 }
 
 .meta-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-5);
   font-size: var(--text-sm);
   border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition-fast);
 }
 
 .meta-row:last-child {
@@ -10357,6 +10594,12 @@ FILE: src\app\pages\product-detail\product-detail.css
 
 .meta-row:nth-child(even) {
   background: var(--color-surface-elevated);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .meta-row:hover {
+    background: var(--color-primary-light);
+  }
 }
 
 .meta-label {
@@ -10376,12 +10619,14 @@ FILE: src\app\pages\product-detail\product-detail.css
   font-family: monospace;
   font-size: var(--text-xs);
   letter-spacing: 0.05em;
+  background: var(--color-surface-elevated);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
 }
 
 .meta-value.in-stock {
   color: var(--color-success);
 }
-
 .meta-value.out-of-stock {
   color: var(--color-error);
 }
@@ -10390,20 +10635,34 @@ FILE: src\app\pages\product-detail\product-detail.css
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-5);
+  padding: var(--space-6);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.cart-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
 }
 
 .quantity-controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-4);
+  gap: var(--space-5);
   padding: var(--space-3);
   background: var(--color-surface-elevated);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
 }
 
 .quantity-controls.disabled {
@@ -10411,10 +10670,10 @@ FILE: src\app\pages\product-detail\product-detail.css
 }
 
 .qty-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-primary);
   color: var(--color-text-on-primary);
   border: none;
   font-size: var(--text-2xl);
@@ -10423,30 +10682,32 @@ FILE: src\app\pages\product-detail\product-detail.css
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    transform var(--transition-fast);
+  transition: all var(--transition-bounce);
   font-family: var(--font-primary);
   line-height: 1;
+  box-shadow: var(--shadow-primary);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .qty-btn:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    transform: scale(1.08);
+    background: var(--gradient-primary-hover);
+    box-shadow: var(--shadow-primary-lg);
+    transform: scale(1.1);
   }
 }
 
 .qty-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  background: var(--color-text-tertiary);
+  box-shadow: none;
 }
 
 .qty-value {
-  min-width: 56px;
+  min-width: 60px;
   text-align: center;
   font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
+  font-weight: var(--font-extrabold);
   color: var(--color-text-primary);
 }
 
@@ -10454,56 +10715,56 @@ FILE: src\app\pages\product-detail\product-detail.css
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5);
   background: var(--color-primary-light);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(6, 122, 69, 0.15);
 }
 
 .total-label {
   font-size: var(--text-base);
   font-weight: var(--font-medium);
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary);
 }
 
 .total-value {
   font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
+  font-weight: 800;
   color: var(--color-primary);
 }
 
 .add-to-cart-btn {
   width: 100%;
-  padding: var(--space-4) var(--space-6);
-  background: var(--color-primary);
+  padding: var(--space-5) var(--space-6);
+  background: var(--gradient-primary);
   color: var(--color-text-on-primary);
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-bold);
   cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+  transition: all var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
   font-family: var(--font-primary);
-  min-height: 52px;
-  box-shadow: var(--shadow-md);
+  min-height: 56px;
+  box-shadow: var(--shadow-primary);
+  letter-spacing: 0.02em;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .add-to-cart-btn:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    box-shadow: var(--shadow-lg);
+    background: var(--gradient-primary-hover);
+    box-shadow: var(--shadow-primary-lg);
     transform: translateY(-2px);
   }
 }
 
 .add-to-cart-btn.added {
-  background: var(--color-success, #16a34a);
+  background: linear-gradient(135deg, #15803d, #16a34a);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.4);
 }
 
 .add-to-cart-btn:disabled {
@@ -10511,6 +10772,7 @@ FILE: src\app\pages\product-detail\product-detail.css
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  background: var(--color-text-secondary);
 }
 
 .btn-icon {
@@ -10520,11 +10782,12 @@ FILE: src\app\pages\product-detail\product-detail.css
 .prescription-notice {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--color-info, #0ea5e9);
-  color: white;
-  border-radius: var(--radius-md);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(17, 185, 252, 0.1);
+  border: 1px solid rgba(17, 185, 252, 0.3);
+  color: var(--color-info);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
@@ -10538,12 +10801,24 @@ FILE: src\app\pages\product-detail\product-detail.css
 
 .section-heading {
   font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-bold);
   color: var(--color-text-primary);
   margin: 0;
   padding-bottom: var(--space-2);
-  border-bottom: 2px solid var(--color-primary);
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  letter-spacing: -0.01em;
+}
+
+.section-heading::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: var(--gradient-primary);
+  border-radius: 2px;
+  margin-left: var(--space-2);
+  opacity: 0.5;
 }
 
 .description-text {
@@ -10557,11 +10832,20 @@ FILE: src\app\pages\product-detail\product-detail.css
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4);
   background: var(--color-surface-elevated);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
-  border-left: 3px solid var(--color-primary);
+  border-left: 4px solid var(--color-primary);
+  box-shadow: var(--shadow-xs);
+  transition: all var(--transition-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pharma-item:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 .pharma-item strong {
@@ -10581,24 +10865,24 @@ FILE: src\app\pages\product-detail\product-detail.css
 
   .breadcrumb {
     font-size: var(--text-xs);
-    margin-bottom: var(--space-4);
+    margin-bottom: var(--space-5);
   }
 
   .breadcrumb-current {
-    max-width: 140px;
+    max-width: 150px;
   }
 
   .thumb {
-    width: 60px;
-    height: 60px;
+    width: 64px;
+    height: 64px;
   }
 
   .cart-section {
-    padding: var(--space-4) var(--space-3);
+    padding: var(--space-4) var(--space-4);
   }
 
   .qty-value {
-    min-width: 44px;
+    min-width: 48px;
     font-size: var(--text-xl);
   }
 
@@ -10608,8 +10892,7 @@ FILE: src\app\pages\product-detail\product-detail.css
 
   .add-to-cart-btn {
     font-size: var(--text-base);
-    padding: var(--space-3) var(--space-4);
-    min-height: 48px;
+    min-height: 50px;
   }
 }
 
@@ -10619,8 +10902,8 @@ FILE: src\app\pages\product-detail\product-detail.css
   }
 
   .qty-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
   }
 
   .total-display {
@@ -10634,10 +10917,12 @@ FILE: src\app\pages\product-detail\product-detail.css
   .spinner {
     animation: none;
   }
+
   .add-to-cart-btn,
   .qty-btn,
   .thumb,
-  .image-nav {
+  .image-nav,
+  .pharma-item {
     transition: none;
   }
 }
@@ -10670,9 +10955,11 @@ FILE: src\app\pages\product-detail\product-detail.html
   @if (!isLoading() && product()) {
     <div class="detail-container">
       <nav class="breadcrumb" aria-label="breadcrumb">
-        <a [routerLink]="['/home']" class="breadcrumb-link">{{ 'nav.home' | translate }}</a>
+        <a [routerLink]="['/home']" class="breadcrumb-link">{{ 'header.home' | translate }}</a>
         <span class="breadcrumb-sep">›</span>
-        <a [routerLink]="['/products']" class="breadcrumb-link">{{ 'nav.products' | translate }}</a>
+        <a [routerLink]="['/products']" class="breadcrumb-link">{{
+          'header.products' | translate
+        }}</a>
         <span class="breadcrumb-sep">›</span>
         <span class="breadcrumb-current">{{ product()!.name }}</span>
       </nav>
@@ -10717,7 +11004,7 @@ FILE: src\app\pages\product-detail\product-detail.html
             }
           </div>
 
-          @if (images.length > 1) {
+          @if (images.length > 0) {
             <div class="thumbnail-strip">
               @for (img of images; track $index) {
                 <button
@@ -13897,6 +14184,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '45',
     times_ordered: '156',
     category_id: '1',
+    category: '1',
     manufacturer: 'Richter Gedeon',
     brand: 'Algopyrin',
     rating: '4.5',
@@ -13927,6 +14215,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '30',
     times_ordered: '230',
     category_id: '1',
+    category: '1',
     manufacturer: 'Bayer',
     brand: 'Aspirin',
     rating: '4.7',
@@ -13957,6 +14246,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '142',
     times_ordered: '445',
     category_id: '2',
+    category: '2',
     manufacturer: 'Pharma Nord',
     brand: 'Bio-C',
     rating: '4.9',
@@ -13987,6 +14277,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '87',
     times_ordered: '367',
     category_id: '2',
+    category: '2',
     manufacturer: 'Pharma Nord',
     brand: 'Bio-D3',
     rating: '4.7',
@@ -14017,6 +14308,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '56',
     times_ordered: '278',
     category_id: '3',
+    category: '3',
     manufacturer: 'Nordic Naturals',
     brand: 'OmegaPlus',
     rating: '4.6',
@@ -14047,6 +14339,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '34',
     times_ordered: '198',
     category_id: '3',
+    category: '3',
     manufacturer: 'Biocodex',
     brand: 'FloraBalance',
     rating: '4.4',
@@ -14077,6 +14370,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '38',
     times_ordered: '74',
     category_id: '4',
+    category: '4',
     manufacturer: 'DermaCare Lab',
     brand: 'DermaGlow',
     rating: '4.85',
@@ -14107,6 +14401,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '95',
     times_ordered: '137',
     category_id: '5',
+    category: '5',
     manufacturer: 'BabyCare Pharma',
     brand: 'BabyCalm',
     rating: '4.6',
@@ -14169,7 +14464,8 @@ export class ProductService {
     const filters = this.filtersSignal();
 
     if (filters.categories && filters.categories.length > 0) {
-      products = products.filter((p) => filters.categories!.includes(p.category_id));
+      // Filter uses the resolved `category` field from enrichProduct (handles both endpoints)
+      products = products.filter((p) => filters.categories!.includes(p.category));
     }
 
     if (filters.priceRange) {
@@ -14208,8 +14504,15 @@ export class ProductService {
     try {
       const products = await firstValueFrom(this.getAllProducts());
       const currentLang = this.translationService.getCurrentLanguage();
-      const enriched = products.map((p) => enrichProduct(p, currentLang));
-      this.rawProducts.set(products);
+
+      // Build id → slug map from loaded categories (if available)
+      const categorySlugMap = this.buildCategorySlugMap();
+
+      // Resolve numeric category IDs to slug strings before enriching
+      const resolved = products.map((p) => this.resolveCategorySlug(p, categorySlugMap));
+
+      const enriched = resolved.map((p) => enrichProduct(p, currentLang));
+      this.rawProducts.set(resolved);
       this.allProductsSignal.set(enriched);
       this.usingMockData.set(false);
       console.log(`Loaded ${products.length} products from backend`);
@@ -14223,7 +14526,9 @@ export class ProductService {
     try {
       const products = await firstValueFrom(this.getFeaturedFromApi());
       const currentLang = this.translationService.getCurrentLanguage();
-      const enriched = products.map((p) => enrichProduct(p, currentLang));
+      const categorySlugMap = this.buildCategorySlugMap();
+      const resolved = products.map((p) => this.resolveCategorySlug(p, categorySlugMap));
+      const enriched = resolved.map((p) => enrichProduct(p, currentLang));
       this.featuredSignal.set(enriched);
     } catch {
       const fallback = this.allProductsSignal().filter((p) => p.isFeatured);
@@ -14340,8 +14645,11 @@ export class ProductService {
 
   getProductsByCategory(categoryId: string): Observable<Product[]> {
     return this.getAllProducts().pipe(
-      map((products) => products.filter((p) => p.category_id === categoryId)),
-      catchError(() => of(MOCK_PRODUCTS.filter((p) => p.category_id === categoryId))),
+      // Support both field names from backend
+      map((products) => products.filter((p) => (p.category ?? p.category_id) === categoryId)),
+      catchError(() =>
+        of(MOCK_PRODUCTS.filter((p) => (p.category ?? p.category_id) === categoryId)),
+      ),
     );
   }
 
@@ -14385,6 +14693,39 @@ export class ProductService {
 
   getMockProducts(): Product[] {
     return MOCK_PRODUCTS;
+  }
+
+  /**
+   * Builds a map from category numeric ID → slug string.
+   * Uses whatever categories are currently loaded in the signal.
+   * Also adds the raw ProductCategory items from the categories signal.
+   */
+  private buildCategorySlugMap(): Map<string, string> {
+    const map = new Map<string, string>();
+    const categories = this.categoriesSignal();
+    // Category.id is the numeric id, Category.slug is the slug string
+    categories.forEach((cat) => {
+      map.set(cat.id, cat.slug);
+    });
+    return map;
+  }
+
+  /**
+   * Resolves the category field on a raw Product to its slug.
+   * - If get_all_products returns `category: "gyogyszerek"` (already a slug) → kept as-is
+   * - If it returns `category: "3"` (numeric ID string) → looked up in categorySlugMap
+   * - If it returns `category_id: "3"` → same lookup
+   * Falls back to the original value if no mapping found.
+   */
+  private resolveCategorySlug(product: Product, slugMap: Map<string, string>): Product {
+    // Use the `category` field first (get_all_products), then `category_id` (get_all_featured)
+    const rawCategory = product.category ?? product.category_id ?? '';
+
+    // If the value is purely numeric → it's an ID, try to resolve to slug
+    const isNumericId = /^\d+$/.test(rawCategory);
+    const resolved = isNumericId ? (slugMap.get(rawCategory) ?? rawCategory) : rawCategory;
+
+    return { ...product, category: resolved };
   }
 
   private sortProducts(products: ProductWithHelpers[], sortBy: SortOption): ProductWithHelpers[] {
@@ -17987,21 +18328,49 @@ FILE: src\app\shared\components\product-card\product-card.css
   flex-direction: column;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  transition: all var(--transition-normal);
+  transition:
+    box-shadow var(--transition-normal),
+    transform var(--transition-bounce),
+    border-color var(--transition-normal);
   height: 100%;
+  position: relative;
+}
+
+/* Subtle top accent line */
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+  z-index: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .product-card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-4px);
+    box-shadow:
+      var(--shadow-xl),
+      0 0 0 1px var(--color-primary-mid);
+    transform: translateY(-6px);
     border-color: var(--color-primary);
   }
 
+  .product-card:hover::before {
+    opacity: 1;
+  }
+
   .product-card:hover .product-image {
-    transform: scale(1.05);
+    transform: scale(1.07);
+  }
+
+  .product-card:hover .product-image-overlay {
+    opacity: 1;
   }
 }
 
@@ -18013,12 +18382,13 @@ FILE: src\app\shared\components\product-card\product-card.css
 }
 
 .product-card.out-of-stock {
-  opacity: 0.7;
+  opacity: 0.72;
 }
 
 .product-card.compact {
   flex-direction: row;
   height: auto;
+  border-radius: var(--radius-lg);
 }
 
 .product-link {
@@ -18033,13 +18403,14 @@ FILE: src\app\shared\components\product-card\product-card.css
   flex-direction: row;
 }
 
+/* Image wrapper — gradient background instead of plain cream */
 .product-image-wrapper {
   position: relative;
   width: 100%;
-  height: 200px;
-  background: var(--color-surface-elevated);
+  height: 210px;
+  background: var(--gradient-image-bg);
   overflow: hidden;
-  padding: 12px;
+  padding: 16px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -18060,13 +18431,30 @@ FILE: src\app\shared\components\product-card\product-card.css
   height: 100%;
   object-fit: contain;
   object-position: center;
-  transition: transform var(--transition-normal);
+  transition: transform var(--transition-slow);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
 }
 
+/* Hover overlay shimmer on image */
+.product-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    transparent 50%,
+    rgba(6, 122, 69, 0.06) 100%
+  );
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+  pointer-events: none;
+}
+
+/* Badges */
 .badges {
   position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
+  top: var(--space-3);
+  right: var(--space-3);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -18074,41 +18462,46 @@ FILE: src\app\shared\components\product-card\product-card.css
 }
 
 .badge {
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
   font-weight: var(--font-bold);
   text-align: center;
   box-shadow: var(--shadow-sm);
+  letter-spacing: 0.03em;
 }
 
 .discount-badge {
-  background: var(--color-error);
+  background: linear-gradient(135deg, #dc2626, #ef4444);
   color: white;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
 }
 
 .prescription-badge {
-  background: var(--color-primary);
+  background: var(--gradient-primary);
   color: white;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: var(--text-lg);
   padding: 0;
+  box-shadow: var(--shadow-primary);
 }
 
 .out-of-stock-badge {
-  background: var(--color-medium-gray);
+  background: rgba(85, 85, 85, 0.9);
+  backdrop-filter: blur(4px);
   color: white;
 }
 
 .out-of-stock-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18116,16 +18509,18 @@ FILE: src\app\shared\components\product-card\product-card.css
 }
 
 .out-of-stock-overlay span {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   color: var(--color-text-primary);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-full);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
+  box-shadow: var(--shadow-md);
 }
 
+/* Content */
 .product-content {
-  padding: var(--space-4);
+  padding: var(--space-5) var(--space-4) var(--space-3);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -18138,16 +18533,16 @@ FILE: src\app\shared\components\product-card\product-card.css
 }
 
 .product-category {
-  font-size: var(--text-xs);
+  font-size: 0.68rem;
   text-transform: uppercase;
-  color: var(--color-text-secondary);
-  font-weight: var(--font-medium);
-  letter-spacing: 0.05em;
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.08em;
 }
 
 .product-title {
   font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-bold);
   color: var(--color-text-primary);
   margin: 0;
   line-height: var(--leading-tight);
@@ -18187,6 +18582,7 @@ FILE: src\app\shared\components\product-card\product-card.css
   color: var(--color-text-secondary);
 }
 
+/* Rating */
 .product-rating {
   display: flex;
   align-items: center;
@@ -18196,6 +18592,7 @@ FILE: src\app\shared\components\product-card\product-card.css
 
 .rating-stars {
   color: var(--color-warning);
+  letter-spacing: -1px;
 }
 
 .rating-value {
@@ -18208,15 +18605,18 @@ FILE: src\app\shared\components\product-card\product-card.css
   font-size: var(--text-xs);
 }
 
+/* Price */
 .product-price-section {
   margin-top: auto;
-  padding-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
 }
 
 .price {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-extrabold);
   color: var(--color-primary);
+  line-height: 1;
 }
 
 .product-card.compact .price {
@@ -18226,29 +18626,30 @@ FILE: src\app\shared\components\product-card\product-card.css
 .price-with-discount {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
 .original-price {
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
   text-decoration: line-through;
 }
 
 .discounted-price {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-extrabold);
   color: var(--color-error);
+  line-height: 1;
 }
 
 .product-card.compact .discounted-price {
   font-size: var(--text-lg);
 }
 
+/* Actions */
 .product-actions {
-  padding: var(--space-4);
-  padding-top: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -18261,6 +18662,7 @@ FILE: src\app\shared\components\product-card\product-card.css
   align-items: center;
 }
 
+/* Quantity controls */
 .quantity-controls {
   display: flex;
   align-items: center;
@@ -18268,7 +18670,8 @@ FILE: src\app\shared\components\product-card\product-card.css
   gap: var(--space-3);
   padding: var(--space-2);
   background: var(--color-surface-elevated);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
 }
 
 .quantity-controls.disabled {
@@ -18279,8 +18682,8 @@ FILE: src\app\shared\components\product-card\product-card.css
 .quantity-btn {
   width: 44px;
   height: 44px;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
+  border-radius: var(--radius-md);
+  background: var(--gradient-primary);
   color: var(--color-text-on-primary);
   border: none;
   font-size: var(--text-xl);
@@ -18292,37 +18695,42 @@ FILE: src\app\shared\components\product-card\product-card.css
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
   line-height: 1;
+  box-shadow: var(--shadow-sm);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .quantity-btn:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    transform: scale(1.05);
+    background: var(--gradient-primary-hover);
+    transform: scale(1.08);
+    box-shadow: var(--shadow-primary);
   }
 }
 
 .quantity-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
+  background: var(--color-text-tertiary);
+  box-shadow: none;
 }
 
 .quantity-value {
   min-width: 36px;
   text-align: center;
   font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-bold);
   color: var(--color-text-primary);
 }
 
+/* Add to cart — gradient button */
 .add-to-cart-button {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  background: var(--color-primary);
+  background: var(--gradient-primary);
   color: var(--color-text-on-primary);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-size: var(--text-base);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-semibold);
   cursor: pointer;
   transition: all var(--transition-fast);
   display: flex;
@@ -18331,6 +18739,8 @@ FILE: src\app\shared\components\product-card\product-card.css
   gap: var(--space-2);
   font-family: var(--font-primary);
   min-height: 44px;
+  box-shadow: var(--shadow-primary);
+  letter-spacing: 0.01em;
 }
 
 .add-to-cart-button.compact {
@@ -18341,30 +18751,34 @@ FILE: src\app\shared\components\product-card\product-card.css
 
 @media (hover: hover) and (pointer: fine) {
   .add-to-cart-button:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
+    background: var(--gradient-primary-hover);
+    box-shadow: var(--shadow-primary-lg);
+    transform: translateY(-2px);
   }
 }
 
 .add-to-cart-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  background: var(--color-text-secondary);
 }
 
 .button-icon {
   font-size: var(--text-lg);
 }
 
+/* Details button — outlined */
 .details-button {
   width: 100%;
   padding: var(--space-2) var(--space-4);
   background: transparent;
   color: var(--color-primary);
   border: 2px solid var(--color-primary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-semibold);
   cursor: pointer;
   transition: all var(--transition-fast);
   font-family: var(--font-primary);
@@ -18373,11 +18787,14 @@ FILE: src\app\shared\components\product-card\product-card.css
 
 @media (hover: hover) and (pointer: fine) {
   .details-button:hover {
-    background: var(--color-primary-light);
-    color: var(--color-text-on-primary);
+    background: var(--color-primary);
+    color: white;
+    box-shadow: var(--shadow-primary);
+    transform: translateY(-1px);
   }
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   .product-card.compact .product-image-wrapper {
     width: 100px;
@@ -18386,7 +18803,7 @@ FILE: src\app\shared\components\product-card\product-card.css
   }
 
   .product-content {
-    padding: var(--space-3);
+    padding: var(--space-4) var(--space-3) var(--space-2);
   }
 
   .product-title {
@@ -18394,8 +18811,7 @@ FILE: src\app\shared\components\product-card\product-card.css
   }
 
   .product-actions {
-    padding: var(--space-3);
-    padding-top: 0;
+    padding: var(--space-2) var(--space-3) var(--space-3);
   }
 }
 
@@ -18418,11 +18834,7 @@ FILE: src\app\shared\components\product-card\product-card.css
 
   .price,
   .discounted-price {
-    font-size: var(--text-lg);
-  }
-
-  .product-actions {
-    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-xl);
   }
 }
 
@@ -18432,6 +18844,10 @@ FILE: src\app\shared\components\product-card\product-card.css
   .quantity-btn,
   .add-to-cart-button,
   .details-button {
+    transition: none;
+  }
+
+  .product-card::before {
     transition: none;
   }
 }
@@ -18449,11 +18865,11 @@ FILE: src\app\shared\components\product-card\product-card.html
   [attr.aria-label]="localizedName"
 >
   <a [routerLink]="['/products', product.id]" class="product-link">
-    <!-- Image Section -->
     <div class="product-image-wrapper">
       <img [src]="product.imageUrl" [alt]="localizedName" class="product-image" loading="lazy" />
 
-      <!-- Badges -->
+      <div class="product-image-overlay"></div>
+
       <div class="badges">
         @if (hasDiscount) {
           <span class="badge discount-badge"> -{{ product.discountPercentage }}% </span>
@@ -18482,7 +18898,6 @@ FILE: src\app\shared\components\product-card\product-card.html
       }
     </div>
 
-    <!-- Content Section -->
     <div class="product-content">
       @if (!compact) {
         <span class="product-category">
@@ -18513,7 +18928,6 @@ FILE: src\app\shared\components\product-card\product-card.html
         </div>
       }
 
-      <!-- Price Section -->
       <div class="product-price-section">
         @if (hasDiscount) {
           <div class="price-with-discount">
@@ -18527,10 +18941,8 @@ FILE: src\app\shared\components\product-card\product-card.html
     </div>
   </a>
 
-  <!-- Actions Section -->
   <div class="product-actions">
     @if (!compact) {
-      <!-- Quantity Controls -->
       <div class="quantity-controls" [class.disabled]="!product.inStock">
         <button
           class="quantity-btn"
@@ -21834,7 +22246,9 @@ FILE: src\assets\i18n\de.json
     "emailPlaceholder": "Ihre E-Mail-Adresse",
     "send": "Senden",
     "legal": "Rechtliches",
-    "no_social_link": "Wir sind auf dieser Plattform noch nicht verfügbar"
+    "no_social_link": "Wir sind auf dieser Plattform noch nicht verfügbar",
+    "newsletter_success": "Erfolgreich abonniert!",
+    "newsletter_error": "Fehler beim Abonnieren. Bitte erneut versuchen."
   },
   "home": {
     "hero": {
@@ -21883,7 +22297,9 @@ FILE: src\assets\i18n\de.json
     "scroll_right": "Nach rechts scrollen",
     "go_home": "Zur Startseite",
     "previous": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "retry": "Erneut versuchen",
+    "refresh": "Aktualisieren"
   },
   "time": {
     "minutes_ago": "vor {{count}} Minuten",
@@ -22081,7 +22497,19 @@ FILE: src\assets\i18n\de.json
     "supplements": "Nahrungsergänzungsmittel",
     "cosmetics": "Kosmetika",
     "baby-care": "Babypflege",
-    "medical-devices": "Medizinische Geräte"
+    "medical-devices": "Medizinische Geräte",
+    "gyogyszerek": "Medikamente",
+    "vitaminok": "Vitamine",
+    "taplelkiegeszitok": "Nahrungsergänzung",
+    "kozmetikumok": "Kosmetika",
+    "babaapolas": "Babypflege",
+    "orvosi-eszkozok": "Medizingeräte",
+    "1": "Medikamente",
+    "2": "Vitamine",
+    "3": "Nahrungsergänzung",
+    "4": "Kosmetika",
+    "5": "Babypflege",
+    "6": "Medizingeräte"
   },
   "products": {
     "title": "Produkte",
@@ -22272,7 +22700,7 @@ FILE: src\assets\i18n\de.json
       "right_rectification": "Berichtigungsrecht",
       "right_rectification_desc": "Korrektur unrichtiger Daten",
       "right_erasure": "Löschungsrecht",
-      "right_erasure_desc": "„Recht auf Vergessenwerden"",
+      "right_erasure_desc": "\"Recht auf Vergessenwerden",
       "right_portability": "Datenübertragbarkeit",
       "right_portability_desc": "Daten in maschinenlesbarem Format anfordern",
       "right_objection": "Widerspruchsrecht",
@@ -22336,7 +22764,12 @@ FILE: src\assets\i18n\de.json
       "product": "Produkt",
       "category": "Kategorie",
       "price": "Preis",
-      "stock": "Bestand"
+      "stock": "Bestand",
+      "user_id": "Benutzer-ID",
+      "address": "Adresse",
+      "phone": "Telefon",
+      "note": "Anmerkung",
+      "rating": "Bewertung"
     },
     "status": {
       "pending": "Ausstehend",
@@ -22356,6 +22789,15 @@ FILE: src\assets\i18n\de.json
       "title": "⚠️ ENTWICKLERMODUS",
       "description": "Test-Admin-Sitzung — Backend nicht erreichbar. Diese Funktion funktioniert nicht in der Produktion.",
       "exit": "Beenden"
+    },
+    "loading": "Daten werden geladen...",
+    "no_orders": "Keine Bestellungen gefunden.",
+    "no_users": "Keine Benutzer gefunden.",
+    "no_products": "Keine Produkte gefunden.",
+    "errors": {
+      "users_load_failed": "Benutzerdaten konnten nicht geladen werden.",
+      "orders_load_failed": "Bestelldaten konnten nicht geladen werden.",
+      "products_load_failed": "Produktdaten konnten nicht geladen werden."
     }
   }
 }
@@ -22431,7 +22873,9 @@ FILE: src\assets\i18n\en.json
     "emailPlaceholder": "Your e-mail address",
     "send": "Send",
     "legal": "Legal",
-    "no_social_link": "We are not yet available on this platform"
+    "no_social_link": "We are not yet available on this platform",
+    "newsletter_success": "Successfully subscribed!",
+    "newsletter_error": "Failed to subscribe. Please try again."
   },
   "home": {
     "hero": {
@@ -22480,7 +22924,9 @@ FILE: src\assets\i18n\en.json
     "scroll_right": "Scroll right",
     "go_home": "Go to Homepage",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "retry": "Retry",
+    "refresh": "Refresh"
   },
   "time": {
     "minutes_ago": "{{count}} minutes ago",
@@ -22678,7 +23124,19 @@ FILE: src\assets\i18n\en.json
     "supplements": "Supplements",
     "cosmetics": "Cosmetics",
     "baby-care": "Baby Care",
-    "medical-devices": "Medical Devices"
+    "medical-devices": "Medical Devices",
+    "gyogyszerek": "Medicines",
+    "vitaminok": "Vitamins",
+    "taplelkiegeszitok": "Supplements",
+    "kozmetikumok": "Cosmetics",
+    "babaapolas": "Baby Care",
+    "orvosi-eszkozok": "Medical Devices",
+    "1": "Medicines",
+    "2": "Vitamins",
+    "3": "Supplements",
+    "4": "Cosmetics",
+    "5": "Baby Care",
+    "6": "Medical Devices"
   },
   "products": {
     "title": "Products",
@@ -22933,7 +23391,12 @@ FILE: src\assets\i18n\en.json
       "product": "Product",
       "category": "Category",
       "price": "Price",
-      "stock": "Stock"
+      "stock": "Stock",
+      "user_id": "User ID",
+      "address": "Address",
+      "phone": "Phone",
+      "note": "Note",
+      "rating": "Rating"
     },
     "status": {
       "pending": "Pending",
@@ -22953,6 +23416,15 @@ FILE: src\assets\i18n\en.json
       "title": "⚠️ DEV MODE",
       "description": "Test admin session — backend unavailable. This feature will not work in production.",
       "exit": "Exit"
+    },
+    "loading": "Loading data...",
+    "no_orders": "No orders found.",
+    "no_users": "No users found.",
+    "no_products": "No products found.",
+    "errors": {
+      "users_load_failed": "Failed to load user data.",
+      "orders_load_failed": "Failed to load order data.",
+      "products_load_failed": "Failed to load product data."
     }
   }
 }
@@ -23028,7 +23500,9 @@ FILE: src\assets\i18n\hu.json
     "emailPlaceholder": "E-mail címed",
     "send": "Küldés",
     "legal": "Jogi információk",
-    "no_social_link": "Jelenleg nincs elérhetőségünk ezen a platformon"
+    "no_social_link": "Jelenleg nincs elérhetőségünk ezen a platformon",
+    "newsletter_success": "Sikeres feliratkozás!",
+    "newsletter_error": "Sikertelen feliratkozás. Kérlek próbáld újra."
   },
   "home": {
     "hero": {
@@ -23077,7 +23551,9 @@ FILE: src\assets\i18n\hu.json
     "scroll_right": "Görgetés jobbra",
     "go_home": "Főoldalra",
     "previous": "Előző",
-    "next": "Következő"
+    "next": "Következő",
+    "retry": "Újra próbál",
+    "refresh": "Frissítés"
   },
   "time": {
     "minutes_ago": "{{count}} perce",
@@ -23275,7 +23751,19 @@ FILE: src\assets\i18n\hu.json
     "supplements": "Táplálékkiegészítők",
     "cosmetics": "Kozmetikumok",
     "baby-care": "Babaápolás",
-    "medical-devices": "Orvosi eszközök"
+    "medical-devices": "Orvosi eszközök",
+    "gyogyszerek": "Gyógyszerek",
+    "vitaminok": "Vitaminok",
+    "taplelkiegeszitok": "Táplálékkiegészítők",
+    "kozmetikumok": "Kozmetikumok",
+    "babaapolas": "Babaápolás",
+    "orvosi-eszkozok": "Orvosi eszközök",
+    "1": "Gyógyszerek",
+    "2": "Vitaminok",
+    "3": "Táplálékkiegészítők",
+    "4": "Kozmetikumok",
+    "5": "Babaápolás",
+    "6": "Orvosi eszközök"
   },
   "products": {
     "title": "Termékek",
@@ -23466,7 +23954,7 @@ FILE: src\assets\i18n\hu.json
       "right_rectification": "Helyesbítési jog",
       "right_rectification_desc": "pontatlan adatok javítása",
       "right_erasure": "Törlési jog",
-      "right_erasure_desc": "„elfeledtetéshez való jog"",
+      "right_erasure_desc": "\"elfeledtetéshez való jog",
       "right_portability": "Adathordozhatóság",
       "right_portability_desc": "adatok géppel olvasható formában kérhetők",
       "right_objection": "Tiltakozási jog",
@@ -23530,7 +24018,12 @@ FILE: src\assets\i18n\hu.json
       "product": "Termék",
       "category": "Kategória",
       "price": "Ár",
-      "stock": "Készlet"
+      "stock": "Készlet",
+      "user_id": "Felhasználó ID",
+      "address": "Cím",
+      "phone": "Telefon",
+      "note": "Megjegyzés",
+      "rating": "Értékelés"
     },
     "status": {
       "pending": "Függőben",
@@ -23550,6 +24043,15 @@ FILE: src\assets\i18n\hu.json
       "title": "⚠️ FEJLESZTŐI MÓD",
       "description": "Teszt admin munkamenet — a backend nem elérhető. Éles üzemben ez a funkció nem fog működni.",
       "exit": "Kilépés"
+    },
+    "loading": "Adatok betöltése...",
+    "no_orders": "Nem találhatók rendelések.",
+    "no_users": "Nem találhatók felhasználók.",
+    "no_products": "Nem találhatók termékek.",
+    "errors": {
+      "users_load_failed": "Nem sikerült betölteni a felhasználói adatokat.",
+      "orders_load_failed": "Nem sikerült betölteni a rendelési adatokat.",
+      "products_load_failed": "Nem sikerült betölteni a termék adatokat."
     }
   }
 }
@@ -23625,6 +24127,7 @@ FILE: src\styles\abstracts\_themes.css
   --color-primary: var(--color-green-primary);
   --color-primary-hover: #088554;
   --color-primary-light: rgba(6, 122, 69, 0.15);
+  --color-primary-mid: rgba(6, 122, 69, 0.4);
 
   --color-text-primary: var(--color-off-white);
   --color-text-secondary: var(--color-light-gray);
@@ -23633,11 +24136,16 @@ FILE: src\styles\abstracts\_themes.css
   --color-border: var(--color-medium-gray);
   --color-border-light: var(--color-gray-dark);
 
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.55), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.65), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  --shadow-primary: 0 8px 24px rgba(6, 122, 69, 0.4);
+  --shadow-primary-lg: 0 12px 32px rgba(6, 122, 69, 0.55);
+
+  --gradient-image-bg: linear-gradient(135deg, #1a2e24 0%, #1e3829 100%);
 }
 
 * {
@@ -23688,6 +24196,7 @@ FILE: src\styles\abstracts\_variables.css
   --color-primary: var(--color-green-primary);
   --color-primary-hover: var(--color-green-dark);
   --color-primary-light: rgba(6, 122, 69, 0.1);
+  --color-primary-mid: rgba(6, 122, 69, 0.5);
 
   --color-text-primary: var(--color-black);
   --color-text-secondary: var(--color-medium-gray);
@@ -23706,17 +24215,17 @@ FILE: src\styles\abstracts\_variables.css
   --color-info: var(--color-blue-bright);
 
   /* Spacing */
-  --space-1: 0.25rem; /* 4px */
-  --space-2: 0.5rem; /* 8px */
-  --space-3: 0.75rem; /* 12px */
-  --space-4: 1rem; /* 16px */
-  --space-5: 1.25rem; /* 20px */
-  --space-6: 1.5rem; /* 24px */
-  --space-8: 2rem; /* 32px */
-  --space-10: 2.5rem; /* 40px */
-  --space-12: 3rem; /* 48px */
-  --space-16: 4rem; /* 64px */
-  --space-20: 5rem; /* 80px */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
 
   /* Typography */
   --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
@@ -23729,11 +24238,13 @@ FILE: src\styles\abstracts\_variables.css
   --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
   --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);
   --text-3xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.5rem);
+  --text-4xl: clamp(2.25rem, 2rem + 1.5vw, 3rem);
 
   --font-normal: 400;
   --font-medium: 500;
   --font-semibold: 600;
   --font-bold: 700;
+  --font-extrabold: 800;
 
   --leading-tight: 1.25;
   --leading-normal: 1.5;
@@ -23744,19 +24255,31 @@ FILE: src\styles\abstracts\_variables.css
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
   --radius-full: 9999px;
 
-  /* Shadows */
+  /* Shadows - enhanced */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-primary: 0 8px 24px rgba(6, 122, 69, 0.3);
+  --shadow-primary-lg: 0 12px 32px rgba(6, 122, 69, 0.45);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #067a45 0%, #0a9e5a 50%, #048a4f 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #055c34 0%, #067a45 100%);
+  --gradient-hero: linear-gradient(135deg, rgba(4, 80, 42, 0.85) 0%, rgba(6, 122, 69, 0.7) 100%);
+  --gradient-card: linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.04) 100%);
+  --gradient-image-bg: linear-gradient(135deg, #f0f7f4 0%, #e8f5ee 100%);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* Z-index layers */
   --z-base: 1;

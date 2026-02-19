@@ -64,49 +64,60 @@
         <div class="dashboard-greeting">
           <h2>{{ 'admin.greeting' | translate: { name: adminName() } }}</h2>
         </div>
+
         <div class="stats-grid">
           <div class="stat-card primary">
             <div class="stat-icon">📦</div>
             <div class="stat-body">
-              <span class="stat-value">{{ stats.totalOrders }}</span>
+              @if (ordersLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ stats().totalOrders }}</span>
+              }
               <span class="stat-label">{{ 'admin.stats.total_orders' | translate }}</span>
-              <span class="stat-change positive"
-                >+12% {{ 'admin.stats.this_month' | translate }}</span
-              >
             </div>
           </div>
           <div class="stat-card success">
             <div class="stat-icon">💰</div>
             <div class="stat-body">
-              <span class="stat-value">{{ formatRevenue(stats.revenue) }}</span>
+              @if (ordersLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ formatRevenue(stats().revenue) }}</span>
+              }
               <span class="stat-label">{{ 'admin.stats.revenue' | translate }}</span>
-              <span class="stat-change positive"
-                >+8% {{ 'admin.stats.this_month' | translate }}</span
-              >
             </div>
           </div>
           <div class="stat-card info">
             <div class="stat-icon">👥</div>
             <div class="stat-body">
-              <span class="stat-value">{{ stats.totalUsers }}</span>
+              @if (usersLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ stats().totalUsers }}</span>
+              }
               <span class="stat-label">{{ 'admin.stats.total_users' | translate }}</span>
-              <span class="stat-change positive"
-                >+24 {{ 'admin.stats.this_week' | translate }}</span
-              >
             </div>
           </div>
           <div class="stat-card warning">
             <div class="stat-icon">🏷️</div>
             <div class="stat-body">
-              <span class="stat-value">{{ stats.totalProducts }}</span>
+              @if (productsLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ stats().totalProducts }}</span>
+              }
               <span class="stat-label">{{ 'admin.stats.total_products' | translate }}</span>
-              <span class="stat-change neutral"
-                >{{ stats.lowStock }} {{ 'admin.stats.low_stock' | translate }}</span
-              >
+              @if (!productsLoading() && stats().lowStock > 0) {
+                <span class="stat-change warning-text">
+                  {{ stats().lowStock }} {{ 'admin.stats.low_stock' | translate }}
+                </span>
+              }
             </div>
           </div>
         </div>
 
+        <!-- Recent orders preview -->
         <div class="admin-card">
           <div class="card-header">
             <h2 class="card-title">{{ 'admin.recent_orders' | translate }}</h2>
@@ -114,34 +125,47 @@
               {{ 'admin.view_all' | translate }} →
             </button>
           </div>
-          <div class="table-wrapper">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>{{ 'admin.table.order_id' | translate }}</th>
-                  <th>{{ 'admin.table.customer' | translate }}</th>
-                  <th>{{ 'admin.table.date' | translate }}</th>
-                  <th>{{ 'admin.table.total' | translate }}</th>
-                  <th>{{ 'admin.table.status' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (order of recentOrders.slice(0, 5); track order.id) {
+
+          @if (ordersLoading()) {
+            <div class="loading-state">
+              <span class="spinner">⏳</span>
+              <span>{{ 'admin.loading' | translate }}</span>
+            </div>
+          } @else if (ordersError()) {
+            <div class="error-state">
+              <span>⚠️ {{ ordersError()! | translate }}</span>
+              <button class="retry-btn" (click)="loadOrders()">
+                {{ 'common.retry' | translate }}
+              </button>
+            </div>
+          } @else if (recentOrders().length === 0) {
+            <div class="empty-state">{{ 'admin.no_orders' | translate }}</div>
+          } @else {
+            <div class="table-wrapper">
+              <table class="admin-table">
+                <thead>
                   <tr>
-                    <td class="order-id">#{{ order.id }}</td>
-                    <td>{{ order.customer }}</td>
-                    <td class="muted">{{ order.date }}</td>
-                    <td class="font-bold">{{ formatRevenue(order.total) }}</td>
-                    <td>
-                      <span [class]="'status-badge status-' + order.status">
-                        {{ 'admin.status.' + order.status | translate }}
-                      </span>
-                    </td>
+                    <th>{{ 'admin.table.order_id' | translate }}</th>
+                    <th>{{ 'admin.table.user_id' | translate }}</th>
+                    <th>{{ 'admin.table.date' | translate }}</th>
+                    <th>{{ 'admin.table.address' | translate }}</th>
+                    <th>{{ 'admin.table.total' | translate }}</th>
                   </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  @for (order of recentOrders(); track order.id) {
+                    <tr>
+                      <td class="order-id">#{{ order.id }}</td>
+                      <td class="muted">{{ order.user_id }}</td>
+                      <td class="muted">{{ formatDate(order.created_at) }}</td>
+                      <td>{{ getOrderAddressSummary(order) }}</td>
+                      <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         </div>
       </div>
     }
@@ -158,52 +182,67 @@
               [placeholder]="'admin.search_orders' | translate"
             />
           </div>
-          <select class="admin-select" [(ngModel)]="orderStatusFilter">
-            <option value="all">{{ 'admin.all_statuses' | translate }}</option>
-            <option value="pending">{{ 'admin.status.pending' | translate }}</option>
-            <option value="processing">{{ 'admin.status.processing' | translate }}</option>
-            <option value="shipped">{{ 'admin.status.shipped' | translate }}</option>
-            <option value="delivered">{{ 'admin.status.delivered' | translate }}</option>
-            <option value="cancelled">{{ 'admin.status.cancelled' | translate }}</option>
-          </select>
+          <button class="retry-btn" (click)="loadOrders()" [disabled]="ordersLoading()">
+            🔄 {{ 'common.refresh' | translate }}
+          </button>
         </div>
 
-        <div class="admin-card">
-          <div class="table-wrapper">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>{{ 'admin.table.order_id' | translate }}</th>
-                  <th>{{ 'admin.table.customer' | translate }}</th>
-                  <th>{{ 'admin.table.date' | translate }}</th>
-                  <th>{{ 'admin.table.items' | translate }}</th>
-                  <th>{{ 'admin.table.total' | translate }}</th>
-                  <th>{{ 'admin.table.status' | translate }}</th>
-                  <th>{{ 'admin.table.actions' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (order of filteredOrders(); track order.id) {
-                  <tr>
-                    <td class="order-id">#{{ order.id }}</td>
-                    <td>{{ order.customer }}</td>
-                    <td class="muted">{{ order.date }}</td>
-                    <td class="muted">{{ order.items }} {{ 'common.items_unit' | translate }}</td>
-                    <td class="font-bold">{{ formatRevenue(order.total) }}</td>
-                    <td>
-                      <span [class]="'status-badge status-' + order.status">
-                        {{ 'admin.status.' + order.status | translate }}
-                      </span>
-                    </td>
-                    <td>
-                      <button class="action-btn view-btn" [title]="'common.view' | translate">👁</button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+        @if (ordersLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
           </div>
-        </div>
+        } @else if (ordersError()) {
+          <div class="error-state">
+            <span>⚠️ {{ ordersError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadOrders()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredOrders().length === 0) {
+                <div class="empty-state">{{ 'admin.no_orders' | translate }}</div>
+              } @else {
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.table.order_id' | translate }}</th>
+                      <th>{{ 'admin.table.user_id' | translate }}</th>
+                      <th>{{ 'admin.table.date' | translate }}</th>
+                      <th>{{ 'admin.table.address' | translate }}</th>
+                      <th>{{ 'admin.table.phone' | translate }}</th>
+                      <th>{{ 'admin.table.total' | translate }}</th>
+                      <th>{{ 'admin.table.note' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (order of filteredOrders(); track order.id) {
+                      <tr>
+                        <td class="order-id">#{{ order.id }}</td>
+                        <td class="muted">{{ order.user_id }}</td>
+                        <td class="muted">{{ formatDate(order.created_at) }}</td>
+                        <td>
+                          {{ order.city }}
+                          @if (order.house_number) {
+                            <span class="muted">, {{ order.house_number }}</span>
+                          }
+                          @if (order.apartment_number) {
+                            <span class="muted">/{{ order.apartment_number }}</span>
+                          }
+                        </td>
+                        <td class="muted">{{ order.phone_number || '—' }}</td>
+                        <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                        <td class="muted note-cell">{{ order.note || '—' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
       </div>
     }
 
@@ -219,47 +258,64 @@
               [placeholder]="'admin.search_users' | translate"
             />
           </div>
+          <button class="retry-btn" (click)="loadUsers()" [disabled]="usersLoading()">
+            🔄 {{ 'common.refresh' | translate }}
+          </button>
         </div>
 
-        <div class="admin-card">
-          <div class="table-wrapper">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>{{ 'admin.table.user' | translate }}</th>
-                  <th>{{ 'admin.table.email' | translate }}</th>
-                  <th>{{ 'admin.table.role' | translate }}</th>
-                  <th>{{ 'admin.table.registered' | translate }}</th>
-                  <th>{{ 'admin.table.orders' | translate }}</th>
-                  <th>{{ 'admin.table.actions' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (user of filteredUsers(); track user.id) {
-                  <tr>
-                    <td>
-                      <div class="user-cell">
-                        <div class="user-avatar">{{ user.name.charAt(0) }}</div>
-                        <span>{{ user.name }}</span>
-                      </div>
-                    </td>
-                    <td class="muted">{{ user.email }}</td>
-                    <td>
-                      <span [class]="'role-badge role-' + user.role">
-                        {{ 'forum.role.' + user.role | translate }}
-                      </span>
-                    </td>
-                    <td class="muted">{{ user.registered }}</td>
-                    <td>{{ user.orders }}</td>
-                    <td>
-                      <button class="action-btn view-btn" [title]="'common.view' | translate">👁</button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+        @if (usersLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
           </div>
-        </div>
+        } @else if (usersError()) {
+          <div class="error-state">
+            <span>⚠️ {{ usersError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadUsers()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredUsers().length === 0) {
+                <div class="empty-state">{{ 'admin.no_users' | translate }}</div>
+              } @else {
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.table.user' | translate }}</th>
+                      <th>{{ 'admin.table.email' | translate }}</th>
+                      <th>{{ 'admin.table.role' | translate }}</th>
+                      <th>{{ 'admin.table.registered' | translate }}</th>
+                      <th>ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (user of filteredUsers(); track user.id) {
+                      <tr>
+                        <td>
+                          <div class="user-cell">
+                            <div class="user-avatar">{{ getUserInitial(user) }}</div>
+                            <span>{{ getUserFullName(user) }}</span>
+                          </div>
+                        </td>
+                        <td class="muted">{{ user.email }}</td>
+                        <td>
+                          <span [class]="'role-badge ' + getAccountStateClass(user.account_state)">
+                            {{ user.account_state }}
+                          </span>
+                        </td>
+                        <td class="muted">{{ formatDate(user.created_at) }}</td>
+                        <td class="muted">#{{ user.id }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
       </div>
     }
 
@@ -275,61 +331,83 @@
               [placeholder]="'admin.search_products' | translate"
             />
           </div>
-          <button class="add-btn">+ {{ 'admin.add_product' | translate }}</button>
+          <button class="retry-btn" (click)="loadProducts()" [disabled]="productsLoading()">
+            🔄 {{ 'common.refresh' | translate }}
+          </button>
         </div>
 
-        <div class="admin-card">
-          <div class="table-wrapper">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>{{ 'admin.table.product' | translate }}</th>
-                  <th>{{ 'admin.table.category' | translate }}</th>
-                  <th>{{ 'admin.table.price' | translate }}</th>
-                  <th>{{ 'admin.table.stock' | translate }}</th>
-                  <th>{{ 'admin.table.status' | translate }}</th>
-                  <th>{{ 'admin.table.actions' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (product of filteredProducts(); track product.id) {
-                  <tr>
-                    <td>
-                      <div class="product-cell">
-                        <div class="product-thumb">💊</div>
-                        <span>{{ product.name }}</span>
-                      </div>
-                    </td>
-                    <td class="muted">{{ product.category }}</td>
-                    <td class="font-bold">{{ formatRevenue(product.price) }}</td>
-                    <td>
-                      <span [class]="product.stock < 10 ? 'stock-low' : 'stock-ok'">
-                        {{ product.stock }} {{ 'common.items_unit' | translate }}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        [class]="
-                          'status-badge status-' + (product.active ? 'delivered' : 'cancelled')
-                        "
-                      >
-                        {{
-                          product.active
-                            ? ('admin.active' | translate)
-                            : ('admin.inactive' | translate)
-                        }}
-                      </span>
-                    </td>
-                    <td>
-                      <button class="action-btn edit-btn" [title]="'common.edit' | translate">✏️</button>
-                      <button class="action-btn delete-btn" [title]="'common.delete' | translate">🗑️</button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+        @if (productsLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
           </div>
-        </div>
+        } @else if (productsError()) {
+          <div class="error-state">
+            <span>⚠️ {{ productsError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadProducts()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredProducts().length === 0) {
+                <div class="empty-state">{{ 'admin.no_products' | translate }}</div>
+              } @else {
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.table.product' | translate }}</th>
+                      <th>{{ 'admin.table.category' | translate }}</th>
+                      <th>SKU</th>
+                      <th>{{ 'admin.table.price' | translate }}</th>
+                      <th>{{ 'admin.table.stock' | translate }}</th>
+                      <th>{{ 'admin.table.rating' | translate }}</th>
+                      <th>{{ 'admin.table.status' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (product of filteredProducts(); track product.id; let i = $index) {
+                      <tr>
+                        <td>
+                          <div class="product-cell">
+                            <div class="product-thumb">💊</div>
+                            <div class="product-cell-info">
+                              <span class="product-name">{{ product.name }}</span>
+                              <span class="product-brand muted">{{ product.brand }}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="muted">{{ product.category }}</td>
+                        <td class="muted">{{ product.sku }}</td>
+                        <td class="font-bold">{{ formatRevenue(product.price) }}</td>
+                        <td>
+                          <span [class]="product.stockNumber < 10 ? 'stock-low' : 'stock-ok'">
+                            {{ product.stockNumber }} {{ 'common.items_unit' | translate }}
+                          </span>
+                        </td>
+                        <td class="muted">⭐ {{ product.ratingNumber.toFixed(1) }}</td>
+                        <td>
+                          <span
+                            [class]="
+                              'status-badge status-' + (product.inStock ? 'delivered' : 'cancelled')
+                            "
+                          >
+                            {{
+                              product.inStock
+                                ? ('admin.active' | translate)
+                                : ('admin.inactive' | translate)
+                            }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
       </div>
     }
   </main>

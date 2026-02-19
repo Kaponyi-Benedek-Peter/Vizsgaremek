@@ -17,6 +17,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/chpass_request',
     '/chpass_promise',
     '/get_all_products',
+    '/get_all_featured_products',
+    '/newsletter_subscription',
   ];
 
   const isPublicEndpoint = publicEndpoints.some((endpoint) => req.url.includes(endpoint));

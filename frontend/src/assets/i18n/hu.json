@@ -63,7 +63,9 @@
     "emailPlaceholder": "E-mail címed",
     "send": "Küldés",
     "legal": "Jogi információk",
-    "no_social_link": "Jelenleg nincs elérhetőségünk ezen a platformon"
+    "no_social_link": "Jelenleg nincs elérhetőségünk ezen a platformon",
+    "newsletter_success": "Sikeres feliratkozás!",
+    "newsletter_error": "Sikertelen feliratkozás. Kérlek próbáld újra."
   },
   "home": {
     "hero": {
@@ -112,7 +114,9 @@
     "scroll_right": "Görgetés jobbra",
     "go_home": "Főoldalra",
     "previous": "Előző",
-    "next": "Következő"
+    "next": "Következő",
+    "retry": "Újra próbál",
+    "refresh": "Frissítés"
   },
   "time": {
     "minutes_ago": "{{count}} perce",
@@ -310,7 +314,19 @@
     "supplements": "Táplálékkiegészítők",
     "cosmetics": "Kozmetikumok",
     "baby-care": "Babaápolás",
-    "medical-devices": "Orvosi eszközök"
+    "medical-devices": "Orvosi eszközök",
+    "gyogyszerek": "Gyógyszerek",
+    "vitaminok": "Vitaminok",
+    "taplelkiegeszitok": "Táplálékkiegészítők",
+    "kozmetikumok": "Kozmetikumok",
+    "babaapolas": "Babaápolás",
+    "orvosi-eszkozok": "Orvosi eszközök",
+    "1": "Gyógyszerek",
+    "2": "Vitaminok",
+    "3": "Táplálékkiegészítők",
+    "4": "Kozmetikumok",
+    "5": "Babaápolás",
+    "6": "Orvosi eszközök"
   },
   "products": {
     "title": "Termékek",
@@ -501,7 +517,7 @@
       "right_rectification": "Helyesbítési jog",
       "right_rectification_desc": "pontatlan adatok javítása",
       "right_erasure": "Törlési jog",
-      "right_erasure_desc": "„elfeledtetéshez való jog"",
+      "right_erasure_desc": "\"elfeledtetéshez való jog",
       "right_portability": "Adathordozhatóság",
       "right_portability_desc": "adatok géppel olvasható formában kérhetők",
       "right_objection": "Tiltakozási jog",
@@ -565,7 +581,12 @@
       "product": "Termék",
       "category": "Kategória",
       "price": "Ár",
-      "stock": "Készlet"
+      "stock": "Készlet",
+      "user_id": "Felhasználó ID",
+      "address": "Cím",
+      "phone": "Telefon",
+      "note": "Megjegyzés",
+      "rating": "Értékelés"
     },
     "status": {
       "pending": "Függőben",
@@ -585,6 +606,15 @@
       "title": "⚠️ FEJLESZTŐI MÓD",
       "description": "Teszt admin munkamenet — a backend nem elérhető. Éles üzemben ez a funkció nem fog működni.",
       "exit": "Kilépés"
+    },
+    "loading": "Adatok betöltése...",
+    "no_orders": "Nem találhatók rendelések.",
+    "no_users": "Nem találhatók felhasználók.",
+    "no_products": "Nem találhatók termékek.",
+    "errors": {
+      "users_load_failed": "Nem sikerült betölteni a felhasználói adatokat.",
+      "orders_load_failed": "Nem sikerült betölteni a rendelési adatokat.",
+      "products_load_failed": "Nem sikerült betölteni a termék adatokat."
     }
   }
 }

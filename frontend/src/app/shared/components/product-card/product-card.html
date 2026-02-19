@@ -5,11 +5,11 @@
   [attr.aria-label]="localizedName"
 >
   <a [routerLink]="['/products', product.id]" class="product-link">
-    <!-- Image Section -->
     <div class="product-image-wrapper">
       <img [src]="product.imageUrl" [alt]="localizedName" class="product-image" loading="lazy" />
 
-      <!-- Badges -->
+      <div class="product-image-overlay"></div>
+
       <div class="badges">
         @if (hasDiscount) {
           <span class="badge discount-badge"> -{{ product.discountPercentage }}% </span>
@@ -38,7 +38,6 @@
       }
     </div>
 
-    <!-- Content Section -->
     <div class="product-content">
       @if (!compact) {
         <span class="product-category">
@@ -69,7 +68,6 @@
         </div>
       }
 
-      <!-- Price Section -->
       <div class="product-price-section">
         @if (hasDiscount) {
           <div class="price-with-discount">
@@ -83,10 +81,8 @@
     </div>
   </a>
 
-  <!-- Actions Section -->
   <div class="product-actions">
     @if (!compact) {
-      <!-- Quantity Controls -->
       <div class="quantity-controls" [class.disabled]="!product.inStock">
         <button
           class="quantity-btn"

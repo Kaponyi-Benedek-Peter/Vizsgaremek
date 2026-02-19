@@ -21,7 +21,8 @@ export interface Product {
   stock: string;
   times_ordered: string;
 
-  category_id: string;
+  category_id?: string;
+  category?: string;
 
   manufacturer: string;
   brand: string;
@@ -204,6 +205,8 @@ export function enrichProduct(
         ? [imageUrl]
         : [];
 
+  const resolvedCategory = product.category ?? product.category_id ?? '';
+
   return {
     ...product,
     name,
@@ -220,7 +223,7 @@ export function enrichProduct(
     stockQuantity: stockNumber,
     reviewCount: 0,
 
-    category: product.category_id,
+    category: resolvedCategory,
     nameHu: product.name_hu,
     nameEn: product.name_en,
     nameDe: product.name_de,

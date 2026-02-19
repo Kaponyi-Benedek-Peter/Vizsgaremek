@@ -40,6 +40,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '45',
     times_ordered: '156',
     category_id: '1',
+    category: '1',
     manufacturer: 'Richter Gedeon',
     brand: 'Algopyrin',
     rating: '4.5',
@@ -70,6 +71,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '30',
     times_ordered: '230',
     category_id: '1',
+    category: '1',
     manufacturer: 'Bayer',
     brand: 'Aspirin',
     rating: '4.7',
@@ -100,6 +102,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '142',
     times_ordered: '445',
     category_id: '2',
+    category: '2',
     manufacturer: 'Pharma Nord',
     brand: 'Bio-C',
     rating: '4.9',
@@ -130,6 +133,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '87',
     times_ordered: '367',
     category_id: '2',
+    category: '2',
     manufacturer: 'Pharma Nord',
     brand: 'Bio-D3',
     rating: '4.7',
@@ -160,6 +164,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '56',
     times_ordered: '278',
     category_id: '3',
+    category: '3',
     manufacturer: 'Nordic Naturals',
     brand: 'OmegaPlus',
     rating: '4.6',
@@ -190,6 +195,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '34',
     times_ordered: '198',
     category_id: '3',
+    category: '3',
     manufacturer: 'Biocodex',
     brand: 'FloraBalance',
     rating: '4.4',
@@ -220,6 +226,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '38',
     times_ordered: '74',
     category_id: '4',
+    category: '4',
     manufacturer: 'DermaCare Lab',
     brand: 'DermaGlow',
     rating: '4.85',
@@ -250,6 +257,7 @@ const MOCK_PRODUCTS: Product[] = [
     stock: '95',
     times_ordered: '137',
     category_id: '5',
+    category: '5',
     manufacturer: 'BabyCare Pharma',
     brand: 'BabyCalm',
     rating: '4.6',
@@ -312,7 +320,8 @@ export class ProductService {
     const filters = this.filtersSignal();
 
     if (filters.categories && filters.categories.length > 0) {
-      products = products.filter((p) => filters.categories!.includes(p.category_id));
+      // Filter uses the resolved `category` field from enrichProduct (handles both endpoints)
+      products = products.filter((p) => filters.categories!.includes(p.category));
     }
 
     if (filters.priceRange) {
@@ -351,8 +360,15 @@ export class ProductService {
     try {
       const products = await firstValueFrom(this.getAllProducts());
       const currentLang = this.translationService.getCurrentLanguage();
-      const enriched = products.map((p) => enrichProduct(p, currentLang));
-      this.rawProducts.set(products);
+
+      // Build id → slug map from loaded categories (if available)
+      const categorySlugMap = this.buildCategorySlugMap();
+
+      // Resolve numeric category IDs to slug strings before enriching
+      const resolved = products.map((p) => this.resolveCategorySlug(p, categorySlugMap));
+
+      const enriched = resolved.map((p) => enrichProduct(p, currentLang));
+      this.rawProducts.set(resolved);
       this.allProductsSignal.set(enriched);
       this.usingMockData.set(false);
       console.log(`Loaded ${products.length} products from backend`);
@@ -366,7 +382,9 @@ export class ProductService {
     try {
       const products = await firstValueFrom(this.getFeaturedFromApi());
       const currentLang = this.translationService.getCurrentLanguage();
-      const enriched = products.map((p) => enrichProduct(p, currentLang));
+      const categorySlugMap = this.buildCategorySlugMap();
+      const resolved = products.map((p) => this.resolveCategorySlug(p, categorySlugMap));
+      const enriched = resolved.map((p) => enrichProduct(p, currentLang));
       this.featuredSignal.set(enriched);
     } catch {
       const fallback = this.allProductsSignal().filter((p) => p.isFeatured);
@@ -483,8 +501,11 @@ export class ProductService {
 
   getProductsByCategory(categoryId: string): Observable<Product[]> {
     return this.getAllProducts().pipe(
-      map((products) => products.filter((p) => p.category_id === categoryId)),
-      catchError(() => of(MOCK_PRODUCTS.filter((p) => p.category_id === categoryId))),
+      // Support both field names from backend
+      map((products) => products.filter((p) => (p.category ?? p.category_id) === categoryId)),
+      catchError(() =>
+        of(MOCK_PRODUCTS.filter((p) => (p.category ?? p.category_id) === categoryId)),
+      ),
     );
   }
 
@@ -528,6 +549,39 @@ export class ProductService {
 
   getMockProducts(): Product[] {
     return MOCK_PRODUCTS;
+  }
+
+  /**
+   * Builds a map from category numeric ID → slug string.
+   * Uses whatever categories are currently loaded in the signal.
+   * Also adds the raw ProductCategory items from the categories signal.
+   */
+  private buildCategorySlugMap(): Map<string, string> {
+    const map = new Map<string, string>();
+    const categories = this.categoriesSignal();
+    // Category.id is the numeric id, Category.slug is the slug string
+    categories.forEach((cat) => {
+      map.set(cat.id, cat.slug);
+    });
+    return map;
+  }
+
+  /**
+   * Resolves the category field on a raw Product to its slug.
+   * - If get_all_products returns `category: "gyogyszerek"` (already a slug) → kept as-is
+   * - If it returns `category: "3"` (numeric ID string) → looked up in categorySlugMap
+   * - If it returns `category_id: "3"` → same lookup
+   * Falls back to the original value if no mapping found.
+   */
+  private resolveCategorySlug(product: Product, slugMap: Map<string, string>): Product {
+    // Use the `category` field first (get_all_products), then `category_id` (get_all_featured)
+    const rawCategory = product.category ?? product.category_id ?? '';
+
+    // If the value is purely numeric → it's an ID, try to resolve to slug
+    const isNumericId = /^\d+$/.test(rawCategory);
+    const resolved = isNumericId ? (slugMap.get(rawCategory) ?? rawCategory) : rawCategory;
+
+    return { ...product, category: resolved };
   }
 
   private sortProducts(products: ProductWithHelpers[], sortBy: SortOption): ProductWithHelpers[] {

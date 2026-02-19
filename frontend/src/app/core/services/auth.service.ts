@@ -30,6 +30,7 @@ export class AuthService {
   private readonly USER_KEY = 'auth_user';
   private readonly EXPIRES_KEY = 'auth_expires';
   private readonly STORAGE_TYPE_KEY = 'auth_storage_type';
+  private readonly SESSION_TOKEN_KEY = 'auth_session_token';
 
   private toastService = inject(ToastService);
 
@@ -37,6 +38,7 @@ export class AuthService {
     isAuthenticated: false,
     user: null,
     token: null,
+    sessionToken: null,
     expiresAt: null,
   });
 
@@ -44,11 +46,13 @@ export class AuthService {
   public isAuthenticated = computed(() => this.authStateSignal().isAuthenticated);
   public currentUser = computed(() => this.authStateSignal().user);
   public token = computed(() => this.authStateSignal().token);
+  public sessionToken = computed(() => this.authStateSignal().sessionToken);
 
   private authStateSubject = new BehaviorSubject<AuthState>({
     isAuthenticated: false,
     user: null,
     token: null,
+    sessionToken: null,
     expiresAt: null,
   });
   public authState$ = this.authStateSubject.asObservable();
@@ -65,6 +69,7 @@ export class AuthService {
     const token = this.getStoredToken();
     const user = this.getStoredUser();
     const expiresAt = this.getStoredExpiration();
+    const sessionToken = this.getStoredSessionToken();
 
     if (token && user && expiresAt) {
       if (new Date() < expiresAt) {
@@ -72,6 +77,7 @@ export class AuthService {
           isAuthenticated: true,
           user,
           token,
+          sessionToken,
           expiresAt,
         });
       } else {
@@ -88,6 +94,7 @@ export class AuthService {
             isAuthenticated: false,
             user: null,
             token: null,
+            sessionToken: null,
             expiresAt: null,
           });
 
@@ -117,6 +124,7 @@ export class AuthService {
   /**
    * Step 1 of login: send email + password to backend.
    * Backend sends a confirmation email with a one-time token.
+   * NOTE: docs specify id: B64(int) but email is the user identifier at this stage.
    */
   loginRequest(email: string, password: string): Observable<LoginRequestResponse> {
     const request: LoginRequest = {
@@ -131,22 +139,24 @@ export class AuthService {
 
   /**
    * Step 2 of login: validate the token from the email link.
-   * Returns JWT + session tokens on success and logs the user in.
+   * IMPORTANT: id and confirmationToken come already B64-encoded from the email URL.
    */
-  loginPromise(id: string, confirmationToken: string, stayLoggedIn: boolean): Observable<LoginResponse> {
+  loginPromise(
+    id: string,
+    confirmationToken: string,
+    stayLoggedIn: boolean,
+  ): Observable<LoginResponse> {
     const request: LoginPromiseRequest = {
-      id: this.encodeBase64(id),
-      confirmation_token: this.encodeBase64(confirmationToken),
+      id: id, // already B64 from URL
+      confirmation_token: confirmationToken, // already B64 from URL
     };
 
-    return this.http
-      .post<LoginResponse>(`${this.API_URL}/api/login_promise`, request)
-      .pipe(
-        tap((response) => {
-          this.handleLoginSuccess(response, stayLoggedIn);
-        }),
-        catchError(this.handleError.bind(this)),
-      );
+    return this.http.post<LoginResponse>(`${this.API_URL}/api/login_promise`, request).pipe(
+      tap((response) => {
+        this.handleLoginSuccess(response, stayLoggedIn);
+      }),
+      catchError(this.handleError.bind(this)),
+    );
   }
 
   register(email: string, password: string, firstname: string, lastname: string): Observable<void> {
@@ -162,30 +172,41 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
+  /**
+   * Step 2 of registration: id and token come already B64-encoded from the email URL.
+   */
   completeRegistration(
     id: string,
     token: string,
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
     const request: RegistrationPromiseRequest = {
-      id: id,
-      token: token,
+      id: id, // already B64 from URL
+      token: token, // already B64 from URL
     };
 
     return this.http
       .post<RegistrationResponse>(`${this.API_URL}/api/registration_promise`, request)
       .pipe(
         tap((response) => {
-          this.handleLoginSuccess(response as unknown as LoginResponse, stayLoggedIn, response.user);
+          this.handleLoginSuccess(
+            response as unknown as LoginResponse,
+            stayLoggedIn,
+            response.user,
+          );
         }),
         catchError(this.handleError.bind(this)),
       );
   }
 
+  /**
+   * Password change request.
+   * IMPORTANT: docs specify plain strings (no B64) for email and password here.
+   */
   requestPasswordChange(email: string, newPassword: string): Observable<void> {
     const request: PasswordChangeRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(newPassword),
+      email: email, // plain string — docs do NOT require B64
+      password: newPassword, // plain string — docs do NOT require B64
     };
 
     return this.http
@@ -193,6 +214,10 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
+  /**
+   * Complete password change: id and token come from the URL as-is.
+   * Returns new jwt_token and session_token — currently navigates to /login after success.
+   */
   completePasswordChange(id: string, token: string): Observable<void> {
     const request: PasswordChangePromiseRequest = {
       id: id,
@@ -210,6 +235,7 @@ export class AuthService {
       isAuthenticated: false,
       user: null,
       token: null,
+      sessionToken: null,
       expiresAt: null,
     });
     this.router.navigate(['/login']);
@@ -224,6 +250,10 @@ export class AuthService {
     }
 
     return token;
+  }
+
+  getSessionToken(): string | null {
+    return this.authStateSignal().sessionToken;
   }
 
   isUserAuthenticated(): boolean {
@@ -259,6 +289,7 @@ export class AuthService {
 
   private handleLoginSuccess(response: LoginResponse, stayLoggedIn: boolean, user?: User): void {
     const jwtToken = response.jwt_token;
+    const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 days
@@ -281,6 +312,7 @@ export class AuthService {
     this.clearStorage();
 
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
+    this.storeSessionToken(sessionToken, stayLoggedIn);
     if (userData) {
       this.storeUser(userData, stayLoggedIn);
     }
@@ -289,6 +321,7 @@ export class AuthService {
       isAuthenticated: true,
       user: userData || this.getStoredUser(),
       token: jwtToken,
+      sessionToken,
       expiresAt,
     });
 
@@ -311,6 +344,12 @@ export class AuthService {
     storage.setItem(this.STORAGE_TYPE_KEY, stayLoggedIn ? 'local' : 'session');
   }
 
+  private storeSessionToken(sessionToken: string | null, stayLoggedIn: boolean): void {
+    if (!sessionToken) return;
+    const storage = stayLoggedIn ? localStorage : sessionStorage;
+    storage.setItem(this.SESSION_TOKEN_KEY, sessionToken);
+  }
+
   private storeUser(user: User, stayLoggedIn: boolean): void {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
     storage.setItem(this.USER_KEY, JSON.stringify(user));
@@ -318,6 +357,12 @@ export class AuthService {
 
   private getStoredToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY);
+  }
+
+  private getStoredSessionToken(): string | null {
+    return (
+      localStorage.getItem(this.SESSION_TOKEN_KEY) || sessionStorage.getItem(this.SESSION_TOKEN_KEY)
+    );
   }
 
   private getStoredUser(): User | null {
@@ -349,24 +394,16 @@ export class AuthService {
       storage.removeItem(this.USER_KEY);
       storage.removeItem(this.EXPIRES_KEY);
       storage.removeItem(this.STORAGE_TYPE_KEY);
+      storage.removeItem(this.SESSION_TOKEN_KEY);
     });
   }
 
-  private encodeBase64(value: string): string {
+  encodeBase64(value: string): string {
     try {
       return btoa(unescape(encodeURIComponent(value)));
     } catch (error) {
       console.error('Base64 encoding error:', error);
       return btoa(value);
-    }
-  }
-
-  private decodeBase64(value: string): string {
-    try {
-      return decodeURIComponent(escape(atob(value)));
-    } catch (error) {
-      console.error('Base64 decoding error:', error);
-      return atob(value);
     }
   }
 

@@ -42,29 +42,29 @@ export class DelaccPromise implements OnInit {
         return;
       }
 
-      // The email link sends B64(email);B64(token)
-      // But delacc_promise requires id + token
-      // We decode the email part to get user ID
-      const idOrEmail = parts[0].trim();
-      const token = parts[1].trim();
+      // The backend email link sends: B64(email);B64(confirmation_token)
+      // confirmAccountDeletion() now expects already-B64 values — pass them as-is
+      const encodedId = parts[0].trim();
+      const encodedToken = parts[1].trim();
 
-      if (!idOrEmail || !token) {
+      if (!encodedId || !encodedToken) {
         this.errorMessage.set('auth.errors.invalid_link');
         return;
       }
 
-      const cleanUrl = `/delacc-promise?accdel=${idOrEmail};${token}`;
+      const cleanUrl = `/delacc-promise?accdel=${encodedId};${encodedToken}`;
       this.location.replaceState(cleanUrl);
 
-      this.confirmDeletion(idOrEmail, token);
+      this.confirmDeletion(encodedId, encodedToken);
     });
   }
 
-  confirmDeletion(id: string, token: string): void {
+  confirmDeletion(encodedId: string, encodedToken: string): void {
     this.isProcessing.set(true);
     this.errorMessage.set('');
 
-    this.accountService.confirmAccountDeletion(id, token).subscribe({
+    // Pass the already-B64-encoded values — the service no longer re-encodes
+    this.accountService.confirmAccountDeletion(encodedId, encodedToken).subscribe({
       next: () => {
         this.isProcessing.set(false);
         this.isSuccess.set(true);
