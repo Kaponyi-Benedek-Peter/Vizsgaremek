@@ -114,7 +114,7 @@ namespace Servo.controller
 
                 var respon = new
                 {
-                    status = "server_error",
+                    status = "internal_error",
                     statuscode = "500"
                 };
 
@@ -125,7 +125,7 @@ namespace Servo.controller
                 byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
-                service.shared.log("response:500 (server_error)");
+                service.shared.log("response:500 (internal_error)");
 
             }
             

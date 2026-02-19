@@ -205,55 +205,90 @@ namespace Servo.controller
 
                 }
 
+                else if (lenyeg.Contains("get_all_users"))
+                {
+
+                    controller.get_all_users.main(data, lenyeg);
+
+
+
+
+                }
+
+
 
             }
             // =========== NEMAPI =========== 
-            else
+            else 
+            {
+                if (kert.StartsWith("static/", StringComparison.OrdinalIgnoreCase))
                 {
-                    service.shared.log(">nem api kérés: "+kert);
-                    string hely = Path.Combine(alap, kert);
+                    kert = kert.Substring(7); 
+                }
 
-                    if (Directory.Exists(hely))
-                        hely = Path.Combine(hely, "index.html");
+                
+                string hely = Path.Combine(alap, kert.Replace("/", Path.DirectorySeparatorChar.ToString()));
 
+                service.shared.log("> Served path: " + hely);
+
+                
+                bool isPhysicalFile = File.Exists(hely) && !Directory.Exists(hely);
+
+                if (!isPhysicalFile)
+                {
+                    
+                    hely = Path.Combine(alap, "index.html");
+                    service.shared.log(">> SPA!");
+                }
+
+                try
+                {
                     if (File.Exists(hely))
                     {
-                        try
-                        {
-                            byte[] fileBytes = File.ReadAllBytes(hely);
-                            data.Response.ContentType = service.shared.mime(Path.GetExtension(hely));
-                            data.Response.OutputStream.Write(fileBytes, 0, fileBytes.Length);
-                        service.shared.log($"{data.Request.RemoteEndPoint.Address.ToString()} --> {hely.Split(new string[] { "\\public\\" }, StringSplitOptions.None)[1]} || ok");
+                        byte[] fileBytes = File.ReadAllBytes(hely);
+                        data.Response.ContentType = service.shared.mime(Path.GetExtension(hely));
+                        data.Response.OutputStream.Write(fileBytes, 0, fileBytes.Length);
+
                         Form1.Instance.updatefilesserved();
-                        }
-                        catch (Exception ex)
-                        {
-                            data.Response.StatusCode = 500;
-                            byte[] buffer = Encoding.UTF8.GetBytes("server_error"); // köpönyegforgató módon elhallgatni a hibát és lejelenteni 3 sorral lejjebb
-                        data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                            Form1.Instance.updateerrorcount();
-                        service.shared.log($"{data.Request.RemoteEndPoint.Address.ToString()} --> {hely.Split(new string[] { "\\public\\" }, StringSplitOptions.None)[1]} || ERROR: + {ex.Message}");
-                        }
+                        service.shared.log($"{data.Request.RemoteEndPoint.Address} --> {kert} || OK");
                     }
                     else
                     {
-
-
+                        
                         data.Response.StatusCode = 404;
-                        byte[] buffer = Encoding.UTF8.GetBytes("file_not_found");
+                        byte[] buffer = Encoding.UTF8.GetBytes("Internal error");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-
-                        Form1.Instance.updateerrorcount();
-
-                        Form1.Instance.log(data.Request.RemoteEndPoint.Address.ToString() + hely + " || ERROR: file not found");
+                        service.shared.log("ERROR 1: index.html not found (" + hely+") --controller.router.main");
                     }
                 }
+                catch (Exception ex)
+                {
+                    data.Response.StatusCode = 500;
+                    byte[] buffer = Encoding.UTF8.GetBytes("Internal error");
+                    data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
-            data = endconnection(data);
-        }
+                    Form1.Instance.updateerrorcount();
+                    service.shared.log($"ERROR 2: {ex.Message} --controller.router.main");
+                }
+
+
+
+            }
+
+
 
             
 
-        
+
+
+
+
+
+            data = endconnection(data);
+        } // System.IndexOutOfRangeException: 'Az index a tömb határain kívülre mutatott.'
+
+
+
+
     }
 }

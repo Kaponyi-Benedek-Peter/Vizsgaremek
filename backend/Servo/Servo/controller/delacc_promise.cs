@@ -115,7 +115,7 @@ namespace Servo.controller
                 {
                     var respon = new
                     {
-                        status = "server_error_or_inexistent_user",
+                        status = "internal_error_or_inexistent_user",
                         statuscode = "500"
                     };
 

@@ -23,41 +23,33 @@ namespace Servo.model
             {
                 { "statuscode", "200" },
                 { "status", "success" },
-                { "products", new List<Dictionary<string, string>>() }
+                { "users", new List<Dictionary<string, string>>() }
             };
 
             try
             {
-                using (MySqlCommand cmd = new MySqlCommand("get_all_products", conn))
+                using (MySqlCommand cmd = new MySqlCommand("get_all_users", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        var products = (List<Dictionary<string, string>>)result["products"];
+                        var users = (List<Dictionary<string, string>>)result["users"];
 
                         while (reader.Read())
                         {
-                            var product = new Dictionary<string, string>();
+                            var user = new Dictionary<string, string>();
 
 
-                            string[] fields = { "id","name_hu","name_en", "name_de", "description_hu", "description_en", "description_de","description_preview_hu","description_preview_en",  "description_preview_de", "price_huf", "times_ordered",
-                                      "stock", "sale_percentage",
-
-                                      "category", "manufacturer", "brand",
-                                      "rating", "sku", "active_ingredients", "packaging", "created_at",
-                                      "updated_at" };
+                            string[] fields = { "id","email","created_at", "first_name","last_name","account_state"};
 
                             foreach (string field in fields)
                             {
-                                product[field] = reader.IsDBNull(reader.GetOrdinal(field)) ? "" : reader[field].ToString();
+                                user[field] = reader.IsDBNull(reader.GetOrdinal(field)) ? "" : reader[field].ToString();
                             }
 
-                            product["price_usd"] = service.shared.exchange(Convert.ToDouble(product["price_huf"]))[0].ToString();
-                            product["price_eur"] = service.shared.exchange(Convert.ToDouble(product["price_huf"]))[1].ToString();
-
-
-                            products.Add(product);
+                            
+                            users.Add(user);
                         }
 
                     }
@@ -67,7 +59,7 @@ namespace Servo.model
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error 1: {ex.Message} --model.get_all_products.communicate_get_all_products");
+                service.shared.log($"Error 1: {ex.Message} --model.get_all_users.communicate_get_all_users");
                 result["statuscode"] = "500";
                 result["status"] = "unknown error";
 

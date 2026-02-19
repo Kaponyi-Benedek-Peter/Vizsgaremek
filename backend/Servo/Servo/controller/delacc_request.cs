@@ -150,7 +150,7 @@ namespace Servo.controller
 
                     var respon = new
                     {
-                        status = "server_error_or_inexistent_user",
+                        status = "internal_error_or_inexistent_user",
                         statuscode = "500"
                     };
 
@@ -180,7 +180,7 @@ namespace Servo.controller
             {
                 service.shared.log($"Error 2: {ex.Message} --controller.delacc_request.main");
                 data.Response.StatusCode = 500;
-                byte[] buffer = Encoding.UTF8.GetBytes("server_error_or_inexistent_user");
+                byte[] buffer = Encoding.UTF8.GetBytes("internal_error_or_inexistent_user");
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
             }
             finally

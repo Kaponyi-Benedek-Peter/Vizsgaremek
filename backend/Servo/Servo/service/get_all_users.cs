@@ -10,63 +10,151 @@ namespace Servo.service
 {
     internal class get_all_users
     {
-        public static string process_get_all_users()
+        public static (int responsecode, string responsedata) process_get_all_users(string controller_user_id, string controller_sesstoken)
         {
+
 
 
             Dictionary<string, object> resp = new Dictionary<string, object>();
 
+            string model_sesstoken = model.shared.get_token_by_id(controller_user_id);
 
-            try
+            
+            service.shared.log("Password change request: " + controller_user_id + "   -> " + controller_sesstoken);
+
+            string accstate = model.shared.get_account_state_by_id(controller_user_id);
+
+            service.shared.log($"Debug 1: {accstate} --service.chpass_request.process_chpas_request ");
+
+
+
+
+
+            if (accstate == "admin")
             {
-                resp = model.get_all_users.communicate_get_all_users();
+
+
+                if (model_sesstoken == controller_sesstoken)
+                {
+
+
+
+                    try
+                    {
+                        resp = model.get_all_users.communicate_get_all_users();
+                    }
+                    catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.get_all_users.process_get_all_users"); }
+
+
+
+
+
+
+                    if (resp["statuscode"].ToString() == "500")
+                    {
+                        shared.log($"Debug 1: {resp["status"]} --service.get_all_users.process_get_all_users");
+                        return (500, "internal error");
+                    }
+                    else
+                    {
+
+
+
+                        // if (van adat)
+                        {
+
+                            //calculate exchange rate
+                            return (200, JsonConvert.SerializeObject(resp));
+                        }
+
+
+
+                        return (500, "internal error");
+
+
+                    }
+
+
+
+
+
+
+
+
+
+                }
+
+                else
+                {
+                    return (401, "wrong_token"); ;
+                }
+
+
+                    
+
+
+
+
+
+
+
+
             }
-            catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.get_all_users.process_get_all_users"); }
 
-
-            /*try
+            else
             {
-
-                recieved_token = resp["confirmation_token"];
-                expirationdate = resp["confirmation_token_expire"];
-                new_passhash = resp["new_value"];
-
+                return  (401, "permission_denied"); ;
             }
-            catch (Exception ex) { service.shared.log($"Error: {ex.Message} --service.chpass_promise.process_chpass_promise 2"); }
-            */
 
 
 
-            //service.shared.log(controller_confirmation_token);
-            //service.shared.log(fetched_token);
+
+
+
+
+
+
+
+
+
+
+
+
+            
+
+           
+
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             //exchange rate
 
-            if (resp["statuscode"].ToString() == "500")
-            {
-                shared.log($"Debug 1: {resp["status"]} --service.get_all_users.process_get_all_users");
-                return "error";
-            }
-            else
-            {
-
-
-
-                // if (van adat)
-                {
-
-                    //calculate exchange rate
-                    return JsonConvert.SerializeObject(resp);
-                }
-
-
-
-                return "error";
-
-
-            }
+            
 
 
         }

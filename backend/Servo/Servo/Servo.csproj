@@ -184,6 +184,7 @@
     <Compile Include="controller\delacc_promise.cs" />
     <Compile Include="controller\delacc_request.cs" />
     <Compile Include="controller\get_all_products.cs" />
+    <Compile Include="controller\get_all_users.cs" />
     <Compile Include="controller\login_promise.cs" />
     <Compile Include="controller\router.cs" />
     <Compile Include="controller\ban_user.cs" />
