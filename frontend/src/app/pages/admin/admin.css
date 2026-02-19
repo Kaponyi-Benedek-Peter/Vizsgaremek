@@ -652,54 +652,6 @@
   background: var(--bg-tertiary);
 }
 
-/* DEV MODE BANNER — REMOVE BEFORE PRODUCTION */
-.dev-mode-banner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-6);
-  background: linear-gradient(90deg, #f59e0b, #d97706);
-  color: #1a1a1a;
-  font-size: var(--text-sm, 0.9rem);
-  font-weight: 600;
-  position: sticky;
-  top: 64px;
-  z-index: 8;
-}
-
-.dev-mode-icon {
-  font-size: 18px;
-  flex-shrink: 0;
-}
-
-.dev-mode-text {
-  flex: 1;
-}
-
-.dev-mode-close {
-  background: rgba(0, 0, 0, 0.15);
-  border: none;
-  color: #1a1a1a;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-md, 0.5rem);
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-}
-
-.dev-mode-close:hover {
-  background: rgba(0, 0, 0, 0.25);
-}
-
-@media (max-width: 768px) {
-  .dev-mode-banner {
-    padding: var(--space-2) var(--space-4);
-    font-size: 0.8rem;
-    flex-wrap: wrap;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar,

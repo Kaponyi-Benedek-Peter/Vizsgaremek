@@ -1,0 +1,39 @@
+<div class="auth-container">
+  <div class="auth-card">
+    @if (isProcessing()) {
+      <div class="verification-content">
+        <div class="spinner-large"></div>
+        <h1>{{ 'profile.delacc.processing' | translate }}</h1>
+        <p class="verification-text">{{ 'profile.delacc.please_wait' | translate }}</p>
+      </div>
+    }
+
+    @if (!isProcessing() && isSuccess()) {
+      <div class="verification-content">
+        <div class="icon-wrapper success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h1>{{ 'profile.delacc.success_title' | translate }}</h1>
+        <p class="verification-text">{{ 'profile.delacc.success_message' | translate }}</p>
+        <p class="redirect-notice">{{ 'profile.delacc.redirecting' | translate }}</p>
+      </div>
+    }
+
+    @if (!isProcessing() && errorMessage()) {
+      <div class="verification-content">
+        <div class="icon-wrapper error">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        <h1>{{ 'profile.delacc.error_title' | translate }}</h1>
+        <p class="verification-text error-text">{{ errorMessage() | translate }}</p>
+        <button class="submit-btn" (click)="goHome()">
+          {{ 'common.go_home' | translate }}
+        </button>
+      </div>
+    }
+  </div>
+</div>

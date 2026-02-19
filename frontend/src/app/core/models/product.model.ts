@@ -108,6 +108,8 @@ export interface PaginationConfig {
   totalPages: number;
 }
 
+import { environment } from '../../../environments/environment';
+
 // Helper function to convert Product to ProductWithHelpers
 export function enrichProduct(
   product: Product,
@@ -172,12 +174,12 @@ export function enrichProduct(
     descriptionDe: product.description_de,
     activeIngredients: product.active_ingredients,
 
-    // Image handling - placeholder URLs
-    imageUrl: `assets/images/products/${product.id || 'placeholder'}.webp`,
+    // Image handling - absolute URLs
+    imageUrl: `${environment.assetsURL}/assets/images/products/${product.id || 'placeholder'}.webp`,
     images: [
-      `assets/images/products/${product.id || 'placeholder'}.webp`,
-      `assets/images/products/${product.id || 'placeholder'}-2.webp`,
-      `assets/images/products/${product.id || 'placeholder'}-3.webp`,
+      `${environment.assetsURL}/assets/images/products/${product.id || 'placeholder'}.webp`,
+      `${environment.assetsURL}/assets/images/products/${product.id || 'placeholder'}-2.webp`,
+      `${environment.assetsURL}/assets/images/products/${product.id || 'placeholder'}-3.webp`,
     ],
 
     dosage: undefined,

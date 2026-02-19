@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
 import { Admin } from './pages/admin/admin';
-import { Blog } from './pages/blog/blog';
 import { Bracket } from './pages/bracket/bracket';
 import { Email } from './pages/email/email';
 import { Forum } from './pages/forum/forum';
@@ -12,7 +11,7 @@ import { Products } from './pages/products/products';
 import { Profile } from './pages/profile/profile';
 import { Purchase } from './pages/purchase/purchase';
 import { Register } from './pages/register/register';
-import { Test } from './pages/test/test';
+import { authGuard, adminGuard, guestGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -24,26 +23,25 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/product-detail/product-detail').then((m) => m.ProductDetail),
   },
-  { path: 'profile', component: Profile },
-  { path: 'purchase', component: Purchase },
+  { path: 'profile', component: Profile, canActivate: [authGuard] },
+  { path: 'purchase', component: Purchase, canActivate: [authGuard] },
   { path: 'legal', component: Legal },
   { path: 'bracket', component: Bracket },
-  { path: 'admin', component: Admin },
-  { path: 'blog', component: Blog },
-  {
-    path: 'blog/:slug',
-    loadComponent: () =>
-      import('./pages/blog-detail/blog-detail').then((m) => m.BlogDetail),
-  },
+  { path: 'admin', component: Admin, canActivate: [adminGuard] },
   {
     path: 'forum/:slug',
     loadComponent: () =>
-      import('./pages/blog-detail/blog-detail').then((m) => m.BlogDetail),
+      import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
   },
-  { path: 'login', loadComponent: () => import('./pages/login/login').then((m) => m.Login) },
+  {
+    path: 'login',
+    loadComponent: () => import('./pages/login/login').then((m) => m.Login),
+    canActivate: [guestGuard],
+  },
   {
     path: 'register',
     loadComponent: () => import('./pages/register/register').then((m) => m.Register),
+    canActivate: [guestGuard],
   },
   { path: 'email', loadComponent: () => import('./pages/email/email').then((m) => m.Email) },
   {
@@ -65,6 +63,16 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/password-reset/password-reset').then((m) => m.PasswordReset),
   },
-  { path: 'test', component: Test },
+  {
+    path: 'login-promise',
+    loadComponent: () =>
+      import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
+  },
+  {
+    path: 'delacc-promise',
+    loadComponent: () =>
+      import('./pages/delacc-promise/delacc-promise').then((m) => m.DelaccPromise),
+    canActivate: [authGuard],
+  },
   { path: '**', component: NotFound },
 ];

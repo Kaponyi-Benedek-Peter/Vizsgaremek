@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { User } from '../models/auth.model';
+import { environment } from '../../../environments/environment';
 
 export interface UpdateProfileRequest {
   firstname?: string;
@@ -27,12 +28,12 @@ export interface ApiResponse<T = any> {
   providedIn: 'root',
 })
 export class AccountService {
-  private readonly API_URL = 'https://api.roysshack.hu/api';
+  private readonly API_URL = environment.baseURL;
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 
   getProfile(): Observable<User> {
-    return this.http.get<User>(`${this.API_URL}/profile`).pipe(catchError(this.handleError));
+    return this.http.get<User>(`${this.API_URL}/api/profile`).pipe(catchError(this.handleError));
   }
 
   /**
@@ -53,7 +54,7 @@ export class AccountService {
       encodedUpdates.email = this.encodeBase64(updates.email);
     }
 
-    return this.http.put<ApiResponse<User>>(`${this.API_URL}/profile`, encodedUpdates).pipe(
+    return this.http.put<ApiResponse<User>>(`${this.API_URL}/api/profile`, encodedUpdates).pipe(
       tap((response) => {
         console.log('Profile updated successfully');
       }),
@@ -74,7 +75,7 @@ export class AccountService {
       password: this.encodeBase64(password),
     };
 
-    return this.http.post<ApiResponse>(`${this.API_URL}/delacc_request`, request).pipe(
+    return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_request`, request).pipe(
       tap(() => {
         console.log('Account deletion requested - confirmation email sent');
       }),
@@ -94,7 +95,7 @@ export class AccountService {
       token: this.encodeBase64(token),
     };
 
-    return this.http.post<ApiResponse>(`${this.API_URL}/delacc_promise`, request).pipe(
+    return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_promise`, request).pipe(
       tap(() => {
         console.log('Account deleted successfully');
         this.authService.logout();
@@ -121,7 +122,7 @@ export class AccountService {
       newPassword: this.encodeBase64(newPassword),
     };
 
-    return this.http.post<ApiResponse>(`${this.API_URL}/change-password`, request).pipe(
+    return this.http.post<ApiResponse>(`${this.API_URL}/api/change-password`, request).pipe(
       tap(() => {
         console.log('Password changed successfully');
       }),
@@ -131,19 +132,13 @@ export class AccountService {
 
   getOrderHistory(): Observable<ApiResponse<any[]>> {
     return this.http
-      .get<ApiResponse<any[]>>(`${this.API_URL}/orders`)
+      .get<ApiResponse<any[]>>(`${this.API_URL}/api/orders`)
       .pipe(catchError(this.handleError));
   }
 
   getSavedAddresses(): Observable<ApiResponse<any[]>> {
     return this.http
-      .get<ApiResponse<any[]>>(`${this.API_URL}/addresses`)
-      .pipe(catchError(this.handleError));
-  }
-
-  exampleAuthenticatedRequest(): Observable<any> {
-    return this.http
-      .get(`${this.API_URL}/some-protected-endpoint`)
+      .get<ApiResponse<any[]>>(`${this.API_URL}/api/addresses`)
       .pipe(catchError(this.handleError));
   }
 

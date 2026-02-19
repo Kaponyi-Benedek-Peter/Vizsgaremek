@@ -109,7 +109,10 @@
     "view": "View",
     "items_unit": "pcs",
     "scroll_left": "Scroll left",
-    "scroll_right": "Scroll right"
+    "scroll_right": "Scroll right",
+    "go_home": "Go to Homepage",
+    "previous": "Previous",
+    "next": "Next"
   },
   "time": {
     "minutes_ago": "{{count}} minutes ago",
@@ -209,7 +212,19 @@
       "logging_in": "Signing in...",
       "forgot_password": "Forgot your password?",
       "no_account": "Don't have an account?",
-      "sign_up": "Sign up"
+      "sign_up": "Sign up",
+      "email_sent_title": "Check your email",
+      "email_sent_message": "We've sent a login confirmation link to your email address. Click the link to complete your sign-in.",
+      "step_1": "Open the email and click the confirmation link",
+      "step_2": "You'll be automatically signed in"
+    },
+    "login_promise": {
+      "verifying": "Confirming sign-in",
+      "please_wait": "Please wait...",
+      "success_title": "Sign-in successful!",
+      "success_message": "Redirecting you to the homepage.",
+      "error_title": "Sign-in failed",
+      "back_to_login": "Back to sign in"
     },
     "register": {
       "title": "Create Account",
@@ -240,16 +255,18 @@
       "back_to_register": "Back to registration"
     },
     "password_reset": {
-      "title": "Reset Password",
-      "subtitle": "Enter your email to receive a reset link",
-      "button": "Send Reset Link",
+      "title": "Change Password",
+      "subtitle": "Enter your email and new password",
+      "new_password": "New Password",
+      "confirm_password": "Confirm New Password",
+      "button": "Request Password Change",
       "sending": "Sending...",
       "back_to_login": "Back to login",
       "email_sent": "Email Sent",
-      "email_sent_message": "We've sent a password reset link to your email.",
+      "email_sent_message": "We've sent a password change confirmation link to your email.",
       "step_1": "Check your email inbox",
-      "step_2": "Click the reset link",
-      "step_3": "Set your new password"
+      "step_2": "Click the confirmation link",
+      "step_3": "Your new password will be active immediately"
     },
     "password_change": {
       "title": "Set New Password",
@@ -277,7 +294,10 @@
       "verification_failed": "Email verification failed",
       "request_failed": "Request failed",
       "password_reset_failed": "Password reset failed",
-      "invalid_reset_link": "Invalid or expired reset link"
+      "invalid_reset_link": "Invalid or expired reset link",
+      "invalid_login_link": "Invalid or expired login link",
+      "invalid_link": "Invalid or expired link",
+      "not_authenticated": "Not authenticated"
     }
   },
   "category": {
@@ -384,8 +404,43 @@
     "last_name": "Last Name",
     "email": "Email Address",
     "role": "Role",
+    "role_user": "User",
+    "role_admin": "Administrator",
+    "role_pharmacist": "Pharmacist",
     "view_orders": "View My Orders",
-    "logout": "Sign Out"
+    "logout": "Sign Out",
+    "settings": "Settings",
+    "edit_profile": "Edit Profile",
+    "change_password": "Change Password",
+    "save_changes": "Save Changes",
+    "delete_account": "Delete Account",
+    "confirm_delete": "Confirm Deletion",
+    "delete_warning": "Warning! Account deletion is irreversible. Enter your password to proceed. A confirmation email will be sent.",
+    "delete_email_sent": "Confirmation email sent! Please check your inbox and click the confirmation link.",
+    "danger_zone": "Danger Zone",
+    "danger_zone_description": "The following actions are irreversible. Please proceed with caution.",
+    "not_authenticated": "Please log in to view your profile.",
+    "stats": {
+      "orders": "Orders",
+      "wishlist": "Wishlist",
+      "reviews": "Reviews"
+    },
+    "errors": {
+      "name_required": "First name and last name are required",
+      "update_failed": "Profile update failed",
+      "delete_failed": "Account deletion request failed"
+    },
+    "success": {
+      "profile_updated": "Profile successfully updated"
+    },
+    "delacc": {
+      "processing": "Deleting account",
+      "please_wait": "Please wait...",
+      "success_title": "Account Deleted",
+      "success_message": "Your account has been successfully deleted. Thank you for shopping with us.",
+      "redirecting": "Redirecting to homepage...",
+      "error_title": "Deletion Failed"
+    }
   },
   "legal": {
     "title": "Legal Information",

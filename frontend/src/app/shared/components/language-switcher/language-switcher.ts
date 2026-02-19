@@ -2,6 +2,7 @@ import { NgFor, NgIf } from '@angular/common';
 import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService, SupportedLanguage } from '../../../core/services/translation.service';
+import { environment } from '../../../../environments/environment';
 
 interface Language {
   code: SupportedLanguage;
@@ -24,17 +25,17 @@ export class LanguageSwitcher implements OnInit {
     {
       code: 'en',
       name: 'English',
-      flagImage: 'assets/images/English.webp',
+      flagImage: `${environment.assetsURL}/assets/images/English.webp`,
     },
     {
       code: 'hu',
       name: 'Magyar',
-      flagImage: 'assets/images/Hungary.webp',
+      flagImage: `${environment.assetsURL}/assets/images/Hungary.webp`,
     },
     {
       code: 'de',
       name: 'Deutsch',
-      flagImage: 'assets/images/German.webp',
+      flagImage: `${environment.assetsURL}/assets/images/German.webp`,
     },
   ];
 

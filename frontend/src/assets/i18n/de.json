@@ -109,7 +109,10 @@
     "view": "Anzeigen",
     "items_unit": "Stk",
     "scroll_left": "Nach links scrollen",
-    "scroll_right": "Nach rechts scrollen"
+    "scroll_right": "Nach rechts scrollen",
+    "go_home": "Zur Startseite",
+    "previous": "Zurück",
+    "next": "Weiter"
   },
   "time": {
     "minutes_ago": "vor {{count}} Minuten",
@@ -209,7 +212,19 @@
       "logging_in": "Anmeldung läuft...",
       "forgot_password": "Passwort vergessen?",
       "no_account": "Noch kein Konto?",
-      "sign_up": "Registrieren"
+      "sign_up": "Registrieren",
+      "email_sent_title": "E-Mail überprüfen",
+      "email_sent_message": "Wir haben einen Anmeldebestätigungslink an Ihre E-Mail-Adresse gesendet. Klicken Sie auf den Link, um die Anmeldung abzuschließen.",
+      "step_1": "Öffnen Sie die E-Mail und klicken Sie auf den Bestätigungslink",
+      "step_2": "Sie werden automatisch angemeldet"
+    },
+    "login_promise": {
+      "verifying": "Anmeldung wird bestätigt",
+      "please_wait": "Bitte warten...",
+      "success_title": "Anmeldung erfolgreich!",
+      "success_message": "Sie werden zur Startseite weitergeleitet.",
+      "error_title": "Anmeldung fehlgeschlagen",
+      "back_to_login": "Zurück zur Anmeldung"
     },
     "register": {
       "title": "Konto erstellen",
@@ -240,16 +255,18 @@
       "back_to_register": "Zurück zur Registrierung"
     },
     "password_reset": {
-      "title": "Passwort zurücksetzen",
-      "subtitle": "Geben Sie Ihre E-Mail ein, um einen Reset-Link zu erhalten",
-      "button": "Reset-Link senden",
+      "title": "Passwort ändern",
+      "subtitle": "Geben Sie Ihre E-Mail und Ihr neues Passwort ein",
+      "new_password": "Neues Passwort",
+      "confirm_password": "Neues Passwort bestätigen",
+      "button": "Passwortänderung anfordern",
       "sending": "Wird gesendet...",
       "back_to_login": "Zurück zur Anmeldung",
       "email_sent": "E-Mail gesendet",
-      "email_sent_message": "Wir haben einen Passwort-Reset-Link an Ihre E-Mail gesendet.",
+      "email_sent_message": "Wir haben einen Bestätigungslink für die Passwortänderung gesendet.",
       "step_1": "Überprüfen Sie Ihr E-Mail-Postfach",
-      "step_2": "Klicken Sie auf den Reset-Link",
-      "step_3": "Legen Sie Ihr neues Passwort fest"
+      "step_2": "Klicken Sie auf den Bestätigungslink",
+      "step_3": "Ihr neues Passwort ist sofort aktiv"
     },
     "password_change": {
       "title": "Neues Passwort festlegen",
@@ -277,7 +294,10 @@
       "verification_failed": "E-Mail-Überprüfung fehlgeschlagen",
       "request_failed": "Anfrage fehlgeschlagen",
       "password_reset_failed": "Passwort-Reset fehlgeschlagen",
-      "invalid_reset_link": "Ungültiger oder abgelaufener Reset-Link"
+      "invalid_reset_link": "Ungültiger oder abgelaufener Reset-Link",
+      "invalid_login_link": "Ungültiger oder abgelaufener Anmeldelink",
+      "invalid_link": "Ungültiger oder abgelaufener Link",
+      "not_authenticated": "Nicht angemeldet"
     }
   },
   "category": {
@@ -384,8 +404,43 @@
     "last_name": "Nachname",
     "email": "E-Mail-Adresse",
     "role": "Rolle",
+    "role_user": "Benutzer",
+    "role_admin": "Administrator",
+    "role_pharmacist": "Apotheker",
     "view_orders": "Meine Bestellungen anzeigen",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "settings": "Einstellungen",
+    "edit_profile": "Profil bearbeiten",
+    "change_password": "Passwort ändern",
+    "save_changes": "Änderungen speichern",
+    "delete_account": "Konto löschen",
+    "confirm_delete": "Löschung bestätigen",
+    "delete_warning": "Warnung! Die Kontolöschung ist unwiderruflich. Geben Sie Ihr Passwort ein, um fortzufahren. Eine Bestätigungs-E-Mail wird gesendet.",
+    "delete_email_sent": "Bestätigungs-E-Mail gesendet! Bitte überprüfen Sie Ihr Postfach und klicken Sie auf den Bestätigungslink.",
+    "danger_zone": "Gefahrenzone",
+    "danger_zone_description": "Die folgenden Aktionen sind unwiderruflich. Bitte handeln Sie mit Bedacht.",
+    "not_authenticated": "Bitte melden Sie sich an, um Ihr Profil anzuzeigen.",
+    "stats": {
+      "orders": "Bestellungen",
+      "wishlist": "Wunschliste",
+      "reviews": "Bewertungen"
+    },
+    "errors": {
+      "name_required": "Vor- und Nachname sind erforderlich",
+      "update_failed": "Profilaktualisierung fehlgeschlagen",
+      "delete_failed": "Kontolöschungsanfrage fehlgeschlagen"
+    },
+    "success": {
+      "profile_updated": "Profil erfolgreich aktualisiert"
+    },
+    "delacc": {
+      "processing": "Konto wird gelöscht",
+      "please_wait": "Bitte warten...",
+      "success_title": "Konto gelöscht",
+      "success_message": "Ihr Konto wurde erfolgreich gelöscht. Vielen Dank für Ihren Einkauf.",
+      "redirecting": "Weiterleitung zur Startseite...",
+      "error_title": "Löschung fehlgeschlagen"
+    }
   },
   "legal": {
     "title": "Rechtliche Informationen",

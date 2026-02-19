@@ -49,10 +49,6 @@ export class Forum implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.loadForumPosts();
-  }
-
-  private loadForumPosts(): void {
     this.isLoading.set(true);
     this.forumService.setFilters({ type: 'forum' });
     setTimeout(() => {

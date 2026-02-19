@@ -1,5 +1,33 @@
 <div class="auth-container">
   <div class="auth-card">
+    @if (isEmailSent()) {
+      <div class="verification-content">
+        <div class="icon-wrapper">
+          <svg class="mail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+        <h1>{{ 'auth.login.email_sent_title' | translate }}</h1>
+        <p class="verification-text">{{ 'auth.login.email_sent_message' | translate }}</p>
+        <div class="verification-steps">
+          <div class="step">
+            <span class="step-number">1</span>
+            <p>{{ 'auth.login.step_1' | translate }}</p>
+          </div>
+          <div class="step">
+            <span class="step-number">2</span>
+            <p>{{ 'auth.login.step_2' | translate }}</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (!isEmailSent()) {
     <div class="auth-header">
       <h1>{{ 'auth.login.title' | translate }}</h1>
       <p class="auth-subtitle">{{ 'auth.login.subtitle' | translate }}</p>
@@ -102,5 +130,6 @@
         </p>
       </div>
     </form>
+    }
   </div>
 </div>

@@ -6,6 +6,8 @@ import { catchError, tap } from 'rxjs/operators';
 import {
   User,
   LoginRequest,
+  LoginRequestResponse,
+  LoginPromiseRequest,
   LoginResponse,
   RegistrationRequest,
   RegistrationPromiseRequest,
@@ -112,18 +114,39 @@ export class AuthService {
     return now.getTime() >= expirationTime.getTime() - fiveMinutes;
   }
 
-  login(email: string, password: string, stayLoggedIn: boolean): Observable<LoginResponse> {
+  /**
+   * Step 1 of login: send email + password to backend.
+   * Backend sends a confirmation email with a one-time token.
+   */
+  loginRequest(email: string, password: string): Observable<LoginRequestResponse> {
     const request: LoginRequest = {
-      email: this.encodeBase64(email),
+      id: this.encodeBase64(email),
       password: this.encodeBase64(password),
     };
 
-    return this.http.post<LoginResponse>(`${this.API_URL}/api/login`, request).pipe(
-      tap((response) => {
-        this.handleLoginSuccess(response, stayLoggedIn);
-      }),
-      catchError(this.handleError.bind(this)),
-    );
+    return this.http
+      .post<LoginRequestResponse>(`${this.API_URL}/api/login_request`, request)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  /**
+   * Step 2 of login: validate the token from the email link.
+   * Returns JWT + session tokens on success and logs the user in.
+   */
+  loginPromise(id: string, confirmationToken: string, stayLoggedIn: boolean): Observable<LoginResponse> {
+    const request: LoginPromiseRequest = {
+      id: this.encodeBase64(id),
+      confirmation_token: this.encodeBase64(confirmationToken),
+    };
+
+    return this.http
+      .post<LoginResponse>(`${this.API_URL}/api/login_promise`, request)
+      .pipe(
+        tap((response) => {
+          this.handleLoginSuccess(response, stayLoggedIn);
+        }),
+        catchError(this.handleError.bind(this)),
+      );
   }
 
   register(email: string, password: string, firstname: string, lastname: string): Observable<void> {
@@ -153,20 +176,16 @@ export class AuthService {
       .post<RegistrationResponse>(`${this.API_URL}/api/registration_promise`, request)
       .pipe(
         tap((response) => {
-          const loginResponse: LoginResponse = {
-            token: response.token,
-            expires_in: 604800, // 7 days
-          };
-          this.handleLoginSuccess(loginResponse, stayLoggedIn, response.user);
+          this.handleLoginSuccess(response as unknown as LoginResponse, stayLoggedIn, response.user);
         }),
         catchError(this.handleError.bind(this)),
       );
   }
 
-  requestPasswordChange(id: string, email: string, password: string): Observable<void> {
+  requestPasswordChange(email: string, newPassword: string): Observable<void> {
     const request: PasswordChangeRequest = {
-      id: this.encodeBase64(id),
-      password: this.encodeBase64(password),
+      email: this.encodeBase64(email),
+      password: this.encodeBase64(newPassword),
     };
 
     return this.http
@@ -239,11 +258,14 @@ export class AuthService {
   }
 
   private handleLoginSuccess(response: LoginResponse, stayLoggedIn: boolean, user?: User): void {
-    const expiresAt = new Date(Date.now() + response.expires_in * 1000);
+    const jwtToken = response.jwt_token;
+    const expiresAt = response.jwt_token_expiration
+      ? new Date(response.jwt_token_expiration)
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 days
 
     let userData = user;
-    if (!userData && response.token) {
-      const decoded = this.decodeJWT(response.token);
+    if (!userData && jwtToken) {
+      const decoded = this.decodeJWT(jwtToken);
       if (decoded) {
         userData = {
           id: decoded.sub || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
@@ -258,7 +280,7 @@ export class AuthService {
 
     this.clearStorage();
 
-    this.storeToken(response.token, expiresAt, stayLoggedIn);
+    this.storeToken(jwtToken, expiresAt, stayLoggedIn);
     if (userData) {
       this.storeUser(userData, stayLoggedIn);
     }
@@ -266,14 +288,13 @@ export class AuthService {
     this.updateAuthState({
       isAuthenticated: true,
       user: userData || this.getStoredUser(),
-      token: response.token,
+      token: jwtToken,
       expiresAt,
     });
 
     this.router.navigate(['/home']);
 
     setTimeout(() => {
-      const userName = userData?.firstname || userData?.email || 'User';
       this.toastService.success(`auth.success.welcome_back`);
     }, 300);
   }
@@ -328,7 +349,6 @@ export class AuthService {
       storage.removeItem(this.USER_KEY);
       storage.removeItem(this.EXPIRES_KEY);
       storage.removeItem(this.STORAGE_TYPE_KEY);
-      storage.removeItem(this.DEV_ADMIN_KEY); // DEV-ONLY: clean up dev admin flag
     });
   }
 
@@ -349,87 +369,6 @@ export class AuthService {
       return atob(value);
     }
   }
-
-  // ============================================================
-  // DEV-ONLY: Test admin login when backend is unavailable
-  // REMOVE BEFORE PRODUCTION DEPLOYMENT
-  // ============================================================
-  private readonly DEV_ADMIN_KEY = 'dev_admin_mode';
-
-  /**
-   * Check if backend is reachable (5 second timeout).
-   * Returns true if reachable, false otherwise.
-   */
-  async isBackendAvailable(): Promise<boolean> {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-      const response = await fetch(`${this.API_URL}/api/login`, {
-        method: 'OPTIONS',
-        mode: 'cors',
-        signal: controller.signal,
-      }).catch(() => null);
-      clearTimeout(timeoutId);
-      // Only consider backend available if we get an actual HTTP response
-      // CORS errors, network failures, and timeouts all result in null
-      return response !== null && response.status < 500;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Creates a fake admin session for local development.
-   * ONLY works when the backend is unreachable.
-   * Returns true if dev login succeeded, false if backend is available
-   * (meaning you should use real login).
-   */
-  async devAdminLogin(): Promise<boolean> {
-    const backendAvailable = await this.isBackendAvailable();
-    if (backendAvailable) {
-      return false;
-    }
-
-    const devUser: User = {
-      id: 'dev-admin-000',
-      email: 'dev@admin.local',
-      firstname: '[DEV]',
-      lastname: 'Admin',
-      role: 'admin',
-      account_state: 'admin',
-    };
-
-    const devToken = 'dev-token-not-a-real-jwt';
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    sessionStorage.setItem(this.DEV_ADMIN_KEY, 'true');
-
-    this.storeToken(devToken, expiresAt, false); // session only, not persistent
-    this.storeUser(devUser, false);
-
-    this.updateAuthState({
-      isAuthenticated: true,
-      user: devUser,
-      token: devToken,
-      expiresAt,
-    });
-
-    console.warn(
-      '⚠️ [DEV MODE] Logged in as test admin. This session is for local development only. REMOVE devAdminLogin() before production.',
-    );
-
-    return true;
-  }
-
-  /**
-   * Check if current session is a dev admin session.
-   */
-  isDevAdminSession(): boolean {
-    return sessionStorage.getItem(this.DEV_ADMIN_KEY) === 'true';
-  }
-  // ============================================================
-  // END DEV-ONLY SECTION
-  // ============================================================
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unknown error occurred';

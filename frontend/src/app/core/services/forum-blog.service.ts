@@ -8,6 +8,7 @@ import {
   SortOption,
   Author,
 } from '../models/forum-blog.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -164,7 +165,7 @@ export class ForumBlogService {
         author: mockAuthors[0],
         category: 'seasonal-health',
         tags: ['influenza', 'megelőzés', 'tél', 'vitamin'],
-        imageUrl: '/assets/images/blog/influenza-prevention.jpg',
+        imageUrl: `${environment.assetsURL}/assets/images/blog/influenza-prevention.jpg`,
         status: 'published',
         createdAt: new Date('2024-11-15'),
         publishedAt: new Date('2024-11-15'),
@@ -186,7 +187,7 @@ export class ForumBlogService {
         author: mockAuthors[1],
         category: 'natural-remedies',
         tags: ['allergia', 'természetes gyógymód', 'tavasz'],
-        imageUrl: '/assets/images/blog/allergy-natural-remedies.jpg',
+        imageUrl: `${environment.assetsURL}/assets/images/blog/allergy-natural-remedies.jpg`,
         status: 'published',
         createdAt: new Date('2024-03-10'),
         publishedAt: new Date('2024-03-10'),
@@ -208,7 +209,7 @@ export class ForumBlogService {
         author: mockAuthors[0],
         category: 'baby-mother',
         tags: ['baba', 'bőrápolás', 'újszülött'],
-        imageUrl: '/assets/images/blog/baby-skincare.jpg',
+        imageUrl: `${environment.assetsURL}/assets/images/blog/baby-skincare.jpg`,
         status: 'published',
         createdAt: new Date('2024-12-01'),
         publishedAt: new Date('2024-12-01'),

@@ -10,13 +10,27 @@ export interface User {
 }
 
 export interface LoginRequest {
-  email: string; // Base64 encoded email
+  id: string; // Base64 encoded email (used as identifier by backend)
   password: string; // Base64 encoded password
 }
 
+export interface LoginRequestResponse {
+  status: string; // email_sent | malformed_request | wrong_password | user_not_found
+  statuscode: number;
+}
+
+export interface LoginPromiseRequest {
+  id: string; // Base64 encoded user id
+  confirmation_token: string; // Base64 encoded confirmation token from email link
+}
+
 export interface LoginResponse {
-  token: string; // JWT token
-  expires_in: number; // Token expiration in seconds (default: 604800 = 7 days)
+  status: string;
+  statuscode: number;
+  jwt_token: string;
+  jwt_token_expiration: string;
+  session_token: string;
+  session_token_expiration: string;
 }
 
 export interface RegistrationRequest {
@@ -32,13 +46,18 @@ export interface RegistrationPromiseRequest {
 }
 
 export interface RegistrationResponse {
-  token: string; // JWT token
-  user: User; // User information
+  status: string;
+  statuscode: number;
+  jwt_token: string;
+  jwt_token_expiration: string;
+  session_token: string;
+  session_token_expiration: string;
+  user?: User; // Optional user data
 }
 
 export interface PasswordChangeRequest {
-  id: string; // Base64 encoded user ID
-  password: string; // Base64 encoded current password
+  email: string; // Base64 encoded email
+  password: string; // Base64 encoded new password
 }
 
 export interface PasswordChangePromiseRequest {

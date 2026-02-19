@@ -14,6 +14,9 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class PasswordResetRequest {
   email = signal('');
+  newPassword = signal('');
+  confirmPassword = signal('');
+  showPassword = signal(false);
   isLoading = signal(false);
   errorMessage = signal('');
   isEmailSent = signal(false);
@@ -22,6 +25,10 @@ export class PasswordResetRequest {
     private authService: AuthService,
     private router: Router,
   ) {}
+
+  togglePasswordVisibility(): void {
+    this.showPassword.set(!this.showPassword());
+  }
 
   onSubmit(): void {
     this.errorMessage.set('');
@@ -36,9 +43,24 @@ export class PasswordResetRequest {
       return;
     }
 
+    if (!this.newPassword()) {
+      this.errorMessage.set('auth.errors.empty_fields');
+      return;
+    }
+
+    if (this.newPassword().length < 8) {
+      this.errorMessage.set('auth.errors.password_too_short');
+      return;
+    }
+
+    if (this.newPassword() !== this.confirmPassword()) {
+      this.errorMessage.set('auth.errors.passwords_dont_match');
+      return;
+    }
+
     this.isLoading.set(true);
 
-    this.authService.requestPasswordChange('', this.email(), '').subscribe({
+    this.authService.requestPasswordChange(this.email(), this.newPassword()).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.isEmailSent.set(true);

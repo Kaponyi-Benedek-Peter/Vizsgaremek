@@ -47,6 +47,7 @@
             </div>
           </div>
 
+          <!-- Account Details -->
           <div class="profile-section">
             <h2 class="section-title">
               <span class="section-icon">👤</span>
@@ -78,6 +79,124 @@
             </div>
           </div>
 
+          <!-- Edit Profile Panel -->
+          @if (activePanel() === 'edit') {
+            <div class="settings-panel">
+              <div class="panel-header">
+                <h3 class="panel-title">
+                  <span>✏️</span> {{ 'profile.edit_profile' | translate }}
+                </h3>
+                <button class="panel-close" (click)="closePanel()" [attr.aria-label]="'common.close' | translate">✕</button>
+              </div>
+
+              <div class="panel-body">
+                <div class="form-group">
+                  <label class="form-label">{{ 'profile.first_name' | translate }}</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    [(ngModel)]="editFirstname"
+                    name="editFirstname"
+                    [disabled]="isUpdatingProfile()"
+                    [placeholder]="'profile.first_name' | translate"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">{{ 'profile.last_name' | translate }}</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    [(ngModel)]="editLastname"
+                    name="editLastname"
+                    [disabled]="isUpdatingProfile()"
+                    [placeholder]="'profile.last_name' | translate"
+                  />
+                </div>
+
+                @if (editErrorMessage()) {
+                  <div class="panel-error">{{ editErrorMessage() | translate }}</div>
+                }
+
+                <div class="panel-actions">
+                  <button class="btn btn-secondary" (click)="closePanel()" [disabled]="isUpdatingProfile()">
+                    {{ 'common.cancel' | translate }}
+                  </button>
+                  <button class="btn btn-primary" (click)="saveProfile()" [disabled]="isUpdatingProfile()">
+                    @if (isUpdatingProfile()) {
+                      <span class="btn-spinner"></span>
+                    }
+                    {{ 'profile.save_changes' | translate }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Delete Account Panel -->
+          @if (activePanel() === 'delete') {
+            <div class="settings-panel settings-panel--danger">
+              <div class="panel-header">
+                <h3 class="panel-title danger-title">
+                  <span>🗑️</span> {{ 'profile.delete_account' | translate }}
+                </h3>
+                <button class="panel-close" (click)="closePanel()" [attr.aria-label]="'common.close' | translate">✕</button>
+              </div>
+
+              <div class="panel-body">
+                @if (!deleteConfirmationSent()) {
+                  <p class="panel-warning">{{ 'profile.delete_warning' | translate }}</p>
+
+                  <div class="form-group">
+                    <label class="form-label">{{ 'auth.fields.password' | translate }}</label>
+                    <div class="password-input-wrapper">
+                      <input
+                        [type]="showDeletePassword() ? 'text' : 'password'"
+                        class="form-input"
+                        [(ngModel)]="deletePassword"
+                        name="deletePassword"
+                        [disabled]="isDeletingAccount()"
+                        [placeholder]="'auth.placeholders.password' | translate"
+                      />
+                      <button
+                        type="button"
+                        class="password-toggle"
+                        (click)="toggleDeletePassword()"
+                      >
+                        {{ showDeletePassword() ? '👁️' : '👁️‍🗨️' }}
+                      </button>
+                    </div>
+                  </div>
+
+                  @if (deleteErrorMessage()) {
+                    <div class="panel-error">{{ deleteErrorMessage() | translate }}</div>
+                  }
+
+                  <div class="panel-actions">
+                    <button class="btn btn-secondary" (click)="closePanel()" [disabled]="isDeletingAccount()">
+                      {{ 'common.cancel' | translate }}
+                    </button>
+                    <button class="btn btn-danger" (click)="requestDeleteAccount()" [disabled]="isDeletingAccount()">
+                      @if (isDeletingAccount()) {
+                        <span class="btn-spinner"></span>
+                      }
+                      {{ 'profile.confirm_delete' | translate }}
+                    </button>
+                  </div>
+                } @else {
+                  <div class="panel-success">
+                    <span class="success-icon">📧</span>
+                    <p>{{ 'profile.delete_email_sent' | translate }}</p>
+                    <button class="btn btn-secondary" (click)="closePanel()">
+                      {{ 'common.close' | translate }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Action Buttons -->
           <div class="profile-actions">
             <a class="btn btn-primary" routerLink="/purchase">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -90,20 +209,26 @@
               {{ 'profile.view_orders' | translate }}
             </a>
 
-            <button class="btn btn-secondary" (click)="goToSettings()">
+            <button class="btn btn-secondary" (click)="openEditPanel()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                 />
+              </svg>
+              {{ 'profile.edit_profile' | translate }}
+            </button>
+
+            <button class="btn btn-secondary" (click)="goToChangePassword()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
                 />
               </svg>
-              {{ 'profile.settings' | translate }}
+              {{ 'profile.change_password' | translate }}
             </button>
 
             <button class="btn btn-danger" (click)="logout()">
@@ -115,6 +240,15 @@
                 />
               </svg>
               {{ 'profile.logout' | translate }}
+            </button>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="danger-zone">
+            <h3 class="danger-zone-title">{{ 'profile.danger_zone' | translate }}</h3>
+            <p class="danger-zone-description">{{ 'profile.danger_zone_description' | translate }}</p>
+            <button class="btn btn-danger" (click)="openDeletePanel()">
+              🗑️ {{ 'profile.delete_account' | translate }}
             </button>
           </div>
         </div>

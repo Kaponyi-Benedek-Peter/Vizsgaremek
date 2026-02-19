@@ -1,4 +1,4 @@
-.blog-detail-page {
+.forum-detail-page {
   width: 100%;
   min-height: 100vh;
   background: var(--color-background);
@@ -48,14 +48,13 @@
   background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.4) 100%);
 }
 
-/* Article container */
+/* Article */
 .article-container {
   max-width: 800px;
   margin: 0 auto;
   padding: var(--space-8) var(--space-6);
 }
 
-/* Header */
 .article-header {
   margin-bottom: var(--space-8);
 }
@@ -116,6 +115,7 @@
   justify-content: center;
   font-weight: 700;
   font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .author-info {
@@ -267,9 +267,202 @@
   font-weight: 500;
 }
 
-/* Related posts */
+/* ══════════════════════════════════════════════════════════════
+   KOMMENTEK
+   ══════════════════════════════════════════════════════════════ */
+
+.comments-section {
+  border-top: 1px solid var(--border-color);
+  background: var(--color-surface-elevated, var(--color-background));
+  padding: var(--space-10) 0;
+}
+
+.comments-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.comments-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-6);
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+}
+
+.comment {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.comment-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.comment-body {
+  flex: 1;
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-4);
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.comment-date {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+.comment-content {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin: 0 0 var(--space-3);
+}
+
+.comment-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.comment-likes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.comment-edited {
+  font-style: italic;
+}
+
+/* Új komment */
+.new-comment {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--space-6);
+}
+
+.new-comment-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-4);
+}
+
+.comment-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg, 12px);
+  font-size: 0.95rem;
+  background: var(--color-surface);
+  color: var(--text-primary);
+  resize: vertical;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.submit-comment-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.submit-comment-btn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.submit-comment-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.login-to-comment {
+  border-top: 1px solid var(--border-color);
+  padding-top: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.login-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TOVÁBBI BEJEGYZÉSEK SLIDER
+   ══════════════════════════════════════════════════════════════ */
+
 .related-section {
-  background: var(--color-surface-elevated);
+  background: var(--color-surface-elevated, var(--color-background));
   padding: var(--space-10) 0;
   border-top: 1px solid var(--border-color);
 }
@@ -288,10 +481,47 @@
   text-align: center;
 }
 
-.related-grid {
+.slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.slider-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.slider-btn:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.slider-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.slider-track {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-5);
+  gap: var(--space-4);
+  overflow: hidden;
 }
 
 .related-card {
@@ -313,7 +543,7 @@
 }
 
 .related-image {
-  height: 160px;
+  height: 140px;
   overflow: hidden;
 }
 
@@ -337,7 +567,7 @@
 }
 
 .related-post-title {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.4;
@@ -349,11 +579,11 @@
 }
 
 .related-excerpt {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
   line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin: 0;
@@ -402,7 +632,10 @@
   color: var(--text-secondary);
 }
 
-/* Responsive */
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+
 @media (max-width: 768px) {
   .article-hero {
     height: 240px;
@@ -421,23 +654,28 @@
     flex-wrap: wrap;
   }
 
-  .related-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
-  }
-
-  .related-card {
-    flex-direction: row;
-  }
-
-  .related-image {
-    width: 120px;
-    min-width: 120px;
-    height: auto;
-  }
-
   .article-stats {
     gap: var(--space-4);
+  }
+
+  .comments-container {
+    padding: 0 var(--space-4);
+  }
+
+  .related-container {
+    padding: 0 var(--space-3);
+  }
+
+  .slider-track {
+    grid-template-columns: 1fr;
+  }
+
+  .slider-btn {
+    display: none;
+  }
+
+  .slider-wrapper {
+    gap: 0;
   }
 }
 
@@ -454,18 +692,15 @@
     font-size: 1rem;
   }
 
-  .related-card {
+  .login-to-comment {
     flex-direction: column;
-  }
-
-  .related-image {
-    width: 100%;
-    height: 140px;
+    align-items: flex-start;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spinner {
+  .spinner,
+  .btn-spinner {
     animation: none;
   }
 

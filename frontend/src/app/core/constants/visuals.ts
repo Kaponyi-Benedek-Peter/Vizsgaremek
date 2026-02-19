@@ -11,6 +11,9 @@
  */
 
 import { Category } from '../../core/models/product.model';
+import { environment } from '../../../environments/environment';
+
+const ASSETS = environment.assetsURL;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -76,58 +79,58 @@ export const PLACEHOLDERS = {
 
 export const ICONS = {
   // User & Auth
-  user: 'assets/icons/userwhite.webp',
-  login: 'assets/icons/loginwhite.webp',
+  user: `${ASSETS}/assets/icons/userwhite.webp`,
+  login: `${ASSETS}/assets/icons/loginwhite.webp`,
 
   // Shopping
-  basket: 'assets/icons/basketwhite.webp',
-  buy: 'assets/icons/buywhite.webp',
+  basket: `${ASSETS}/assets/icons/basketwhite.webp`,
+  buy: `${ASSETS}/assets/icons/buywhite.webp`,
 
   // Social Media
-  facebook: 'assets/icons/facebookwhite.webp',
-  instagram: 'assets/icons/instagramwhite.webp',
-  x: 'assets/icons/xwhite.webp',
+  facebook: `${ASSETS}/assets/icons/facebookwhite.webp`,
+  instagram: `${ASSETS}/assets/icons/instagramwhite.webp`,
+  x: `${ASSETS}/assets/icons/xwhite.webp`,
 
   // Navigation & UI
-  support: 'assets/icons/supportwhite.webp',
-  language: 'assets/icons/languagewhite.webp',
-  arrow: 'assets/icons/arrowwhite.webp',
-  search: 'assets/icons/searchwhite.webp',
-  filter: 'assets/icons/filterwhite.webp',
+  support: `${ASSETS}/assets/icons/supportwhite.webp`,
+  language: `${ASSETS}/assets/icons/languagewhite.webp`,
+  arrow: `${ASSETS}/assets/icons/arrowwhite.webp`,
+  search: `${ASSETS}/assets/icons/searchwhite.webp`,
+  filter: `${ASSETS}/assets/icons/filterwhite.webp`,
 
   // Theme
-  sun: 'assets/icons/sun.webp',
-  moon: 'assets/icons/moon.webp',
+  sun: `${ASSETS}/assets/icons/sun.webp`,
+  moon: `${ASSETS}/assets/icons/moon.webp`,
 
   // Actions
-  add: 'assets/icons/add.webp',
-  delete: 'assets/icons/deletewhite.webp',
-  edit: 'assets/icons/rename.webp',
+  add: `${ASSETS}/assets/icons/add.webp`,
+  delete: `${ASSETS}/assets/icons/deletewhite.webp`,
+  edit: `${ASSETS}/assets/icons/rename.webp`,
 
   // Info
-  info: 'assets/icons/infowhite.webp',
-  calendar: 'assets/icons/calendarwhite.webp',
-  location: 'assets/icons/locationwhite.webp',
+  info: `${ASSETS}/assets/icons/infowhite.webp`,
+  calendar: `${ASSETS}/assets/icons/calendarwhite.webp`,
+  location: `${ASSETS}/assets/icons/locationwhite.webp`,
 
   // E-commerce
-  favorites: 'assets/icons/favoriteswhite.webp',
-  order: 'assets/icons/orderwhite.webp',
-  payment: 'assets/icons/paymentwhite.webp',
-  shipping: 'assets/icons/shippingwhite.webp',
+  favorites: `${ASSETS}/assets/icons/favoriteswhite.webp`,
+  order: `${ASSETS}/assets/icons/orderwhite.webp`,
+  payment: `${ASSETS}/assets/icons/paymentwhite.webp`,
+  shipping: `${ASSETS}/assets/icons/shippingwhite.webp`,
 
   // Other
-  natural: 'assets/icons/naturalwhite.webp',
-  mail: 'assets/icons/mailwhite.webp',
-  phone: 'assets/icons/phonewhite.webp',
-  sale: 'assets/icons/salewhite.webp',
-  customers: 'assets/icons/customerswhite.webp',
-  reports: 'assets/icons/reportwhite.webp',
-  safetypay: 'assets/icons/safetypaywhite.webp',
-  select: 'assets/icons/selectwhite.webp',
-  share: 'assets/icons/sharewhite.webp',
-  ship: 'assets/icons/shipwhite.webp',
-  sort: 'assets/icons/sortwhite.webp',
-  support247: 'assets/icons/247white.webp',
+  natural: `${ASSETS}/assets/icons/naturalwhite.webp`,
+  mail: `${ASSETS}/assets/icons/mailwhite.webp`,
+  phone: `${ASSETS}/assets/icons/phonewhite.webp`,
+  sale: `${ASSETS}/assets/icons/salewhite.webp`,
+  customers: `${ASSETS}/assets/icons/customerswhite.webp`,
+  reports: `${ASSETS}/assets/icons/reportwhite.webp`,
+  safetypay: `${ASSETS}/assets/icons/safetypaywhite.webp`,
+  select: `${ASSETS}/assets/icons/selectwhite.webp`,
+  share: `${ASSETS}/assets/icons/sharewhite.webp`,
+  ship: `${ASSETS}/assets/icons/shipwhite.webp`,
+  sort: `${ASSETS}/assets/icons/sortwhite.webp`,
+  support247: `${ASSETS}/assets/icons/247white.webp`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -136,32 +139,21 @@ export const ICONS = {
 
 export const IMAGES = {
   // Logo
-  logo: 'assets/images/ROYS_SHACK_WHITE.webp', // or: PLACEHOLDERS.logo()
+  logo: `${ASSETS}/assets/images/ROYS_SHACK_WHITE.webp`,
 
   // Hero background
-  heroBg: 'assets/images/herobg.webp', // or: PLACEHOLDERS.hero(1920, 600, 'Background')
+  heroBg: `${ASSETS}/assets/images/herobg.webp`,
 
-  // Hero slides - PLACEHOLDER version
-  // hero1: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Egészségügyi Termékek"),
-  // hero2: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Prémium Minőség"),
-  // hero3: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Gyors Szállítás"),
-  // hero4: PLACEHOLDERS.hero(1920, 600, "Roy's Shack - Kedvező Árak"),
-
-  // IF we will have our own:
-  hero1: 'assets/images/hero1.webp',
-  hero2: 'assets/images/hero2.webp',
-  hero3: 'assets/images/hero3.webp',
-  hero4: 'assets/images/hero4.webp',
+  // Hero slides
+  hero1: `${ASSETS}/assets/images/hero1.webp`,
+  hero2: `${ASSETS}/assets/images/hero2.webp`,
+  hero3: `${ASSETS}/assets/images/hero3.webp`,
+  hero4: `${ASSETS}/assets/images/hero4.webp`,
 
   // Language flags - emoji version
   flagHungary: '🇭🇺',
   flagEnglish: '🇬🇧',
   flagGerman: '🇩🇪',
-
-  // Flag pics:
-  // flagHungary: 'assets/images/Hungary.webp',
-  // flagEnglish: 'assets/images/English.webp',
-  // flagGerman: 'assets/images/German.webp',
 
   productDefault: PLACEHOLDERS.product(400, 400, 'Termék'),
 } as const;

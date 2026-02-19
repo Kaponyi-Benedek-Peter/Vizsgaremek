@@ -109,7 +109,10 @@
     "view": "Megtekintés",
     "items_unit": "db",
     "scroll_left": "Görgetés balra",
-    "scroll_right": "Görgetés jobbra"
+    "scroll_right": "Görgetés jobbra",
+    "go_home": "Főoldalra",
+    "previous": "Előző",
+    "next": "Következő"
   },
   "time": {
     "minutes_ago": "{{count}} perce",
@@ -209,7 +212,19 @@
       "logging_in": "Bejelentkezés...",
       "forgot_password": "Elfelejtette jelszavát?",
       "no_account": "Nincs még fiókja?",
-      "sign_up": "Regisztráció"
+      "sign_up": "Regisztráció",
+      "email_sent_title": "Ellenőrizze e-mail fiókját",
+      "email_sent_message": "Bejelentkezési megerősítő linket küldtünk az Ön e-mail címére. Kattintson a linkre a belépés befejezéséhez.",
+      "step_1": "Nyissa meg az e-mailt és kattintson a megerősítő linkre",
+      "step_2": "Automatikusan bejelentkezik"
+    },
+    "login_promise": {
+      "verifying": "Bejelentkezés megerősítése",
+      "please_wait": "Kérjük várjon...",
+      "success_title": "Sikeres bejelentkezés!",
+      "success_message": "Átirányítjuk a főoldalra.",
+      "error_title": "Bejelentkezés sikertelen",
+      "back_to_login": "Vissza a bejelentkezéshez"
     },
     "register": {
       "title": "Regisztráció",
@@ -240,16 +255,18 @@
       "back_to_register": "Vissza a regisztrációhoz"
     },
     "password_reset": {
-      "title": "Jelszó visszaállítása",
-      "subtitle": "Adja meg e-mail címét a visszaállítási linkért",
-      "button": "Visszaállítási link küldése",
+      "title": "Jelszó megváltoztatása",
+      "subtitle": "Adja meg e-mail címét és az új jelszavát",
+      "new_password": "Új jelszó",
+      "confirm_password": "Új jelszó megerősítése",
+      "button": "Jelszóváltoztatás igénylése",
       "sending": "Küldés...",
       "back_to_login": "Vissza a bejelentkezéshez",
       "email_sent": "E-mail elküldve",
-      "email_sent_message": "Jelszó visszaállítási linket küldtünk e-mail címére.",
+      "email_sent_message": "Jelszóváltoztatási megerősítő linket küldtünk e-mail címére.",
       "step_1": "Ellenőrizze e-mail fiókját",
-      "step_2": "Kattintson a visszaállítási linkre",
-      "step_3": "Állítson be új jelszót"
+      "step_2": "Kattintson a megerősítő linkre",
+      "step_3": "Az új jelszó azonnal érvényes lesz"
     },
     "password_change": {
       "title": "Új jelszó beállítása",
@@ -277,7 +294,10 @@
       "verification_failed": "E-mail megerősítés sikertelen",
       "request_failed": "Kérés sikertelen",
       "password_reset_failed": "Jelszó visszaállítás sikertelen",
-      "invalid_reset_link": "Érvénytelen vagy lejárt visszaállítási link"
+      "invalid_reset_link": "Érvénytelen vagy lejárt visszaállítási link",
+      "invalid_login_link": "Érvénytelen vagy lejárt bejelentkezési link",
+      "invalid_link": "Érvénytelen vagy lejárt link",
+      "not_authenticated": "Nincs bejelentkezve"
     }
   },
   "category": {
@@ -384,8 +404,43 @@
     "last_name": "Vezetéknév",
     "email": "E-mail cím",
     "role": "Szerepkör",
+    "role_user": "Felhasználó",
+    "role_admin": "Adminisztrátor",
+    "role_pharmacist": "Gyógyszerész",
     "view_orders": "Rendeléseim megtekintése",
-    "logout": "Kijelentkezés"
+    "logout": "Kijelentkezés",
+    "settings": "Beállítások",
+    "edit_profile": "Profil szerkesztése",
+    "change_password": "Jelszó megváltoztatása",
+    "save_changes": "Változtatások mentése",
+    "delete_account": "Fiók törlése",
+    "confirm_delete": "Törlés megerősítése",
+    "delete_warning": "Figyelem! A fiók törlése visszafordíthatatlan. A folytatáshoz adja meg jelszavát. Megerősítő e-mailt fogunk küldeni.",
+    "delete_email_sent": "Megerősítő e-mail elküldve! Kérjük ellenőrizze postafiókját és kattintson a megerősítő linkre.",
+    "danger_zone": "Veszélyes műveletek",
+    "danger_zone_description": "Az alábbi műveletek visszafordíthatatlanok. Kérjük járjon el körültekintően.",
+    "not_authenticated": "Kérjük jelentkezzen be a profil megtekintéséhez.",
+    "stats": {
+      "orders": "Rendelések",
+      "wishlist": "Kívánságlista",
+      "reviews": "Értékelések"
+    },
+    "errors": {
+      "name_required": "A keresztnév és a vezetéknév megadása kötelező",
+      "update_failed": "Profil frissítése sikertelen",
+      "delete_failed": "Fiók törlési kérés sikertelen"
+    },
+    "success": {
+      "profile_updated": "Profil sikeresen frissítve"
+    },
+    "delacc": {
+      "processing": "Fiók törlése folyamatban",
+      "please_wait": "Kérjük várjon...",
+      "success_title": "Fiók törölve",
+      "success_message": "Fiókja sikeresen törölve lett. Köszönjük, hogy nálunk vásárolt.",
+      "redirecting": "Átirányítás a főoldalra...",
+      "error_title": "Törlés sikertelen"
+    }
   },
   "legal": {
     "title": "Jogi információk",

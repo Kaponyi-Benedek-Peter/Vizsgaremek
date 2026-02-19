@@ -59,19 +59,6 @@
       </div>
     </header>
 
-    @if (isDevMode()) {
-      <div class="dev-mode-banner">
-        <span class="dev-mode-icon">⚠️</span>
-        <span class="dev-mode-text">
-          {{ 'admin.dev_mode.title' | translate }}
-          — {{ 'admin.dev_mode.description' | translate }}
-        </span>
-        <button class="dev-mode-close" (click)="logout()">
-          {{ 'admin.dev_mode.exit' | translate }} ✕
-        </button>
-      </div>
-    }
-
     @if (activeSection() === 'dashboard') {
       <div class="section-content">
         <div class="dashboard-greeting">

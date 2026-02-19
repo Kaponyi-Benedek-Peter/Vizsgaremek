@@ -10,7 +10,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = authService.getToken();
 
   const publicEndpoints = [
-    '/login',
+    '/login_request',
+    '/login_promise',
     '/registration_request',
     '/registration_promise',
     '/chpass_request',

@@ -9,7 +9,6 @@
     <app-primary-btn routerLink="/home">{{ 'header.home' | translate }}</app-primary-btn>
     <app-primary-btn routerLink="/forum">{{ 'header.forum' | translate }}</app-primary-btn>
     <app-primary-btn routerLink="/products">{{ 'header.products' | translate }}</app-primary-btn>
-    <app-primary-btn routerLink="/blog">{{ 'header.blog' | translate }}</app-primary-btn>
   </div>
 
   <div class="header-right">
@@ -189,9 +188,6 @@
           </a>
           <a routerLink="/products" class="mobile-nav-item" (click)="closeMobileMenu()">
             {{ 'header.products' | translate }}
-          </a>
-          <a routerLink="/blog" class="mobile-nav-item" (click)="closeMobileMenu()">
-            {{ 'header.blog' | translate }}
           </a>
           @if (isAuthenticated) {
             <div class="mobile-nav-divider"></div>

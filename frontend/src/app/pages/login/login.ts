@@ -19,6 +19,7 @@ export class Login {
   isLoading = signal(false);
   errorMessage = signal('');
   showPassword = signal(false);
+  isEmailSent = signal(false);
 
   constructor(
     private authService: AuthService,
@@ -40,9 +41,12 @@ export class Login {
 
     this.isLoading.set(true);
 
-    this.authService.login(this.email(), this.password(), this.stayLoggedIn()).subscribe({
+    this.authService.loginRequest(this.email(), this.password()).subscribe({
       next: () => {
         this.isLoading.set(false);
+        this.isEmailSent.set(true);
+        // Store stayLoggedIn preference so login-promise page can use it
+        sessionStorage.setItem('login_stay', this.stayLoggedIn() ? '1' : '0');
       },
       error: (error) => {
         this.isLoading.set(false);

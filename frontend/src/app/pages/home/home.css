@@ -6,7 +6,7 @@
 }
 
 .hero {
-  background-image: url('../../../assets/images/herobg.webp');
+  background-image: url('https://www.roysshack.hu/assets/images/herobg.webp');
   background-color: var(--color-primary);
   background-size: cover;
   background-position: center;
