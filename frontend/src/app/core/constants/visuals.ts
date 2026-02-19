@@ -365,29 +365,22 @@ export function isEmoji(value: string): boolean {
 export function getCategoriesFromVisuals(): Category[] {
   return Object.values(CATEGORY_VISUALS).map((visual) => ({
     id: visual.id,
-    slug: visual.id, // slug = id for now
-    name: CATEGORY_NAMES[visual.id]?.en || visual.id,
-    nameHu: CATEGORY_NAMES[visual.id]?.hu || visual.id,
-    nameEn: CATEGORY_NAMES[visual.id]?.en || visual.id,
-    nameDe: CATEGORY_NAMES[visual.id]?.de || visual.id,
+    slug: visual.id,
     icon: visual.icon,
-    count: undefined, // Will be calculated later if needed
+    color: '#067a45', // gets overrided
+    count: 0,
   }));
 }
 
 export function getCategoryById(categoryId: string): Category | undefined {
   const visual = CATEGORY_VISUALS[categoryId];
   if (!visual) return undefined;
-
   return {
     id: visual.id,
     slug: visual.id,
-    name: CATEGORY_NAMES[categoryId]?.en || categoryId,
-    nameHu: CATEGORY_NAMES[categoryId]?.hu || categoryId,
-    nameEn: CATEGORY_NAMES[categoryId]?.en || categoryId,
-    nameDe: CATEGORY_NAMES[categoryId]?.de || categoryId,
     icon: visual.icon,
-    count: undefined,
+    color: '#067a45',
+    count: 0,
   };
 }
 

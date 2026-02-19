@@ -35,7 +35,7 @@ export class CartService {
   }
 
   private getProductPrice(product: Product): number {
-    const currencyCode = this.currencyService.getCurrentCurrencyCode();
+    const currencyCode = this.currencyService.currentCurrency().code;
 
     switch (currencyCode) {
       case 'HUF':

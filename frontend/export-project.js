@@ -12,7 +12,8 @@ const excludeDirs = [
     '.angular',
     'coverage',
     '.vscode',
-    '.idea'
+    '.idea',
+    '.claude'
 ];
 
 const includeExtensions = [

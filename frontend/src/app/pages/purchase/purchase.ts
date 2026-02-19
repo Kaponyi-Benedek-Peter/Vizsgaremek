@@ -1,13 +1,15 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { firstValueFrom } from 'rxjs';
 
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
 import { AuthService } from '../../core/services/auth.service';
-// import { AccountService } from '../../core/services/account.service';
+import { AccountService } from '../../core/services/account.service';
+import { ToastService } from '../../core/services/toast.service';
 
 interface CheckoutForm {
   city: string;
@@ -27,6 +29,13 @@ interface CheckoutForm {
   styleUrl: './purchase.css',
 })
 export class Purchase implements OnInit {
+  private cartService = inject(CartService);
+  public currencyService = inject(CurrencyService);
+  private authService = inject(AuthService);
+  private accountService = inject(AccountService);
+  private toastService = inject(ToastService);
+  private router = inject(Router);
+
   cartItems = computed(() => this.cartService.items());
   cartTotal = computed(() => this.cartService.totalPrice());
   cartItemCount = computed(() => this.cartService.itemCount());
@@ -44,14 +53,6 @@ export class Purchase implements OnInit {
     phoneNumber: '',
     note: '',
   };
-
-  constructor(
-    public cartService: CartService,
-    public currencyService: CurrencyService,
-    private authService: AuthService,
-    // private accountService: AccountService,
-    private router: Router,
-  ) {}
 
   ngOnInit(): void {
     if (!this.authService.isUserAuthenticated()) {
@@ -84,9 +85,7 @@ export class Purchase implements OnInit {
   }
 
   async submitOrder(): Promise<void> {
-    if (!this.validateForm()) {
-      return;
-    }
+    if (!this.validateForm()) return;
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
@@ -106,18 +105,23 @@ export class Purchase implements OnInit {
         })),
       };
 
-      // This would be the API call to create order
-      // await this.accountService.createOrder(orderData);
+      const response = await firstValueFrom(this.accountService.createOrder(orderData));
 
-      // For now, simulate success
-      this.successMessage.set('checkout.success');
-      this.cartService.clearCart();
+      if (response.statuscode === '200') {
+        this.successMessage.set('checkout.success');
+        this.toastService.success('checkout.success');
+        this.cartService.clearCart();
 
-      setTimeout(() => {
-        this.router.navigate(['/profile']);
-      }, 2000);
+        setTimeout(() => {
+          this.router.navigate(['/profile']);
+        }, 2000);
+      } else {
+        this.errorMessage.set('checkout.error');
+        this.toastService.error('checkout.error');
+      }
     } catch (error) {
       this.errorMessage.set('checkout.error');
+      this.toastService.error('checkout.error');
       console.error('Order submission error:', error);
     } finally {
       this.isSubmitting.set(false);

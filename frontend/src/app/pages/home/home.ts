@@ -8,7 +8,6 @@ import { Featured } from '../../shared/components/featured/featured';
 import { FeaturedProductCard } from '../../shared/components/featured-product-card/featured-product-card';
 import { ScrollRevealDirective } from '../../shared/directives/scroll-reveal.directive';
 import { ICONS, IMAGES } from '../../core/constants/visuals';
-import { ProductWithHelpers } from '../../core/models/product.model';
 import { ProductService } from '../../services/product.service';
 
 @Component({
@@ -32,11 +31,10 @@ export class Home implements OnInit {
   IMAGES = IMAGES;
   ICONS = ICONS;
 
-  products: ProductWithHelpers[] = [];
+  featuredProducts = computed(() => this.productService.featuredProducts());
 
   async ngOnInit(): Promise<void> {
-    await this.productService.loadProducts();
-    this.products = this.productService.getFeaturedProducts(4);
+    await this.productService.loadFeaturedProducts();
   }
 
   onProductClick(productId: string): void {

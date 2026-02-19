@@ -8,6 +8,7 @@ interface Language {
   code: SupportedLanguage;
   name: string;
   flagImage: string;
+  imageError: boolean;
 }
 
 @Component({
@@ -26,16 +27,19 @@ export class LanguageSwitcher implements OnInit {
       code: 'en',
       name: 'English',
       flagImage: `${environment.assetsURL}/assets/images/English.webp`,
+      imageError: false,
     },
     {
       code: 'hu',
       name: 'Magyar',
       flagImage: `${environment.assetsURL}/assets/images/Hungary.webp`,
+      imageError: false,
     },
     {
       code: 'de',
       name: 'Deutsch',
       flagImage: `${environment.assetsURL}/assets/images/German.webp`,
+      imageError: false,
     },
   ];
 
@@ -51,7 +55,7 @@ export class LanguageSwitcher implements OnInit {
   }
 
   get currentLang(): Language {
-    return this.languages.find((lang) => lang.code === this.currentLanguage) || this.languages[1];
+    return this.languages.find((l) => l.code === this.currentLanguage) || this.languages[1];
   }
 
   toggleDropdown(): void {
@@ -63,12 +67,10 @@ export class LanguageSwitcher implements OnInit {
     this.isOpen = false;
   }
 
-  onImageError(event: any, langCode: string): void {
-    event.target.style.display = 'none';
-    const fallbackSpan = document.createElement('span');
-    fallbackSpan.className = 'fallback-text';
-    fallbackSpan.textContent = langCode.toUpperCase();
-    event.target.parentElement.appendChild(fallbackSpan);
+  onImageError(langCode: string): void {
+    this.languages = this.languages.map((l) =>
+      l.code === langCode ? { ...l, imageError: true } : l,
+    );
   }
 
   @HostListener('document:click', ['$event'])

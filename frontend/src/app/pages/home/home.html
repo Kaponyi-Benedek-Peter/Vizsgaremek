@@ -29,7 +29,7 @@
 
   <app-featured>
     <app-featured-product-card
-      *ngFor="let product of products; let i = index"
+      *ngFor="let product of featuredProducts(); let i = index"
       [product]="product"
       (cardClick)="onProductClick(product.id)"
       appScrollReveal

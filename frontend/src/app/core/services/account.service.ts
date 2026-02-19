@@ -24,6 +24,22 @@ export interface ApiResponse<T = any> {
   data?: T;
 }
 
+export interface OrderItem {
+  productId: string;
+  quantity: number;
+}
+
+export interface CreateOrderRequest {
+  city: string;
+  zipcode: string;
+  address: string;
+  houseNumber: number;
+  apartmentNumber: number;
+  phoneNumber: string;
+  note: string;
+  items: OrderItem[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -39,7 +55,6 @@ export class AccountService {
   /**
    * Update user profile
    * Requires JWT authentication
-   * @param updates Profile fields to update
    */
   updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
     const encodedUpdates: any = {};
@@ -55,9 +70,7 @@ export class AccountService {
     }
 
     return this.http.put<ApiResponse<User>>(`${this.API_URL}/api/profile`, encodedUpdates).pipe(
-      tap((response) => {
-        console.log('Profile updated successfully');
-      }),
+      tap(() => console.log('Profile updated successfully')),
       catchError(this.handleError),
     );
   }
@@ -66,8 +79,6 @@ export class AccountService {
    * Request account deletion
    * Requires JWT authentication
    * Sends confirmation email
-   * @param userId User's ID
-   * @param password User's password for confirmation
    */
   deleteAccountRequest(userId: string, password: string): Observable<ApiResponse> {
     const request: DeleteAccountRequest = {
@@ -76,9 +87,7 @@ export class AccountService {
     };
 
     return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_request`, request).pipe(
-      tap(() => {
-        console.log('Account deletion requested - confirmation email sent');
-      }),
+      tap(() => console.log('Account deletion requested - confirmation email sent')),
       catchError(this.handleError),
     );
   }
@@ -86,8 +95,6 @@ export class AccountService {
   /**
    * Confirm account deletion with token from email
    * Requires JWT authentication
-   * @param userId User's ID
-   * @param token Confirmation token from email
    */
   confirmAccountDeletion(userId: string, token: string): Observable<ApiResponse> {
     const request = {
@@ -107,9 +114,6 @@ export class AccountService {
   /**
    * Change user password
    * Requires JWT authentication
-   * @param userId User's ID
-   * @param currentPassword Current password for verification
-   * @param newPassword New password
    */
   changePassword(
     userId: string,
@@ -123,9 +127,18 @@ export class AccountService {
     };
 
     return this.http.post<ApiResponse>(`${this.API_URL}/api/change-password`, request).pipe(
-      tap(() => {
-        console.log('Password changed successfully');
-      }),
+      tap(() => console.log('Password changed successfully')),
+      catchError(this.handleError),
+    );
+  }
+
+  /**
+   * Create a new order
+   * Requires JWT authentication
+   */
+  createOrder(order: CreateOrderRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.API_URL}/api/create_order`, order).pipe(
+      tap(() => console.log('Order created successfully')),
       catchError(this.handleError),
     );
   }

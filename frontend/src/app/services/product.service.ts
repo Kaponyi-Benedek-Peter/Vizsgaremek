@@ -4,9 +4,13 @@ import { Observable, throwError, firstValueFrom, of } from 'rxjs';
 import { catchError, map, timeout } from 'rxjs/operators';
 import {
   Product,
+  ProductCategory,
+  ProductCategoriesApiResponse,
   ProductsApiResponse,
   ProductWithHelpers,
+  Category,
   enrichProduct,
+  mapProductCategory,
   ProductFilterOptions,
   PaginationConfig,
   SortOption,
@@ -14,347 +18,264 @@ import {
 import { TranslationService } from '../core/services/translation.service';
 import { environment } from '../../environments/environment';
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MOCK PRODUCTS - Used as fallback when backend is unavailable
-// ═══════════════════════════════════════════════════════════════════════════
-
 const MOCK_PRODUCTS: Product[] = [
   {
     id: '1',
-    name_de: 'Algopyrin 500mg Tabletten',
+    name: 'Algopyrin 500mg',
     name_hu: 'Algopyrin 500mg Tabletta',
     name_en: 'Algopyrin 500mg Tablets',
-    description_de: 'Schmerzlinderung und Fiebersenkung für Kopfschmerzen, Muskelschmerzen und Fieber.',
-    description_hu: 'Fájdalomcsillapító és lázcsillapító tabletta fejfájás, izomfájdalom és láz esetén.',
+    name_de: 'Algopyrin 500mg Tabletten',
+    description_hu:
+      'Fájdalomcsillapító és lázcsillapító tabletta fejfájás, izomfájdalom és láz esetén.',
     description_en: 'Pain relief and fever reducing tablets for headache, muscle pain and fever.',
-    description_preview_de: 'Schmerzlinderung und Fiebersenkung',
+    description_de:
+      'Schmerzlinderung und Fiebersenkung für Kopfschmerzen, Muskelschmerzen und Fieber.',
     description_preview_hu: 'Fájdalomcsillapító és lázcsillapító',
     description_preview_en: 'Pain relief and fever reducing',
+    description_preview_de: 'Schmerzlinderung und Fiebersenkung',
     price_huf: '2490',
-    price_usd: '7',
-    price_eur: '6',
-    times_ordered: '156',
-    stock: '45',
+    price_usd: '6.96',
+    price_eur: '6.23',
     sale_percentage: '15',
-    category: 'medicine',
+    stock: '45',
+    times_ordered: '156',
+    category_id: '1',
     manufacturer: 'Richter Gedeon',
     brand: 'Algopyrin',
     rating: '4.5',
     sku: 'ALG-500-20',
     active_ingredients: 'Metamizol-nátrium',
     packaging: '20 tabletta',
+    thumbnail_url: '',
+    featured: '1',
     created_at: '2024-01-15',
     updated_at: '2024-02-10',
-    name: 'Algopyrin 500mg',
   },
   {
     id: '2',
-    name_de: 'Aspirin Plus C Brausetabletten',
+    name: 'Aspirin Plus C',
     name_hu: 'Aspirin Plus C Pezsgőtabletta',
     name_en: 'Aspirin Plus C Effervescent',
-    description_de: 'Schnelle Linderung bei Erkältung und Grippe mit Vitamin C.',
+    name_de: 'Aspirin Plus C Brausetabletten',
     description_hu: 'Gyors megkönnyebbülés megfázás és influenza esetén C-vitaminnal.',
     description_en: 'Fast relief for cold and flu with Vitamin C.',
-    description_preview_de: 'Erkältungs- und Grippemittel',
+    description_de: 'Schnelle Linderung bei Erkältung und Grippe mit Vitamin C.',
     description_preview_hu: 'Megfázás és influenza elleni szer',
     description_preview_en: 'Cold and flu relief',
+    description_preview_de: 'Erkältungs- und Grippemittel',
     price_huf: '3490',
-    price_usd: '10',
-    price_eur: '9',
-    times_ordered: '230',
-    stock: '30',
+    price_usd: '9.75',
+    price_eur: '8.73',
     sale_percentage: '10',
-    category: 'medicine',
+    stock: '30',
+    times_ordered: '230',
+    category_id: '1',
     manufacturer: 'Bayer',
     brand: 'Aspirin',
     rating: '4.7',
     sku: 'ASP-C-10',
     active_ingredients: 'Acetilszalicilsav, Aszkorbinsav',
     packaging: '10 pezsgőtabletta',
+    thumbnail_url: '',
+    featured: '0',
     created_at: '2024-01-20',
     updated_at: '2024-02-15',
-    name: 'Aspirin Plus C',
   },
   {
     id: '3',
-    name_de: 'Bepanthen Wund- und Heilsalbe',
-    name_hu: 'Bepanthen Sebgyógyító Krém',
-    name_en: 'Bepanthen Wound Healing Ointment',
-    description_de: 'Unterstützt die Wundheilung und Regeneration der Haut.',
-    description_hu: 'Támogatja a sebgyógyulást és a bőr regenerálódását.',
-    description_en: 'Supports wound healing and skin regeneration.',
-    description_preview_de: 'Wundheilung und Hautregeneration',
-    description_preview_hu: 'Sebgyógyulás és bőr regeneráció',
-    description_preview_en: 'Wound healing and skin regeneration',
-    price_huf: '2890',
-    price_usd: '8',
-    price_eur: '7',
-    times_ordered: '189',
-    stock: '50',
-    sale_percentage: '0',
-    category: 'cosmetics',
-    manufacturer: 'Bayer',
-    brand: 'Bepanthen',
-    rating: '4.8',
-    sku: 'BEP-50G',
-    active_ingredients: 'Dexpantenol',
-    packaging: '50g krém',
-    created_at: '2024-01-25',
-    updated_at: '2024-02-20',
-    name: 'Bepanthen',
-  },
-  {
-    id: '4',
-    name_de: 'Voltaren Schmerzgel',
-    name_hu: 'Voltaren Fájdalomcsillapító Gél',
-    name_en: 'Voltaren Pain Relief Gel',
-    description_de: 'Entzündungshemmendes Gel für Muskel- und Gelenkschmerzen.',
-    description_hu: 'Gyulladáscsökkentő gél izom- és ízületi fájdalmakra.',
-    description_en: 'Anti-inflammatory gel for muscle and joint pain.',
-    description_preview_de: 'Gegen Muskel- und Gelenkschmerzen',
-    description_preview_hu: 'Izom- és ízületi fájdalmak ellen',
-    description_preview_en: 'For muscle and joint pain',
-    price_huf: '4290',
-    price_usd: '12',
-    price_eur: '11',
-    times_ordered: '312',
-    stock: '25',
-    sale_percentage: '20',
-    category: 'medicine',
-    manufacturer: 'Novartis',
-    brand: 'Voltaren',
-    rating: '4.6',
-    sku: 'VOL-100G',
-    active_ingredients: 'Diklofenak',
-    packaging: '100g gél',
-    created_at: '2024-02-01',
-    updated_at: '2024-02-25',
-    name: 'Voltaren',
-  },
-  {
-    id: '5',
-    name_de: 'Vitamin C 1000mg Tabletten',
+    name: 'C-vitamin 1000mg',
     name_hu: 'C-vitamin 1000mg Tabletta',
     name_en: 'Vitamin C 1000mg Tablets',
-    description_de: 'Hochdosiertes Vitamin C zur Stärkung des Immunsystems.',
+    name_de: 'Vitamin C 1000mg Tabletten',
     description_hu: 'Magas dózisú C-vitamin az immunrendszer erősítésére.',
     description_en: 'High dose Vitamin C to strengthen the immune system.',
-    description_preview_de: 'Immunsystem-Stärkung',
+    description_de: 'Hochdosiertes Vitamin C zur Stärkung des Immunsystems.',
     description_preview_hu: 'Immunrendszer erősítés',
     description_preview_en: 'Immune system support',
+    description_preview_de: 'Immunsystem-Stärkung',
     price_huf: '3490',
-    price_usd: '10',
-    price_eur: '9',
-    times_ordered: '445',
-    stock: '142',
+    price_usd: '9.75',
+    price_eur: '8.73',
     sale_percentage: '0',
-    category: 'vitamins',
+    stock: '142',
+    times_ordered: '445',
+    category_id: '2',
     manufacturer: 'Pharma Nord',
     brand: 'Bio-C',
     rating: '4.9',
     sku: 'VITC-1000-60',
     active_ingredients: 'Aszkorbinsav',
     packaging: '60 tabletta',
+    thumbnail_url: '',
+    featured: '1',
     created_at: '2024-01-10',
     updated_at: '2024-03-01',
-    name: 'Vitamin C 1000mg',
   },
   {
-    id: '6',
-    name_de: 'D3-Vitamin 2000NE Tropfen',
+    id: '4',
+    name: 'D3-vitamin 2000NE',
     name_hu: 'D3-vitamin 2000NE Cseppek',
     name_en: 'Vitamin D3 2000IU Drops',
-    description_de: 'Vitamin D3 Tropfen für Knochen und Immunsystem.',
+    name_de: 'D3-Vitamin 2000NE Tropfen',
     description_hu: 'D3-vitamin cseppek a csontok és immunrendszer támogatására.',
     description_en: 'Vitamin D3 drops for bones and immune system.',
-    description_preview_de: 'Knochen und Immunsystem',
+    description_de: 'Vitamin D3 Tropfen für Knochen und Immunsystem.',
     description_preview_hu: 'Csontok és immunrendszer',
     description_preview_en: 'Bones and immune system',
+    description_preview_de: 'Knochen und Immunsystem',
     price_huf: '2990',
-    price_usd: '8',
-    price_eur: '7',
-    times_ordered: '367',
-    stock: '87',
+    price_usd: '8.36',
+    price_eur: '7.48',
     sale_percentage: '5',
-    category: 'vitamins',
+    stock: '87',
+    times_ordered: '367',
+    category_id: '2',
     manufacturer: 'Pharma Nord',
     brand: 'Bio-D3',
     rating: '4.7',
     sku: 'VITD3-2000-30ML',
     active_ingredients: 'Kolekalciferol',
     packaging: '30ml cseppek',
+    thumbnail_url: '',
+    featured: '1',
     created_at: '2024-01-12',
     updated_at: '2024-03-05',
-    name: 'D3-vitamin 2000NE',
   },
   {
-    id: '7',
-    name_de: 'Probiotikum Komplex Kapseln',
-    name_hu: 'Probiotikum Komplex Kapszula',
-    name_en: 'Probiotic Complex Capsules',
-    description_de: 'Multi-Stamm Probiotikum für die Darmgesundheit.',
-    description_hu: 'Több törzset tartalmazó probiotikum a bélflóra egészségéért.',
-    description_en: 'Multi-strain probiotic for gut health.',
-    description_preview_de: 'Darmgesundheit Probiotikum',
-    description_preview_hu: 'Bélflóra probiotikum',
-    description_preview_en: 'Gut health probiotic',
-    price_huf: '5490',
-    price_usd: '15',
-    price_eur: '14',
-    times_ordered: '198',
-    stock: '34',
-    sale_percentage: '0',
-    category: 'supplements',
-    manufacturer: 'Biocodex',
-    brand: 'FloraBalance',
-    rating: '4.4',
-    sku: 'PROB-COMP-30',
-    active_ingredients: 'Lactobacillus, Bifidobacterium',
-    packaging: '30 kapszula',
-    created_at: '2024-02-05',
-    updated_at: '2024-03-10',
-    name: 'Probiotikum Komplex',
-  },
-  {
-    id: '8',
-    name_de: 'Omega-3 Fischöl Kapseln',
+    id: '5',
+    name: 'Omega-3 Halolaj',
     name_hu: 'Omega-3 Halolaj Kapszula',
     name_en: 'Omega-3 Fish Oil Capsules',
-    description_de: 'Premium Omega-3 Fettsäuren für Herz und Gehirn.',
+    name_de: 'Omega-3 Fischöl Kapseln',
     description_hu: 'Prémium Omega-3 zsírsavak a szív és agy egészségéért.',
     description_en: 'Premium Omega-3 fatty acids for heart and brain health.',
-    description_preview_de: 'Herz- und Gehirngesundheit',
+    description_de: 'Premium Omega-3 Fettsäuren für Herz und Gehirn.',
     description_preview_hu: 'Szív és agy egészség',
     description_preview_en: 'Heart and brain health',
+    description_preview_de: 'Herz- und Gehirngesundheit',
     price_huf: '4290',
-    price_usd: '12',
-    price_eur: '11',
-    times_ordered: '278',
-    stock: '56',
+    price_usd: '11.99',
+    price_eur: '10.73',
     sale_percentage: '10',
-    category: 'supplements',
+    stock: '56',
+    times_ordered: '278',
+    category_id: '3',
     manufacturer: 'Nordic Naturals',
     brand: 'OmegaPlus',
     rating: '4.6',
     sku: 'OMG3-120',
     active_ingredients: 'EPA, DHA',
     packaging: '120 kapszula',
+    thumbnail_url: '',
+    featured: '0',
     created_at: '2024-01-18',
     updated_at: '2024-03-01',
-    name: 'Omega-3 Halolaj',
   },
   {
-    id: '9',
-    name_de: 'Babycreme Sensitive',
-    name_hu: 'Babakrém Sensitive',
-    name_en: 'Baby Cream Sensitive',
-    description_de: 'Sanfte Pflege für empfindliche Babyhaut.',
-    description_hu: 'Gyengéd ápolás érzékeny bababőrre.',
-    description_en: 'Gentle care for sensitive baby skin.',
-    description_preview_de: 'Sanfte Babyhautpflege',
-    description_preview_hu: 'Gyengéd bababőr ápolás',
-    description_preview_en: 'Gentle baby skin care',
-    price_huf: '1990',
-    price_usd: '6',
-    price_eur: '5',
-    times_ordered: '134',
-    stock: '78',
+    id: '6',
+    name: 'Probiotikum Komplex',
+    name_hu: 'Probiotikum Komplex Kapszula',
+    name_en: 'Probiotic Complex Capsules',
+    name_de: 'Probiotikum Komplex Kapseln',
+    description_hu: 'Több törzset tartalmazó probiotikum a bélflóra egészségéért.',
+    description_en: 'Multi-strain probiotic for gut health.',
+    description_de: 'Multi-Stamm Probiotikum für die Darmgesundheit.',
+    description_preview_hu: 'Bélflóra probiotikum',
+    description_preview_en: 'Gut health probiotic',
+    description_preview_de: 'Darmgesundheit Probiotikum',
+    price_huf: '5490',
+    price_usd: '15.34',
+    price_eur: '13.73',
     sale_percentage: '0',
-    category: 'baby-care',
-    manufacturer: 'Penaten',
-    brand: 'BabySoft',
-    rating: '4.8',
-    sku: 'BABY-CREAM-100',
-    active_ingredients: 'Pantenol, Kamilla kivonat',
-    packaging: '100ml krém',
-    created_at: '2024-02-10',
-    updated_at: '2024-03-15',
-    name: 'Babakrém Sensitive',
-  },
-  {
-    id: '10',
-    name_de: 'Magnésium 375mg Tabletten',
-    name_hu: 'Magnézium 375mg Tabletta',
-    name_en: 'Magnesium 375mg Tablets',
-    description_de: 'Magnesium für Muskeln, Nerven und Energiestoffwechsel.',
-    description_hu: 'Magnézium az izmok, idegek és energiaanyagcsere támogatására.',
-    description_en: 'Magnesium for muscles, nerves and energy metabolism.',
-    description_preview_de: 'Muskeln und Nervensystem',
-    description_preview_hu: 'Izmok és idegrendszer',
-    description_preview_en: 'Muscles and nervous system',
-    price_huf: '2790',
-    price_usd: '8',
-    price_eur: '7',
-    times_ordered: '321',
-    stock: '92',
-    sale_percentage: '0',
-    category: 'supplements',
-    manufacturer: 'Pharma Nord',
-    brand: 'MagPower',
-    rating: '4.5',
-    sku: 'MAG-375-90',
-    active_ingredients: 'Magnézium-citrát',
-    packaging: '90 tabletta',
-    created_at: '2024-01-22',
-    updated_at: '2024-03-08',
-    name: 'Magnézium 375mg',
-  },
-  {
-    id: '11',
-    name_de: 'Digitales Fieberthermometer',
-    name_hu: 'Digitális Lázmérő',
-    name_en: 'Digital Fever Thermometer',
-    description_de: 'Schnelles und genaues digitales Thermometer.',
-    description_hu: 'Gyors és pontos digitális hőmérő.',
-    description_en: 'Fast and accurate digital thermometer.',
-    description_preview_de: 'Schnelle Temperaturmessung',
-    description_preview_hu: 'Gyors hőmérsékletmérés',
-    description_preview_en: 'Fast temperature measurement',
-    price_huf: '3990',
-    price_usd: '11',
-    price_eur: '10',
-    times_ordered: '89',
-    stock: '40',
-    sale_percentage: '0',
-    category: 'medical-devices',
-    manufacturer: 'Omron',
-    brand: 'Omron',
-    rating: '4.3',
-    sku: 'THERM-DIG-01',
-    active_ingredients: '',
-    packaging: '1 db',
-    created_at: '2024-02-15',
-    updated_at: '2024-03-12',
-    name: 'Digitális Lázmérő',
-  },
-  {
-    id: '12',
-    name_de: 'Nasenspray Meerwasser',
-    name_hu: 'Orrspray Tengervíz',
-    name_en: 'Nasal Spray Sea Water',
-    description_de: 'Natürliches Meerwasser-Nasenspray zur Befeuchtung.',
-    description_hu: 'Természetes tengervizes orrspray a nyálkahártya hidratálására.',
-    description_en: 'Natural sea water nasal spray for moisturizing.',
-    description_preview_de: 'Natürliche Nasenpflege',
-    description_preview_hu: 'Természetes orrápolás',
-    description_preview_en: 'Natural nasal care',
-    price_huf: '1890',
-    price_usd: '5',
-    price_eur: '5',
-    times_ordered: '210',
-    stock: '65',
-    sale_percentage: '15',
-    category: 'medicine',
-    manufacturer: 'Quixx',
-    brand: 'Quixx',
+    stock: '34',
+    times_ordered: '198',
+    category_id: '3',
+    manufacturer: 'Biocodex',
+    brand: 'FloraBalance',
     rating: '4.4',
-    sku: 'NASAL-SEA-30',
-    active_ingredients: 'Tengervíz oldat',
-    packaging: '30ml spray',
-    created_at: '2024-01-28',
-    updated_at: '2024-03-05',
-    name: 'Orrspray Tengervíz',
+    sku: 'PROB-COMP-30',
+    active_ingredients: 'Lactobacillus, Bifidobacterium',
+    packaging: '30 kapszula',
+    thumbnail_url: '',
+    featured: '0',
+    created_at: '2024-02-05',
+    updated_at: '2024-03-10',
   },
+  {
+    id: '7',
+    name: 'DermaGlow Arckrém',
+    name_hu: 'DermaGlow Intenzív Hidratáló Arckrém',
+    name_en: 'DermaGlow Intensive Moisturising Face Cream',
+    name_de: 'DermaGlow Intensive Feuchtigkeitscreme',
+    description_hu: 'Hialuronsavas, ceramidos arckrém 72 órás hidratálással.',
+    description_en: 'Hyaluronic acid and ceramide face cream with 72-hour hydration.',
+    description_de: 'Gesichtscreme mit Hyaluronsäure und Ceramiden, 72-Stunden-Feuchtigkeit.',
+    description_preview_hu: '72 órás hidratálás, hialuronsav',
+    description_preview_en: '72-hour hydration, hyaluronic acid',
+    description_preview_de: '72-Stunden-Feuchtigkeit, Hyaluronsäure',
+    price_huf: '4490',
+    price_usd: '12.55',
+    price_eur: '11.23',
+    sale_percentage: '20',
+    stock: '38',
+    times_ordered: '74',
+    category_id: '4',
+    manufacturer: 'DermaCare Lab',
+    brand: 'DermaGlow',
+    rating: '4.85',
+    sku: 'DGL-IMC-50ML',
+    active_ingredients: 'Sodium Hyaluronate, Niacinamid, Ceramide NP',
+    packaging: '50ml tubus',
+    thumbnail_url: '',
+    featured: '1',
+    created_at: '2024-02-18',
+    updated_at: '2024-02-18',
+  },
+  {
+    id: '8',
+    name: 'BabyCalm Hasfájás Cseppek',
+    name_hu: 'BabyCalm Hasfájás Cseppek',
+    name_en: 'BabyCalm Colic Drops',
+    name_de: 'BabyCalm Blähungslinderung Tropfen',
+    description_hu: 'Szimethikon alapú hasfájás cseppek csecsemőknek.',
+    description_en: 'Simethicone-based colic drops for infants.',
+    description_de: 'Simeticon-basierte Blähungstropfen für Säuglinge.',
+    description_preview_hu: 'Hasfájás és puffadás ellen',
+    description_preview_en: 'Colic and bloating relief',
+    description_preview_de: 'Gegen Blähungen und Darmkrämpfe',
+    price_huf: '2190',
+    price_usd: '6.12',
+    price_eur: '5.48',
+    sale_percentage: '0',
+    stock: '95',
+    times_ordered: '137',
+    category_id: '5',
+    manufacturer: 'BabyCare Pharma',
+    brand: 'BabyCalm',
+    rating: '4.6',
+    sku: 'BCM-SIM-30ML',
+    active_ingredients: 'Szimethikon 40mg/ml',
+    packaging: '30ml cseppentős üveg',
+    thumbnail_url: '',
+    featured: '0',
+    created_at: '2024-03-01',
+    updated_at: '2024-03-01',
+  },
+];
+
+const MOCK_CATEGORIES: ProductCategory[] = [
+  { id: '1', category: 'gyogyszerek', emoji: '💊', color: '#E53935', number_of_products: '2' },
+  { id: '2', category: 'vitaminok', emoji: '🌿', color: '#43A047', number_of_products: '2' },
+  {
+    id: '3',
+    category: 'taplelkiegeszitok',
+    emoji: '💪',
+    color: '#FB8C00',
+    number_of_products: '2',
+  },
+  { id: '4', category: 'kozmetikumok', emoji: '✨', color: '#E91E8C', number_of_products: '1' },
+  { id: '5', category: 'babaapolas', emoji: '👶', color: '#1E88E5', number_of_products: '1' },
+  { id: '6', category: 'orvosi-eszkozok', emoji: '🩺', color: '#8E24AA', number_of_products: '0' },
 ];
 
 @Injectable({
@@ -367,7 +288,10 @@ export class ProductService {
 
   private allProductsSignal = signal<ProductWithHelpers[]>([]);
   private rawProducts = signal<Product[]>([]);
+  private featuredSignal = signal<ProductWithHelpers[]>([]);
+  private categoriesSignal = signal<Category[]>([]);
   private usingMockData = signal(false);
+
   private filtersSignal = signal<ProductFilterOptions>({
     categories: [],
     priceRange: null,
@@ -378,6 +302,8 @@ export class ProductService {
   private itemsPerPageSignal = signal<number>(30);
 
   products = computed(() => this.allProductsSignal());
+  featuredProducts = computed(() => this.featuredSignal());
+  categories = computed(() => this.categoriesSignal());
   currentFilters = computed(() => this.filtersSignal());
   isUsingMockData = computed(() => this.usingMockData());
 
@@ -386,15 +312,12 @@ export class ProductService {
     const filters = this.filtersSignal();
 
     if (filters.categories && filters.categories.length > 0) {
-      products = products.filter((p) => filters.categories!.includes(p.category));
+      products = products.filter((p) => filters.categories!.includes(p.category_id));
     }
 
     if (filters.priceRange) {
       const { min, max } = filters.priceRange;
-      products = products.filter((p) => {
-        const price = p.price;
-        return price >= min && price <= max;
-      });
+      products = products.filter((p) => p.price >= min && p.price <= max);
     }
 
     if (filters.inStockOnly) {
@@ -413,13 +336,7 @@ export class ProductService {
     const itemsPerPage = this.itemsPerPageSignal();
     const currentPage = this.currentPageSignal();
     const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    return {
-      currentPage,
-      itemsPerPage,
-      totalItems,
-      totalPages,
-    };
+    return { currentPage, itemsPerPage, totalItems, totalPages };
   });
 
   paginatedProducts = computed(() => {
@@ -427,69 +344,75 @@ export class ProductService {
     const page = this.currentPageSignal();
     const perPage = this.itemsPerPageSignal();
     const start = (page - 1) * perPage;
-    const end = start + perPage;
-
-    return filtered.slice(start, end);
+    return filtered.slice(start, start + perPage);
   });
 
   async loadProducts(): Promise<void> {
     try {
       const products = await firstValueFrom(this.getAllProducts());
       const currentLang = this.translationService.getCurrentLanguage();
-      const enrichedProducts = products.map((p) => enrichProduct(p, currentLang));
+      const enriched = products.map((p) => enrichProduct(p, currentLang));
       this.rawProducts.set(products);
-      this.allProductsSignal.set(enrichedProducts);
+      this.allProductsSignal.set(enriched);
       this.usingMockData.set(false);
       console.log(`Loaded ${products.length} products from backend`);
-    } catch (error) {
-      console.warn('Backend unavailable, loading mock data:', error);
+    } catch {
+      console.warn('Backend unavailable, loading mock data');
       this.loadMockProducts();
+    }
+  }
+
+  async loadFeaturedProducts(): Promise<void> {
+    try {
+      const products = await firstValueFrom(this.getFeaturedFromApi());
+      const currentLang = this.translationService.getCurrentLanguage();
+      const enriched = products.map((p) => enrichProduct(p, currentLang));
+      this.featuredSignal.set(enriched);
+    } catch {
+      const fallback = this.allProductsSignal().filter((p) => p.isFeatured);
+      if (fallback.length > 0) {
+        this.featuredSignal.set(fallback);
+      } else {
+        const currentLang = this.translationService.getCurrentLanguage();
+        const mockFeatured = MOCK_PRODUCTS.filter((p) => p.featured === '1').map((p) =>
+          enrichProduct(p, currentLang),
+        );
+        this.featuredSignal.set(mockFeatured);
+      }
+    }
+  }
+
+  async loadCategories(): Promise<void> {
+    try {
+      const raw = await firstValueFrom(this.getAllCategories());
+      const mapped = raw.map(mapProductCategory);
+      this.categoriesSignal.set(mapped);
+    } catch {
+      console.warn('Category backend unavailable, using mock categories');
+      this.categoriesSignal.set(MOCK_CATEGORIES.map(mapProductCategory));
     }
   }
 
   private loadMockProducts(): void {
     const currentLang = this.translationService.getCurrentLanguage();
-    // Add [TEST] prefix to mock product names so they are visually distinguishable
-    const labeledMockProducts = MOCK_PRODUCTS.map((p) => ({
+    const labeled = MOCK_PRODUCTS.map((p) => ({
       ...p,
       name_hu: `[TEST] ${p.name_hu}`,
       name_en: `[TEST] ${p.name_en}`,
       name_de: `[TEST] ${p.name_de}`,
       name: `[TEST] ${p.name}`,
     }));
-    const enrichedProducts = labeledMockProducts.map((p) => enrichProduct(p, currentLang));
-    this.rawProducts.set(labeledMockProducts);
-    this.allProductsSignal.set(enrichedProducts);
+    const enriched = labeled.map((p) => enrichProduct(p, currentLang));
+    this.rawProducts.set(labeled);
+    this.allProductsSignal.set(enriched);
     this.usingMockData.set(true);
-    console.log(`Loaded ${MOCK_PRODUCTS.length} mock products (backend unavailable)`);
-  }
 
-  /**
-   * Get featured products for homepage (top rated, in stock).
-   * Uses same data source (backend or mock fallback).
-   */
-  getFeaturedProducts(count: number = 4): ProductWithHelpers[] {
-    const currentLang = this.translationService.getCurrentLanguage();
-    const source = this.rawProducts().length > 0 ? this.rawProducts() : MOCK_PRODUCTS;
-    return source
-      .filter((p) => parseFloat(p.stock) > 0)
-      .sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating))
-      .slice(0, count)
-      .map((p) => enrichProduct(p, currentLang));
-  }
-
-  /**
-   * Get raw mock products (for development/testing).
-   */
-  getMockProducts(): Product[] {
-    return MOCK_PRODUCTS;
+    this.featuredSignal.set(enriched.filter((p) => p.isFeatured));
+    console.log(`Loaded ${MOCK_PRODUCTS.length} mock products`);
   }
 
   setFilters(filters: Partial<ProductFilterOptions>): void {
-    this.filtersSignal.update((current) => ({
-      ...current,
-      ...filters,
-    }));
+    this.filtersSignal.update((current) => ({ ...current, ...filters }));
     this.currentPageSignal.set(1);
   }
 
@@ -505,9 +428,7 @@ export class ProductService {
 
   setPage(page: number): void {
     const totalPages = this.paginationState().totalPages;
-    if (page >= 1 && page <= totalPages) {
-      this.currentPageSignal.set(page);
-    }
+    if (page >= 1 && page <= totalPages) this.currentPageSignal.set(page);
   }
 
   setItemsPerPage(count: number): void {
@@ -515,9 +436,102 @@ export class ProductService {
     this.currentPageSignal.set(1);
   }
 
+  getAllProducts(): Observable<Product[]> {
+    return this.http.get<ProductsApiResponse>(`${this.API_URL}/api/get_all_products`).pipe(
+      timeout(5000),
+      map((r) => {
+        if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+        if (!Array.isArray(r.products)) throw new Error('Invalid products response');
+        return r.products;
+      }),
+      catchError(this.handleError),
+    );
+  }
+
+  getAllCategories(): Observable<ProductCategory[]> {
+    return this.http
+      .get<ProductCategoriesApiResponse>(`${this.API_URL}/api/get_all_product_categories`)
+      .pipe(
+        timeout(5000),
+        map((r) => {
+          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+          if (!Array.isArray(r.categories)) throw new Error('Invalid categories response');
+          return r.categories;
+        }),
+        catchError(this.handleError),
+      );
+  }
+
+  getFeaturedFromApi(): Observable<Product[]> {
+    return this.http.get<ProductsApiResponse>(`${this.API_URL}/api/get_all_featured_products`).pipe(
+      timeout(5000),
+      map((r) => {
+        if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+        if (!Array.isArray(r.products)) throw new Error('Invalid featured response');
+        return r.products;
+      }),
+      catchError(this.handleError),
+    );
+  }
+
+  getProductById(id: string): Observable<Product | undefined> {
+    return this.getAllProducts().pipe(
+      map((products) => products.find((p) => p.id === id)),
+      catchError(() => of(MOCK_PRODUCTS.find((p) => p.id === id))),
+    );
+  }
+
+  getProductsByCategory(categoryId: string): Observable<Product[]> {
+    return this.getAllProducts().pipe(
+      map((products) => products.filter((p) => p.category_id === categoryId)),
+      catchError(() => of(MOCK_PRODUCTS.filter((p) => p.category_id === categoryId))),
+    );
+  }
+
+  searchProducts(query: string): Observable<Product[]> {
+    const q = query.toLowerCase();
+    return this.getAllProducts().pipe(
+      map((products) =>
+        products.filter(
+          (p) =>
+            p.name_en.toLowerCase().includes(q) ||
+            p.name_hu.toLowerCase().includes(q) ||
+            p.name_de.toLowerCase().includes(q),
+        ),
+      ),
+      catchError(() =>
+        of(
+          MOCK_PRODUCTS.filter(
+            (p) =>
+              p.name_en.toLowerCase().includes(q) ||
+              p.name_hu.toLowerCase().includes(q) ||
+              p.name_de.toLowerCase().includes(q),
+          ),
+        ),
+      ),
+    );
+  }
+
+  getSaleProducts(): Observable<Product[]> {
+    return this.getAllProducts().pipe(
+      map((p) => p.filter((x) => parseFloat(x.sale_percentage) > 0)),
+      catchError(() => of(MOCK_PRODUCTS.filter((x) => parseFloat(x.sale_percentage) > 0))),
+    );
+  }
+
+  getInStockProducts(): Observable<Product[]> {
+    return this.getAllProducts().pipe(
+      map((p) => p.filter((x) => parseInt(x.stock) > 0)),
+      catchError(() => of(MOCK_PRODUCTS.filter((x) => parseInt(x.stock) > 0))),
+    );
+  }
+
+  getMockProducts(): Product[] {
+    return MOCK_PRODUCTS;
+  }
+
   private sortProducts(products: ProductWithHelpers[], sortBy: SortOption): ProductWithHelpers[] {
     const sorted = [...products];
-
     switch (sortBy) {
       case 'popularity':
         return sorted.sort((a, b) => parseFloat(b.times_ordered) - parseFloat(a.times_ordered));
@@ -536,107 +550,24 @@ export class ProductService {
         return sorted.sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
-      case 'default':
       default:
         return sorted;
     }
   }
 
-  getAllProducts(): Observable<Product[]> {
-    return this.http.get<ProductsApiResponse>(`${this.API_URL}/api/get_all_products`).pipe(
-      timeout(5000),
-      map((response) => {
-        if (response.statuscode !== '200') {
-          throw new Error(`API Error: ${response.status}`);
-        }
-
-        if (!response.products || !Array.isArray(response.products)) {
-          throw new Error('Invalid API response: products array missing');
-        }
-
-        return response.products;
-      }),
-      catchError(this.handleError),
-    );
-  }
-
-  getProductById(id: string): Observable<Product | undefined> {
-    return this.getAllProducts().pipe(
-      map((products) => products.find((p) => p.id === id)),
-      catchError(() => {
-        const mock = MOCK_PRODUCTS.find((p) => p.id === id);
-        return of(mock);
-      }),
-    );
-  }
-
-  getProductsByCategory(category: string): Observable<Product[]> {
-    return this.getAllProducts().pipe(
-      map((products) => products.filter((p) => p.category === category)),
-      catchError(() => of(MOCK_PRODUCTS.filter((p) => p.category === category))),
-    );
-  }
-
-  searchProducts(query: string): Observable<Product[]> {
-    const lowerQuery = query.toLowerCase();
-    return this.getAllProducts().pipe(
-      map((products) =>
-        products.filter(
-          (p) =>
-            p.name_en.toLowerCase().includes(lowerQuery) ||
-            p.name_hu.toLowerCase().includes(lowerQuery) ||
-            p.name_de.toLowerCase().includes(lowerQuery),
-        ),
-      ),
-      catchError(() =>
-        of(
-          MOCK_PRODUCTS.filter(
-            (p) =>
-              p.name_en.toLowerCase().includes(lowerQuery) ||
-              p.name_hu.toLowerCase().includes(lowerQuery) ||
-              p.name_de.toLowerCase().includes(lowerQuery),
-          ),
-        ),
-      ),
-    );
-  }
-
-  getSaleProducts(): Observable<Product[]> {
-    return this.getAllProducts().pipe(
-      map((products) => products.filter((p) => parseFloat(p.sale_percentage) > 0)),
-      catchError(() => of(MOCK_PRODUCTS.filter((p) => parseFloat(p.sale_percentage) > 0))),
-    );
-  }
-
-  getInStockProducts(): Observable<Product[]> {
-    return this.getAllProducts().pipe(
-      map((products) => products.filter((p) => parseFloat(p.stock) > 0)),
-      catchError(() => of(MOCK_PRODUCTS.filter((p) => parseFloat(p.stock) > 0))),
-    );
-  }
-
   private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An unknown error occurred';
-
+    let msg = 'An unknown error occurred';
     if (error.error instanceof ErrorEvent) {
-      errorMessage = `Error: ${error.error.message}`;
+      msg = error.error.message;
     } else {
-      switch (error.status) {
-        case 400:
-          errorMessage = 'Bad request';
-          break;
-        case 404:
-          errorMessage = 'Products not found';
-          break;
-        case 500:
-          errorMessage = 'Server error';
-          break;
-        default:
-          errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
-      }
+      const codes: Record<number, string> = {
+        400: 'Bad request',
+        404: 'Not found',
+        500: 'Server error',
+      };
+      msg = codes[error.status] ?? `Error ${error.status}: ${error.message}`;
     }
-
-    console.error('ProductService Error:', errorMessage);
-    return throwError(() => new Error(errorMessage));
+    console.error('ProductService Error:', msg);
+    return throwError(() => new Error(msg));
   }
 }

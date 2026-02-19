@@ -1,6 +1,6 @@
 <div class="product-list-page">
   <app-category-bar
-    [categories]="categories"
+    [categories]="categories()"
     [selectedCategories]="filters().categories || []"
     (categorySelected)="handleCategorySelected($event)"
     (clearCategories)="handleClearCategories()"
@@ -54,8 +54,8 @@
   @if (showModal && selectedProduct) {
     <app-product-detail-modal
       [product]="selectedProduct"
-      (close)="handleCloseModal()"
-      (addToCart)="handleAddToCartFromModal($event)"
+      (close)="handleModalClose()"
+      (addToCart)="handleModalAddToCart($event)"
     />
   }
 </div>
