@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 20, 2026 at 10:02 AM
+-- Generation Time: Feb 20, 2026 at 02:07 PM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -170,9 +170,9 @@ VALUES(
 
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product_category` (IN `p_category` VARCHAR(255), IN `p_emoji` VARCHAR(255), IN `p_color` VARCHAR(255))   BEGIN
-    INSERT INTO roy.product_categories (category, emoji, color, number_of_products)
-    VALUES (p_category, p_emoji, p_color, 0);
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product_category` (IN `p_category_en` VARCHAR(255), IN `p_category_de` VARCHAR(255), IN `p_category_hu` VARCHAR(255), IN `p_emoji` VARCHAR(255), IN `p_color` VARCHAR(255))   BEGIN
+    INSERT INTO roy.product_categories (category_en, category_hu, category_de, emoji, color, number_of_products)
+    VALUES (p_category_en,p_category_hu,p_category_de, p_emoji, p_color, 0);
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_product_image` (IN `p_alt_text_de` VARCHAR(255), IN `p_alt_text_en` VARCHAR(255), IN `p_alt_text_hu` VARCHAR(255), IN `p_image_url` VARCHAR(255), IN `p_sort_id` INT, IN `p_product_id` INT)   BEGIN
@@ -715,9 +715,11 @@ WHERE id = p_id;
 
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_category_by_id` (IN `p_id` INT, IN `p_category` VARCHAR(255), IN `p_color` VARCHAR(255), IN `p_emoji` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_category_by_id` (IN `p_id` INT, IN `p_category_en` VARCHAR(255), IN `p_category_hu` INT, IN `p_category_de` VARCHAR(255), IN `p_color` VARCHAR(255), IN `p_emoji` VARCHAR(255))   BEGIN
 	UPDATE roy.product_categories
-    SET category = p_category,
+    SET category_en = p_category_en,
+    category_hu = p_category_hu,
+    category_de = p_category_de,
     color = p_color,
     emoji = p_emoji
     WHERE id = p_id;
@@ -909,19 +911,21 @@ INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_o
 --
 
 CREATE TABLE `product_categories` (
-  `category` varchar(255) NOT NULL,
+  `category_en` varchar(255) NOT NULL,
   `emoji` varchar(255) NOT NULL,
   `color` varchar(255) NOT NULL,
   `number_of_products` int(11) NOT NULL,
-  `id` int(11) NOT NULL
+  `id` int(11) NOT NULL,
+  `category_hu` varchar(255) NOT NULL,
+  `category_de` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `product_categories`
 --
 
-INSERT INTO `product_categories` (`category`, `emoji`, `color`, `number_of_products`, `id`) VALUES
-('test_category', 'color', 'emoji', 1, 1);
+INSERT INTO `product_categories` (`category_en`, `emoji`, `color`, `number_of_products`, `id`, `category_hu`, `category_de`) VALUES
+('test_category', 'color', 'emoji', 1, 1, '', '');
 
 -- --------------------------------------------------------
 
