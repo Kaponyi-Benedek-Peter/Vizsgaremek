@@ -1,7 +1,8 @@
 import { Component, inject, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
 import { Slide } from '../../shared/components/slide/slide';
 import { Featured } from '../../shared/components/featured/featured';
@@ -27,14 +28,35 @@ import { ProductService } from '../../services/product.service';
 export class Home implements OnInit {
   private router = inject(Router);
   private productService = inject(ProductService);
+  private route = inject(ActivatedRoute);
+  private authService = inject(AuthService);
 
   IMAGES = IMAGES;
   ICONS = ICONS;
 
   featuredProducts = computed(() => this.productService.featuredProducts());
 
-  async ngOnInit(): Promise<void> {
-    await this.productService.loadFeaturedProducts();
+  ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      if (params['activate']) {
+        const parts = params['activate'].split(';');
+        if (parts.length === 2) {
+          const id = parts[0].trim();
+          const token = parts[1].trim();
+          this.authService.completeRegistration(id, token, true).subscribe({
+            next: () => {
+              // successful activation
+              this.router.navigate(['/home'], { replaceUrl: true });
+            },
+            error: () => {
+              this.router.navigate(['/home'], { replaceUrl: true });
+            },
+          });
+        }
+      }
+    });
+
+    this.productService.loadFeaturedProducts();
   }
 
   onProductClick(productId: string): void {

@@ -1,5 +1,5 @@
 <div class="home">
-  <div class="hero">
+  <div class="hero" [style.background-image]="'url(' + IMAGES.heroBg + ')'">
     <h1 appScrollReveal [animationType]="'fade-scale'" [animationDuration]="800" [autoPlay]="true">
       {{ 'home.hero.title' | translate }}
     </h1>

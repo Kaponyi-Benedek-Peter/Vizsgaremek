@@ -29,7 +29,11 @@
           <div class="article-meta">
             <div class="meta-author">
               @if (post()!.author.avatar) {
-                <img [src]="post()!.author.avatar" [alt]="post()!.author.name" class="author-avatar" />
+                <img
+                  [src]="post()!.author.avatar"
+                  [alt]="post()!.author.name"
+                  class="author-avatar"
+                />
               } @else {
                 <div class="author-avatar-placeholder">
                   {{ post()!.author.name.charAt(0).toUpperCase() }}
@@ -40,20 +44,23 @@
                 @if (post()!.author.verified) {
                   <span class="verified-badge">✓</span>
                 }
-                <span class="author-role">{{ 'forum.role.' + post()!.author.role | translate }}</span>
+                <span class="author-role">{{
+                  'forum.role.' + post()!.author.role | translate
+                }}</span>
               </div>
             </div>
 
             <div class="meta-details">
               <span class="meta-date">📅 {{ formatDate(post()!.createdAt) }}</span>
               @if (getReadingTime()) {
-                <span class="meta-reading">📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span>
+                <span class="meta-reading"
+                  >📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span
+                >
               }
             </div>
           </div>
         </header>
 
-        <!-- Tartalom -->
         <div class="article-body" [class.collapsed]="!contentExpanded()">
           <p class="article-excerpt">{{ post()!.excerpt }}</p>
           <div class="article-content">
@@ -70,7 +77,6 @@
           </div>
         }
 
-        <!-- Statisztikák -->
         <div class="article-stats">
           <div class="stat">
             <span class="stat-icon">👁️</span>
@@ -86,7 +92,6 @@
           </div>
         </div>
 
-        <!-- Tagek -->
         @if (post()!.tags.length > 0) {
           <div class="article-tags">
             @for (tag of post()!.tags; track tag) {
@@ -97,7 +102,6 @@
       </div>
     </article>
 
-    <!-- Kommentek -->
     <section class="comments-section">
       <div class="comments-container">
         <h2 class="comments-title">
@@ -132,7 +136,6 @@
           </div>
         }
 
-        <!-- Új komment -->
         @if (isAuthenticated()) {
           <div class="new-comment">
             <h3 class="new-comment-title">{{ 'forum.write_comment' | translate }}</h3>
@@ -162,7 +165,6 @@
       </div>
     </section>
 
-    <!-- További bejegyzések slider -->
     @if (relatedPosts().length > 0) {
       <section class="related-section">
         <div class="related-container">
@@ -210,11 +212,8 @@
       </section>
     }
 
-    <!-- Vissza a fórumra -->
     <div class="back-section">
-      <a routerLink="/forum" class="back-link">
-        ← {{ 'forum.back_to_forum' | translate }}
-      </a>
+      <a routerLink="/forum" class="back-link"> ← {{ 'forum.back_to_forum' | translate }} </a>
     </div>
   }
 

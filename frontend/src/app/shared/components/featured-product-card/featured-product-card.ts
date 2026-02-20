@@ -4,6 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyPipe } from '../../pipes/currency.pipe';
+import { IMAGES } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-featured-product-card',
@@ -26,7 +27,7 @@ export class FeaturedProductCard {
   });
 
   imageUrl = computed(() => {
-    return this.product?.imageUrl || '';
+    return this.product?.imageUrl || IMAGES.productDefault;
   });
 
   altText = computed(() => {

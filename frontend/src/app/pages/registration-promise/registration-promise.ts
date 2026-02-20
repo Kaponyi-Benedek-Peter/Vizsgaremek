@@ -76,6 +76,9 @@ export class RegistrationPromise implements OnInit {
       next: () => {
         this.isVerifying.set(false);
         this.isVerified.set(true);
+        setTimeout(() => {
+          this.router.navigate(['/home']);
+        }, 2500);
       },
       error: (error) => {
         this.isVerifying.set(false);

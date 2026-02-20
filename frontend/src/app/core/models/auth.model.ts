@@ -10,8 +10,8 @@ export interface User {
 }
 
 export interface LoginRequest {
-  id: string; // Base64 encoded email (used as identifier by backend)
-  password: string; // Base64 encoded password
+  email: string;
+  password: string;
 }
 
 export interface LoginRequestResponse {
@@ -20,8 +20,8 @@ export interface LoginRequestResponse {
 }
 
 export interface LoginPromiseRequest {
-  id: string; // Base64 encoded user id (already B64 from email link — do NOT re-encode!)
-  confirmation_token: string; // Base64 encoded confirmation token (already B64 from email link)
+  id: string;
+  confirmation_token: string;
 }
 
 export interface LoginResponse {
@@ -34,15 +34,15 @@ export interface LoginResponse {
 }
 
 export interface RegistrationRequest {
-  email: string; // Base64 encoded email
-  password: string; // Base64 encoded password
-  firstname: string; // Base64 encoded first name
-  lastname: string; // Base64 encoded last name
+  email: string;
+  password: string;
+  firstname: string;
+  lastname: string;
 }
 
 export interface RegistrationPromiseRequest {
-  id: string; // Base64 encoded user ID (from URL — do NOT re-encode!)
-  token: string; // Base64 encoded confirmation token (from URL — do NOT re-encode!)
+  id: string;
+  token: string;
 }
 
 export interface RegistrationResponse {
@@ -55,26 +55,25 @@ export interface RegistrationResponse {
   user?: User;
 }
 
-// chpass_request: docs specify plain strings (no B64!)
+// chpass_request
 export interface PasswordChangeRequest {
-  email: string; // plain string — docs do NOT require B64 here
-  password: string; // plain string — docs do NOT require B64 here
+  email: string;
+  password: string;
 }
 
-// chpass_promise: id and token come pre-encoded from URL — do NOT re-encode
 export interface PasswordChangePromiseRequest {
-  id: string; // from URL, already in the format the backend expects
-  token: string; // from URL, already in the format the backend expects
+  id: string;
+  token: string;
 }
 
 export interface AccountDeletionRequest {
-  id: string; // Base64 encoded user ID
-  password: string; // Base64 encoded password
+  id: string;
+  password: string;
 }
 
 export interface AccountDeletionPromiseRequest {
-  id: string; // Base64 encoded — value comes from URL, do NOT re-encode
-  token: string; // Base64 encoded — value comes from URL, do NOT re-encode
+  id: string;
+  token: string;
 }
 
 export interface ApiErrorResponse {
@@ -86,8 +85,8 @@ export interface ApiErrorResponse {
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  token: string | null; // JWT token
-  sessionToken: string | null; // Session token (stored for admin API calls)
+  token: string | null;
+  sessionToken: string | null;
   expiresAt: Date | null;
 }
 

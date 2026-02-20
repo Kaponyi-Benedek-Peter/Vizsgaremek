@@ -30,8 +30,7 @@ export const routes: Routes = [
   { path: 'admin', component: Admin, canActivate: [adminGuard] },
   {
     path: 'forum/:slug',
-    loadComponent: () =>
-      import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
+    loadComponent: () => import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
   },
   {
     path: 'login',
@@ -65,8 +64,7 @@ export const routes: Routes = [
   },
   {
     path: 'login-promise',
-    loadComponent: () =>
-      import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
+    loadComponent: () => import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
   },
   {
     path: 'delacc-promise',

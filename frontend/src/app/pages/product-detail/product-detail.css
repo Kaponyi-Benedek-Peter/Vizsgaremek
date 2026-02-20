@@ -343,7 +343,7 @@
   width: fit-content;
   padding: 5px 14px;
   background: var(--color-primary-light);
-  color: var(--color-primary);
+  color: var(--color-text-on-primary);
   border: 1px solid rgba(6, 122, 69, 0.2);
   border-radius: var(--radius-full);
   font-size: 0.7rem;

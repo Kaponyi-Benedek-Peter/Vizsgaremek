@@ -121,14 +121,10 @@ export class AuthService {
     return now.getTime() >= expirationTime.getTime() - fiveMinutes;
   }
 
-  /**
-   * Step 1 of login: send email + password to backend.
-   * Backend sends a confirmation email with a one-time token.
-   * NOTE: docs specify id: B64(int) but email is the user identifier at this stage.
-   */
-  loginRequest(email: string, password: string): Observable<LoginRequestResponse> {
+  // Stage 1: B64(email) + B64(password) + email
+  loginRequest(email: string, password: string) {
     const request: LoginRequest = {
-      id: this.encodeBase64(email),
+      email: this.encodeBase64(email),
       password: this.encodeBase64(password),
     };
 
@@ -137,18 +133,15 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  /**
-   * Step 2 of login: validate the token from the email link.
-   * IMPORTANT: id and confirmationToken come already B64-encoded from the email URL.
-   */
+  // Stage 2: id and confirmation_token comes from url, already b64
   loginPromise(
     id: string,
     confirmationToken: string,
     stayLoggedIn: boolean,
   ): Observable<LoginResponse> {
     const request: LoginPromiseRequest = {
-      id: id, // already B64 from URL
-      confirmation_token: confirmationToken, // already B64 from URL
+      id,
+      confirmation_token: confirmationToken,
     };
 
     return this.http.post<LoginResponse>(`${this.API_URL}/api/login_promise`, request).pipe(
@@ -159,6 +152,7 @@ export class AuthService {
     );
   }
 
+  // registration_request: b64
   register(email: string, password: string, firstname: string, lastname: string): Observable<void> {
     const request: RegistrationRequest = {
       email: this.encodeBase64(email),
@@ -172,17 +166,15 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  /**
-   * Step 2 of registration: id and token come already B64-encoded from the email URL.
-   */
+  // id and token comes from url, already b64
   completeRegistration(
     id: string,
     token: string,
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
     const request: RegistrationPromiseRequest = {
-      id: id, // already B64 from URL
-      token: token, // already B64 from URL
+      id,
+      token,
     };
 
     return this.http
@@ -193,20 +185,18 @@ export class AuthService {
             response as unknown as LoginResponse,
             stayLoggedIn,
             response.user,
+            true, // skipNavigation — a komponens navigál 2.5mp után
           );
         }),
         catchError(this.handleError.bind(this)),
       );
   }
 
-  /**
-   * Password change request.
-   * IMPORTANT: docs specify plain strings (no B64) for email and password here.
-   */
-  requestPasswordChange(email: string, newPassword: string): Observable<void> {
+  // chpass_request: plain string
+  requestPasswordChange(email: string, newPassword: string) {
     const request: PasswordChangeRequest = {
-      email: email, // plain string — docs do NOT require B64
-      password: newPassword, // plain string — docs do NOT require B64
+      email: this.encodeBase64(email),
+      password: this.encodeBase64(newPassword),
     };
 
     return this.http
@@ -214,14 +204,11 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  /**
-   * Complete password change: id and token come from the URL as-is.
-   * Returns new jwt_token and session_token — currently navigates to /login after success.
-   */
-  completePasswordChange(id: string, token: string): Observable<void> {
+  // id and token comes from url, already b64
+  completePasswordChange(id: string, token: string) {
     const request: PasswordChangePromiseRequest = {
-      id: id,
-      token: token,
+      id: this.encodeBase64(id),
+      token: this.encodeBase64(token),
     };
 
     return this.http
@@ -282,17 +269,22 @@ export class AuthService {
       );
       return JSON.parse(jsonPayload);
     } catch (error) {
-      console.error('Error decoding JWT:', error);
+      console.error('JWT decode error:', error);
       return null;
     }
   }
 
-  private handleLoginSuccess(response: LoginResponse, stayLoggedIn: boolean, user?: User): void {
+  private handleLoginSuccess(
+    response: LoginResponse,
+    stayLoggedIn: boolean,
+    user?: User,
+    skipNavigation = false,
+  ): void {
     const jwtToken = response.jwt_token;
     const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
-      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 days
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 nap
 
     let userData = user;
     if (!userData && jwtToken) {
@@ -306,6 +298,12 @@ export class AuthService {
           firstname: decoded.firstname || '',
           lastname: decoded.lastname || '',
         };
+      }
+      if (!skipNavigation) {
+        this.router.navigate(['/home']);
+        setTimeout(() => {
+          this.toastService.success(`auth.success.welcome_back`);
+        }, 300);
       }
     }
 
@@ -401,8 +399,7 @@ export class AuthService {
   encodeBase64(value: string): string {
     try {
       return btoa(unescape(encodeURIComponent(value)));
-    } catch (error) {
-      console.error('Base64 encoding error:', error);
+    } catch {
       return btoa(value);
     }
   }

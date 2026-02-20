@@ -47,7 +47,6 @@
             </div>
           </div>
 
-          <!-- Account Details -->
           <div class="profile-section">
             <h2 class="section-title">
               <span class="section-icon">👤</span>
@@ -79,14 +78,19 @@
             </div>
           </div>
 
-          <!-- Edit Profile Panel -->
           @if (activePanel() === 'edit') {
             <div class="settings-panel">
               <div class="panel-header">
                 <h3 class="panel-title">
                   <span>✏️</span> {{ 'profile.edit_profile' | translate }}
                 </h3>
-                <button class="panel-close" (click)="closePanel()" [attr.aria-label]="'common.close' | translate">✕</button>
+                <button
+                  class="panel-close"
+                  (click)="closePanel()"
+                  [attr.aria-label]="'common.close' | translate"
+                >
+                  ✕
+                </button>
               </div>
 
               <div class="panel-body">
@@ -119,10 +123,18 @@
                 }
 
                 <div class="panel-actions">
-                  <button class="btn btn-secondary" (click)="closePanel()" [disabled]="isUpdatingProfile()">
+                  <button
+                    class="btn btn-secondary"
+                    (click)="closePanel()"
+                    [disabled]="isUpdatingProfile()"
+                  >
                     {{ 'common.cancel' | translate }}
                   </button>
-                  <button class="btn btn-primary" (click)="saveProfile()" [disabled]="isUpdatingProfile()">
+                  <button
+                    class="btn btn-primary"
+                    (click)="saveProfile()"
+                    [disabled]="isUpdatingProfile()"
+                  >
                     @if (isUpdatingProfile()) {
                       <span class="btn-spinner"></span>
                     }
@@ -133,14 +145,19 @@
             </div>
           }
 
-          <!-- Delete Account Panel -->
           @if (activePanel() === 'delete') {
             <div class="settings-panel settings-panel--danger">
               <div class="panel-header">
                 <h3 class="panel-title danger-title">
                   <span>🗑️</span> {{ 'profile.delete_account' | translate }}
                 </h3>
-                <button class="panel-close" (click)="closePanel()" [attr.aria-label]="'common.close' | translate">✕</button>
+                <button
+                  class="panel-close"
+                  (click)="closePanel()"
+                  [attr.aria-label]="'common.close' | translate"
+                >
+                  ✕
+                </button>
               </div>
 
               <div class="panel-body">
@@ -173,10 +190,18 @@
                   }
 
                   <div class="panel-actions">
-                    <button class="btn btn-secondary" (click)="closePanel()" [disabled]="isDeletingAccount()">
+                    <button
+                      class="btn btn-secondary"
+                      (click)="closePanel()"
+                      [disabled]="isDeletingAccount()"
+                    >
                       {{ 'common.cancel' | translate }}
                     </button>
-                    <button class="btn btn-danger" (click)="requestDeleteAccount()" [disabled]="isDeletingAccount()">
+                    <button
+                      class="btn btn-danger"
+                      (click)="requestDeleteAccount()"
+                      [disabled]="isDeletingAccount()"
+                    >
                       @if (isDeletingAccount()) {
                         <span class="btn-spinner"></span>
                       }
@@ -196,7 +221,6 @@
             </div>
           }
 
-          <!-- Action Buttons -->
           <div class="profile-actions">
             <a class="btn btn-primary" routerLink="/purchase">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -243,10 +267,11 @@
             </button>
           </div>
 
-          <!-- Danger Zone -->
           <div class="danger-zone">
             <h3 class="danger-zone-title">{{ 'profile.danger_zone' | translate }}</h3>
-            <p class="danger-zone-description">{{ 'profile.danger_zone_description' | translate }}</p>
+            <p class="danger-zone-description">
+              {{ 'profile.danger_zone_description' | translate }}
+            </p>
             <button class="btn btn-danger" (click)="openDeletePanel()">
               🗑️ {{ 'profile.delete_account' | translate }}
             </button>

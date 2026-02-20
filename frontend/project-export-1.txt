@@ -659,8 +659,7 @@ export const routes: Routes = [
   { path: 'admin', component: Admin, canActivate: [adminGuard] },
   {
     path: 'forum/:slug',
-    loadComponent: () =>
-      import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
+    loadComponent: () => import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
   },
   {
     path: 'login',
@@ -694,8 +693,7 @@ export const routes: Routes = [
   },
   {
     path: 'login-promise',
-    loadComponent: () =>
-      import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
+    loadComponent: () => import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
   },
   {
     path: 'delacc-promise',
@@ -1370,8 +1368,8 @@ export interface User {
 }
 
 export interface LoginRequest {
-  id: string; // Base64 encoded email (used as identifier by backend)
-  password: string; // Base64 encoded password
+  email: string;
+  password: string;
 }
 
 export interface LoginRequestResponse {
@@ -1380,8 +1378,8 @@ export interface LoginRequestResponse {
 }
 
 export interface LoginPromiseRequest {
-  id: string; // Base64 encoded user id (already B64 from email link — do NOT re-encode!)
-  confirmation_token: string; // Base64 encoded confirmation token (already B64 from email link)
+  id: string;
+  confirmation_token: string;
 }
 
 export interface LoginResponse {
@@ -1394,15 +1392,15 @@ export interface LoginResponse {
 }
 
 export interface RegistrationRequest {
-  email: string; // Base64 encoded email
-  password: string; // Base64 encoded password
-  firstname: string; // Base64 encoded first name
-  lastname: string; // Base64 encoded last name
+  email: string;
+  password: string;
+  firstname: string;
+  lastname: string;
 }
 
 export interface RegistrationPromiseRequest {
-  id: string; // Base64 encoded user ID (from URL — do NOT re-encode!)
-  token: string; // Base64 encoded confirmation token (from URL — do NOT re-encode!)
+  id: string;
+  token: string;
 }
 
 export interface RegistrationResponse {
@@ -1415,26 +1413,25 @@ export interface RegistrationResponse {
   user?: User;
 }
 
-// chpass_request: docs specify plain strings (no B64!)
+// chpass_request
 export interface PasswordChangeRequest {
-  email: string; // plain string — docs do NOT require B64 here
-  password: string; // plain string — docs do NOT require B64 here
+  email: string;
+  password: string;
 }
 
-// chpass_promise: id and token come pre-encoded from URL — do NOT re-encode
 export interface PasswordChangePromiseRequest {
-  id: string; // from URL, already in the format the backend expects
-  token: string; // from URL, already in the format the backend expects
+  id: string;
+  token: string;
 }
 
 export interface AccountDeletionRequest {
-  id: string; // Base64 encoded user ID
-  password: string; // Base64 encoded password
+  id: string;
+  password: string;
 }
 
 export interface AccountDeletionPromiseRequest {
-  id: string; // Base64 encoded — value comes from URL, do NOT re-encode
-  token: string; // Base64 encoded — value comes from URL, do NOT re-encode
+  id: string;
+  token: string;
 }
 
 export interface ApiErrorResponse {
@@ -1446,8 +1443,8 @@ export interface ApiErrorResponse {
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  token: string | null; // JWT token
-  sessionToken: string | null; // Session token (stored for admin API calls)
+  token: string | null;
+  sessionToken: string | null;
   expiresAt: Date | null;
 }
 
@@ -1890,8 +1887,8 @@ export interface UpdateProfileRequest {
 }
 
 export interface DeleteAccountRequest {
-  id: string; // Base64 encoded user ID
-  password: string; // Base64 encoded password
+  id: string;
+  password: string;
 }
 
 export interface ApiResponse<T = any> {
@@ -1916,8 +1913,6 @@ export interface CreateOrderRequest {
   note: string;
   items: OrderItem[];
 }
-
-// --- Admin API response types ---
 
 export interface AdminUser {
   id: string;
@@ -1954,8 +1949,8 @@ export interface AdminOrdersResponse {
 }
 
 export interface AdminAuthBody {
-  id: string; // B64(admin user id)
-  token: string; // B64(admin session token or jwt token)
+  id: string;
+  token: string;
 }
 
 @Injectable({
@@ -1970,68 +1965,42 @@ export class AccountService {
     return this.http.get<User>(`${this.API_URL}/api/profile`).pipe(catchError(this.handleError));
   }
 
-  /**
-   * Update user profile
-   * Requires JWT authentication
-   */
   updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
-    const encodedUpdates: any = {};
+    const encodedUpdates: Partial<UpdateProfileRequest> = {};
 
-    if (updates.firstname) {
-      encodedUpdates.firstname = this.encodeBase64(updates.firstname);
-    }
-    if (updates.lastname) {
-      encodedUpdates.lastname = this.encodeBase64(updates.lastname);
-    }
-    if (updates.email) {
-      encodedUpdates.email = this.encodeBase64(updates.email);
-    }
+    if (updates.firstname) encodedUpdates.firstname = this.encodeBase64(updates.firstname);
+    if (updates.lastname) encodedUpdates.lastname = this.encodeBase64(updates.lastname);
+    if (updates.email) encodedUpdates.email = this.encodeBase64(updates.email);
 
-    return this.http.put<ApiResponse<User>>(`${this.API_URL}/api/profile`, encodedUpdates).pipe(
-      tap(() => console.log('Profile updated successfully')),
-      catchError(this.handleError),
-    );
+    return this.http
+      .put<ApiResponse<User>>(`${this.API_URL}/api/profile`, encodedUpdates)
+      .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Request account deletion — JWT required
-   * Sends B64(userId) and B64(password) in body
-   */
   deleteAccountRequest(userId: string, password: string): Observable<ApiResponse> {
     const request: DeleteAccountRequest = {
       id: this.encodeBase64(userId),
       password: this.encodeBase64(password),
     };
 
-    return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_request`, request).pipe(
-      tap(() => console.log('Account deletion requested — confirmation email sent')),
-      catchError(this.handleError),
-    );
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/delacc_request`, request)
+      .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Confirm account deletion — JWT required
-   * IMPORTANT: id and token come already B64-encoded from the email URL.
-   * Note: The email link sends B64(email) as "id"
-   */
+  // encodedId and encodedToken comes from url, already b64
   confirmAccountDeletion(encodedId: string, encodedToken: string): Observable<ApiResponse> {
     const request = {
-      id: encodedId, // B64 from URL
-      token: encodedToken, // B64 from URL
+      id: encodedId,
+      token: encodedToken,
     };
 
     return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_promise`, request).pipe(
-      tap(() => {
-        console.log('Account deleted successfully');
-        this.authService.logout();
-      }),
+      tap(() => this.authService.logout()),
       catchError(this.handleError),
     );
   }
 
-  /**
-   * Change user password — JWT required
-   */
   changePassword(
     userId: string,
     currentPassword: string,
@@ -2043,20 +2012,15 @@ export class AccountService {
       newPassword: this.encodeBase64(newPassword),
     };
 
-    return this.http.post<ApiResponse>(`${this.API_URL}/api/change-password`, request).pipe(
-      tap(() => console.log('Password changed successfully')),
-      catchError(this.handleError),
-    );
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/change-password`, request)
+      .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Create a new order — JWT required
-   */
   createOrder(order: CreateOrderRequest): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.API_URL}/api/create_order`, order).pipe(
-      tap(() => console.log('Order created successfully')),
-      catchError(this.handleError),
-    );
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/create_order`, order)
+      .pipe(catchError(this.handleError));
   }
 
   getOrderHistory(): Observable<ApiResponse<any[]>> {
@@ -2071,12 +2035,6 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  // ─── Admin API methods ───────────────────────────────────────────────────────
-
-  /**
-   * Get all users — JWT required, admin only
-   * Sends admin user id and token (session token) in the request body
-   */
   getAllUsersAdmin(): Observable<AdminUsersResponse> {
     const body = this.buildAdminAuthBody();
     return this.http
@@ -2084,10 +2042,6 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Get all orders — JWT required, admin only
-   * Sends admin user id and token (session token) in the request body
-   */
   getAllOrdersAdmin(): Observable<AdminOrdersResponse> {
     const body = this.buildAdminAuthBody();
     return this.http
@@ -2095,10 +2049,6 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Builds the body required by admin-only endpoints:
-   * { id: B64(admin_user_id), token: B64(session_token || jwt_token) }
-   */
   private buildAdminAuthBody(): AdminAuthBody {
     const user = this.authService.currentUser();
     const sessionToken = this.authService.getSessionToken();
@@ -2116,8 +2066,7 @@ export class AccountService {
   private encodeBase64(value: string): string {
     try {
       return btoa(unescape(encodeURIComponent(value)));
-    } catch (error) {
-      console.error('Base64 encoding error:', error);
+    } catch {
       return btoa(value);
     }
   }
@@ -2149,7 +2098,6 @@ export class AccountService {
       }
     }
 
-    console.error('Account Service Error:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
 }
@@ -2283,14 +2231,10 @@ export class AuthService {
     return now.getTime() >= expirationTime.getTime() - fiveMinutes;
   }
 
-  /**
-   * Step 1 of login: send email + password to backend.
-   * Backend sends a confirmation email with a one-time token.
-   * NOTE: docs specify id: B64(int) but email is the user identifier at this stage.
-   */
-  loginRequest(email: string, password: string): Observable<LoginRequestResponse> {
+  // Stage 1: B64(email) + B64(password) + email
+  loginRequest(email: string, password: string) {
     const request: LoginRequest = {
-      id: this.encodeBase64(email),
+      email: this.encodeBase64(email),
       password: this.encodeBase64(password),
     };
 
@@ -2299,18 +2243,15 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  /**
-   * Step 2 of login: validate the token from the email link.
-   * IMPORTANT: id and confirmationToken come already B64-encoded from the email URL.
-   */
+  // Stage 2: id and confirmation_token comes from url, already b64
   loginPromise(
     id: string,
     confirmationToken: string,
     stayLoggedIn: boolean,
   ): Observable<LoginResponse> {
     const request: LoginPromiseRequest = {
-      id: id, // already B64 from URL
-      confirmation_token: confirmationToken, // already B64 from URL
+      id,
+      confirmation_token: confirmationToken,
     };
 
     return this.http.post<LoginResponse>(`${this.API_URL}/api/login_promise`, request).pipe(
@@ -2321,6 +2262,7 @@ export class AuthService {
     );
   }
 
+  // registration_request: b64
   register(email: string, password: string, firstname: string, lastname: string): Observable<void> {
     const request: RegistrationRequest = {
       email: this.encodeBase64(email),
@@ -2334,17 +2276,15 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  /**
-   * Step 2 of registration: id and token come already B64-encoded from the email URL.
-   */
+  // id and token comes from url, already b64
   completeRegistration(
     id: string,
     token: string,
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
     const request: RegistrationPromiseRequest = {
-      id: id, // already B64 from URL
-      token: token, // already B64 from URL
+      id,
+      token,
     };
 
     return this.http
@@ -2355,20 +2295,18 @@ export class AuthService {
             response as unknown as LoginResponse,
             stayLoggedIn,
             response.user,
+            true, // skipNavigation — a komponens navigál 2.5mp után
           );
         }),
         catchError(this.handleError.bind(this)),
       );
   }
 
-  /**
-   * Password change request.
-   * IMPORTANT: docs specify plain strings (no B64) for email and password here.
-   */
-  requestPasswordChange(email: string, newPassword: string): Observable<void> {
+  // chpass_request: plain string
+  requestPasswordChange(email: string, newPassword: string) {
     const request: PasswordChangeRequest = {
-      email: email, // plain string — docs do NOT require B64
-      password: newPassword, // plain string — docs do NOT require B64
+      email: this.encodeBase64(email),
+      password: this.encodeBase64(newPassword),
     };
 
     return this.http
@@ -2376,14 +2314,11 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  /**
-   * Complete password change: id and token come from the URL as-is.
-   * Returns new jwt_token and session_token — currently navigates to /login after success.
-   */
-  completePasswordChange(id: string, token: string): Observable<void> {
+  // id and token comes from url, already b64
+  completePasswordChange(id: string, token: string) {
     const request: PasswordChangePromiseRequest = {
-      id: id,
-      token: token,
+      id: this.encodeBase64(id),
+      token: this.encodeBase64(token),
     };
 
     return this.http
@@ -2444,17 +2379,22 @@ export class AuthService {
       );
       return JSON.parse(jsonPayload);
     } catch (error) {
-      console.error('Error decoding JWT:', error);
+      console.error('JWT decode error:', error);
       return null;
     }
   }
 
-  private handleLoginSuccess(response: LoginResponse, stayLoggedIn: boolean, user?: User): void {
+  private handleLoginSuccess(
+    response: LoginResponse,
+    stayLoggedIn: boolean,
+    user?: User,
+    skipNavigation = false,
+  ): void {
     const jwtToken = response.jwt_token;
     const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
-      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 days
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 nap
 
     let userData = user;
     if (!userData && jwtToken) {
@@ -2468,6 +2408,12 @@ export class AuthService {
           firstname: decoded.firstname || '',
           lastname: decoded.lastname || '',
         };
+      }
+      if (!skipNavigation) {
+        this.router.navigate(['/home']);
+        setTimeout(() => {
+          this.toastService.success(`auth.success.welcome_back`);
+        }, 300);
       }
     }
 
@@ -2563,8 +2509,7 @@ export class AuthService {
   encodeBase64(value: string): string {
     try {
       return btoa(unescape(encodeURIComponent(value)));
-    } catch (error) {
-      console.error('Base64 encoding error:', error);
+    } catch {
       return btoa(value);
     }
   }
@@ -4127,7 +4072,6 @@ FILE: src\app\pages\admin\admin.html
           </div>
         </div>
 
-        <!-- Recent orders preview -->
         <div class="admin-card">
           <div class="card-header">
             <h2 class="card-title">{{ 'admin.recent_orders' | translate }}</h2>
@@ -5095,7 +5039,6 @@ FILE: src\app\pages\email\email.html
               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             "
           >
-            <!-- Header with logo and brand -->
             <tr>
               <td
                 style="
@@ -5133,7 +5076,6 @@ FILE: src\app\pages\email\email.html
               </td>
             </tr>
 
-            <!-- Main content -->
             <tr>
               <td style="padding: 40px 30px; text-align: center">
                 <h2 style="margin: 0 0 20px; color: #067a45; font-size: 24px; font-weight: 700">
@@ -5149,7 +5091,6 @@ FILE: src\app\pages\email\email.html
                   Click the button below to securely sign in:
                 </p>
 
-                <!-- CTA Button - ngNonBindable használata -->
                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto">
                   <tr>
                     <td
@@ -5184,7 +5125,6 @@ FILE: src\app\pages\email\email.html
               </td>
             </tr>
 
-            <!-- Footer -->
             <tr>
               <td style="padding: 30px; text-align: center; border-top: 1px solid #eeeeee">
                 <p style="margin: 0 0 8px; color: #999999; font-size: 13px">
@@ -7150,7 +7090,11 @@ FILE: src\app\pages\forum-detail\forum-detail.html
           <div class="article-meta">
             <div class="meta-author">
               @if (post()!.author.avatar) {
-                <img [src]="post()!.author.avatar" [alt]="post()!.author.name" class="author-avatar" />
+                <img
+                  [src]="post()!.author.avatar"
+                  [alt]="post()!.author.name"
+                  class="author-avatar"
+                />
               } @else {
                 <div class="author-avatar-placeholder">
                   {{ post()!.author.name.charAt(0).toUpperCase() }}
@@ -7161,20 +7105,23 @@ FILE: src\app\pages\forum-detail\forum-detail.html
                 @if (post()!.author.verified) {
                   <span class="verified-badge">✓</span>
                 }
-                <span class="author-role">{{ 'forum.role.' + post()!.author.role | translate }}</span>
+                <span class="author-role">{{
+                  'forum.role.' + post()!.author.role | translate
+                }}</span>
               </div>
             </div>
 
             <div class="meta-details">
               <span class="meta-date">📅 {{ formatDate(post()!.createdAt) }}</span>
               @if (getReadingTime()) {
-                <span class="meta-reading">📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span>
+                <span class="meta-reading"
+                  >📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span
+                >
               }
             </div>
           </div>
         </header>
 
-        <!-- Tartalom -->
         <div class="article-body" [class.collapsed]="!contentExpanded()">
           <p class="article-excerpt">{{ post()!.excerpt }}</p>
           <div class="article-content">
@@ -7191,7 +7138,6 @@ FILE: src\app\pages\forum-detail\forum-detail.html
           </div>
         }
 
-        <!-- Statisztikák -->
         <div class="article-stats">
           <div class="stat">
             <span class="stat-icon">👁️</span>
@@ -7207,7 +7153,6 @@ FILE: src\app\pages\forum-detail\forum-detail.html
           </div>
         </div>
 
-        <!-- Tagek -->
         @if (post()!.tags.length > 0) {
           <div class="article-tags">
             @for (tag of post()!.tags; track tag) {
@@ -7218,7 +7163,6 @@ FILE: src\app\pages\forum-detail\forum-detail.html
       </div>
     </article>
 
-    <!-- Kommentek -->
     <section class="comments-section">
       <div class="comments-container">
         <h2 class="comments-title">
@@ -7253,7 +7197,6 @@ FILE: src\app\pages\forum-detail\forum-detail.html
           </div>
         }
 
-        <!-- Új komment -->
         @if (isAuthenticated()) {
           <div class="new-comment">
             <h3 class="new-comment-title">{{ 'forum.write_comment' | translate }}</h3>
@@ -7283,7 +7226,6 @@ FILE: src\app\pages\forum-detail\forum-detail.html
       </div>
     </section>
 
-    <!-- További bejegyzések slider -->
     @if (relatedPosts().length > 0) {
       <section class="related-section">
         <div class="related-container">
@@ -7331,11 +7273,8 @@ FILE: src\app\pages\forum-detail\forum-detail.html
       </section>
     }
 
-    <!-- Vissza a fórumra -->
     <div class="back-section">
-      <a routerLink="/forum" class="back-link">
-        ← {{ 'forum.back_to_forum' | translate }}
-      </a>
+      <a routerLink="/forum" class="back-link"> ← {{ 'forum.back_to_forum' | translate }} </a>
     </div>
   }
 
@@ -7539,7 +7478,6 @@ FILE: src\app\pages\home\home.css
 }
 
 .hero {
-  background-image: url('https://www.roysshack.hu/assets/images/herobg.webp');
   background-color: var(--color-primary);
   background-size: cover;
   background-position: center;
@@ -7761,7 +7699,7 @@ FILE: src\app\pages\home\home.html
 ================================================================================
 
 <div class="home">
-  <div class="hero">
+  <div class="hero" [style.background-image]="'url(' + IMAGES.heroBg + ')'">
     <h1 appScrollReveal [animationType]="'fade-scale'" [animationDuration]="800" [autoPlay]="true">
       {{ 'home.hero.title' | translate }}
     </h1>
@@ -7842,7 +7780,8 @@ FILE: src\app\pages\home\home.ts
 import { Component, inject, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
 import { Slide } from '../../shared/components/slide/slide';
 import { Featured } from '../../shared/components/featured/featured';
@@ -7868,14 +7807,35 @@ import { ProductService } from '../../services/product.service';
 export class Home implements OnInit {
   private router = inject(Router);
   private productService = inject(ProductService);
+  private route = inject(ActivatedRoute);
+  private authService = inject(AuthService);
 
   IMAGES = IMAGES;
   ICONS = ICONS;
 
   featuredProducts = computed(() => this.productService.featuredProducts());
 
-  async ngOnInit(): Promise<void> {
-    await this.productService.loadFeaturedProducts();
+  ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      if (params['activate']) {
+        const parts = params['activate'].split(';');
+        if (parts.length === 2) {
+          const id = parts[0].trim();
+          const token = parts[1].trim();
+          this.authService.completeRegistration(id, token, true).subscribe({
+            next: () => {
+              // successful activation
+              this.router.navigate(['/home'], { replaceUrl: true });
+            },
+            error: () => {
+              this.router.navigate(['/home'], { replaceUrl: true });
+            },
+          });
+        }
+      }
+    });
+
+    this.productService.loadFeaturedProducts();
   }
 
   onProductClick(productId: string): void {
@@ -9088,108 +9048,102 @@ FILE: src\app\pages\login\login.html
     }
 
     @if (!isEmailSent()) {
-    <div class="auth-header">
-      <h1>{{ 'auth.login.title' | translate }}</h1>
-      <p class="auth-subtitle">{{ 'auth.login.subtitle' | translate }}</p>
-    </div>
-
-    <form class="auth-form" (ngSubmit)="onSubmit()">
-      <!-- Email Input -->
-      <div class="form-group">
-        <label for="email" class="form-label">
-          {{ 'auth.fields.email' | translate }}
-        </label>
-        <input
-          type="email"
-          id="email"
-          class="form-input"
-          [placeholder]="'auth.placeholders.email' | translate"
-          [(ngModel)]="email"
-          name="email"
-          [disabled]="isLoading()"
-          required
-          autocomplete="email"
-        />
+      <div class="auth-header">
+        <h1>{{ 'auth.login.title' | translate }}</h1>
+        <p class="auth-subtitle">{{ 'auth.login.subtitle' | translate }}</p>
       </div>
 
-      <!-- Password Input -->
-      <div class="form-group">
-        <label for="password" class="form-label">
-          {{ 'auth.fields.password' | translate }}
-        </label>
-        <div class="password-input-wrapper">
+      <form class="auth-form" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="email" class="form-label">
+            {{ 'auth.fields.email' | translate }}
+          </label>
           <input
-            [type]="showPassword() ? 'text' : 'password'"
-            id="password"
+            type="email"
+            id="email"
             class="form-input"
-            [placeholder]="'auth.placeholders.password' | translate"
-            [(ngModel)]="password"
-            name="password"
+            [placeholder]="'auth.placeholders.email' | translate"
+            [(ngModel)]="email"
+            name="email"
             [disabled]="isLoading()"
             required
-            autocomplete="current-password"
+            autocomplete="email"
           />
-          <button
-            type="button"
-            class="password-toggle"
-            (click)="togglePasswordVisibility()"
-            [attr.aria-label]="'auth.show_password' | translate"
-          >
-            {{ showPassword() ? '👁️' : '👁️‍🗨️' }}
-          </button>
         </div>
-      </div>
 
-      <!-- Stay Logged In Checkbox -->
-      <div class="form-group checkbox-group">
-        <label class="checkbox-label">
-          <input
-            type="checkbox"
-            [(ngModel)]="stayLoggedIn"
-            name="stayLoggedIn"
-            [disabled]="isLoading()"
-          />
-          <span>{{ 'auth.login.stay_logged_in' | translate }}</span>
-        </label>
-      </div>
-
-      <!-- Error Message -->
-      @if (errorMessage()) {
-        <div class="error-message">
-          {{ errorMessage() | translate }}
+        <div class="form-group">
+          <label for="password" class="form-label">
+            {{ 'auth.fields.password' | translate }}
+          </label>
+          <div class="password-input-wrapper">
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              id="password"
+              class="form-input"
+              [placeholder]="'auth.placeholders.password' | translate"
+              [(ngModel)]="password"
+              name="password"
+              [disabled]="isLoading()"
+              required
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="'auth.show_password' | translate"
+            >
+              {{ showPassword() ? '👁️' : '👁️‍🗨️' }}
+            </button>
+          </div>
         </div>
-      }
 
-      <!-- Submit Button -->
-      <button type="submit" class="submit-btn" [disabled]="isLoading()">
-        @if (isLoading()) {
-          <span class="spinner"></span>
-          {{ 'auth.login.logging_in' | translate }}
-        } @else {
-          {{ 'auth.login.button' | translate }}
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="stayLoggedIn"
+              name="stayLoggedIn"
+              [disabled]="isLoading()"
+            />
+            <span>{{ 'auth.login.stay_logged_in' | translate }}</span>
+          </label>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="error-message">
+            {{ errorMessage() | translate }}
+          </div>
         }
-      </button>
 
-      <!-- Additional Links -->
-      <div class="auth-links">
-        <a routerLink="/password-reset-request" class="link">
-          {{ 'auth.login.forgot_password' | translate }}
-        </a>
-      </div>
+        <button type="submit" class="submit-btn" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <span class="spinner"></span>
+            {{ 'auth.login.logging_in' | translate }}
+          } @else {
+            {{ 'auth.login.button' | translate }}
+          }
+        </button>
 
-      <div class="auth-divider">
-        <span>{{ 'auth.or' | translate }}</span>
-      </div>
-
-      <div class="auth-footer">
-        <p>
-          {{ 'auth.login.no_account' | translate }}
-          <a routerLink="/register" class="link-primary">
-            {{ 'auth.login.sign_up' | translate }}
+        <div class="auth-links">
+          <a routerLink="/password-reset-request" class="link">
+            {{ 'auth.login.forgot_password' | translate }}
           </a>
-        </p>
-      </div>
-    </form>
+        </div>
+
+        <div class="auth-divider">
+          <span>{{ 'auth.or' | translate }}</span>
+        </div>
+
+        <div class="auth-footer">
+          <p>
+            {{ 'auth.login.no_account' | translate }}
+            <a routerLink="/register" class="link-primary">
+              {{ 'auth.login.sign_up' | translate }}
+            </a>
+          </p>
+        </div>
+      </form>
     }
   </div>
 </div>
@@ -10496,7 +10450,7 @@ FILE: src\app\pages\product-detail\product-detail.css
   width: fit-content;
   padding: 5px 14px;
   background: var(--color-primary-light);
-  color: var(--color-primary);
+  color: var(--color-text-on-primary);
   border: 1px solid rgba(6, 122, 69, 0.2);
   border-radius: var(--radius-full);
   font-size: 0.7rem;
@@ -12094,7 +12048,6 @@ FILE: src\app\pages\profile\profile.html
             </div>
           </div>
 
-          <!-- Account Details -->
           <div class="profile-section">
             <h2 class="section-title">
               <span class="section-icon">👤</span>
@@ -12126,14 +12079,19 @@ FILE: src\app\pages\profile\profile.html
             </div>
           </div>
 
-          <!-- Edit Profile Panel -->
           @if (activePanel() === 'edit') {
             <div class="settings-panel">
               <div class="panel-header">
                 <h3 class="panel-title">
                   <span>✏️</span> {{ 'profile.edit_profile' | translate }}
                 </h3>
-                <button class="panel-close" (click)="closePanel()" [attr.aria-label]="'common.close' | translate">✕</button>
+                <button
+                  class="panel-close"
+                  (click)="closePanel()"
+                  [attr.aria-label]="'common.close' | translate"
+                >
+                  ✕
+                </button>
               </div>
 
               <div class="panel-body">
@@ -12166,10 +12124,18 @@ FILE: src\app\pages\profile\profile.html
                 }
 
                 <div class="panel-actions">
-                  <button class="btn btn-secondary" (click)="closePanel()" [disabled]="isUpdatingProfile()">
+                  <button
+                    class="btn btn-secondary"
+                    (click)="closePanel()"
+                    [disabled]="isUpdatingProfile()"
+                  >
                     {{ 'common.cancel' | translate }}
                   </button>
-                  <button class="btn btn-primary" (click)="saveProfile()" [disabled]="isUpdatingProfile()">
+                  <button
+                    class="btn btn-primary"
+                    (click)="saveProfile()"
+                    [disabled]="isUpdatingProfile()"
+                  >
                     @if (isUpdatingProfile()) {
                       <span class="btn-spinner"></span>
                     }
@@ -12180,14 +12146,19 @@ FILE: src\app\pages\profile\profile.html
             </div>
           }
 
-          <!-- Delete Account Panel -->
           @if (activePanel() === 'delete') {
             <div class="settings-panel settings-panel--danger">
               <div class="panel-header">
                 <h3 class="panel-title danger-title">
                   <span>🗑️</span> {{ 'profile.delete_account' | translate }}
                 </h3>
-                <button class="panel-close" (click)="closePanel()" [attr.aria-label]="'common.close' | translate">✕</button>
+                <button
+                  class="panel-close"
+                  (click)="closePanel()"
+                  [attr.aria-label]="'common.close' | translate"
+                >
+                  ✕
+                </button>
               </div>
 
               <div class="panel-body">
@@ -12220,10 +12191,18 @@ FILE: src\app\pages\profile\profile.html
                   }
 
                   <div class="panel-actions">
-                    <button class="btn btn-secondary" (click)="closePanel()" [disabled]="isDeletingAccount()">
+                    <button
+                      class="btn btn-secondary"
+                      (click)="closePanel()"
+                      [disabled]="isDeletingAccount()"
+                    >
                       {{ 'common.cancel' | translate }}
                     </button>
-                    <button class="btn btn-danger" (click)="requestDeleteAccount()" [disabled]="isDeletingAccount()">
+                    <button
+                      class="btn btn-danger"
+                      (click)="requestDeleteAccount()"
+                      [disabled]="isDeletingAccount()"
+                    >
                       @if (isDeletingAccount()) {
                         <span class="btn-spinner"></span>
                       }
@@ -12243,7 +12222,6 @@ FILE: src\app\pages\profile\profile.html
             </div>
           }
 
-          <!-- Action Buttons -->
           <div class="profile-actions">
             <a class="btn btn-primary" routerLink="/purchase">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -12290,10 +12268,11 @@ FILE: src\app\pages\profile\profile.html
             </button>
           </div>
 
-          <!-- Danger Zone -->
           <div class="danger-zone">
             <h3 class="danger-zone-title">{{ 'profile.danger_zone' | translate }}</h3>
-            <p class="danger-zone-description">{{ 'profile.danger_zone_description' | translate }}</p>
+            <p class="danger-zone-description">
+              {{ 'profile.danger_zone_description' | translate }}
+            </p>
             <button class="btn btn-danger" (click)="openDeletePanel()">
               🗑️ {{ 'profile.delete_account' | translate }}
             </button>
@@ -13775,6 +13754,208 @@ FILE: src\app\pages\registration-promise\registration-promise.css
   align-items: center;
 }
 
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--color-background);
+}
+
+.auth-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.verification-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-elevated);
+  margin-bottom: 8px;
+}
+
+.icon-wrapper.success {
+  background: rgba(6, 122, 69, 0.12);
+}
+
+.icon-wrapper.error {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.check-icon {
+  width: 44px;
+  height: 44px;
+  stroke: var(--color-primary);
+}
+
+.error-icon {
+  width: 44px;
+  height: 44px;
+  stroke: var(--color-error);
+}
+
+.mail-icon {
+  width: 44px;
+  height: 44px;
+  stroke: var(--color-primary);
+}
+
+.spinner-large {
+  width: 44px;
+  height: 44px;
+  border: 4px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.verification-text {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.redirect-info {
+  padding: 12px 20px;
+  background: rgba(6, 122, 69, 0.08);
+  border-radius: 8px;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.verification-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.step-number {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step p {
+  color: var(--color-text-secondary);
+  margin: 0;
+  padding-top: 4px;
+  font-size: 0.95rem;
+}
+
+.verification-help {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.back-link {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--color-primary);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.error-message {
+  color: var(--color-error);
+  margin: 0;
+}
+
+.error-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.link {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 32px 20px;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .link-btn:hover {
     color: var(--color-primary-hover);
@@ -14058,6 +14239,9 @@ export class RegistrationPromise implements OnInit {
       next: () => {
         this.isVerifying.set(false);
         this.isVerified.set(true);
+        setTimeout(() => {
+          this.router.navigate(['/home']);
+        }, 2500);
       },
       error: (error) => {
         this.isVerifying.set(false);
@@ -15627,6 +15811,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyPipe } from '../../pipes/currency.pipe';
+import { IMAGES } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-featured-product-card',
@@ -15649,7 +15834,7 @@ export class FeaturedProductCard {
   });
 
   imageUrl = computed(() => {
-    return this.product?.imageUrl || '';
+    return this.product?.imageUrl || IMAGES.productDefault;
   });
 
   altText = computed(() => {
@@ -16918,7 +17103,7 @@ FILE: src\app\shared\components\header\header.html
     } @else {
       <app-icon-btn
         routerLink="/login"
-        [iconImg]="ICONS.user"
+        [iconImg]="ICONS.login"
         [attr.aria-label]="'header.login' | translate"
       >
       </app-icon-btn>
@@ -16936,7 +17121,6 @@ FILE: src\app\shared\components\header\header.html
         }
       </button>
 
-      <!-- CART DROPDOWN -->
       @if (showCartDropdown()) {
         <div class="cart-dropdown">
           <div class="cart-dropdown-header">
@@ -17025,7 +17209,6 @@ FILE: src\app\shared\components\header\header.html
 
     <app-language-switcher></app-language-switcher>
 
-    <!-- HAMBURGER MENU BUTTON (mobile only) -->
     <div class="mobile-menu-wrapper">
       <button
         class="hamburger-btn"
@@ -21665,17 +21848,6 @@ FILE: src\app\shared\components\slide\slide.html
       class="slide-img"
       loading="lazy"
     />
-
-    <!-- if it contains some words alt version -->
-    <!--
-    <div class="slide-content">
-      <h1>{{ slides[currentIndex].title | translate }}</h1>
-      <p>{{ slides[currentIndex].subtitle | translate }}</p>
-      <a [href]="slides[currentIndex].link" class="cta-button">
-        {{ slides[currentIndex].cta | translate }}
-      </a>
-    </div>
-    -->
   </div>
 
   <div class="dots" role="tablist" [attr.aria-label]="'slider.navigation' | translate">
@@ -24064,8 +24236,8 @@ FILE: src\environments\environment.prod.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://127.0.0.1:90',
-  assetsURL: 'http://127.0.0.1:90',
+  baseURL: 'http://192.168.11.213:90',
+  assetsURL: 'http://192.168.11.213:90',
 };
 
 
@@ -24076,8 +24248,8 @@ FILE: src\environments\environment.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://127.0.0.1:90',
-  assetsURL: 'http://127.0.0.1:90',
+  baseURL: 'http://192.168.11.213:90',
+  assetsURL: 'http://192.168.11.213:90',
 };
 
 
@@ -24091,7 +24263,7 @@ FILE: src\index.html
   <head>
     <meta charset="utf-8" />
     <title>Roy's Shack</title>
-    <base href="/" />
+    <base href="./" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="roy_icon_green.ico" />
   </head>
