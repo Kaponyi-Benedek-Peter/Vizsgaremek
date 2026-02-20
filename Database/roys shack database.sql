@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 19, 2026 at 10:08 AM
+-- Generation Time: Feb 20, 2026 at 10:02 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -290,6 +290,10 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_product_category_by_id` (IN `p_id` INT)   BEGIN
     DELETE FROM roy.product_categories WHERE id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_product_image_by_id` (IN `p_id` INT)   BEGIN
+    DELETE FROM roy.product_images WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_review_by_id` (IN `p_id` INT(11))   BEGIN
@@ -586,9 +590,19 @@ SELECT * from roy.products
 where products.id = p_id;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_product_category_by_id` (IN `p_id` INT)   BEGIN
+SELECT * from roy.product_categories
+where id = p_id;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_product_image_by_id` (IN `p_id` INT)   BEGIN
 SELECT * from roy.product_images
 where id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_review_by_id` (IN `p_id` INT)   BEGIN
+SELECT * from roy.reviews
+where reviews.id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_by_email` (IN `p_email` VARCHAR(255))   BEGIN
@@ -886,7 +900,7 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_percentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category_id`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging`, `created_at`, `updated_at`, `name`, `thumbnail_url`, `featured`) VALUES
-(35, 'name', 'desc', 2000, 1, 1, '0', 'desc', 'name', 'name', 'desc', 'desc', 'desc', 'desc', 1, 'man', 'brand', 0.00, 'a', 'active_ingredients', 'packaging', '2026-02-18 13:14:55', '2026-02-18 12:14:55', 'name', 'thumbnail_url', 1);
+(35, 'name', 'desc', 2000, 1, 1, '0', 'desc', 'name', 'name', 'desc', 'desc', 'desc', 'desc', 1, 'man', 'brand', 5.00, 'a', 'active_ingredients', 'packaging', '2026-02-18 13:14:55', '2026-02-20 09:47:49', 'name', 'thumbnail_url', 1);
 
 -- --------------------------------------------------------
 
@@ -940,6 +954,13 @@ CREATE TABLE `reviews` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `reviews`
+--
+
+INSERT INTO `reviews` (`product_id`, `id`, `title`, `body`, `rating`, `created_at`, `user_id`) VALUES
+(35, 11, 'title', 'body', '5.00', '2026-02-20 10:47:49', 38);
 
 -- --------------------------------------------------------
 
@@ -1132,7 +1153,7 @@ ALTER TABLE `product_images`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `users`
