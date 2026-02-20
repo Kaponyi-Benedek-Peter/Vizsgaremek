@@ -26,6 +26,18 @@ namespace Servo.model
         }
 
 
+        public class category
+        {
+
+
+            public string category_name { get; set; } = "";
+            public string color { get; set; } = "";
+            public string emoji { get; set; } = "";
+            public int number_of_products { get; set; } = 0;
+
+        }
+
+
         public class newsletter_recipient
         {
 
@@ -84,7 +96,7 @@ namespace Servo.model
             public string description_preview_de { get; set; } = "";
             public string description_preview_hu { get; set; } = "";
 
-            public string category { get; set; } = "";
+            public string category_id { get; set; } = "";
             public string name_hu { get; set; } = "";
             public string name_de { get; set; } = "";
             public string name_en { get; set; } = "";
@@ -620,7 +632,7 @@ namespace Servo.model
                     cmd.Parameters.AddWithValue("@p_description_preview_de", prod.description_preview_en);
 
 
-                    cmd.Parameters.AddWithValue("@p_category", prod.category);
+                    cmd.Parameters.AddWithValue("@p_category_id", prod.category_id);
 
                     cmd.Parameters.AddWithValue("@p_name", prod.name);
                     cmd.Parameters.AddWithValue("@p_name_hu", prod.name_hu);
@@ -1059,7 +1071,30 @@ namespace Servo.model
 
 
 
+        public static int add_category(category cat)
+        {
 
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("create_product_category", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_category", cat.category_name);
+                    cmd.Parameters.AddWithValue("@p_emoji", cat.emoji);
+                    cmd.Parameters.AddWithValue("@p_number_of_products", cat.number_of_products);
+                    cmd.Parameters.AddWithValue("@p_color", cat.color);
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_category");
+                return 500;
+            }
+        }
 
 
 

@@ -48,7 +48,7 @@ namespace Servo.service
 
             if (resp["statuscode"].ToString() == "500")
             {
-                shared.log($"Debug 1: {resp["status"]} --service.chpass_promise.process_chpass_promise");
+                shared.log($"Debug 1: {resp["status"]} --service.get_all_products.process_get_all_products");
                 return "error";
             }
             else

@@ -136,5 +136,11 @@ namespace Servo
             service.shared.send_mail(otptestbox.Text, "Your OTP code", service.registration_request.registerhtml_top + $"{otp}" + service.registration_request.registerhtml_bottom, "otp");
             textBox2.Text=otp;
         }
+
+        private void button16_Click(object sender, EventArgs e)
+        {
+            service.nonapi_test.addtestcategories(category_tbox.Text,emoji_tbox.Text,color_tbox.Text,Int32.Parse(number_of_products_tbox.Text));
+
+        }
     }
 }

@@ -20,14 +20,20 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories"
         };
 
 
         private static HttpListenerContext endconnection(HttpListenerContext data)
         {
+            try { 
             data.Response.OutputStream.Close();
             data.Response.Close();
+            }
+            catch (Exception ex)
+            {
+                service.shared.log("ERROR 1: can not close connection: " + ex.Message);
+            }
             service.shared.log("[connection end]\n");
             return data;
         }
@@ -204,6 +210,15 @@ namespace Servo.controller
 
 
                 }
+                else if (lenyeg.Contains("get_all_product_categories"))
+                {
+
+                    controller.get_all_product_categories.main(data, lenyeg);
+
+
+
+
+                }
 
                 else if (lenyeg.Contains("get_all_users"))
                 {
@@ -232,11 +247,21 @@ namespace Servo.controller
 
 
                 }
+                else if (lenyeg.Contains("get_all_featured_products"))
+                {
+
+                    controller.get_all_featured_products.main(data, lenyeg);
+
+
+
+
+                }
 
 
 
             }
             // =========== NEMAPI =========== 
+
             else 
             {
                 if (kert.StartsWith("static/", StringComparison.OrdinalIgnoreCase))
@@ -245,18 +270,35 @@ namespace Servo.controller
                 }
 
                 
+                
+                
+
+              
+
                 string hely = Path.Combine(alap, kert.Replace("/", Path.DirectorySeparatorChar.ToString()));
 
-                service.shared.log("> Served path: " + hely);
+            //    service.shared.log("> Served path: " + hely);
 
-                
+
                 bool isPhysicalFile = File.Exists(hely) && !Directory.Exists(hely);
 
                 if (!isPhysicalFile)
                 {
-                    
-                    hely = Path.Combine(alap, "index.html");
-                    service.shared.log(">> SPA!");
+                   
+                    string extension = Path.GetExtension(hely);
+
+                    if (string.IsNullOrEmpty(extension))
+                    {
+                        hely = Path.Combine(alap, "index.html");
+                        service.shared.log(">> SPA Navigation Route!");
+                    }
+                    else
+                    {
+                        data.Response.StatusCode = 404;
+                        byte[] buffer = Encoding.UTF8.GetBytes("Asset not found");
+                        data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+        //                service.shared.log("ERROR 2: asset not found (" + hely + ") --controller.router.main");
+                    }
                 }
 
                 try
@@ -268,7 +310,7 @@ namespace Servo.controller
                         data.Response.OutputStream.Write(fileBytes, 0, fileBytes.Length);
 
                         //Form1.Instance.updatefilesserved();
-                        service.shared.log($"{data.Request.RemoteEndPoint.Address} --> {kert} || OK");
+         //               service.shared.log($"{data.Request.RemoteEndPoint.Address} --> {kert} || OK");
                     }
                     else
                     {
@@ -276,7 +318,7 @@ namespace Servo.controller
                         data.Response.StatusCode = 404;
                         byte[] buffer = Encoding.UTF8.GetBytes("Internal error");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                        service.shared.log("ERROR 1: index.html not found (" + hely+") --controller.router.main");
+           //             service.shared.log("ERROR 3: index.html not found (" + hely+") --controller.router.main");
                     }
                 }
                 catch (Exception ex)
@@ -286,7 +328,7 @@ namespace Servo.controller
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
                    // Form1.Instance.updateerrorcount();
-                    service.shared.log($"ERROR 2: {ex.Message} --controller.router.main");
+          //         service.shared.log($"ERROR 4: {ex.Message} --controller.router.main");
                 }
 
 

@@ -78,7 +78,7 @@ namespace Servo.service
         protected static void sendregistration(string email,string id,string session_token)
         {
             
-            service.shared.send_mail(email, "Confirm your registration", registerhtml_top + $"{service.shared.current_url}?activate={service.shared.b64enc(id)};{service.shared.b64enc(session_token)}" + registerhtml_bottom, "registration");
+            service.shared.send_mail(email, "Confirm your registration", registerhtml_top + $"{service.shared.current_url}registration-promise?activate={service.shared.b64enc(id)};{service.shared.b64enc(session_token)}" + registerhtml_bottom, "registration");
 
 
         }

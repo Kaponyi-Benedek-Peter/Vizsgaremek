@@ -75,7 +75,7 @@ namespace Servo.controller
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error 1: {ex.Message} --controller.login.main");
+                service.shared.log($"Error 1: {ex.Message} --controller.get_all_products");
 
 
                 var respon = new

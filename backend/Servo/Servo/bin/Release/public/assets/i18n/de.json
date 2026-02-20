@@ -63,7 +63,9 @@
     "emailPlaceholder": "Ihre E-Mail-Adresse",
     "send": "Senden",
     "legal": "Rechtliches",
-    "no_social_link": "Wir sind auf dieser Plattform noch nicht verfügbar"
+    "no_social_link": "Wir sind auf dieser Plattform noch nicht verfügbar",
+    "newsletter_success": "Erfolgreich abonniert!",
+    "newsletter_error": "Fehler beim Abonnieren. Bitte erneut versuchen."
   },
   "home": {
     "hero": {
@@ -112,7 +114,9 @@
     "scroll_right": "Nach rechts scrollen",
     "go_home": "Zur Startseite",
     "previous": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "retry": "Erneut versuchen",
+    "refresh": "Aktualisieren"
   },
   "time": {
     "minutes_ago": "vor {{count}} Minuten",
@@ -310,7 +314,19 @@
     "supplements": "Nahrungsergänzungsmittel",
     "cosmetics": "Kosmetika",
     "baby-care": "Babypflege",
-    "medical-devices": "Medizinische Geräte"
+    "medical-devices": "Medizinische Geräte",
+    "gyogyszerek": "Medikamente",
+    "vitaminok": "Vitamine",
+    "taplelkiegeszitok": "Nahrungsergänzung",
+    "kozmetikumok": "Kosmetika",
+    "babaapolas": "Babypflege",
+    "orvosi-eszkozok": "Medizingeräte",
+    "1": "Medikamente",
+    "2": "Vitamine",
+    "3": "Nahrungsergänzung",
+    "4": "Kosmetika",
+    "5": "Babypflege",
+    "6": "Medizingeräte"
   },
   "products": {
     "title": "Produkte",
@@ -501,7 +517,7 @@
       "right_rectification": "Berichtigungsrecht",
       "right_rectification_desc": "Korrektur unrichtiger Daten",
       "right_erasure": "Löschungsrecht",
-      "right_erasure_desc": "„Recht auf Vergessenwerden"",
+      "right_erasure_desc": "\"Recht auf Vergessenwerden",
       "right_portability": "Datenübertragbarkeit",
       "right_portability_desc": "Daten in maschinenlesbarem Format anfordern",
       "right_objection": "Widerspruchsrecht",
@@ -565,7 +581,12 @@
       "product": "Produkt",
       "category": "Kategorie",
       "price": "Preis",
-      "stock": "Bestand"
+      "stock": "Bestand",
+      "user_id": "Benutzer-ID",
+      "address": "Adresse",
+      "phone": "Telefon",
+      "note": "Anmerkung",
+      "rating": "Bewertung"
     },
     "status": {
       "pending": "Ausstehend",
@@ -585,6 +606,15 @@
       "title": "⚠️ ENTWICKLERMODUS",
       "description": "Test-Admin-Sitzung — Backend nicht erreichbar. Diese Funktion funktioniert nicht in der Produktion.",
       "exit": "Beenden"
+    },
+    "loading": "Daten werden geladen...",
+    "no_orders": "Keine Bestellungen gefunden.",
+    "no_users": "Keine Benutzer gefunden.",
+    "no_products": "Keine Produkte gefunden.",
+    "errors": {
+      "users_load_failed": "Benutzerdaten konnten nicht geladen werden.",
+      "orders_load_failed": "Bestelldaten konnten nicht geladen werden.",
+      "products_load_failed": "Produktdaten konnten nicht geladen werden."
     }
   }
 }

@@ -51,6 +51,12 @@
             this.product_image_tbox = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.button15 = new System.Windows.Forms.Button();
+            this.emoji_tbox = new System.Windows.Forms.TextBox();
+            this.button16 = new System.Windows.Forms.Button();
+            this.button17 = new System.Windows.Forms.Button();
+            this.category_tbox = new System.Windows.Forms.TextBox();
+            this.color_tbox = new System.Windows.Forms.TextBox();
+            this.number_of_products_tbox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // otptestbox
@@ -159,7 +165,7 @@
             this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button6.ForeColor = System.Drawing.Color.White;
-            this.button6.Location = new System.Drawing.Point(13, 577);
+            this.button6.Location = new System.Drawing.Point(13, 695);
             this.button6.Margin = new System.Windows.Forms.Padding(4);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(702, 52);
@@ -372,12 +378,93 @@
             this.button15.UseVisualStyleBackColor = false;
             this.button15.Click += new System.EventHandler(this.button15_Click);
             // 
+            // emoji_tbox
+            // 
+            this.emoji_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.emoji_tbox.ForeColor = System.Drawing.Color.White;
+            this.emoji_tbox.Location = new System.Drawing.Point(249, 613);
+            this.emoji_tbox.Margin = new System.Windows.Forms.Padding(4);
+            this.emoji_tbox.Name = "emoji_tbox";
+            this.emoji_tbox.Size = new System.Drawing.Size(150, 37);
+            this.emoji_tbox.TabIndex = 56;
+            this.emoji_tbox.Text = "emoji";
+            // 
+            // button16
+            // 
+            this.button16.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.button16.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.button16.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button16.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.button16.ForeColor = System.Drawing.Color.White;
+            this.button16.Location = new System.Drawing.Point(13, 553);
+            this.button16.Margin = new System.Windows.Forms.Padding(4);
+            this.button16.Name = "button16";
+            this.button16.Size = new System.Drawing.Size(545, 52);
+            this.button16.TabIndex = 55;
+            this.button16.Text = "Add test prod. category";
+            this.button16.UseVisualStyleBackColor = false;
+            this.button16.Click += new System.EventHandler(this.button16_Click);
+            // 
+            // button17
+            // 
+            this.button17.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.button17.FlatAppearance.BorderColor = System.Drawing.Color.White;
+            this.button17.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button17.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.button17.ForeColor = System.Drawing.Color.White;
+            this.button17.Location = new System.Drawing.Point(567, 553);
+            this.button17.Margin = new System.Windows.Forms.Padding(4);
+            this.button17.Name = "button17";
+            this.button17.Size = new System.Drawing.Size(148, 52);
+            this.button17.TabIndex = 54;
+            this.button17.Text = "Delete all reviews";
+            this.button17.UseVisualStyleBackColor = false;
+            // 
+            // category_tbox
+            // 
+            this.category_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.category_tbox.ForeColor = System.Drawing.Color.White;
+            this.category_tbox.Location = new System.Drawing.Point(13, 613);
+            this.category_tbox.Margin = new System.Windows.Forms.Padding(4);
+            this.category_tbox.Name = "category_tbox";
+            this.category_tbox.Size = new System.Drawing.Size(228, 37);
+            this.category_tbox.TabIndex = 57;
+            this.category_tbox.Text = "category";
+            // 
+            // color_tbox
+            // 
+            this.color_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.color_tbox.ForeColor = System.Drawing.Color.White;
+            this.color_tbox.Location = new System.Drawing.Point(407, 613);
+            this.color_tbox.Margin = new System.Windows.Forms.Padding(4);
+            this.color_tbox.Name = "color_tbox";
+            this.color_tbox.Size = new System.Drawing.Size(150, 37);
+            this.color_tbox.TabIndex = 58;
+            this.color_tbox.Text = "color";
+            // 
+            // number_of_products_tbox
+            // 
+            this.number_of_products_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.number_of_products_tbox.ForeColor = System.Drawing.Color.White;
+            this.number_of_products_tbox.Location = new System.Drawing.Point(565, 613);
+            this.number_of_products_tbox.Margin = new System.Windows.Forms.Padding(4);
+            this.number_of_products_tbox.Name = "number_of_products_tbox";
+            this.number_of_products_tbox.Size = new System.Drawing.Size(150, 37);
+            this.number_of_products_tbox.TabIndex = 59;
+            this.number_of_products_tbox.Text = "number_of_products";
+            // 
             // testpanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(15F, 30F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(53)))), ((int)(((byte)(56)))));
-            this.ClientSize = new System.Drawing.Size(728, 642);
+            this.ClientSize = new System.Drawing.Size(728, 760);
+            this.Controls.Add(this.number_of_products_tbox);
+            this.Controls.Add(this.color_tbox);
+            this.Controls.Add(this.category_tbox);
+            this.Controls.Add(this.emoji_tbox);
+            this.Controls.Add(this.button16);
+            this.Controls.Add(this.button17);
             this.Controls.Add(this.product_image_tbox);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button15);
@@ -441,5 +528,11 @@
         public System.Windows.Forms.TextBox product_image_tbox;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button15;
+        public System.Windows.Forms.TextBox emoji_tbox;
+        private System.Windows.Forms.Button button16;
+        private System.Windows.Forms.Button button17;
+        public System.Windows.Forms.TextBox category_tbox;
+        public System.Windows.Forms.TextBox color_tbox;
+        public System.Windows.Forms.TextBox number_of_products_tbox;
     }
 }

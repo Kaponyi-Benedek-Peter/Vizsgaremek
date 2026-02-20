@@ -44,9 +44,9 @@ namespace Servo.model
                             string[] fields = { "id","name_hu","name_en", "name_de", "description_hu", "description_en", "description_de","description_preview_hu","description_preview_en",  "description_preview_de", "price_huf", "times_ordered",
                                       "stock", "sale_percentage", 
                                        
-                                      "category", "manufacturer", "brand",
+                                      "category_id", "manufacturer", "brand",
                                       "rating", "sku", "active_ingredients", "packaging", "created_at",
-                                      "updated_at" };
+                                      "updated_at" , "thumbnail_url"};
 
                             foreach (string field in fields)
                             {

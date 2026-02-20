@@ -78,6 +78,29 @@ namespace Servo.service
             
         }
 
+        public static void addtestcategories(string categoryname, string emoji, string color,  int number_of_products)
+        {
+
+
+                model.shared.category cat = new model.shared.category
+                {
+
+
+                    category_name= categoryname,
+                    color = color,
+                    emoji=emoji,
+                    number_of_products=number_of_products
+
+
+                };
+
+
+                model.shared.add_category(cat);
+          
+            service.shared.log($"[Added category]");
+
+        }
+
         public static void addtestproducts()
         {
 
@@ -97,7 +120,7 @@ namespace Servo.service
                   description_preview_en     = "description_preview_en",
                   description_preview_de     = "description_preview_de",
                   description_preview_hu     = "description_preview_hu",
-                                    category = "category",
+                                    category_id = "1",
                                     name_hu     = "name_hu",
                   name_de     = "name_de",
                   name_en     = "name_en",
@@ -107,7 +130,7 @@ namespace Servo.service
                   sku     = (i*1000).ToString(),
                   active_ingredient     = "active_ingredient",
                   packaging     = "valami",
-                  thumbnail_url = $"https://www.roysshack.hu/assets/products/{i}/tumbnail.webp",
+                  thumbnail_url = $"http://192.168.11.213:90/assets/products/{i}/thumbnail.webp",
 
                     featured = $"0"
                 };
