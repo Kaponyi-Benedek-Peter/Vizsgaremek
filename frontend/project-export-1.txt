@@ -741,7 +741,7 @@ FILE: src\app\app.ts
 ================================================================================
 
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Header } from './shared/components/header/header';
 import { Footer } from './shared/components/footer/footer';
 import { Toast } from './shared/components/toast/toast';
@@ -754,6 +754,22 @@ import { Toast } from './shared/components/toast/toast';
 })
 export class App {
   protected readonly title = signal('frontend');
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe((params) => {
+      const login = params['login'];
+      if (login) {
+        this.router.navigate(['/login-promise'], {
+          queryParams: { login_promise: login },
+          replaceUrl: true,
+        });
+      }
+    });
+  }
 }
 
 
@@ -1435,7 +1451,7 @@ export interface AccountDeletionPromiseRequest {
 }
 
 export interface ApiErrorResponse {
-  error: string;
+  status: string;
   message?: string;
   statusCode?: number;
 }
@@ -2209,7 +2225,7 @@ export class AuthService {
           });
 
           if (!this.router.url.includes('/login')) {
-            this.router.navigate(['/login']);
+            this.router.navigate(['/login'], { queryParams: {} });
           }
         }
 
@@ -2231,7 +2247,7 @@ export class AuthService {
     return now.getTime() >= expirationTime.getTime() - fiveMinutes;
   }
 
-  // Stage 1: B64(email) + B64(password) + email
+  // Stage 1: email + password -> email
   loginRequest(email: string, password: string) {
     const request: LoginRequest = {
       email: this.encodeBase64(email),
@@ -2243,7 +2259,7 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  // Stage 2: id and confirmation_token comes from url, already b64
+  // Stage 2: id and confirmation_token b64 from url
   loginPromise(
     id: string,
     confirmationToken: string,
@@ -2262,7 +2278,7 @@ export class AuthService {
     );
   }
 
-  // registration_request: b64
+  // registration_request: b64 string
   register(email: string, password: string, firstname: string, lastname: string): Observable<void> {
     const request: RegistrationRequest = {
       email: this.encodeBase64(email),
@@ -2276,7 +2292,7 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  // id and token comes from url, already b64
+  // id and token b64 from url
   completeRegistration(
     id: string,
     token: string,
@@ -2295,14 +2311,14 @@ export class AuthService {
             response as unknown as LoginResponse,
             stayLoggedIn,
             response.user,
-            true, // skipNavigation — a komponens navigál 2.5mp után
+            true, // skipNavigation
           );
         }),
         catchError(this.handleError.bind(this)),
       );
   }
 
-  // chpass_request: plain string
+  // chpass_request: b64 string
   requestPasswordChange(email: string, newPassword: string) {
     const request: PasswordChangeRequest = {
       email: this.encodeBase64(email),
@@ -2314,11 +2330,10 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  // id and token comes from url, already b64
   completePasswordChange(id: string, token: string) {
     const request: PasswordChangePromiseRequest = {
-      id: this.encodeBase64(id),
-      token: this.encodeBase64(token),
+      id, // b64 from url
+      token, // b64 from url
     };
 
     return this.http
@@ -2394,7 +2409,7 @@ export class AuthService {
     const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
-      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 nap
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 days
 
     let userData = user;
     if (!userData && jwtToken) {
@@ -2409,16 +2424,9 @@ export class AuthService {
           lastname: decoded.lastname || '',
         };
       }
-      if (!skipNavigation) {
-        this.router.navigate(['/home']);
-        setTimeout(() => {
-          this.toastService.success(`auth.success.welcome_back`);
-        }, 300);
-      }
     }
 
     this.clearStorage();
-
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
     this.storeSessionToken(sessionToken, stayLoggedIn);
     if (userData) {
@@ -2433,11 +2441,12 @@ export class AuthService {
       expiresAt,
     });
 
-    this.router.navigate(['/home']);
-
-    setTimeout(() => {
-      this.toastService.success(`auth.success.welcome_back`);
-    }, 300);
+    if (!skipNavigation) {
+      this.router.navigate(['/home'], { queryParams: {} });
+      setTimeout(() => {
+        this.toastService.success('auth.success.welcome_back');
+      }, 300);
+    }
   }
 
   private updateAuthState(state: AuthState): void {
@@ -2515,38 +2524,71 @@ export class AuthService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An unknown error occurred';
+    let errorMessage = 'auth.errors.unknown_error';
 
     if (error.error instanceof ErrorEvent) {
-      errorMessage = `Error: ${error.error.message}`;
+      errorMessage = 'auth.errors.network_error';
     } else {
       const apiError = error.error as ApiErrorResponse;
+      const backendStatus = apiError?.status; // backend "status" field , pl. "wrong_password"
 
-      switch (error.status) {
-        case 400:
-          errorMessage = 'auth.errors.bad_request';
+      // backend status code
+      switch (backendStatus) {
+        case 'wrong_password':
+          errorMessage = 'auth.errors.invalid_credentials';
           break;
-        case 401:
-          if (apiError?.error === 'hianyzo_auth_header') {
-            errorMessage = 'auth.errors.missing_auth_header';
-          } else if (apiError?.error === 'hibas_token') {
-            errorMessage = 'auth.errors.invalid_token';
-            this.logout();
-          } else {
-            errorMessage = 'auth.errors.invalid_credentials';
-          }
+        case 'user_not_found':
+          errorMessage = 'auth.errors.invalid_credentials';
           break;
-        case 404:
-          errorMessage = 'auth.errors.not_found';
-          break;
-        case 409:
+        case 'user_already_exists':
           errorMessage = 'auth.errors.email_exists';
           break;
-        case 500:
+        case 'user_already_activated':
+          errorMessage = 'auth.errors.already_activated';
+          break;
+        case 'wrong_token':
+        case 'wrong_confirmation_token':
+          errorMessage = 'auth.errors.invalid_token';
+          break;
+        case 'confirmation_expired':
+          errorMessage = 'auth.errors.token_expired';
+          break;
+        case 'user_banned':
+          errorMessage = 'auth.errors.account_banned';
+          break;
+        case 'malformed_request':
+          errorMessage = 'auth.errors.bad_request';
+          break;
+        case 'internal_error':
           errorMessage = 'auth.errors.server_error';
           break;
         default:
-          errorMessage = apiError?.message || apiError?.error || errorMessage;
+          // Fallback: HTTP status
+          switch (error.status) {
+            case 0:
+              errorMessage = 'auth.errors.network_error';
+              break;
+            case 400:
+              errorMessage = 'auth.errors.bad_request';
+              break;
+            case 401:
+              errorMessage = 'auth.errors.invalid_credentials';
+              break;
+            case 404:
+              errorMessage = 'auth.errors.not_found';
+              break;
+            case 409:
+              errorMessage = 'auth.errors.email_exists';
+              break;
+            case 500:
+              errorMessage = 'auth.errors.server_error';
+              break;
+          }
+      }
+
+      // wrong jwt = logout
+      if (backendStatus === 'hianyzo_auth_header' || backendStatus === 'hibas_token') {
+        this.logout();
       }
     }
 
@@ -9440,37 +9482,29 @@ export class LoginPromise implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      const loginPromise = params['login_promise'];
+    const raw = new URLSearchParams(window.location.search).get('login_promise') || '';
+    const parts = raw.split(';');
 
-      if (!loginPromise) {
-        this.errorMessage.set('auth.errors.invalid_login_link');
-        return;
-      }
+    if (parts.length !== 2) {
+      this.errorMessage.set('auth.errors.invalid_login_link');
+      return;
+    }
 
-      const parts = loginPromise.split(';');
+    const id = parts[0].trim();
+    const confirmationToken = parts[1].trim();
 
-      if (parts.length !== 2) {
-        this.errorMessage.set('auth.errors.invalid_login_link');
-        return;
-      }
+    if (!id || !confirmationToken) {
+      this.errorMessage.set('auth.errors.invalid_login_link');
+      return;
+    }
 
-      const id = parts[0].trim();
-      const confirmationToken = parts[1].trim();
+    const cleanUrl = `/login-promise?login_promise=${id};${confirmationToken}`;
+    this.location.replaceState(cleanUrl);
 
-      if (!id || !confirmationToken) {
-        this.errorMessage.set('auth.errors.invalid_login_link');
-        return;
-      }
+    const stayLoggedIn = sessionStorage.getItem('login_stay') === '1';
+    sessionStorage.removeItem('login_stay');
 
-      const cleanUrl = `/login-promise?login_promise=${id};${confirmationToken}`;
-      this.location.replaceState(cleanUrl);
-
-      const stayLoggedIn = sessionStorage.getItem('login_stay') === '1';
-      sessionStorage.removeItem('login_stay');
-
-      this.completeLogin(id, confirmationToken, stayLoggedIn);
-    });
+    this.completeLogin(id, confirmationToken, stayLoggedIn);
   }
 
   completeLogin(id: string, confirmationToken: string, stayLoggedIn: boolean): void {
@@ -14190,36 +14224,33 @@ export class RegistrationPromise implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      const activate = params['activate'];
+    const raw = new URLSearchParams(window.location.search).get('activate') || '';
+    const parts = raw.split(';');
 
-      if (!activate) {
-        this.errorMessage.set('auth.errors.invalid_verification_link');
-        return;
-      }
+    if (!raw) {
+      this.errorMessage.set('auth.errors.invalid_verification_link');
+      return;
+    }
 
-      const parts = activate.split(';');
+    if (parts.length !== 2) {
+      this.errorMessage.set('auth.errors.invalid_verification_link');
+      return;
+    }
 
-      if (parts.length !== 2) {
-        this.errorMessage.set('auth.errors.invalid_verification_link');
-        return;
-      }
+    const id = parts[0].trim();
+    const token = parts[1].trim();
 
-      const id = parts[0].trim();
-      const token = parts[1].trim();
+    if (!id || !token) {
+      this.errorMessage.set('auth.errors.invalid_verification_link');
+      return;
+    }
 
-      if (!id || !token) {
-        this.errorMessage.set('auth.errors.invalid_verification_link');
-        return;
-      }
+    const cleanUrl = `/registration-promise?activate=${id};${token}`;
+    this.location.replaceState(cleanUrl);
 
-      const cleanUrl = `/registration-promise?activate=${id};${token}`;
-      this.location.replaceState(cleanUrl);
-
-      this.userId.set(id);
-      this.token.set(token);
-      this.verifyEmail();
-    });
+    this.userId.set(id);
+    this.token.set(token);
+    this.verifyEmail();
   }
 
   verifyEmail(): void {
@@ -15334,7 +15365,7 @@ FILE: src\app\shared\components\featured\featured.css
   max-width: 1840px;
   background-color: var(--color-featured-bg);
   position: relative;
-  padding: 60px clamp(40px, 5vw, 80px);
+  padding: 60px clamp(24px, 5vw, 80px);
   margin: 0 auto;
 }
 
@@ -15374,11 +15405,11 @@ FILE: src\app\shared\components\featured\featured.css
 
 .section-title {
   font-family: 'Inconsolata', monospace;
-  font-size: clamp(28px, 4vw, 38px);
+  font-size: clamp(24px, 4vw, 38px);
   font-weight: 700;
   letter-spacing: 3px;
   text-align: center;
-  margin-bottom: clamp(50px, 8vw, 90px);
+  margin-bottom: clamp(40px, 8vw, 90px);
   color: var(--text-primary);
   text-transform: uppercase;
   position: relative;
@@ -15395,38 +15426,43 @@ FILE: src\app\shared\components\featured\featured.css
 
 .featured-products-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  justify-content: center;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 360px));
+  gap: clamp(20px, 3vw, 40px);
   align-items: stretch;
+  justify-content: center;
 }
 
-@media (min-width: 769px) and (max-width: 1199px) {
+@supports (grid-template-columns: subgrid) {
   .featured-products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 32px;
+    align-items: stretch;
   }
 }
 
-@media (min-width: 1200px) {
-  .featured-products-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
+@media (max-width: 360px) {
+  .featured-section {
+    padding: 32px 12px;
+  }
+
+  .section-title {
+    letter-spacing: 1.5px;
+    margin-bottom: 32px;
   }
 }
 
 @media (max-width: 768px) {
   .featured-section {
-    padding: 40px 20px;
+    padding: 40px 16px;
   }
 
   .section-title {
     margin-bottom: 40px;
   }
+}
 
-  .featured-products-grid {
-    grid-template-columns: 1fr !important;
-    gap: 24px;
+@media (prefers-reduced-motion: reduce) {
+  .featured-section::before,
+  .featured-section::after {
+    transition: none;
   }
 }
 
@@ -15471,36 +15507,66 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 
 :host {
   display: block;
+  min-width: 0;
 }
 
 .featured-product-card {
   width: 100%;
+  min-width: 0;
   height: auto;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 16px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  transition:
+    transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s ease;
   position: relative;
   overflow: hidden;
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  isolation: isolate;
 }
 
 .featured-product-card::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(6, 122, 69, 0.08) 0%, transparent 70%);
+  background: linear-gradient(
+    135deg,
+    rgba(6, 122, 69, 0.07) 0%,
+    rgba(6, 122, 69, 0.03) 40%,
+    transparent 70%
+  );
   opacity: 0;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.38s ease;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.featured-product-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 17px;
+  background: linear-gradient(135deg, var(--color-primary), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.38s ease;
+  z-index: -1;
+  pointer-events: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .featured-product-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-10px) scale(1.025);
+    box-shadow:
+      0 20px 40px rgba(6, 122, 69, 0.15),
+      0 8px 16px rgba(0, 0, 0, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.06);
     border-color: var(--color-primary);
   }
 
@@ -15508,15 +15574,27 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
     opacity: 1;
   }
 
+  .featured-product-card:hover::after {
+    opacity: 0.25;
+  }
+
   .featured-product-card:hover .featured-product-image {
-    transform: scale(1.05);
+    transform: scale(1.07) translateY(-2px);
+    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.15));
+  }
+
+  .featured-product-card:hover .featured-product-name {
+    color: var(--color-primary);
   }
 }
 
 @media (hover: none) {
   .featured-product-card:active {
+    transform: scale(0.985);
     border-color: var(--color-primary);
-    box-shadow: var(--shadow-lg);
+    box-shadow:
+      0 8px 20px rgba(6, 122, 69, 0.12),
+      0 2px 6px rgba(0, 0, 0, 0.08);
   }
 }
 
@@ -15533,6 +15611,7 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  z-index: 1;
 }
 
 .featured-product-image {
@@ -15540,7 +15619,9 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   height: 100%;
   object-fit: contain;
   object-position: center;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.45s cubic-bezier(0.34, 1.2, 0.64, 1),
+    filter 0.38s ease;
 }
 
 .featured-product-card-placeholder {
@@ -15555,6 +15636,7 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   border-bottom: 1px solid var(--color-border);
   color: var(--text-secondary);
   gap: 16px;
+  z-index: 1;
 }
 
 .featured-placeholder-icon {
@@ -15567,17 +15649,17 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   justify-content: center;
   font-size: 36px;
   font-weight: 700;
-  opacity: 0.4;
+  opacity: 0.35;
   font-family: 'Inconsolata', monospace;
 }
 
 .featured-placeholder-text {
   font-family: 'Inconsolata', monospace;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: 3px;
   text-transform: uppercase;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 .featured-badges {
@@ -15591,13 +15673,14 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 }
 
 .featured-badge {
-  padding: 4px 12px;
+  padding: 4px 10px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-align: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   color: white;
+  letter-spacing: 0.5px;
 }
 
 .featured-badge-discount {
@@ -15612,20 +15695,22 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   padding: 0;
 }
 
 .featured-product-info {
-  padding: 16px;
+  padding: 18px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .featured-product-name {
-  font-size: 1.125rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -15634,30 +15719,33 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  transition: color 0.25s ease;
 }
 
 .featured-product-price-row {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
 }
 
 .featured-product-price {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-primary);
+  letter-spacing: -0.5px;
 }
 
 .featured-product-old-price {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
   text-decoration: line-through;
 }
 
 .featured-product-stock {
   margin-top: auto;
-  padding-top: 8px;
+  padding-top: 10px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -15682,21 +15770,33 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 
 .featured-stock-in .featured-stock-indicator {
   background-color: var(--color-success);
+  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.15);
+  animation: pulse-stock 2.5s ease-in-out infinite;
 }
 
 .featured-stock-out .featured-stock-indicator {
   background-color: var(--color-error);
 }
 
+@keyframes pulse-stock {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(6, 122, 69, 0.06);
+  }
+}
+
 @media (max-width: 768px) {
   .featured-product-image-wrapper,
   .featured-product-card-placeholder {
-    height: 180px;
+    height: 190px;
     padding: 14px;
   }
 
   .featured-product-info {
-    padding: 12px;
+    padding: 14px;
     gap: 6px;
   }
 
@@ -15705,7 +15805,7 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   }
 
   .featured-product-price {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
   }
 
   .featured-product-old-price {
@@ -15714,14 +15814,18 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
 }
 
 @media (max-width: 480px) {
+  .featured-product-card {
+    border-radius: 12px;
+  }
+
   .featured-product-image-wrapper,
   .featured-product-card-placeholder {
-    height: 160px;
+    height: 170px;
     padding: 10px;
   }
 
   .featured-product-info {
-    padding: 10px 12px;
+    padding: 12px;
   }
 
   .featured-product-name {
@@ -15729,7 +15833,7 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   }
 
   .featured-product-price {
-    font-size: 1.125rem;
+    font-size: 1.2rem;
   }
 
   .featured-stock-indicator {
@@ -15742,10 +15846,36 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.css
   }
 }
 
+@media (max-width: 320px) {
+  .featured-product-image-wrapper,
+  .featured-product-card-placeholder {
+    height: 150px;
+  }
+
+  .featured-product-price {
+    font-size: 1.1rem;
+  }
+
+  .featured-placeholder-icon {
+    width: 52px;
+    height: 52px;
+    font-size: 28px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .featured-product-card,
-  .featured-product-image {
+  .featured-product-card::before,
+  .featured-product-card::after,
+  .featured-product-image,
+  .featured-product-name {
     transition: none;
+    animation: none;
+  }
+
+  .featured-stock-in .featured-stock-indicator {
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.15);
   }
 }
 
@@ -22426,7 +22556,7 @@ FILE: src\assets\i18n\de.json
     "hero": {
       "title": "Roy's Shack Est. 1888",
       "subtitle": "Unsere Mission",
-      "description": "Lorem ipsum dolor sit amet consectetur. Euismod eget ut suspendisse leo faucibus sit dui. Aliquet egestas tincidunt nibh massa sed tellus aliquam. Amet auctor odio sit nibh at. Vel sed ipsum interdum vel nulla ornare. Ullamcorper egestas in viverra consequat. Vitae enim pellentesque a cras ornare dui nulla. Leo nam felis aliquet cras vel nulla mi bibendum non. Velit pretium non mi mi justo senectus leo. In congue aliquam adipiscing fames. Turpis orci odio mauris augue lacus mi non nibh. Etiam a in quis commodo vivamus. Gravida luctus risus egestas aliquam scelerisque vitae turpis viverra quisque."
+      "home.hero.description": "Gesundheit sollte keine Hürde sein – und doch kämpfen viele Menschen damit, zuverlässige und gut dokumentierte Gesundheitsprodukte an einem übersichtlichen Ort zu finden. Roy's Shack Est. 1888 bringt das Erbe einer über hundert Jahre alten Apothekentradition ins digitale Zeitalter. Unser Ziel ist es, den Kauf von Gesundheits- und Wellnessprodukten einfach, sicher und informiert zu gestalten. Wir glauben, dass jeder Kunde genaue Produktbeschreibungen, faire Preise und schnelle Lieferung verdient – egal wo er sich befindet."
     },
     "featured": {
       "title": "Ausgewählte Produkte",
@@ -22896,7 +23026,17 @@ FILE: src\assets\i18n\de.json
       "preferences_title": "Präferenz-Cookies",
       "preferences_text": "Speichern die vom Benutzer gewählten Einstellungen wie Sprache und Darstellungsthema.",
       "manage_title": "Cookies verwalten",
-      "manage_text": "Cookies können über die Browser-Einstellungen verwaltet werden. Funktionale Cookies können nicht deaktiviert werden, aber analytische und Präferenz-Cookies schon."
+      "manage_text": "Cookies können über die Browser-Einstellungen verwaltet werden. Funktionale Cookies können nicht deaktiviert werden, aber analytische und Präferenz-Cookies schon.",
+      "legal.terms.info_address_value": "7621 Pécs, Király-Straße 12., Ungarn",
+      "legal.terms.info_email_value": "info@roysshack.hu",
+      "legal.terms.info_phone_value": "+36 72 123 456",
+      "legal.terms.section4_text": "Alle angegebenen Preise sind in ungarischen Forint (HUF) und enthalten die Mehrwertsteuer (MwSt.). Die Versandkosten können je nach Bestellwert variieren. Ab einem Bestellwert von 15.000 HUF ist der Versand kostenlos.",
+      "legal.terms.section5_text": "Die Lieferung der bestellten Produkte erfolgt an Werktagen, in der Regel innerhalb von 2–4 Werktagen. Die Zustellung erfolgt durch unseren beauftragten Kurierdienst. Der Kunde erhält eine E-Mail-Benachrichtigung über den Versandstatus.",
+      "legal.terms.section6_text": "Der Käufer kann innerhalb von 14 Tagen nach Erhalt der Ware ohne Angabe von Gründen vom Vertrag zurücktreten, gemäß Regierungsdekret 45/2014 (II. 26.). Das Widerrufsrecht gilt nicht für verschreibungspflichtige Arzneimittel und bereits geöffnete Gesundheitsprodukte.",
+      "legal.privacy.section1_text": "Verantwortlicher ist Roy's Shack Est. 1888 (Sitz: 7621 Pécs, Király-Straße 12., Ungarn). Bei datenschutzrechtlichen Anfragen wenden Sie sich bitte an: datenschutz@roysshack.hu",
+      "legal.privacy.section4_text": "Zum Schutz personenbezogener Daten setzen wir technische und organisatorische Maßnahmen ein, darunter HTTPS/SSL-Verschlüsselung, JWT-basierte Authentifizierung, strikte Zugriffsbeschränkungen und regelmäßige Sicherheitsüberprüfungen. Ihre Daten werden nicht an Dritte weitergegeben, außer an den für die Auftragsabwicklung erforderlichen Kurierdienst.",
+      "legal.cookies.what_text": "Cookies sind kleine Textdateien, die von der Website mit Ihrer Einwilligung in Ihrem Browser gespeichert werden. Sie ermöglichen es der Website, Ihre Einstellungen zu speichern, den Anmeldestatus beizubehalten und die Benutzererfahrung zu verbessern. Ohne Cookies sind bestimmte Funktionen der Website nicht verfügbar.",
+      "legal.cookies.manage_text": "Cookies können über die Einstellungen Ihres Browsers verwaltet werden. Bitte beachten Sie, dass das Deaktivieren von funktionalen (notwendigen) Cookies dazu führen kann, dass bestimmte Funktionen – wie die Anmeldung oder der Warenkorb – nicht korrekt funktionieren. Analytische und Präferenz-Cookies können jederzeit deaktiviert werden, ohne die Kernfunktionalität zu beeinträchtigen."
     }
   },
   "admin": {
@@ -23053,7 +23193,7 @@ FILE: src\assets\i18n\en.json
     "hero": {
       "title": "Roy's Shack Est. 1888",
       "subtitle": "Our mission",
-      "description": "Lorem ipsum dolor sit amet consectetur. Euismod eget ut suspendisse leo faucibus sit dui. Aliquet egestas tincidunt nibh massa sed tellus aliquam. Amet auctor odio sit nibh at. Vel sed ipsum interdum vel nulla ornare. Ullamcorper egestas in viverra consequat. Vitae enim pellentesque a cras ornare dui nulla. Leo nam felis aliquet cras vel nulla mi bibendum non. Velit pretium non mi mi justo senectus leo. In congue aliquam adipiscing fames. Turpis orci odio mauris augue lacus mi non nibh. Etiam a in quis commodo vivamus. Gravida luctus risus egestas aliquam scelerisque vitae turpis viverra quisque."
+      "home.hero.description": "Healthcare shouldn't be complicated — yet so many people struggle to find reliable, well-documented health products in one transparent place. Roy's Shack Est. 1888 brings the spirit of over a century of trusted pharmacy heritage into the digital age. Our mission is to make purchasing health and wellness products simple, safe, and informed. We believe every customer deserves accurate product descriptions, fair prices, and fast delivery — no matter where they are."
     },
     "featured": {
       "title": "Featured products",
@@ -23523,7 +23663,17 @@ FILE: src\assets\i18n\en.json
       "preferences_title": "Preference Cookies",
       "preferences_text": "Remember the settings selected by the user, such as language and display theme.",
       "manage_title": "Managing Cookies",
-      "manage_text": "Cookies can be managed through your browser settings. Functional cookies cannot be disabled, but analytics and preference cookies can."
+      "manage_text": "Cookies can be managed through your browser settings. Functional cookies cannot be disabled, but analytics and preference cookies can.",
+      "legal.terms.info_address_value": "7621 Pécs, Király Street 12., Hungary",
+      "legal.terms.info_email_value": "info@roysshack.hu",
+      "legal.terms.info_phone_value": "+36 72 123 456",
+      "legal.terms.section4_text": "All listed prices are in Hungarian Forint (HUF) and include VAT. Shipping costs may vary depending on the order total. Free shipping applies for orders over 15,000 HUF.",
+      "legal.terms.section5_text": "Ordered products are dispatched on business days, generally within 2–4 business days. Delivery is carried out by our contracted courier service. The Customer will receive an email notification regarding the shipment status.",
+      "legal.terms.section6_text": "The Customer may withdraw from the contract within 14 days of receiving the product without giving a reason, in accordance with Government Decree 45/2014 (II. 26.). The right of withdrawal does not apply to prescription medications or unsealed healthcare products.",
+      "legal.privacy.section1_text": "The data controller is Roy's Shack Est. 1888 (registered address: 7621 Pécs, Király Street 12., Hungary). For any data protection inquiries, please contact us at: privacy@roysshack.hu",
+      "legal.privacy.section4_text": "We employ technical and organizational measures to protect personal data, including HTTPS/SSL encryption, JWT-based authentication, strict access control, and regular security audits. We do not share your data with third parties, except for the courier service required to fulfill your order.",
+      "legal.cookies.what_text": "Cookies are small text files stored by the website in your browser, with your consent. They allow the website to remember your settings, maintain your login session, and improve the overall user experience. Certain features of the site are not available without cookies.",
+      "legal.cookies.manage_text": "You can manage cookies through your browser settings. Please note that disabling functional (essential) cookies may prevent certain features — such as logging in or using your cart — from working correctly. Analytics and preference cookies can be disabled at any time without affecting core functionality."
     }
   },
   "admin": {
@@ -23680,7 +23830,7 @@ FILE: src\assets\i18n\hu.json
     "hero": {
       "title": "Roy's Shack Est. 1888",
       "subtitle": "Küldetésünk",
-      "description": "Lorem ipsum dolor sit amet consectetur. Euismod eget ut suspendisse leo faucibus sit dui. Aliquet egestas tincidunt nibh massa sed tellus aliquam. Amet auctor odio sit nibh at. Vel sed ipsum interdum vel nulla ornare. Ullamcorper egestas in viverra consequat. Vitae enim pellentesque a cras ornare dui nulla. Leo nam felis aliquet cras vel nulla mi bibendum non. Velit pretium non mi mi justo senectus leo. In congue aliquam adipiscing fames. Turpis orci odio mauris augue lacus mi non nibh. Etiam a in quis commodo vivamus. Gravida luctus risus egestas aliquam scelerisque vitae turpis viverra quisque."
+      "home.hero.description": "Az egészség nem luxus – mégis sokszor küzdünk azzal, hogy megbízható, részletes információval rendelkező, átlátható helyen jussunk hozzá a szükséges termékekhez. A Roy's Shack Est. 1888 egy több mint száz éves gyógyszertári hagyomány szellemiségét viszi a digitális térbe: célunk, hogy az egészségügyi termékek vásárlása egyszerű, biztonságos és tájékozott döntés legyen mindenki számára. Hiszünk abban, hogy minden vásárló megérdemli a pontos termékleírásokat, az átlátható árakat és a gyors kiszállítást – függetlenül attól, hol él."
     },
     "featured": {
       "title": "Kiemelt termékek",
@@ -24150,7 +24300,17 @@ FILE: src\assets\i18n\hu.json
       "preferences_title": "Preferencia sütik",
       "preferences_text": "Megjegyzik a felhasználó által kiválasztott beállításokat, mint a nyelv és a megjelenési téma.",
       "manage_title": "Sütik kezelése",
-      "manage_text": "A sütik kezelhetők a böngésző beállításain keresztül. A funkcionális sütiket nem lehet letiltani, de az elemzési és preferencia sütiket igen."
+      "manage_text": "A sütik kezelhetők a böngésző beállításain keresztül. A funkcionális sütiket nem lehet letiltani, de az elemzési és preferencia sütiket igen.",
+      "legal.terms.info_address_value": "7621 Pécs, Király utca 12.",
+      "legal.terms.info_email_value": "info@roysshack.hu",
+      "legal.terms.info_phone_value": "+36 72 123 456",
+      "legal.terms.section4_text": "A feltüntetett árak forintban (HUF) értendők és az általános forgalmi adót (ÁFA) tartalmazzák. A szállítási díj a rendelés összegétől függően változhat. 15 000 Ft feletti rendelésnél ingyenes kiszállítást biztosítunk.",
+      "legal.terms.section5_text": "A megrendelt termékek kiszállítása munkanapokon, általában 2–4 munkanapon belül történik. A kiszállítást megbízott futárszolgálat végzi. A csomag állapotáról emailben értesítjük a Vásárlót.",
+      "legal.terms.section6_text": "A Vásárló a termék átvételétől számított 14 napon belül indoklás nélkül elállhat a szerződéstől, a 45/2014. (II. 26.) Korm. rendelet alapján. Vényköteles gyógyszerek és felbontott csomagolású egészségügyi készítmények esetén az elállási jog nem gyakorolható.",
+      "legal.privacy.section1_text": "Az adatkezelő a Roy's Shack Est. 1888 (székhely: 7621 Pécs, Király utca 12.). Az adatkezeléssel kapcsolatos kérdésekkel az alábbi elérhetőségen fordulhat hozzánk: adatvedelem@roysshack.hu",
+      "legal.privacy.section4_text": "A személyes adatok védelme érdekében technikai és szervezési intézkedéseket alkalmazunk, beleértve a HTTPS/SSL titkosítást, a JWT-alapú hitelesítést, a hozzáférési jogosultságok szigorú korlátozását, valamint a rendszeres biztonsági felülvizsgálatokat. Adatait harmadik félnek nem adjuk át, kivéve a rendelés teljesítéséhez szükséges futárszolgálatot.",
+      "legal.cookies.what_text": "A sütik (cookie-k) kis szöveges fájlok, amelyeket a weboldal tárol a böngészőjében, az Ön hozzájárulásával. Lehetővé teszik a weboldal számára, hogy megjegyezze a beállításait, fenntartsa a bejelentkezési állapotot, és javítsa a felhasználói élményt. Sütik nélkül egyes funkciók nem érhetők el.",
+      "legal.cookies.manage_text": "A sütik kezelhetők a böngésző beállításain keresztül. Felhívjuk figyelmét, hogy a funkcionális (elengedhetetlen) sütik letiltása esetén az oldal egyes funkciói – például a bejelentkezés vagy a kosár – nem fognak megfelelően működni. Az elemzési és preferencia sütiket bármikor letilthatja."
     }
   },
   "admin": {
@@ -24236,8 +24396,8 @@ FILE: src\environments\environment.prod.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://192.168.11.213:90',
-  assetsURL: 'http://192.168.11.213:90',
+  baseURL: 'http://localhost:90',
+  assetsURL: 'http://localhost:90',
 };
 
 
@@ -24248,8 +24408,8 @@ FILE: src\environments\environment.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://192.168.11.213:90',
-  assetsURL: 'http://192.168.11.213:90',
+  baseURL: 'http://localhost:90',
+  assetsURL: 'http://localhost:90',
 };
 
 

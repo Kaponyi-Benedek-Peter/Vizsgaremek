@@ -25,37 +25,29 @@ export class LoginPromise implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      const loginPromise = params['login_promise'];
+    const raw = new URLSearchParams(window.location.search).get('login_promise') || '';
+    const parts = raw.split(';');
 
-      if (!loginPromise) {
-        this.errorMessage.set('auth.errors.invalid_login_link');
-        return;
-      }
+    if (parts.length !== 2) {
+      this.errorMessage.set('auth.errors.invalid_login_link');
+      return;
+    }
 
-      const parts = loginPromise.split(';');
+    const id = parts[0].trim();
+    const confirmationToken = parts[1].trim();
 
-      if (parts.length !== 2) {
-        this.errorMessage.set('auth.errors.invalid_login_link');
-        return;
-      }
+    if (!id || !confirmationToken) {
+      this.errorMessage.set('auth.errors.invalid_login_link');
+      return;
+    }
 
-      const id = parts[0].trim();
-      const confirmationToken = parts[1].trim();
+    const cleanUrl = `/login-promise?login_promise=${id};${confirmationToken}`;
+    this.location.replaceState(cleanUrl);
 
-      if (!id || !confirmationToken) {
-        this.errorMessage.set('auth.errors.invalid_login_link');
-        return;
-      }
+    const stayLoggedIn = sessionStorage.getItem('login_stay') === '1';
+    sessionStorage.removeItem('login_stay');
 
-      const cleanUrl = `/login-promise?login_promise=${id};${confirmationToken}`;
-      this.location.replaceState(cleanUrl);
-
-      const stayLoggedIn = sessionStorage.getItem('login_stay') === '1';
-      sessionStorage.removeItem('login_stay');
-
-      this.completeLogin(id, confirmationToken, stayLoggedIn);
-    });
+    this.completeLogin(id, confirmationToken, stayLoggedIn);
   }
 
   completeLogin(id: string, confirmationToken: string, stayLoggedIn: boolean): void {

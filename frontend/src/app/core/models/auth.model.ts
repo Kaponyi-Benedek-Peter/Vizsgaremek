@@ -77,7 +77,7 @@ export interface AccountDeletionPromiseRequest {
 }
 
 export interface ApiErrorResponse {
-  error: string;
+  status: string;
   message?: string;
   statusCode?: number;
 }

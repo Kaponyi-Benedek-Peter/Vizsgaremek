@@ -26,7 +26,7 @@
 .newsletter button {
   width: 80px;
   height: 35px;
-  color: var(--text-primary);
+  color: #111;
   border: none;
   cursor: pointer;
   font-family: inherit;
@@ -60,6 +60,8 @@
   align-items: center;
   justify-content: center;
   transition: transform 0.2s ease;
+  background: none;
+  cursor: pointer;
 }
 
 .social-icons img {
@@ -75,6 +77,8 @@
 
 .social-icon-wrapper {
   position: relative;
+  width: fit-content;
+  cursor: default;
 }
 
 .social-icon-btn {
@@ -90,11 +94,13 @@
   transition:
     transform 0.2s ease,
     opacity 0.2s ease;
-  opacity: 0.7;
+  opacity: 0.85;
+  filter: brightness(1.4);
 }
 
 .social-icon-btn:hover {
   opacity: 1;
+  filter: brightness(1.8);
 }
 
 .social-icon-btn img {
@@ -161,4 +167,19 @@
     width: 44px;
     height: 44px;
   }
+}
+
+[data-theme='dark'] .newsletter button {
+  color: var(--text-inverse);
+  background-color: #111;
+}
+
+[data-theme='dark'] .newsletter button:hover {
+  background-color: #e8e8e8;
+}
+
+[data-theme='dark'] .social-icon-btn img,
+[data-theme='dark'] .social-icons a img {
+  filter: brightness(2) saturate(0);
+  opacity: 0.9;
 }

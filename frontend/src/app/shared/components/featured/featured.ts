@@ -1,12 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-featured',
-  imports: [TranslateModule],
+  standalone: true,
+  imports: [CommonModule, TranslateModule],
   templateUrl: './featured.html',
   styleUrl: './featured.css',
 })
 export class Featured {
-  constructor() {}
+  showAll = signal(false);
+
+  toggleShowAll(): void {
+    this.showAll.set(!this.showAll());
+  }
 }

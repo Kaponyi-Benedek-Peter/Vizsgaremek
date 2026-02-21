@@ -99,7 +99,7 @@ export class AuthService {
           });
 
           if (!this.router.url.includes('/login')) {
-            this.router.navigate(['/login']);
+            this.router.navigate(['/login'], { queryParams: {} });
           }
         }
 
@@ -121,7 +121,7 @@ export class AuthService {
     return now.getTime() >= expirationTime.getTime() - fiveMinutes;
   }
 
-  // Stage 1: B64(email) + B64(password) + email
+  // Stage 1: email + password -> email
   loginRequest(email: string, password: string) {
     const request: LoginRequest = {
       email: this.encodeBase64(email),
@@ -133,7 +133,7 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  // Stage 2: id and confirmation_token comes from url, already b64
+  // Stage 2: id and confirmation_token b64 from url
   loginPromise(
     id: string,
     confirmationToken: string,
@@ -152,7 +152,7 @@ export class AuthService {
     );
   }
 
-  // registration_request: b64
+  // registration_request: b64 string
   register(email: string, password: string, firstname: string, lastname: string): Observable<void> {
     const request: RegistrationRequest = {
       email: this.encodeBase64(email),
@@ -166,7 +166,7 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  // id and token comes from url, already b64
+  // id and token b64 from url
   completeRegistration(
     id: string,
     token: string,
@@ -185,14 +185,14 @@ export class AuthService {
             response as unknown as LoginResponse,
             stayLoggedIn,
             response.user,
-            true, // skipNavigation — a komponens navigál 2.5mp után
+            true, // skipNavigation
           );
         }),
         catchError(this.handleError.bind(this)),
       );
   }
 
-  // chpass_request: plain string
+  // chpass_request: b64 string
   requestPasswordChange(email: string, newPassword: string) {
     const request: PasswordChangeRequest = {
       email: this.encodeBase64(email),
@@ -204,11 +204,10 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  // id and token comes from url, already b64
   completePasswordChange(id: string, token: string) {
     const request: PasswordChangePromiseRequest = {
-      id: this.encodeBase64(id),
-      token: this.encodeBase64(token),
+      id, // b64 from url
+      token, // b64 from url
     };
 
     return this.http
@@ -284,7 +283,7 @@ export class AuthService {
     const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
-      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 nap
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 days
 
     let userData = user;
     if (!userData && jwtToken) {
@@ -299,16 +298,9 @@ export class AuthService {
           lastname: decoded.lastname || '',
         };
       }
-      if (!skipNavigation) {
-        this.router.navigate(['/home']);
-        setTimeout(() => {
-          this.toastService.success(`auth.success.welcome_back`);
-        }, 300);
-      }
     }
 
     this.clearStorage();
-
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
     this.storeSessionToken(sessionToken, stayLoggedIn);
     if (userData) {
@@ -323,11 +315,12 @@ export class AuthService {
       expiresAt,
     });
 
-    this.router.navigate(['/home']);
-
-    setTimeout(() => {
-      this.toastService.success(`auth.success.welcome_back`);
-    }, 300);
+    if (!skipNavigation) {
+      this.router.navigate(['/home'], { queryParams: {} });
+      setTimeout(() => {
+        this.toastService.success('auth.success.welcome_back');
+      }, 300);
+    }
   }
 
   private updateAuthState(state: AuthState): void {
@@ -405,38 +398,71 @@ export class AuthService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An unknown error occurred';
+    let errorMessage = 'auth.errors.unknown_error';
 
     if (error.error instanceof ErrorEvent) {
-      errorMessage = `Error: ${error.error.message}`;
+      errorMessage = 'auth.errors.network_error';
     } else {
       const apiError = error.error as ApiErrorResponse;
+      const backendStatus = apiError?.status; // backend "status" field , pl. "wrong_password"
 
-      switch (error.status) {
-        case 400:
-          errorMessage = 'auth.errors.bad_request';
+      // backend status code
+      switch (backendStatus) {
+        case 'wrong_password':
+          errorMessage = 'auth.errors.invalid_credentials';
           break;
-        case 401:
-          if (apiError?.error === 'hianyzo_auth_header') {
-            errorMessage = 'auth.errors.missing_auth_header';
-          } else if (apiError?.error === 'hibas_token') {
-            errorMessage = 'auth.errors.invalid_token';
-            this.logout();
-          } else {
-            errorMessage = 'auth.errors.invalid_credentials';
-          }
+        case 'user_not_found':
+          errorMessage = 'auth.errors.invalid_credentials';
           break;
-        case 404:
-          errorMessage = 'auth.errors.not_found';
-          break;
-        case 409:
+        case 'user_already_exists':
           errorMessage = 'auth.errors.email_exists';
           break;
-        case 500:
+        case 'user_already_activated':
+          errorMessage = 'auth.errors.already_activated';
+          break;
+        case 'wrong_token':
+        case 'wrong_confirmation_token':
+          errorMessage = 'auth.errors.invalid_token';
+          break;
+        case 'confirmation_expired':
+          errorMessage = 'auth.errors.token_expired';
+          break;
+        case 'user_banned':
+          errorMessage = 'auth.errors.account_banned';
+          break;
+        case 'malformed_request':
+          errorMessage = 'auth.errors.bad_request';
+          break;
+        case 'internal_error':
           errorMessage = 'auth.errors.server_error';
           break;
         default:
-          errorMessage = apiError?.message || apiError?.error || errorMessage;
+          // Fallback: HTTP status
+          switch (error.status) {
+            case 0:
+              errorMessage = 'auth.errors.network_error';
+              break;
+            case 400:
+              errorMessage = 'auth.errors.bad_request';
+              break;
+            case 401:
+              errorMessage = 'auth.errors.invalid_credentials';
+              break;
+            case 404:
+              errorMessage = 'auth.errors.not_found';
+              break;
+            case 409:
+              errorMessage = 'auth.errors.email_exists';
+              break;
+            case 500:
+              errorMessage = 'auth.errors.server_error';
+              break;
+          }
+      }
+
+      // wrong jwt = logout
+      if (backendStatus === 'hianyzo_auth_header' || backendStatus === 'hibas_token') {
+        this.logout();
       }
     }
 
