@@ -1,0 +1,164 @@
+.newsletter form {
+  display: flex;
+  margin-top: 8px;
+}
+
+.newsletter input {
+  width: 230px;
+  height: 35px;
+  padding: 0 12px;
+  border: none;
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  font-family: inherit;
+  transition: background-color var(--transition-speed) var(--transition-ease);
+}
+
+.newsletter input::placeholder {
+  color: var(--input-placeholder);
+}
+
+.newsletter input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.newsletter button {
+  width: 80px;
+  height: 35px;
+  color: var(--text-primary);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.newsletter button:hover {
+  opacity: 0.9;
+}
+
+.newsletter button:active {
+  opacity: 0.8;
+}
+
+.newsletter p {
+  margin-bottom: 6px;
+  color: var(--text-inverse);
+}
+
+.social-icons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.social-icons a {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.social-icons img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.social-icons a:hover,
+.social-icon-btn:hover {
+  transform: scale(1.1);
+}
+
+.social-icon-wrapper {
+  position: relative;
+}
+
+.social-icon-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+  opacity: 0.7;
+}
+
+.social-icon-btn:hover {
+  opacity: 1;
+}
+
+.social-icon-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.social-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  animation: tooltipFadeIn 0.2s ease;
+  z-index: 10;
+}
+
+.social-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--bg-primary);
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .newsletter form {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .newsletter input {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .newsletter button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .social-icons a {
+    width: 44px;
+    height: 44px;
+  }
+}

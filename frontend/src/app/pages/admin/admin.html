@@ -1,0 +1,413 @@
+<div class="admin-page">
+  <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed()">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="logo-icon">🏥</span>
+        @if (!sidebarCollapsed()) {
+          <span class="logo-text">Roy's Admin</span>
+        }
+      </div>
+      <button
+        class="sidebar-toggle"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="'admin.toggle_sidebar' | translate"
+      >
+        {{ sidebarCollapsed() ? '▶' : '◀' }}
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (item of navItems; track item.id) {
+        <button
+          [class]="'nav-item' + (activeSection() === item.id ? ' active' : '')"
+          (click)="setSection(item.id)"
+          [attr.title]="item.label | translate"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          @if (!sidebarCollapsed()) {
+            <span class="nav-label">{{ item.label | translate }}</span>
+          }
+        </button>
+      }
+    </nav>
+
+    @if (!sidebarCollapsed()) {
+      <div class="sidebar-footer">
+        <button class="nav-item logout-btn" (click)="logout()">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-label">{{ 'profile.logout' | translate }}</span>
+        </button>
+      </div>
+    }
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button
+          class="mobile-menu-btn"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="'admin.toggle_sidebar' | translate"
+        >
+          ☰
+        </button>
+        <h1 class="page-heading">{{ currentSectionLabel() | translate }}</h1>
+      </div>
+      <div class="topbar-right">
+        <span class="admin-badge">{{ 'admin.role' | translate }}</span>
+        <span class="admin-name">{{ adminName() }}</span>
+      </div>
+    </header>
+
+    @if (activeSection() === 'dashboard') {
+      <div class="section-content">
+        <div class="dashboard-greeting">
+          <h2>{{ 'admin.greeting' | translate: { name: adminName() } }}</h2>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card primary">
+            <div class="stat-icon">📦</div>
+            <div class="stat-body">
+              @if (ordersLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ stats().totalOrders }}</span>
+              }
+              <span class="stat-label">{{ 'admin.stats.total_orders' | translate }}</span>
+            </div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon">💰</div>
+            <div class="stat-body">
+              @if (ordersLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ formatRevenue(stats().revenue) }}</span>
+              }
+              <span class="stat-label">{{ 'admin.stats.revenue' | translate }}</span>
+            </div>
+          </div>
+          <div class="stat-card info">
+            <div class="stat-icon">👥</div>
+            <div class="stat-body">
+              @if (usersLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ stats().totalUsers }}</span>
+              }
+              <span class="stat-label">{{ 'admin.stats.total_users' | translate }}</span>
+            </div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-body">
+              @if (productsLoading()) {
+                <span class="stat-value loading-pulse">—</span>
+              } @else {
+                <span class="stat-value">{{ stats().totalProducts }}</span>
+              }
+              <span class="stat-label">{{ 'admin.stats.total_products' | translate }}</span>
+              @if (!productsLoading() && stats().lowStock > 0) {
+                <span class="stat-change warning-text">
+                  {{ stats().lowStock }} {{ 'admin.stats.low_stock' | translate }}
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title">{{ 'admin.recent_orders' | translate }}</h2>
+            <button class="view-all-btn" (click)="setSection('orders')">
+              {{ 'admin.view_all' | translate }} →
+            </button>
+          </div>
+
+          @if (ordersLoading()) {
+            <div class="loading-state">
+              <span class="spinner">⏳</span>
+              <span>{{ 'admin.loading' | translate }}</span>
+            </div>
+          } @else if (ordersError()) {
+            <div class="error-state">
+              <span>⚠️ {{ ordersError()! | translate }}</span>
+              <button class="retry-btn" (click)="loadOrders()">
+                {{ 'common.retry' | translate }}
+              </button>
+            </div>
+          } @else if (recentOrders().length === 0) {
+            <div class="empty-state">{{ 'admin.no_orders' | translate }}</div>
+          } @else {
+            <div class="table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>{{ 'admin.table.order_id' | translate }}</th>
+                    <th>{{ 'admin.table.user_id' | translate }}</th>
+                    <th>{{ 'admin.table.date' | translate }}</th>
+                    <th>{{ 'admin.table.address' | translate }}</th>
+                    <th>{{ 'admin.table.total' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (order of recentOrders(); track order.id) {
+                    <tr>
+                      <td class="order-id">#{{ order.id }}</td>
+                      <td class="muted">{{ order.user_id }}</td>
+                      <td class="muted">{{ formatDate(order.created_at) }}</td>
+                      <td>{{ getOrderAddressSummary(order) }}</td>
+                      <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (activeSection() === 'orders') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon-small">🔍</span>
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="orderSearch"
+              [placeholder]="'admin.search_orders' | translate"
+            />
+          </div>
+          <button class="retry-btn" (click)="loadOrders()" [disabled]="ordersLoading()">
+            🔄 {{ 'common.refresh' | translate }}
+          </button>
+        </div>
+
+        @if (ordersLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
+          </div>
+        } @else if (ordersError()) {
+          <div class="error-state">
+            <span>⚠️ {{ ordersError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadOrders()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredOrders().length === 0) {
+                <div class="empty-state">{{ 'admin.no_orders' | translate }}</div>
+              } @else {
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.table.order_id' | translate }}</th>
+                      <th>{{ 'admin.table.user_id' | translate }}</th>
+                      <th>{{ 'admin.table.date' | translate }}</th>
+                      <th>{{ 'admin.table.address' | translate }}</th>
+                      <th>{{ 'admin.table.phone' | translate }}</th>
+                      <th>{{ 'admin.table.total' | translate }}</th>
+                      <th>{{ 'admin.table.note' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (order of filteredOrders(); track order.id) {
+                      <tr>
+                        <td class="order-id">#{{ order.id }}</td>
+                        <td class="muted">{{ order.user_id }}</td>
+                        <td class="muted">{{ formatDate(order.created_at) }}</td>
+                        <td>
+                          {{ order.city }}
+                          @if (order.house_number) {
+                            <span class="muted">, {{ order.house_number }}</span>
+                          }
+                          @if (order.apartment_number) {
+                            <span class="muted">/{{ order.apartment_number }}</span>
+                          }
+                        </td>
+                        <td class="muted">{{ order.phone_number || '—' }}</td>
+                        <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                        <td class="muted note-cell">{{ order.note || '—' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeSection() === 'users') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon-small">🔍</span>
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="userSearch"
+              [placeholder]="'admin.search_users' | translate"
+            />
+          </div>
+          <button class="retry-btn" (click)="loadUsers()" [disabled]="usersLoading()">
+            🔄 {{ 'common.refresh' | translate }}
+          </button>
+        </div>
+
+        @if (usersLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
+          </div>
+        } @else if (usersError()) {
+          <div class="error-state">
+            <span>⚠️ {{ usersError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadUsers()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredUsers().length === 0) {
+                <div class="empty-state">{{ 'admin.no_users' | translate }}</div>
+              } @else {
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.table.user' | translate }}</th>
+                      <th>{{ 'admin.table.email' | translate }}</th>
+                      <th>{{ 'admin.table.role' | translate }}</th>
+                      <th>{{ 'admin.table.registered' | translate }}</th>
+                      <th>ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (user of filteredUsers(); track user.id) {
+                      <tr>
+                        <td>
+                          <div class="user-cell">
+                            <div class="user-avatar">{{ getUserInitial(user) }}</div>
+                            <span>{{ getUserFullName(user) }}</span>
+                          </div>
+                        </td>
+                        <td class="muted">{{ user.email }}</td>
+                        <td>
+                          <span [class]="'role-badge ' + getAccountStateClass(user.account_state)">
+                            {{ user.account_state }}
+                          </span>
+                        </td>
+                        <td class="muted">{{ formatDate(user.created_at) }}</td>
+                        <td class="muted">#{{ user.id }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeSection() === 'products') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon-small">🔍</span>
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="productSearch"
+              [placeholder]="'admin.search_products' | translate"
+            />
+          </div>
+          <button class="retry-btn" (click)="loadProducts()" [disabled]="productsLoading()">
+            🔄 {{ 'common.refresh' | translate }}
+          </button>
+        </div>
+
+        @if (productsLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
+          </div>
+        } @else if (productsError()) {
+          <div class="error-state">
+            <span>⚠️ {{ productsError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadProducts()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredProducts().length === 0) {
+                <div class="empty-state">{{ 'admin.no_products' | translate }}</div>
+              } @else {
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.table.product' | translate }}</th>
+                      <th>{{ 'admin.table.category' | translate }}</th>
+                      <th>SKU</th>
+                      <th>{{ 'admin.table.price' | translate }}</th>
+                      <th>{{ 'admin.table.stock' | translate }}</th>
+                      <th>{{ 'admin.table.rating' | translate }}</th>
+                      <th>{{ 'admin.table.status' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (product of filteredProducts(); track product.id; let i = $index) {
+                      <tr>
+                        <td>
+                          <div class="product-cell">
+                            <div class="product-thumb">💊</div>
+                            <div class="product-cell-info">
+                              <span class="product-name">{{ product.name }}</span>
+                              <span class="product-brand muted">{{ product.brand }}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="muted">{{ product.category }}</td>
+                        <td class="muted">{{ product.sku }}</td>
+                        <td class="font-bold">{{ formatRevenue(product.price) }}</td>
+                        <td>
+                          <span [class]="product.stockNumber < 10 ? 'stock-low' : 'stock-ok'">
+                            {{ product.stockNumber }} {{ 'common.items_unit' | translate }}
+                          </span>
+                        </td>
+                        <td class="muted">⭐ {{ product.ratingNumber.toFixed(1) }}</td>
+                        <td>
+                          <span
+                            [class]="
+                              'status-badge status-' + (product.inStock ? 'delivered' : 'cancelled')
+                            "
+                          >
+                            {{
+                              product.inStock
+                                ? ('admin.active' | translate)
+                                : ('admin.inactive' | translate)
+                            }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

@@ -1,0 +1,50 @@
+.primary-btn {
+  height: 30px;
+  padding: 0 16px;
+  min-width: 100px;
+  background: transparent;
+  border: none;
+
+  color: currentColor;
+
+  font-family: 'Inconsolata', monospace;
+  font-size: clamp(12px, 3vw, 16px);
+  letter-spacing: 0.13em;
+  line-height: 1;
+  font-weight: 500;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition:
+    color 0.3s ease,
+    opacity 0.2s ease;
+}
+
+.primary-btn:hover {
+  opacity: 0.75;
+}
+
+.btn-text {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  z-index: 1;
+}
+
+.btn-text .underline {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 2px;
+  width: 16px;
+  background-color: var(--btn-underline-color, var(--color-accent-bright));
+  transition: width 0.3s ease;
+}
+
+.primary-btn:hover .btn-text .underline {
+  width: calc(100% - 0.13em);
+}

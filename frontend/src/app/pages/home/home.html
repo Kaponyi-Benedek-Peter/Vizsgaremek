@@ -1,0 +1,42 @@
+<div class="home">
+  <div class="hero" [style.background-image]="'url(' + IMAGES.heroBg + ')'">
+    <h1 appScrollReveal [animationType]="'fade-scale'" [animationDuration]="800" [autoPlay]="true">
+      {{ 'home.hero.title' | translate }}
+    </h1>
+
+    <h2
+      appScrollReveal
+      [animationType]="'slide-up'"
+      [animationDelay]="200"
+      [animationDuration]="800"
+      [autoPlay]="true"
+    >
+      {{ 'home.hero.subtitle' | translate }}
+    </h2>
+
+    <p
+      appScrollReveal
+      [animationType]="'fade'"
+      [animationDelay]="400"
+      [animationDuration]="800"
+      [autoPlay]="true"
+    >
+      {{ 'home.hero.description' | translate }}
+    </p>
+
+    <app-slide></app-slide>
+  </div>
+
+  <app-featured>
+    <app-featured-product-card
+      *ngFor="let product of featuredProducts(); let i = index"
+      [product]="product"
+      (cardClick)="onProductClick(product.id)"
+      appScrollReveal
+      [animationType]="'slide-up'"
+      [animationDelay]="i * 150"
+      [threshold]="0.1"
+    >
+    </app-featured-product-card>
+  </app-featured>
+</div>

@@ -1,0 +1,42 @@
+<div class="language-switcher">
+  <button
+    class="lang-button"
+    (click)="toggleDropdown()"
+    [attr.aria-expanded]="isOpen"
+    [attr.aria-label]="'language.switch' | translate"
+  >
+    @if (currentLang.imageError) {
+      <span class="fallback-text">{{ currentLang.code.toUpperCase() }}</span>
+    } @else {
+      <img
+        [src]="currentLang.flagImage"
+        [alt]="currentLang.name"
+        class="lang-flag-img"
+        (error)="onImageError(currentLang.code)"
+      />
+    }
+  </button>
+
+  <div class="lang-dropdown" *ngIf="isOpen">
+    <div class="lang-list">
+      <button
+        *ngFor="let lang of languages"
+        class="lang-item"
+        [class.active]="currentLanguage === lang.code"
+        (click)="selectLanguage(lang.code)"
+      >
+        @if (lang.imageError) {
+          <span class="fallback-text">{{ lang.code.toUpperCase() }}</span>
+        } @else {
+          <img
+            [src]="lang.flagImage"
+            [alt]="lang.name"
+            class="lang-item-flag-img"
+            (error)="onImageError(lang.code)"
+          />
+        }
+        <span class="lang-item-name">{{ lang.name }}</span>
+      </button>
+    </div>
+  </div>
+</div>

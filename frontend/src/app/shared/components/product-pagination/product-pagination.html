@@ -1,0 +1,62 @@
+<div class="pagination-wrapper">
+  <div class="items-per-page">
+    <label class="items-label">{{ 'pagination.items_per_page' | translate }}:</label>
+    <div class="items-options">
+      @for (option of itemsPerPageOptions; track option) {
+        <button
+          class="items-option"
+          [class.active]="option === pagination.itemsPerPage"
+          (click)="updateItemsPerPage(option)"
+        >
+          {{ option }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="pagination-info">
+    {{ 'pagination.showing' | translate }}
+    <strong>{{ startItem }}</strong
+    >-<strong>{{ endItem }}</strong>
+    {{ 'pagination.of' | translate }}
+    <strong>{{ pagination.totalItems }}</strong>
+  </div>
+
+  <nav class="pagination-controls" [attr.aria-label]="'pagination.navigation' | translate">
+    <button
+      class="page-button nav-button"
+      [disabled]="!hasPrevious"
+      (click)="previousPage()"
+      [attr.aria-label]="'pagination.previous' | translate"
+    >
+      ‹
+    </button>
+
+    <div class="page-numbers">
+      @for (page of pages; track $index) {
+        @if (page === -1) {
+          <span class="ellipsis">…</span>
+        } @else {
+          <button
+            class="page-button"
+            [class.active]="page === pagination.currentPage"
+            (click)="goToPage(page)"
+            [attr.aria-label]="('pagination.page' | translate) + ' ' + page"
+            [attr.aria-current]="page === pagination.currentPage ? 'page' : null"
+          >
+            {{ page }}
+          </button>
+        }
+      }
+    </div>
+
+    <button
+      class="page-button nav-button"
+      [disabled]="!hasNext"
+      (click)="nextPage()"
+      [attr.aria-label]="'pagination.next' | translate"
+    >
+      ›
+    </button>
+  </nav>
+</div>

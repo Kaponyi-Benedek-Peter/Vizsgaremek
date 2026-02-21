@@ -1,0 +1,221 @@
+.home {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero {
+  background-color: var(--color-primary);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
+  width: 100%;
+  min-height: 680px;
+  height: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 24px 80px;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(3, 50, 26, 0.78) 0%,
+    rgba(6, 90, 50, 0.62) 50%,
+    rgba(4, 60, 35, 0.8) 100%
+  );
+  z-index: 1;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(114, 228, 240, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(6, 122, 69, 0.12) 0%, transparent 50%);
+  animation: heroFloat 12s ease-in-out infinite alternate;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes heroFloat {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(2%, 3%) scale(1.05);
+  }
+}
+
+.hero > * {
+  position: relative;
+  z-index: 2;
+}
+
+.hero h1 {
+  text-align: center;
+  color: white;
+  margin-bottom: 12px;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+  /* Subtle green tint on text */
+  background: linear-gradient(135deg, #ffffff 60%, #a8f0c8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero h2 {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 16px;
+  font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+}
+
+.hero p {
+  text-align: center;
+  margin: 0 auto 24px;
+  max-width: 760px;
+  padding: 0 20px;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.8;
+  font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+}
+
+.hero-scroll-indicator {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+  animation: scrollBounce 2s ease-in-out infinite;
+  opacity: 0.6;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-scroll-indicator::after {
+  content: '↓';
+  font-size: 1.2rem;
+  animation: scrollBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes scrollBounce {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(6px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .hero {
+    background-attachment: scroll;
+  }
+
+  .hero p {
+    max-width: 600px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: 520px;
+    padding: 40px 20px 64px;
+    align-items: flex-start;
+    background-attachment: scroll;
+  }
+
+  .hero h1 {
+    text-align: left;
+    font-size: clamp(1.7rem, 6vw, 2.4rem);
+    letter-spacing: -0.01em;
+  }
+
+  .hero h2 {
+    text-align: left;
+    font-size: 1.1rem;
+  }
+
+  .hero p {
+    text-align: left;
+    font-size: 0.95rem;
+    padding: 0;
+    margin: 0 0 16px;
+    max-width: 100%;
+  }
+
+  .hero-scroll-indicator {
+    bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    min-height: 440px;
+    padding: 28px 16px 56px;
+  }
+
+  .hero h1 {
+    font-size: 1.7rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .hero {
+    min-height: 380px;
+    padding: 24px 14px 48px;
+  }
+
+  .hero h1 {
+    font-size: 1.4rem;
+  }
+
+  .hero h2 {
+    font-size: 1rem;
+  }
+
+  .hero p {
+    font-size: 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero::after {
+    animation: none;
+  }
+
+  .hero-scroll-indicator {
+    animation: none;
+  }
+
+  .hero {
+    background-attachment: scroll;
+  }
+}

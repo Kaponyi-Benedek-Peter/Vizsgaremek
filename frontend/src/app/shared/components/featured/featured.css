@@ -1,0 +1,105 @@
+.featured-section {
+  width: 100%;
+  max-width: 1840px;
+  background-color: var(--color-featured-bg);
+  position: relative;
+  padding: 60px clamp(24px, 5vw, 80px);
+  margin: 0 auto;
+}
+
+.featured-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-featured-divider) 10%,
+    var(--color-featured-divider) 50%,
+    var(--color-featured-divider) 90%,
+    transparent 100%
+  );
+}
+
+.featured-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-featured-divider) 10%,
+    var(--color-featured-divider) 50%,
+    var(--color-featured-divider) 90%,
+    transparent 100%
+  );
+}
+
+.section-title {
+  font-family: 'Inconsolata', monospace;
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: clamp(40px, 8vw, 90px);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 2px;
+  background: var(--color-primary);
+  margin: 20px auto 0;
+}
+
+.featured-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 360px));
+  gap: clamp(20px, 3vw, 40px);
+  align-items: stretch;
+  justify-content: center;
+}
+
+@supports (grid-template-columns: subgrid) {
+  .featured-products-grid {
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 360px) {
+  .featured-section {
+    padding: 32px 12px;
+  }
+
+  .section-title {
+    letter-spacing: 1.5px;
+    margin-bottom: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .featured-section {
+    padding: 40px 16px;
+  }
+
+  .section-title {
+    margin-bottom: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featured-section::before,
+  .featured-section::after {
+    transition: none;
+  }
+}

@@ -1,0 +1,223 @@
+<div class="legal-page">
+  <div class="legal-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">{{ 'legal.title' | translate }}</h1>
+      <p class="hero-description">{{ 'legal.description' | translate }}</p>
+    </div>
+  </div>
+
+  <div class="legal-container">
+    <nav class="legal-tabs" role="tablist">
+      <button
+        role="tab"
+        [class]="'tab-btn' + (activeTab() === 'terms' ? ' active' : '')"
+        [attr.aria-selected]="activeTab() === 'terms'"
+        (click)="setTab('terms')"
+      >
+        📄 {{ 'legal.tabs.terms' | translate }}
+      </button>
+      <button
+        role="tab"
+        [class]="'tab-btn' + (activeTab() === 'privacy' ? ' active' : '')"
+        [attr.aria-selected]="activeTab() === 'privacy'"
+        (click)="setTab('privacy')"
+      >
+        🔒 {{ 'legal.tabs.privacy' | translate }}
+      </button>
+      <button
+        role="tab"
+        [class]="'tab-btn' + (activeTab() === 'cookies' ? ' active' : '')"
+        [attr.aria-selected]="activeTab() === 'cookies'"
+        (click)="setTab('cookies')"
+      >
+        🍪 {{ 'legal.tabs.cookies' | translate }}
+      </button>
+    </nav>
+
+    @if (activeTab() === 'terms') {
+      <article class="legal-content" role="tabpanel">
+        <div class="legal-header">
+          <h2 class="legal-section-title">{{ 'legal.terms.title' | translate }}</h2>
+          <p class="legal-updated">{{ 'legal.last_updated' | translate }}: 2025-01-01</p>
+        </div>
+
+        <div class="legal-body">
+          <section class="legal-block">
+            <h3>{{ 'legal.terms.section1_title' | translate }}</h3>
+            <p>{{ 'legal.terms.section1_text' | translate }}</p>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.terms.section2_title' | translate }}</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">{{ 'legal.terms.info_name' | translate }}</span>
+                <span>{{ 'legal.terms.info_name_value' | translate }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">{{ 'legal.terms.info_address' | translate }}</span>
+                <span>{{ 'legal.terms.info_address_value' | translate }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">{{ 'legal.terms.info_email' | translate }}</span>
+                <span>{{ 'legal.terms.info_email_value' | translate }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">{{ 'legal.terms.info_phone' | translate }}</span>
+                <span>{{ 'legal.terms.info_phone_value' | translate }}</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.terms.section3_title' | translate }}</h3>
+            <p>{{ 'legal.terms.section3_text' | translate }}</p>
+            <ul>
+              <li>{{ 'legal.terms.section3_step1' | translate }}</li>
+              <li>{{ 'legal.terms.section3_step2' | translate }}</li>
+              <li>{{ 'legal.terms.section3_step3' | translate }}</li>
+              <li>{{ 'legal.terms.section3_step4' | translate }}</li>
+            </ul>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.terms.section4_title' | translate }}</h3>
+            <p>{{ 'legal.terms.section4_text' | translate }}</p>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.terms.section5_title' | translate }}</h3>
+            <p>{{ 'legal.terms.section5_text' | translate }}</p>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.terms.section6_title' | translate }}</h3>
+            <p>{{ 'legal.terms.section6_text' | translate }}</p>
+          </section>
+        </div>
+      </article>
+    }
+
+    @if (activeTab() === 'privacy') {
+      <article class="legal-content" role="tabpanel">
+        <div class="legal-header">
+          <h2 class="legal-section-title">{{ 'legal.privacy.title' | translate }}</h2>
+          <p class="legal-updated">{{ 'legal.last_updated' | translate }}: 2025-01-01</p>
+        </div>
+
+        <div class="legal-body">
+          <section class="legal-block">
+            <h3>{{ 'legal.privacy.section1_title' | translate }}</h3>
+            <p>{{ 'legal.privacy.section1_text' | translate }}</p>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.privacy.section2_title' | translate }}</h3>
+            <div class="data-table">
+              <div class="data-row header">
+                <span>{{ 'legal.privacy.table_header_category' | translate }}</span>
+                <span>{{ 'legal.privacy.table_header_purpose' | translate }}</span>
+                <span>{{ 'legal.privacy.table_header_retention' | translate }}</span>
+              </div>
+              <div class="data-row">
+                <span>{{ 'legal.privacy.table_row1_category' | translate }}</span>
+                <span>{{ 'legal.privacy.table_row1_purpose' | translate }}</span>
+                <span>{{ 'legal.privacy.table_row1_retention' | translate }}</span>
+              </div>
+              <div class="data-row">
+                <span>{{ 'legal.privacy.table_row2_category' | translate }}</span>
+                <span>{{ 'legal.privacy.table_row2_purpose' | translate }}</span>
+                <span>{{ 'legal.privacy.table_row2_retention' | translate }}</span>
+              </div>
+              <div class="data-row">
+                <span>{{ 'legal.privacy.table_row3_category' | translate }}</span>
+                <span>{{ 'legal.privacy.table_row3_purpose' | translate }}</span>
+                <span>{{ 'legal.privacy.table_row3_retention' | translate }}</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.privacy.section3_title' | translate }}</h3>
+            <p>{{ 'legal.privacy.section3_text' | translate }}</p>
+            <ul>
+              <li><strong>{{ 'legal.privacy.right_access' | translate }}</strong> – {{ 'legal.privacy.right_access_desc' | translate }}</li>
+              <li><strong>{{ 'legal.privacy.right_rectification' | translate }}</strong> – {{ 'legal.privacy.right_rectification_desc' | translate }}</li>
+              <li><strong>{{ 'legal.privacy.right_erasure' | translate }}</strong> – {{ 'legal.privacy.right_erasure_desc' | translate }}</li>
+              <li><strong>{{ 'legal.privacy.right_portability' | translate }}</strong> – {{ 'legal.privacy.right_portability_desc' | translate }}</li>
+              <li><strong>{{ 'legal.privacy.right_objection' | translate }}</strong> – {{ 'legal.privacy.right_objection_desc' | translate }}</li>
+            </ul>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.privacy.section4_title' | translate }}</h3>
+            <p>{{ 'legal.privacy.section4_text' | translate }}</p>
+          </section>
+        </div>
+      </article>
+    }
+
+    @if (activeTab() === 'cookies') {
+      <article class="legal-content" role="tabpanel">
+        <div class="legal-header">
+          <h2 class="legal-section-title">{{ 'legal.cookies.title' | translate }}</h2>
+          <p class="legal-updated">{{ 'legal.last_updated' | translate }}: 2025-01-01</p>
+        </div>
+
+        <div class="legal-body">
+          <section class="legal-block">
+            <h3>{{ 'legal.cookies.what_title' | translate }}</h3>
+            <p>{{ 'legal.cookies.what_text' | translate }}</p>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.cookies.types_title' | translate }}</h3>
+
+            <div class="cookie-card essential">
+              <div class="cookie-card-header">
+                <span class="cookie-type-badge essential">{{ 'legal.cookies.essential_badge' | translate }}</span>
+                <span class="cookie-required">{{ 'legal.cookies.essential_always_active' | translate }}</span>
+              </div>
+              <h4>{{ 'legal.cookies.essential_title' | translate }}</h4>
+              <p>{{ 'legal.cookies.essential_text' | translate }}</p>
+              <div class="cookie-examples">
+                <code>session_id</code>
+                <code>auth_token</code>
+                <code>csrf_token</code>
+              </div>
+            </div>
+
+            <div class="cookie-card analytics">
+              <div class="cookie-card-header">
+                <span class="cookie-type-badge analytics">{{ 'legal.cookies.analytics_badge' | translate }}</span>
+              </div>
+              <h4>{{ 'legal.cookies.analytics_title' | translate }}</h4>
+              <p>{{ 'legal.cookies.analytics_text' | translate }}</p>
+              <div class="cookie-examples">
+                <code>_ga</code>
+                <code>_gid</code>
+              </div>
+            </div>
+
+            <div class="cookie-card preferences">
+              <div class="cookie-card-header">
+                <span class="cookie-type-badge preferences">{{ 'legal.cookies.preferences_badge' | translate }}</span>
+              </div>
+              <h4>{{ 'legal.cookies.preferences_title' | translate }}</h4>
+              <p>{{ 'legal.cookies.preferences_text' | translate }}</p>
+              <div class="cookie-examples">
+                <code>preferredLanguage</code>
+                <code>preferredTheme</code>
+              </div>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.cookies.manage_title' | translate }}</h3>
+            <p>{{ 'legal.cookies.manage_text' | translate }}</p>
+          </section>
+        </div>
+      </article>
+    }
+  </div>
+</div>

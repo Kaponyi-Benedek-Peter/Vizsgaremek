@@ -1,0 +1,122 @@
+<article
+  class="post-card"
+  [class.compact]="compactMode"
+  [class.pinned]="post.isPinned"
+  [class.featured]="post.isFeatured"
+  [routerLink]="[post.type === 'blog' ? '/blog' : '/forum', post.slug]"
+  (click)="handleCardClick()"
+>
+  @if (post.isPinned) {
+    <div class="pinned-badge">
+      <span class="pin-icon">📌</span>
+      <span>{{ 'forum.pinned' | translate }}</span>
+    </div>
+  }
+
+  @if (post.isFeatured && !post.isPinned) {
+    <div class="featured-badge">
+      <span class="star-icon">⭐</span>
+      <span>{{ 'forum.featured' | translate }}</span>
+    </div>
+  }
+
+  @if (showImage && post.imageUrl) {
+    <div class="post-image">
+      <img [src]="post.imageUrl" [alt]="post.title" loading="lazy" />
+
+      @if (showCategory && categoryInfo) {
+        <div class="category-badge-overlay" [class]="categoryInfo.colorClass">
+          <span class="category-icon">{{ categoryInfo.icon }}</span>
+          <span class="category-name">{{ categoryInfo.translationKey | translate }}</span>
+        </div>
+      }
+
+      @if (post.type === 'forum') {
+        <div class="forum-badges">
+          @if (isQuestion) {
+            <div class="question-badge"><span>❓</span> {{ 'forum.question' | translate }}</div>
+          }
+          @if (hasAcceptedAnswer) {
+            <div class="answered-badge"><span>✓</span> {{ 'forum.answered' | translate }}</div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <div class="post-content">
+    <div class="post-header">
+      @if (showCategory && categoryInfo && !post.imageUrl) {
+        <div class="category-badge-inline" [class]="categoryInfo.colorClass">
+          <span class="category-icon">{{ categoryInfo.icon }}</span>
+          <span class="category-name">{{ categoryInfo.translationKey | translate }}</span>
+        </div>
+      }
+
+      <div class="post-meta">
+        <span class="post-date">{{ getRelativeTime() }}</span>
+        @if (readingTime) {
+          <span class="reading-time">
+            <span class="icon">📖</span>
+            {{ readingTime }} {{ 'common.minutes' | translate }}
+          </span>
+        }
+      </div>
+    </div>
+
+    <h3 class="post-title">{{ post.title }}</h3>
+
+    @if (showExcerpt) {
+      <p class="post-excerpt">{{ post.excerpt }}</p>
+    }
+
+    @if (showAuthor) {
+      <div class="post-author">
+        <div class="author-info">
+          @if (post.author.avatar) {
+            <img class="author-avatar" [src]="post.author.avatar" [alt]="post.author.name" />
+          } @else {
+            <div class="author-avatar-placeholder">
+              {{ post.author.name.charAt(0).toUpperCase() }}
+            </div>
+          }
+
+          <div class="author-details">
+            <span class="author-name">{{ post.author.name }}</span>
+            @if (post.author.verified) {
+              <span class="verified-icon" title="{{ 'forum.verified' | translate }}">✓</span>
+            }
+            <span class="author-role" [class]="authorBadgeClass">
+              {{ 'forum.role.' + post.author.role | translate }}
+            </span>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showStats) {
+      <div class="post-stats">
+        <div class="stat-item">
+          <span class="stat-icon">👁️</span>
+          <span class="stat-value">{{ post.views }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">❤️</span>
+          <span class="stat-value">{{ post.likes }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">💬</span>
+          <span class="stat-value">{{ post.commentCount }}</span>
+        </div>
+      </div>
+    }
+
+    @if (post.tags.length > 0) {
+      <div class="post-tags">
+        @for (tag of post.tags.slice(0, 3); track tag) {
+          <span class="tag">#{{ tag }}</span>
+        }
+      </div>
+    }
+  </div>
+</article>

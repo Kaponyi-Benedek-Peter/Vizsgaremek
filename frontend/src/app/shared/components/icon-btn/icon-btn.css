@@ -1,0 +1,38 @@
+.icon-btn {
+  width: 35px;
+  height: 35px;
+
+  padding: 0px;
+  border-radius: 50%;
+
+  background-color: #403e3e;
+  border: #f5f0e1 solid 3px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition: transform 0.2s ease;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+
+  transition:
+    transform 0.2s ease,
+    border 0.2s ease;
+}
+
+.icon-btn:hover {
+  transform: scale(0.95);
+  border: #f5f0e1 solid 3.2px;
+}
+
+.icon-btn:hover img {
+  transform: scale(1.1);
+}

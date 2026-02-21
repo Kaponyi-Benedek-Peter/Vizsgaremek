@@ -1,0 +1,130 @@
+<article
+  class="product-card"
+  [class.compact]="compact"
+  [class.out-of-stock]="!product.inStock"
+  [attr.aria-label]="localizedName"
+>
+  <a [routerLink]="['/products', product.id]" class="product-link">
+    <div class="product-image-wrapper">
+      <img [src]="product.imageUrl" [alt]="localizedName" class="product-image" loading="lazy" />
+
+      <div class="product-image-overlay"></div>
+
+      <div class="badges">
+        @if (hasDiscount) {
+          <span class="badge discount-badge"> -{{ product.discountPercentage }}% </span>
+        }
+
+        @if (product.requiresPrescription) {
+          <span
+            class="badge prescription-badge"
+            [title]="'product.requires_prescription' | translate"
+          >
+            ℞
+          </span>
+        }
+
+        @if (!product.inStock) {
+          <span class="badge out-of-stock-badge">
+            {{ 'product.out_of_stock' | translate }}
+          </span>
+        }
+      </div>
+
+      @if (!product.inStock) {
+        <div class="out-of-stock-overlay">
+          <span>{{ 'product.out_of_stock' | translate }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="product-content">
+      @if (!compact) {
+        <span class="product-category">
+          {{ 'category.' + product.category | translate }}
+        </span>
+      }
+
+      <h3 class="product-title" [class.compact]="compact">
+        {{ localizedName }}
+      </h3>
+
+      @if (!compact) {
+        <p class="product-description">{{ localizedDescription }}</p>
+      }
+
+      @if (product.manufacturer && !compact) {
+        <p class="product-meta">
+          <span class="meta-label">{{ 'product.manufacturer' | translate }}:</span>
+          <span class="meta-value">{{ product.manufacturer }}</span>
+        </p>
+      }
+
+      @if (product.rating && !compact) {
+        <div class="product-rating">
+          <span class="rating-stars">★★★★☆</span>
+          <span class="rating-value">{{ product.rating }}</span>
+          <span class="rating-count">({{ product.reviewCount }})</span>
+        </div>
+      }
+
+      <div class="product-price-section">
+        @if (hasDiscount) {
+          <div class="price-with-discount">
+            <span class="original-price">{{ formattedPrice }}</span>
+            <span class="discounted-price">{{ formattedDiscountedPrice }}</span>
+          </div>
+        } @else {
+          <span class="price">{{ formattedPrice }}</span>
+        }
+      </div>
+    </div>
+  </a>
+
+  <div class="product-actions">
+    @if (!compact) {
+      <div class="quantity-controls" [class.disabled]="!product.inStock">
+        <button
+          class="quantity-btn"
+          (click)="decreaseQuantity()"
+          [disabled]="quantity() <= 1 || !product.inStock"
+          [attr.aria-label]="'product.decrease_quantity' | translate"
+        >
+          −
+        </button>
+
+        <span class="quantity-value">{{ quantity() }}</span>
+
+        <button
+          class="quantity-btn"
+          (click)="increaseQuantity()"
+          [disabled]="quantity() >= product.stockQuantity || !product.inStock"
+          [attr.aria-label]="'product.increase_quantity' | translate"
+        >
+          +
+        </button>
+      </div>
+    }
+
+    <button
+      class="add-to-cart-button"
+      [class.compact]="compact"
+      [disabled]="!canAddToCart"
+      (click)="onAddToCart()"
+      [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName"
+    >
+      <span class="button-icon">🛒</span>
+      {{ 'common.add_to_cart' | translate }}
+    </button>
+
+    @if (!compact) {
+      <button
+        class="details-button"
+        (click)="onViewDetails()"
+        [attr.aria-label]="('product.view_details' | translate) + ': ' + localizedName"
+      >
+        {{ 'product.view_details' | translate }}
+      </button>
+    }
+  </div>
+</article>

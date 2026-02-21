@@ -1,0 +1,219 @@
+<div class="modal-backdrop" (click)="handleBackdropClick($event)">
+  <div class="modal-container" role="dialog" aria-modal="true" [attr.aria-label]="localizedName">
+    <button
+      class="modal-close"
+      (click)="handleClose()"
+      [attr.aria-label]="'common.close' | translate"
+    >
+      ✕
+    </button>
+
+    <div class="modal-content">
+      <div class="modal-images">
+        <div class="main-image-wrapper">
+          @if (images.length > 1) {
+            <button
+              class="image-nav-btn prev"
+              [class.disabled]="!canGoPrevious()"
+              [disabled]="!canGoPrevious()"
+              (click)="previousImage()"
+              [attr.aria-label]="'product.previous_image' | translate"
+            >
+              ‹
+            </button>
+          }
+
+          <img [src]="selectedImage" [alt]="localizedName" class="main-image" />
+
+          @if (product.requiresPrescription) {
+            <span class="prescription-badge" [title]="'product.requires_prescription' | translate">
+              ℞
+            </span>
+          }
+
+          @if (hasDiscount) {
+            <span class="discount-badge"> -{{ product.discountPercentage }}% </span>
+          }
+
+          @if (images.length > 1) {
+            <button
+              class="image-nav-btn next"
+              [class.disabled]="!canGoNext()"
+              [disabled]="!canGoNext()"
+              (click)="nextImage()"
+              [attr.aria-label]="'product.next_image' | translate"
+            >
+              ›
+            </button>
+          }
+
+          @if (images.length > 1) {
+            <div class="image-counter">{{ selectedImageIndex() + 1 }} / {{ images.length }}</div>
+          }
+        </div>
+
+        @if (images.length > 1) {
+          <div class="thumbnail-list">
+            @for (image of images; track $index) {
+              <button
+                class="thumbnail"
+                [class.active]="selectedImageIndex() === $index"
+                (click)="selectImage($index)"
+                [attr.aria-label]="'product.view_image' | translate: { number: $index + 1 }"
+              >
+                <img [src]="image" [alt]="localizedName + ' - ' + ($index + 1)" />
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="modal-details">
+        <div class="modal-header">
+          <span class="product-category-badge">
+            {{ 'category.' + product.category | translate }}
+          </span>
+
+          <h2 class="modal-title">{{ localizedName }}</h2>
+
+          @if (product.rating) {
+            <div class="product-rating">
+              <span class="rating-stars">{{ getRatingStars() }}</span>
+              <span class="rating-value">{{ product.rating }}</span>
+              <span class="rating-count"
+                >({{ product.reviewCount }} {{ 'product.reviews' | translate }})</span
+              >
+            </div>
+          }
+        </div>
+
+        <div class="price-section">
+          @if (hasDiscount) {
+            <div class="price-with-discount">
+              <span class="original-price">{{ formattedPrice }}</span>
+              <span class="discounted-price">{{ formattedDiscountedPrice }}</span>
+            </div>
+          } @else {
+            <span class="price">{{ formattedPrice }}</span>
+          }
+        </div>
+
+        <div class="meta-info">
+          @if (product.manufacturer) {
+            <div class="meta-row">
+              <span class="meta-label">{{ 'product.manufacturer' | translate }}:</span>
+              <span class="meta-value">{{ product.manufacturer }}</span>
+            </div>
+          }
+
+          @if (product.brand) {
+            <div class="meta-row">
+              <span class="meta-label">{{ 'product.brand' | translate }}:</span>
+              <span class="meta-value">{{ product.brand }}</span>
+            </div>
+          }
+
+          @if (product.sku) {
+            <div class="meta-row">
+              <span class="meta-label">{{ 'product.sku' | translate }}:</span>
+              <span class="meta-value">{{ product.sku }}</span>
+            </div>
+          }
+
+          <div class="meta-row">
+            <span class="meta-label">{{ 'product.availability' | translate }}:</span>
+            <span
+              class="meta-value"
+              [class.in-stock]="product.inStock"
+              [class.out-of-stock]="!product.inStock"
+            >
+              {{
+                product.inStock
+                  ? ('product.in_stock' | translate)
+                  : ('product.out_of_stock' | translate)
+              }}
+              @if (product.inStock && product.stockQuantity) {
+                ({{ product.stockQuantity }} {{ 'product.pieces' | translate }})
+              }
+            </span>
+          </div>
+        </div>
+
+        <div class="description-section">
+          <h3 class="section-title">{{ 'product.description' | translate }}</h3>
+          <p class="description-text">{{ localizedDescription }}</p>
+        </div>
+
+        @if (product.activeIngredients || product.dosage || product.packaging) {
+          <div class="pharma-details">
+            <h3 class="section-title">{{ 'product.pharmaceutical_details' | translate }}</h3>
+
+            @if (product.activeIngredients) {
+              <div class="detail-item">
+                <strong>{{ 'product.active_ingredients' | translate }}:</strong>
+                <span>{{ product.activeIngredients }}</span>
+              </div>
+            }
+
+            @if (product.dosage) {
+              <div class="detail-item">
+                <strong>{{ 'product.dosage' | translate }}:</strong>
+                <span>{{ product.dosage }}</span>
+              </div>
+            }
+
+            @if (product.packaging) {
+              <div class="detail-item">
+                <strong>{{ 'product.packaging' | translate }}:</strong>
+                <span>{{ product.packaging }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="cart-section">
+          <div class="quantity-controls">
+            <button
+              class="quantity-btn"
+              (click)="decreaseQuantity()"
+              [disabled]="quantity() <= 1 || !product.inStock"
+              [attr.aria-label]="'product.decrease_quantity' | translate"
+            >
+              −
+            </button>
+
+            <span class="quantity-value">{{ quantity() }}</span>
+
+            <button
+              class="quantity-btn"
+              (click)="increaseQuantity()"
+              [disabled]="quantity() >= product.stockQuantity || !product.inStock"
+              [attr.aria-label]="'product.increase_quantity' | translate"
+            >
+              +
+            </button>
+          </div>
+
+          <div class="total-price-display">
+            <span class="total-label">{{ 'product.total' | translate }}:</span>
+            <span class="total-value">{{ formattedTotalPrice }}</span>
+          </div>
+
+          <button class="add-to-cart-button" [disabled]="!canAddToCart" (click)="handleAddToCart()">
+            <span class="button-icon">🛒</span>
+            {{ 'common.add_to_cart' | translate }}
+          </button>
+
+          @if (product.requiresPrescription) {
+            <div class="prescription-notice">
+              <span class="notice-icon">ℹ️</span>
+              <span class="notice-text">{{
+                'product.prescription_required_notice' | translate
+              }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
