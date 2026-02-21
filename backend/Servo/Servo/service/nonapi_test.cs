@@ -97,7 +97,7 @@ namespace Servo.service
 
                 model.shared.add_category(cat);
           
-            service.shared.log($"[Added category]");
+            service.shared.log($"[Added categoryy]");
 
         }
 
