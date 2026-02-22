@@ -2,18 +2,14 @@
   class="category-item"
   [class.active]="isSelected"
   (click)="handleClick()"
-  [attr.aria-label]="'category.select' | translate"
+  [attr.aria-label]="displayName"
   [attr.aria-pressed]="isSelected"
 >
   @if (category.icon) {
     <span class="category-icon">{{ category.icon }}</span>
   }
 
-  <span class="category-name">
-    {{ 'category.' + category.slug | translate }}
-  </span>
+  <span class="category-name">{{ displayName }}</span>
 
-  @if (category.count !== undefined) {
-    <span class="category-count">({{ category.count }})</span>
-  }
+  <span class="category-count">({{ category.count }})</span>
 </button>

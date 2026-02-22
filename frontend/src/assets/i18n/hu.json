@@ -103,7 +103,10 @@
       "updating": "Frissítés...",
       "back_to_login": "Vissza a bejelentkezéshez",
       "success": "Jelszó megváltoztatva!",
-      "subtitle": "Adja meg új jelszavát"
+      "subtitle": "Adja meg új jelszavát",
+      "processing": "Jelszó módosítása...",
+      "please_wait": "Kérjük várjon, amíg frissítjük a hitelesítő adatait.",
+      "error_title": "Jelszómódosítás sikertelen"
     },
     "fields": {
       "lastname": "Vezetéknév",
@@ -215,40 +218,101 @@
     "title": "Jogi információk"
   },
   "profile": {
-    "account_details": "Fiók adatok",
-    "last_name": "Vezetéknév",
-    "delete_warning": "Figyelem! A fiók törlése visszafordíthatatlan. A folytatáshoz adja meg jelszavát. Megerősítő e-mailt fogunk küldeni.",
-    "delacc": {
-      "redirecting": "Átirányítás a főoldalra...",
-      "success_message": "Fiókja sikeresen törölve lett. Köszönjük, hogy nálunk vásárolt.",
-      "error_title": "Törlés sikertelen",
-      "processing": "Fiók törlése folyamatban",
-      "success_title": "Fiók törölve",
-      "please_wait": "Kérjük várjon..."
+    "not_authenticated": "A profil megtekintéséhez kérjük, jelentkezz be.",
+    "menu": "Menü",
+    "logout": "Kijelentkezés",
+    "quick_actions": "Gyorsműveletek",
+    "role": {
+      "verified": "Hitelesített",
+      "unverified": "Nem hitelesített",
+      "admin": "Adminisztrátor"
     },
-    "success": {
-      "profile_updated": "A profil sikeresen frissítve."
+    "nav": {
+      "label": "Profil navigáció",
+      "overview": "Áttekintés",
+      "personal": "Személyes adatok",
+      "security": "Biztonság",
+      "orders": "Rendeléseim",
+      "danger": "Veszélyzóna"
     },
     "stats": {
-      "orders": "Rendelések",
-      "reviews": "Értékelések",
-      "wishlist": "Kívánságlista"
+      "orders": "Rendelés",
+      "reviews": "Értékelés",
+      "status": "Fiók"
     },
-    "edit_profile": "Profil szerkesztése",
-    "delete_email_sent": "Megerősítő e-mail elküldve! Kérjük ellenőrizze postafiókját és kattintson a megerősítő linkre.",
-    "role": "Szerepkör",
-    "save_changes": "Változtatások mentése",
-    "change_password": "Jelszó megváltoztatása",
-    "email": "E-mail cím",
-    "logout": "Kijelentkezés",
-    "first_name": "Keresztnév",
-    "not_authenticated": "Kérjük jelentkezzen be a profil megtekintéséhez.",
-    "danger_zone_description": "Az alábbi műveletek visszafordíthatatlanok. Kérjük járjon el körültekintően.",
-    "danger_zone": "Veszélyes műveletek",
-    "delete_account": "Fiók törlése",
-    "confirm_delete": "Törlés megerősítése",
-    "view_orders": "Rendeléseim megtekintése"
+    "quick": {
+      "edit_info_desc": "Nevének és fiókadatainak módosítása",
+      "security_desc": "Jelszó és biztonsági beállítások kezelése",
+      "orders_desc": "Rendelési előzmények és kézbesítés nyomon követése"
+    },
+    "personal": {
+      "subtitle": "Személyes adatok kezelése",
+      "account_info": "Fiókadatok",
+      "email": "E-mail cím",
+      "email_note": "Az e-mail cím itt nem módosítható. Ha változtatásra van szüksége, lépjen kapcsolatba az ügyfélszolgálattal.",
+      "account_state": "Fiók státusza",
+      "edit_name": "Név módosítása",
+      "first_name": "Keresztnév",
+      "last_name": "Vezetéknév",
+      "first_name_placeholder": "Az Ön keresztneve",
+      "last_name_placeholder": "Az Ön vezetékneve",
+      "save": "Változtatások mentése"
+    },
+    "security": {
+      "subtitle": "Jelszó és fiókbiztonság kezelése",
+      "change_password": "Jelszó megváltoztatása",
+      "change_password_desc": "Az új jelszó beállításához egy megerősítő emailt küldünk. Kattints a levélben lévő linkre a változtatás jóváhagyásához.",
+      "requires_login": "Bejelentkezés szükséges",
+      "current_password": "Jelenlegi jelszó",
+      "current_password_placeholder": "Adja meg jelenlegi jelszavát",
+      "new_password": "Új jelszó",
+      "new_password_placeholder": "Adja meg az új jelszót (min. 6 karakter)",
+      "confirm_password": "Új jelszó megerősítése",
+      "confirm_password_placeholder": "Írja be újra az új jelszót",
+      "change_password_btn": "Jelszó frissítése",
+      "password_changed": "Jelszava sikeresen frissítve.",
+      "forgot_password_title": "Elfelejtette jelszavát?",
+      "forgot_password_desc": "Ha elfelejtette jelenlegi jelszavát, e-mailen keresztül visszaállíthatja – bejelentkezés nélkül is. A visszaállítási link az e-mail fiókjába kerül elküldésre.",
+      "no_login_needed": "Bejelentkezés nélkül",
+      "forgot_password_btn": "Visszaállítási link küldése",
+      "email_confirmation": "Emailes megerősítés",
+      "email_prefilled": "Az email-cím automatikusan ki van töltve a fiókodból",
+      "email_sent_check": "Email elküldve! Ellenőrizd a postaládádat, és kattints a megerősítő linkre.",
+      "forgot_password_desc_alt": "Ha nincs hozzáférésed a fiókodhoz, a jelszót az email-cím megadásával is visszaállíthatod.",
+      "alternative_flow": "Alternatív megoldás"
+    }
   },
+  "orders": {
+    "subtitle": "Rendelési előzmények és nyomkövetés",
+    "empty_title": "Még nincs rendelés",
+    "empty_desc": "Még nem adott le rendelést. Böngésszen termékkínálatunkban!",
+    "browse_products": "Termékek megtekintése"
+  },
+  "danger": {
+    "subtitle": "Visszafordíthatatlan fiókműveletek",
+    "warning_banner": "Az ezen az oldalon végrehajtott műveletek véglegesek és nem vonhatók vissza. Kérjük, legyen óvatos.",
+    "delete_account": "Fiók törlése",
+    "delete_desc": "Fiókja és összes kapcsolódó adata – beleértve a rendelési előzményeket, értékeléseket és személyes adatokat – véglegesen törlésre kerül. A kérelem megerősítéséhez egy e-mailt küldünk.",
+    "confirm_password": "Megerősítés jelszóval",
+    "password_placeholder": "Adja meg jelenlegi jelszavát",
+    "password_hint": "A törlés megerősítéséhez egy linket küldünk az e-mail fiókjába. A fiók csak a linkre kattintás után törlődik.",
+    "delete_btn": "Fiók törlésének kérelmezése",
+    "email_sent_title": "Megerősítő e-mail elküldve",
+    "email_sent_desc": "Ellenőrizze postaládáját, és kattintson a linkre a fiók törlésének megerősítéséhez. A link 7 napig érvényes."
+  },
+  "errors": {
+    "name_required": "A keresztnév és a vezetéknév megadása kötelező.",
+    "update_failed": "A profil frissítése sikertelen. Kérjük, próbálja újra.",
+    "current_password_required": "Kérjük, adja meg jelenlegi jelszavát.",
+    "new_password_too_short": "Az új jelszónak legalább 6 karakter hosszúnak kell lennie.",
+    "passwords_do_not_match": "Az új jelszavak nem egyeznek meg.",
+    "password_change_failed": "A jelszó módosítása sikertelen. Ellenőrizze jelenlegi jelszavát, majd próbálja újra.",
+    "delete_failed": "A törlési kérelem elküldése sikertelen. Kérjük, próbálja újra."
+  },
+  "success": {
+    "profile_updated": "Profilja sikeresen frissítve."
+  },
+
   "product": {
     "in_stock": "Raktáron",
     "sku": "Cikkszám",

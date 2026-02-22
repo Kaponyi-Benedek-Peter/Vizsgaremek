@@ -365,9 +365,11 @@ export function isEmoji(value: string): boolean {
 export function getCategoriesFromVisuals(): Category[] {
   return Object.values(CATEGORY_VISUALS).map((visual) => ({
     id: visual.id,
-    slug: visual.id,
+    name_hu: '',
+    name_en: '',
+    name_de: '',
     icon: visual.icon,
-    color: '#067a45', // gets overrided
+    color: '#067a45',
     count: 0,
   }));
 }
@@ -377,7 +379,9 @@ export function getCategoryById(categoryId: string): Category | undefined {
   if (!visual) return undefined;
   return {
     id: visual.id,
-    slug: visual.id,
+    name_hu: '',
+    name_en: '',
+    name_de: '',
     icon: visual.icon,
     color: '#067a45',
     count: 0,

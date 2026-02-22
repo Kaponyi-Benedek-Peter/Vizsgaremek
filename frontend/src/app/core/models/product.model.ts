@@ -21,6 +21,7 @@ export interface Product {
   stock: string;
   times_ordered: string;
 
+  // Backend sends category_id; older mock data may use category
   category_id?: string;
   category?: string;
 
@@ -39,12 +40,45 @@ export interface Product {
   updated_at: string;
 }
 
+// ─── Raw backend shape ───────────────────────────────────────────────────────
+// Matches the product_categories table:
+//   id, category_en, category_hu, category_de, emoji, color, number_of_products
 export interface ProductCategory {
   id: string;
-  category: string;
+  category_en: string;
+  category_hu: string;
+  category_de: string;
   emoji: string;
   color: string;
   number_of_products: string;
+}
+
+// ─── Frontend-friendly shape used by components ──────────────────────────────
+export interface Category {
+  id: string;
+  name_hu: string;
+  name_en: string;
+  name_de: string;
+  icon: string;
+  color: string;
+  count: number; // computed from actual products, NOT from number_of_products
+}
+
+/**
+ * Maps a raw ProductCategory from the API to the frontend Category shape.
+ * `count` is intentionally 0 here – ProductService.categories computed
+ * signal overrides it with the real product count derived from allProductsSignal.
+ */
+export function mapProductCategory(raw: ProductCategory): Category {
+  return {
+    id: raw.id,
+    name_hu: raw.category_hu,
+    name_en: raw.category_en,
+    name_de: raw.category_de,
+    icon: raw.emoji,
+    color: raw.color,
+    count: 0,
+  };
 }
 
 export interface ProductImage {
@@ -55,24 +89,6 @@ export interface ProductImage {
   alt_text_en: string;
   alt_text_de: string;
   sort_id: string;
-}
-
-export interface Category {
-  id: string;
-  slug: string;
-  icon: string;
-  color: string;
-  count: number;
-}
-
-export function mapProductCategory(raw: ProductCategory): Category {
-  return {
-    id: raw.id,
-    slug: raw.category,
-    icon: raw.emoji,
-    color: raw.color,
-    count: parseInt(raw.number_of_products) || 0,
-  };
 }
 
 export interface ProductsApiResponse {
@@ -205,7 +221,7 @@ export function enrichProduct(
         ? [imageUrl]
         : [];
 
-  const resolvedCategory = product.category ?? product.category_id ?? '';
+  const resolvedCategory = product.category_id ?? product.category ?? '';
 
   return {
     ...product,
