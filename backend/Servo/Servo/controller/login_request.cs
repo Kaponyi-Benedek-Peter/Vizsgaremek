@@ -119,13 +119,13 @@ namespace Servo.controller
                     var respon = new
                     {
                         status = "inexistent_user_or_incorrect_data",
-                        statuscode = "500"
+                        statuscode = "403"
                     };
 
                     string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                    data.Response.StatusCode = 500;
+                    data.Response.StatusCode = 403;
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }

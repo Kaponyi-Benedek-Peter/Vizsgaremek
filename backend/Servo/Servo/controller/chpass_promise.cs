@@ -88,7 +88,7 @@ namespace Servo.controller
                     var respon = new
                     {
                         status = "404",
-                        statuscode = "confirmation_nem_letezik_vagy_hibas"
+                        statuscode = "inexistent_or_wrong_confirmation"
                     };
 
                     string jsonrespon = JsonSerializer.Serialize(respon);
@@ -108,7 +108,7 @@ namespace Servo.controller
 
                     var respon = new
                     {
-                        status = "confirmation_nem_letezik_vagy_hiba",
+                        status = "internal_error",
                         statuscode = "500"
                     };
 

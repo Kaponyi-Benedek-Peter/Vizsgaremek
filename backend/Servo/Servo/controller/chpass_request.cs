@@ -109,7 +109,7 @@ namespace Servo.controller
 
                     var respon = new
                     {
-                        status = "felhasznalo_bannolva",
+                        status = "banned_user",
                         statuscode = "401"
                     };
 
