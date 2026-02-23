@@ -78,7 +78,7 @@ namespace Servo.service
             
         }
 
-        public static void addtestcategories(string categoryname, string emoji, string color,  int number_of_products)
+        public static void addtestcategories(string categoryname_hu,string categoryname_en, string categoryname_de, string emoji, string color,  int number_of_products)
         {
 
 
@@ -86,7 +86,9 @@ namespace Servo.service
                 {
 
 
-                    category_name= categoryname,
+                    category_name_de=categoryname_de,
+                    category_name_en=categoryname_en,
+                    category_name_hu=categoryname_hu,
                     color = color,
                     emoji=emoji,
                     number_of_products=number_of_products

@@ -139,7 +139,7 @@ namespace Servo
 
         private void button16_Click(object sender, EventArgs e)
         {
-            service.nonapi_test.addtestcategories(category_tbox.Text,emoji_tbox.Text,color_tbox.Text,Int32.Parse(number_of_products_tbox.Text));
+            service.nonapi_test.addtestcategories(category_tbox.Text,categoryen_tbox.Text,categoryde_tbox.Text,emoji_tbox.Text,color_tbox.Text,Int32.Parse(number_of_products_tbox.Text));
 
         }
     }

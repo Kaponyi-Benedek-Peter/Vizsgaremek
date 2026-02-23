@@ -18,7 +18,7 @@ namespace Servo.service
             string model_password = model.shared.get_passhash_by_id(model_user_id);
             string accstate = model.shared.get_account_state_by_id(model_user_id);
             service.shared.log($"Debug 1: {service.shared.hashpass(controller_jelszo)} || {model_password} --service.login.process_login");
-            if (model_password == service.shared.hashpass(controller_jelszo) && accstate == "verified")
+            if (model_password == service.shared.hashpass(controller_jelszo) && (accstate == "verified" || accstate=="admin" ) )
             {
                 // bejelentkeztetés oké
 
@@ -107,7 +107,7 @@ namespace Servo.service
          //   MessageBox.Show(expiration);
 
 
-            service.shared.send_mail(hova, "Secure Login", loginhtml_top + $"{service.shared.current_url}?login=" + service.shared.b64enc(id) + ";" + service.shared.b64enc(confirmation_token) + loginhtml_bottom, "login");
+            service.shared.send_mail(hova, "Secure Login", loginhtml_top + $"{service.shared.current_url}?login-promise=" + service.shared.b64enc(id) + ";" + service.shared.b64enc(confirmation_token) + loginhtml_bottom, "login");
 
             //testpanel.Instance.textBox2.Text = session_token; // csak tesztelés miatt
 

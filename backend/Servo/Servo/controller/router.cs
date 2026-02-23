@@ -297,7 +297,7 @@ namespace Servo.controller
                         data.Response.StatusCode = 404;
                         byte[] buffer = Encoding.UTF8.GetBytes("Asset not found");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-        //                service.shared.log("ERROR 2: asset not found (" + hely + ") --controller.router.main");
+                        service.shared.log("ERROR 2: asset not found (" + hely + ") --controller.router.main");
                     }
                 }
 
@@ -318,7 +318,7 @@ namespace Servo.controller
                         data.Response.StatusCode = 404;
                         byte[] buffer = Encoding.UTF8.GetBytes("Internal error");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-           //             service.shared.log("ERROR 3: index.html not found (" + hely+") --controller.router.main");
+                        service.shared.log("ERROR 3: index.html not found (" + hely+") --controller.router.main");
                     }
                 }
                 catch (Exception ex)
@@ -328,7 +328,7 @@ namespace Servo.controller
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
                    // Form1.Instance.updateerrorcount();
-          //         service.shared.log($"ERROR 4: {ex.Message} --controller.router.main");
+                   service.shared.log($"ERROR 4: {ex.Message} --controller.router.main");
                 }
 
 

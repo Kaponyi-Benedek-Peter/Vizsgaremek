@@ -30,7 +30,12 @@ namespace Servo.model
         {
 
 
-            public string category_name { get; set; } = "";
+            public string category_name_en { get; set; } = "";
+
+            public string category_name_de { get; set; } = "";
+
+            public string category_name_hu { get; set; } = "";
+
             public string color { get; set; } = "";
             public string emoji { get; set; } = "";
             public int number_of_products { get; set; } = 0;
@@ -1080,7 +1085,10 @@ namespace Servo.model
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.AddWithValue("@p_category", cat.category_name);
+                    cmd.Parameters.AddWithValue("@p_category_hu", cat.category_name_hu);
+                    cmd.Parameters.AddWithValue("@p_category_en", cat.category_name_en);
+                    cmd.Parameters.AddWithValue("@p_category_de", cat.category_name_de);
+
                     cmd.Parameters.AddWithValue("@p_emoji", cat.emoji);
                     cmd.Parameters.AddWithValue("@p_number_of_products", cat.number_of_products);
                     cmd.Parameters.AddWithValue("@p_color", cat.color);

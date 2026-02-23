@@ -98,7 +98,7 @@ namespace Servo.controller
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
-                else if (resp == 401)
+                /*else if (resp == 401)
                 {
 
                     var respon = new
@@ -112,13 +112,13 @@ namespace Servo.controller
                     data.Response.StatusCode = 401;
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                }
+                }*/
                 else //if (resp == 500)
                 {
 
                     var respon = new
                     {
-                        status = "inexistent_user",
+                        status = "inexistent_user_or_incorrect_data",
                         statuscode = "500"
                     };
 

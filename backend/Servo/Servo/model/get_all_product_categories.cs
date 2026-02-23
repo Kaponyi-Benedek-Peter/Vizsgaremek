@@ -1,4 +1,4 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,13 +10,6 @@ namespace Servo.model
 {
     internal class get_all_product_categories
     {
-
-        static MySqlConnection conn = model.shared.conn;
-
-
-
-
-
         public static Dictionary<string, object> communicate_get_all_product_categories()
         {
             var result = new Dictionary<string, object>
@@ -28,33 +21,34 @@ namespace Servo.model
 
             try
             {
-                using (MySqlCommand cmd = new MySqlCommand("get_all_product_categories", conn))
+                using (MySqlConnection conn = new MySqlConnection(model.shared.connStr))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
+                    conn.Open();
 
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (MySqlCommand cmd = new MySqlCommand("get_all_product_categories", conn))
                     {
-                        var categories = (List<Dictionary<string, string>>)result["product_categories"];
+                        cmd.CommandType = CommandType.StoredProcedure;
 
-                        while (reader.Read())
+                        DataTable dt = new DataTable();
+                        using (MySqlDataAdapter adapter = new MySqlDataAdapter(cmd))
                         {
-                            var category = new Dictionary<string, string>();
-
-
-                            string[] fields = { "category","emoji","color", "number_of_products", "id"};
-
-                            foreach (string field in fields)
-                            {
-                                category[field] = reader.IsDBNull(reader.GetOrdinal(field)) ? "" : reader[field].ToString();
-                            }
-
-                           
-                            categories.Add(category);
+                            adapter.Fill(dt);
                         }
 
+                        var categories = (List<Dictionary<string, string>>)result["product_categories"];
+
+                        string[] fields = { "category_en", "category_hu", "category_de", "emoji", "color", "number_of_products", "id" };
+
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            var category = new Dictionary<string, string>();
+                            foreach (string field in fields)
+                            {
+                                category[field] = row.IsNull(field) ? "" : row[field].ToString();
+                            }
+                            categories.Add(category);
+                        }
                     }
-
-
                 }
             }
             catch (Exception ex)
@@ -62,15 +56,9 @@ namespace Servo.model
                 service.shared.log($"Error 1: {ex.Message} --model.get_all_product_categories.communicate_get_all_product_categories");
                 result["statuscode"] = "500";
                 result["status"] = "unknown error";
-
             }
 
             return result;
         }
-
-
-
-
-
     }
 }

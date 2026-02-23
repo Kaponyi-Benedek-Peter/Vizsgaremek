@@ -19,7 +19,7 @@ namespace Servo.service
             Dictionary<string, object> resp = new Dictionary<string, object>();
 
 
-            try
+            try//
             {
                 resp = model.get_all_product_categories.communicate_get_all_product_categories();
             }

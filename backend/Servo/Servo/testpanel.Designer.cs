@@ -57,6 +57,8 @@
             this.category_tbox = new System.Windows.Forms.TextBox();
             this.color_tbox = new System.Windows.Forms.TextBox();
             this.number_of_products_tbox = new System.Windows.Forms.TextBox();
+            this.categoryen_tbox = new System.Windows.Forms.TextBox();
+            this.categoryde_tbox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // otptestbox
@@ -382,10 +384,10 @@
             // 
             this.emoji_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.emoji_tbox.ForeColor = System.Drawing.Color.White;
-            this.emoji_tbox.Location = new System.Drawing.Point(249, 613);
+            this.emoji_tbox.Location = new System.Drawing.Point(437, 613);
             this.emoji_tbox.Margin = new System.Windows.Forms.Padding(4);
             this.emoji_tbox.Name = "emoji_tbox";
-            this.emoji_tbox.Size = new System.Drawing.Size(150, 37);
+            this.emoji_tbox.Size = new System.Drawing.Size(88, 37);
             this.emoji_tbox.TabIndex = 56;
             this.emoji_tbox.Text = "emoji";
             // 
@@ -427,18 +429,18 @@
             this.category_tbox.Location = new System.Drawing.Point(13, 613);
             this.category_tbox.Margin = new System.Windows.Forms.Padding(4);
             this.category_tbox.Name = "category_tbox";
-            this.category_tbox.Size = new System.Drawing.Size(228, 37);
+            this.category_tbox.Size = new System.Drawing.Size(132, 37);
             this.category_tbox.TabIndex = 57;
-            this.category_tbox.Text = "category";
+            this.category_tbox.Text = "category_hu";
             // 
             // color_tbox
             // 
             this.color_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.color_tbox.ForeColor = System.Drawing.Color.White;
-            this.color_tbox.Location = new System.Drawing.Point(407, 613);
+            this.color_tbox.Location = new System.Drawing.Point(533, 613);
             this.color_tbox.Margin = new System.Windows.Forms.Padding(4);
             this.color_tbox.Name = "color_tbox";
-            this.color_tbox.Size = new System.Drawing.Size(150, 37);
+            this.color_tbox.Size = new System.Drawing.Size(72, 37);
             this.color_tbox.TabIndex = 58;
             this.color_tbox.Text = "color";
             // 
@@ -446,12 +448,34 @@
             // 
             this.number_of_products_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.number_of_products_tbox.ForeColor = System.Drawing.Color.White;
-            this.number_of_products_tbox.Location = new System.Drawing.Point(565, 613);
+            this.number_of_products_tbox.Location = new System.Drawing.Point(613, 613);
             this.number_of_products_tbox.Margin = new System.Windows.Forms.Padding(4);
             this.number_of_products_tbox.Name = "number_of_products_tbox";
-            this.number_of_products_tbox.Size = new System.Drawing.Size(150, 37);
+            this.number_of_products_tbox.Size = new System.Drawing.Size(102, 37);
             this.number_of_products_tbox.TabIndex = 59;
             this.number_of_products_tbox.Text = "number_of_products";
+            // 
+            // categoryen_tbox
+            // 
+            this.categoryen_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.categoryen_tbox.ForeColor = System.Drawing.Color.White;
+            this.categoryen_tbox.Location = new System.Drawing.Point(153, 613);
+            this.categoryen_tbox.Margin = new System.Windows.Forms.Padding(4);
+            this.categoryen_tbox.Name = "categoryen_tbox";
+            this.categoryen_tbox.Size = new System.Drawing.Size(132, 37);
+            this.categoryen_tbox.TabIndex = 60;
+            this.categoryen_tbox.Text = "category_en";
+            // 
+            // categoryde_tbox
+            // 
+            this.categoryde_tbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.categoryde_tbox.ForeColor = System.Drawing.Color.White;
+            this.categoryde_tbox.Location = new System.Drawing.Point(297, 613);
+            this.categoryde_tbox.Margin = new System.Windows.Forms.Padding(4);
+            this.categoryde_tbox.Name = "categoryde_tbox";
+            this.categoryde_tbox.Size = new System.Drawing.Size(132, 37);
+            this.categoryde_tbox.TabIndex = 61;
+            this.categoryde_tbox.Text = "category_de";
             // 
             // testpanel
             // 
@@ -459,6 +483,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(53)))), ((int)(((byte)(56)))));
             this.ClientSize = new System.Drawing.Size(728, 760);
+            this.Controls.Add(this.categoryde_tbox);
+            this.Controls.Add(this.categoryen_tbox);
             this.Controls.Add(this.number_of_products_tbox);
             this.Controls.Add(this.color_tbox);
             this.Controls.Add(this.category_tbox);
@@ -534,5 +560,7 @@
         public System.Windows.Forms.TextBox category_tbox;
         public System.Windows.Forms.TextBox color_tbox;
         public System.Windows.Forms.TextBox number_of_products_tbox;
+        public System.Windows.Forms.TextBox categoryen_tbox;
+        public System.Windows.Forms.TextBox categoryde_tbox;
     }
 }
