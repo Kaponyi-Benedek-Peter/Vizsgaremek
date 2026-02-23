@@ -11,6 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using System.Text.Json;
 
 
 
@@ -84,7 +85,16 @@ namespace Servo.controller
                     if(string.IsNullOrEmpty(authorization_header))
                     {
                         data.Response.StatusCode = 401;
-                        byte[] buffer = Encoding.UTF8.GetBytes("hianyzo_auth_header");
+
+                        var respon = new
+                        {
+                            status = "missing_auth_header",
+                            statuscode = "401"
+                        };
+
+                        string jsonrespon = JsonSerializer.Serialize(respon);
+
+                        byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                         data= endconnection(data);
 
@@ -93,7 +103,16 @@ namespace Servo.controller
                     else if (authorization_header.StartsWith("Bearer ") != true)
                     {
                         data.Response.StatusCode = 401;
-                        byte[] buffer = Encoding.UTF8.GetBytes("hianyzo_auth_header");
+
+                        var respon = new
+                        {
+                            status = "missing_auth_header",
+                            statuscode = "401"
+                        };
+
+                        string jsonrespon = JsonSerializer.Serialize(respon);
+
+                        byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                         data = endconnection(data);
 
@@ -105,7 +124,16 @@ namespace Servo.controller
                     if (user == null)
                     {
                         data.Response.StatusCode = 401;
-                        byte[] buffer = Encoding.UTF8.GetBytes("wrong_token");
+
+                        var respon = new
+                        {
+                            status = "wrong_token",
+                            statuscode = "401"
+                        };
+
+                        string jsonrespon = JsonSerializer.Serialize(respon);
+
+                        byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                         data = endconnection(data);
 

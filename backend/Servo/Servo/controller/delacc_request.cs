@@ -180,7 +180,17 @@ namespace Servo.controller
             {
                 service.shared.log($"Error 2: {ex.Message} --controller.delacc_request.main");
                 data.Response.StatusCode = 500;
-                byte[] buffer = Encoding.UTF8.GetBytes("internal_error_or_inexistent_user");
+
+                var respon = new
+                {
+                    status = "internal_error_or_inexistent_user",
+                    statuscode = "500"
+                };
+
+                string jsonrespon = JsonSerializer.Serialize(respon);
+
+
+                byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                 data.Response.OutputStream.Write(buffer, 0, buffer.Length);
             }
             finally
