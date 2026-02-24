@@ -1106,6 +1106,106 @@ namespace Servo.model
 
 
 
+        public static int update_name_by_id(string user_id,string new_firstname, string new_lastname)
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("update_name_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_id", user_id);
+                    cmd.Parameters.AddWithValue("@p_new_last_name", new_lastname);
+                    cmd.Parameters.AddWithValue("@p_new_first_name", new_firstname);
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.update_name_by_id");
+                return 500;
+            }
+        }
+
+        public static int update_password_by_id(string user_id, string new_firstname, string new_lastname)
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("update_password_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_id", user_id);
+                    cmd.Parameters.AddWithValue("@p_new_passhash", new_lastname);
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.update_password_by_id");
+                return 500;
+            }
+        }
+
+
+        public static int update_account_state_by_id(string user_id, string new_state)
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("update_account_state_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_id", user_id);
+                    cmd.Parameters.AddWithValue("@p_new_account_state", new_state);
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.update_name_by_id");
+                return 500;
+            }
+        }
+
+
+
+
+
+        //update_product_stock_by_id
+
+
+
+        public static int update_product_stock_by_id(string product_id, string new_stock_count)
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("update_product_stock_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_id", product_id);
+                    cmd.Parameters.AddWithValue("@p_new_stock", new_stock_count);
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.update_product_stock_by_id");
+                return 500;
+            }
 
 
 
@@ -1117,5 +1217,22 @@ namespace Servo.model
 
 
 
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
 }

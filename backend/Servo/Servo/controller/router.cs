@@ -284,6 +284,42 @@ namespace Servo.controller
 
 
                 }
+                else if (lenyeg.Contains("update_name"))
+                {
+
+                    controller.update_name_by_id.main(data, lenyeg);
+
+
+
+
+                }
+                else if (lenyeg.Contains("ban_user"))
+                {
+
+                    controller.ban_user.main(data, lenyeg);
+
+
+
+
+                }
+                else if (lenyeg.Contains("unban_user"))
+                {
+
+                    controller.unban_user.main(data, lenyeg);
+
+
+
+
+                }
+                else if (lenyeg.Contains("update_stock"))
+                {
+
+                    controller.update_stock.main(data, lenyeg);
+
+
+
+
+                }
 
 
 
