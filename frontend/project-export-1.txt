@@ -17135,14 +17135,10 @@ export class FeaturedProductCard {
     return name || this.translateService.instant('product.product_image');
   });
 
-  price = computed(() => {
-    return this.product?.price || 0;
-  });
-
-  oldPrice = computed(() => {
-    if (!this.product?.hasDiscount) return null;
-    return this.product.priceNumber || null;
-  });
+  price = computed(() => this.currencyService.getDiscountedPrice(this.product));
+  oldPrice = computed(() =>
+    this.product?.hasDiscount ? this.currencyService.getBasePrice(this.product) : null,
+  );
 
   inStock = computed(() => {
     return this.product?.inStock || false;
@@ -18128,11 +18124,24 @@ FILE: src\app\shared\components\header\header.css
   overflow: hidden;
 }
 
-.cart-item-price {
-  margin: 0;
+.cart-item-price-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.cart-item-unit-price {
   font-size: 0.9rem;
   color: var(--color-primary);
   font-weight: 600;
+}
+
+.cart-item-line-total {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  opacity: 0.85;
 }
 
 .cart-item-quantity {
@@ -18460,9 +18469,25 @@ FILE: src\app\shared\components\header\header.html
                   />
                   <div class="cart-item-details">
                     <h4 class="cart-item-name">{{ item.product.name }}</h4>
-                    <p class="cart-item-price">
-                      {{ currencyService.formatPrice(item.product.price) }}
-                    </p>
+                    <div class="cart-item-price-row">
+                      <span class="cart-item-unit-price">
+                        {{
+                          currencyService.formatPrice(
+                            currencyService.getDiscountedPrice(item.product)
+                          )
+                        }}
+                      </span>
+                      @if (item.quantity > 1) {
+                        <span class="cart-item-line-total">
+                          =
+                          {{
+                            currencyService.formatPrice(
+                              currencyService.getDiscountedPrice(item.product) * item.quantity
+                            )
+                          }}
+                        </span>
+                      }
+                    </div>
                     <div class="cart-item-quantity">
                       <button
                         class="quantity-btn"
