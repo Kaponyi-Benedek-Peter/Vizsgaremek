@@ -408,8 +408,8 @@ export class AuthService {
 
       // backend status code
       switch (backendStatus) {
-        case 'wrong_password':
-          errorMessage = 'auth.errors.invalid_credentials';
+        case 'inexistent_user_or_incorrect_data':
+          errorMessage = 'auth.errors.invalid_credentials_or_inexistent_user';
           break;
         case 'user_not_found':
           errorMessage = 'auth.errors.invalid_credentials';
@@ -447,6 +447,9 @@ export class AuthService {
               break;
             case 401:
               errorMessage = 'auth.errors.invalid_credentials';
+              break;
+            case 403:
+              errorMessage = 'auth.errors.invalid_credentials__or_inexistent_user';
               break;
             case 404:
               errorMessage = 'auth.errors.not_found';

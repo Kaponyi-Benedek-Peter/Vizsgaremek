@@ -23,10 +23,7 @@ export class CartService {
 
   totalPrice = computed(() =>
     this.cartItems().reduce((sum, item) => {
-      const price = this.getProductPrice(item.product);
-      const salePercentage = parseFloat(item.product.sale_percentage) || 0;
-      const finalPrice = salePercentage > 0 ? price * (1 - salePercentage / 100) : price;
-      return sum + finalPrice * item.quantity;
+      return sum + this.getItemTotal(item.product, item.quantity);
     }, 0),
   );
 
@@ -34,24 +31,43 @@ export class CartService {
     this.loadCartFromStorage();
   }
 
-  private getProductPrice(product: Product): number {
-    const currencyCode = this.currencyService.currentCurrency().code;
+  getProductPrice(product: Product): number {
+    return this.currencyService.getBasePrice(product);
+  }
 
-    switch (currencyCode) {
-      case 'HUF':
-        return parseFloat(product.price_huf) || 0;
-      case 'USD':
-        return parseFloat(product.price_usd) || 0;
-      case 'EUR':
-        return parseFloat(product.price_eur) || 0;
-      default:
-        return parseFloat(product.price_huf) || 0;
-    }
+  getProductFinalPrice(product: Product): number {
+    return this.currencyService.getDiscountedPrice(product);
+  }
+
+  getItemTotal(product: Product, quantity: number): number {
+    return this.currencyService.getDiscountedPrice(product) * quantity;
+  }
+
+  /**
+   * Formats a price using the current currency.
+   * Use this in templates instead of showing product.price directly.
+   */
+  formatPrice(price: number): string {
+    return this.currencyService.formatPrice(price);
+  }
+
+  /**
+   * Returns the correctly converted unit price for a product,
+   * formatted as a string with currency symbol.
+   */
+  getFormattedUnitPrice(product: Product): string {
+    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(product));
+  }
+
+  /**
+   * Returns the formatted total price for a cart item (unit price × quantity).
+   */
+  getFormattedItemTotal(product: Product, quantity: number): string {
+    return this.currencyService.formatPrice(this.getItemTotal(product, quantity));
   }
 
   getProductName(product: Product): string {
     const currentLang = this.translationService.getCurrentLanguage();
-
     switch (currentLang) {
       case 'hu':
         return product.name_hu;
@@ -66,7 +82,6 @@ export class CartService {
 
   getProductDescription(product: Product, preview: boolean = false): string {
     const currentLang = this.translationService.getCurrentLanguage();
-
     if (preview) {
       switch (currentLang) {
         case 'hu':
@@ -79,7 +94,6 @@ export class CartService {
           return product.description_preview_en;
       }
     }
-
     switch (currentLang) {
       case 'hu':
         return product.description_hu;
@@ -92,16 +106,28 @@ export class CartService {
     }
   }
 
-  addToCart(product: ProductWithHelpers, quantity: number = 1): void {
+  /**
+   * Adds a product to the cart.
+   *
+   * - If the product is already in the cart: instead of increasing the quantity,
+   *   it overwrites it with the new value (setQuantity mode),
+   *   unless explicitMode = false, in which case it adds to the existing quantity (addMode).
+   * - If the product is not in the cart: it adds it as a new item with the specified quantity.
+   *
+   * @param product   The product to be added
+   * @param quantity  Quantity (default: 1)
+   * @param addMode   true = add to existing quantity | false = overwrite (default: true)
+   */
+  addToCart(product: ProductWithHelpers, quantity: number = 1, addMode: boolean = true): void {
     const existingItem = this.cartItems().find((item) => item.product.id === product.id);
 
     if (existingItem) {
-      this.updateQuantity(product.id, existingItem.quantity + quantity);
+      const newQuantity = addMode ? existingItem.quantity + quantity : quantity;
+      this.updateQuantity(product.id, newQuantity);
     } else {
       this.cartItems.update((items) => [...items, { product, quantity }]);
+      this.saveCartToStorage();
     }
-
-    this.saveCartToStorage();
   }
 
   removeFromCart(productId: string): void {
@@ -114,7 +140,6 @@ export class CartService {
       this.removeFromCart(productId);
       return;
     }
-
     this.cartItems.update((items) =>
       items.map((item) => {
         if (item.product.id === productId) {
@@ -124,7 +149,6 @@ export class CartService {
         return item;
       }),
     );
-
     this.saveCartToStorage();
   }
 

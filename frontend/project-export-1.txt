@@ -325,8 +325,8 @@ FILE: angular.json
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "16kB",
-                  "maximumError": "32kB"
+                  "maximumWarning": "32kB",
+                  "maximumError": "64kB"
                 }
               ],
               "outputHashing": "all"
@@ -1748,7 +1748,7 @@ export interface ProductsApiResponse {
 export interface ProductCategoriesApiResponse {
   statuscode: string;
   status: string;
-  categories: ProductCategory[];
+  product_categories: ProductCategory[];
 }
 
 export interface ProductImagesApiResponse {
@@ -2554,8 +2554,8 @@ export class AuthService {
 
       // backend status code
       switch (backendStatus) {
-        case 'wrong_password':
-          errorMessage = 'auth.errors.invalid_credentials';
+        case 'inexistent_user_or_incorrect_data':
+          errorMessage = 'auth.errors.invalid_credentials_or_inexistent_user';
           break;
         case 'user_not_found':
           errorMessage = 'auth.errors.invalid_credentials';
@@ -2593,6 +2593,9 @@ export class AuthService {
               break;
             case 401:
               errorMessage = 'auth.errors.invalid_credentials';
+              break;
+            case 403:
+              errorMessage = 'auth.errors.invalid_credentials__or_inexistent_user';
               break;
             case 404:
               errorMessage = 'auth.errors.not_found';
@@ -2647,10 +2650,7 @@ export class CartService {
 
   totalPrice = computed(() =>
     this.cartItems().reduce((sum, item) => {
-      const price = this.getProductPrice(item.product);
-      const salePercentage = parseFloat(item.product.sale_percentage) || 0;
-      const finalPrice = salePercentage > 0 ? price * (1 - salePercentage / 100) : price;
-      return sum + finalPrice * item.quantity;
+      return sum + this.getItemTotal(item.product, item.quantity);
     }, 0),
   );
 
@@ -2658,24 +2658,43 @@ export class CartService {
     this.loadCartFromStorage();
   }
 
-  private getProductPrice(product: Product): number {
-    const currencyCode = this.currencyService.currentCurrency().code;
+  getProductPrice(product: Product): number {
+    return this.currencyService.getBasePrice(product);
+  }
 
-    switch (currencyCode) {
-      case 'HUF':
-        return parseFloat(product.price_huf) || 0;
-      case 'USD':
-        return parseFloat(product.price_usd) || 0;
-      case 'EUR':
-        return parseFloat(product.price_eur) || 0;
-      default:
-        return parseFloat(product.price_huf) || 0;
-    }
+  getProductFinalPrice(product: Product): number {
+    return this.currencyService.getDiscountedPrice(product);
+  }
+
+  getItemTotal(product: Product, quantity: number): number {
+    return this.currencyService.getDiscountedPrice(product) * quantity;
+  }
+
+  /**
+   * Formats a price using the current currency.
+   * Use this in templates instead of showing product.price directly.
+   */
+  formatPrice(price: number): string {
+    return this.currencyService.formatPrice(price);
+  }
+
+  /**
+   * Returns the correctly converted unit price for a product,
+   * formatted as a string with currency symbol.
+   */
+  getFormattedUnitPrice(product: Product): string {
+    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(product));
+  }
+
+  /**
+   * Returns the formatted total price for a cart item (unit price × quantity).
+   */
+  getFormattedItemTotal(product: Product, quantity: number): string {
+    return this.currencyService.formatPrice(this.getItemTotal(product, quantity));
   }
 
   getProductName(product: Product): string {
     const currentLang = this.translationService.getCurrentLanguage();
-
     switch (currentLang) {
       case 'hu':
         return product.name_hu;
@@ -2690,7 +2709,6 @@ export class CartService {
 
   getProductDescription(product: Product, preview: boolean = false): string {
     const currentLang = this.translationService.getCurrentLanguage();
-
     if (preview) {
       switch (currentLang) {
         case 'hu':
@@ -2703,7 +2721,6 @@ export class CartService {
           return product.description_preview_en;
       }
     }
-
     switch (currentLang) {
       case 'hu':
         return product.description_hu;
@@ -2716,16 +2733,28 @@ export class CartService {
     }
   }
 
-  addToCart(product: ProductWithHelpers, quantity: number = 1): void {
+  /**
+   * Adds a product to the cart.
+   *
+   * - If the product is already in the cart: instead of increasing the quantity,
+   *   it overwrites it with the new value (setQuantity mode),
+   *   unless explicitMode = false, in which case it adds to the existing quantity (addMode).
+   * - If the product is not in the cart: it adds it as a new item with the specified quantity.
+   *
+   * @param product   The product to be added
+   * @param quantity  Quantity (default: 1)
+   * @param addMode   true = add to existing quantity | false = overwrite (default: true)
+   */
+  addToCart(product: ProductWithHelpers, quantity: number = 1, addMode: boolean = true): void {
     const existingItem = this.cartItems().find((item) => item.product.id === product.id);
 
     if (existingItem) {
-      this.updateQuantity(product.id, existingItem.quantity + quantity);
+      const newQuantity = addMode ? existingItem.quantity + quantity : quantity;
+      this.updateQuantity(product.id, newQuantity);
     } else {
       this.cartItems.update((items) => [...items, { product, quantity }]);
+      this.saveCartToStorage();
     }
-
-    this.saveCartToStorage();
   }
 
   removeFromCart(productId: string): void {
@@ -2738,7 +2767,6 @@ export class CartService {
       this.removeFromCart(productId);
       return;
     }
-
     this.cartItems.update((items) =>
       items.map((item) => {
         if (item.product.id === productId) {
@@ -2748,7 +2776,6 @@ export class CartService {
         return item;
       }),
     );
-
     this.saveCartToStorage();
   }
 
@@ -2793,9 +2820,11 @@ export class CartService {
 FILE: src\app\core\services\currency.service.ts
 ================================================================================
 
-import { Injectable, inject, computed } from '@angular/core';
+import { Injectable, inject, computed, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { TranslationService, SupportedLanguage } from './translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
 
 export interface CurrencyConfig {
   code: string;
@@ -2803,14 +2832,32 @@ export interface CurrencyConfig {
   locale: string;
 }
 
+export interface HasPriceFields {
+  price_huf: string;
+  price_usd?: string;
+  price_eur?: string;
+  sale_percentage: string;
+}
+
+interface FrankfurterResponse {
+  rates: Record<string, number>;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class CurrencyService {
   private translationService = inject(TranslationService);
+  private http = inject(HttpClient);
 
   private currentLang = toSignal(this.translationService.currentLang$, {
     initialValue: 'en' as SupportedLanguage,
+  });
+
+  // Fallback rates: 1 HUF in USD / EUR (approximate)
+  private ratesSignal = signal<Record<string, number>>({
+    USD: 0.0028,
+    EUR: 0.0026,
   });
 
   private readonly currencyMap: Record<SupportedLanguage, CurrencyConfig> = {
@@ -2819,24 +2866,74 @@ export class CurrencyService {
     de: { code: 'EUR', symbol: '€', locale: 'de-DE' },
   };
 
-  currentCurrency = computed(() => {
-    const lang = this.currentLang();
-    return this.currencyMap[lang];
-  });
+  currentCurrency = computed(() => this.currencyMap[this.currentLang()]);
+
+  constructor() {
+    this.fetchExchangeRates();
+  }
+
+  private async fetchExchangeRates(): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<FrankfurterResponse>(
+          'https://api.frankfurter.app/latest?from=HUF&to=USD,EUR',
+        ),
+      );
+      if (response?.rates) {
+        this.ratesSignal.set(response.rates);
+        console.log('Exchange rates updated:', response.rates);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch exchange rates, using fallback values:', err);
+    }
+  }
+
+  private convertFromHuf(hufPrice: number, targetCurrency: string): number {
+    if (targetCurrency === 'HUF') return hufPrice;
+    const rate = this.ratesSignal()[targetCurrency];
+    if (!rate) return hufPrice;
+    return Math.round(hufPrice * rate * 100) / 100;
+  }
 
   formatPrice(price: number): string {
     const currency = this.currentCurrency();
-
     const formatted = price.toLocaleString(currency.locale, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     });
+    return currency.code === 'HUF'
+      ? `${formatted} ${currency.symbol}`
+      : `${currency.symbol}${formatted}`;
+  }
 
-    if (currency.code === 'HUF') {
-      return `${formatted} ${currency.symbol}`;
-    } else {
-      return `${currency.symbol}${formatted}`;
+  getBasePrice(product: HasPriceFields): number {
+    const code = this.currentCurrency().code;
+    const hufPrice = parseFloat(product.price_huf) || 0;
+
+    switch (code) {
+      case 'USD':
+        // Use explicit price_usd if available, otherwise convert from HUF
+        if (product.price_usd && parseFloat(product.price_usd) > 0) {
+          return parseFloat(product.price_usd);
+        }
+        return this.convertFromHuf(hufPrice, 'USD');
+
+      case 'EUR':
+        // Use explicit price_eur if available, otherwise convert from HUF
+        if (product.price_eur && parseFloat(product.price_eur) > 0) {
+          return parseFloat(product.price_eur);
+        }
+        return this.convertFromHuf(hufPrice, 'EUR');
+
+      default:
+        return hufPrice;
     }
+  }
+
+  getDiscountedPrice(product: HasPriceFields): number {
+    const base = this.getBasePrice(product);
+    const sale = parseFloat(product.sale_percentage) || 0;
+    return sale > 0 ? Math.round(base * (1 - sale / 100) * 100) / 100 : base;
   }
 
   getCurrencyForLanguage(lang: SupportedLanguage): CurrencyConfig {
@@ -10937,7 +11034,7 @@ FILE: src\app\pages\product-detail\product-detail.html
         <div class="info-section">
           <div class="info-header">
             <span class="category-badge">
-              {{ 'category.' + product()!.category | translate }}
+              <span>{{ categoryName }}</span>
             </span>
 
             <h1 class="product-title">{{ product()!.name }}</h1>
@@ -11125,7 +11222,7 @@ FILE: src\app\pages\product-detail\product-detail.ts
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../core/models/product.model';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../core/services/cart.service';
@@ -11144,6 +11241,7 @@ export class ProductDetail implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
   private currencyService = inject(CurrencyService);
+  private translateService = inject(TranslateService);
 
   product = signal<ProductWithHelpers | null>(null);
   isLoading = signal(true);
@@ -11172,25 +11270,34 @@ export class ProductDetail implements OnInit, OnDestroy {
   get formattedPrice(): string {
     const p = this.product();
     if (!p) return '';
-    return this.currencyService.formatPrice(p.priceNumber);
+    // getBasePrice converts
+    return this.currencyService.formatPrice(this.currencyService.getBasePrice(p));
   }
 
   get formattedDiscountedPrice(): string {
     const p = this.product();
     if (!p) return '';
-    return this.currencyService.formatPrice(p.price);
+    // getDiscountedPrice = converted price + sale
+    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(p));
   }
 
   get formattedTotalPrice(): string {
     const p = this.product();
     if (!p) return '';
-    const basePrice = p.hasDiscount ? p.price : p.priceNumber;
-    return this.currencyService.formatPrice(basePrice * this.quantity());
+    const unitPrice = this.currencyService.getDiscountedPrice(p);
+    return this.currencyService.formatPrice(unitPrice * this.quantity());
   }
 
   get canAddToCart(): boolean {
     const p = this.product();
     return !!(p?.inStock && !p?.requiresPrescription && this.quantity() <= p.stockQuantity);
+  }
+
+  get categoryName(): string {
+    const cat = this.productService.getCategoryById(this.product()?.category ?? '');
+    const lang = this.translateService.currentLang || 'hu';
+    if (!cat) return '';
+    return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
   }
 
   async ngOnInit(): Promise<void> {
@@ -11200,7 +11307,8 @@ export class ProductDetail implements OnInit, OnDestroy {
       return;
     }
 
-    await this.productService.loadProducts();
+    await Promise.all([this.productService.loadProducts(), this.productService.loadCategories()]);
+
     const all = this.productService.products();
     const found = all.find((p) => p.id === id);
 
@@ -14227,7 +14335,7 @@ FILE: src\app\pages\purchase\purchase.html
                 <div class="item-details">
                   <h3 class="item-name">{{ item.product.name }}</h3>
                   <p class="item-price">
-                    {{ currencyService.formatPrice(item.product.price) }}
+                    {{ getFormattedUnitPrice(item.product) }}
                     @if (item.product.discountPercentage) {
                       <span class="discount-badge">-{{ item.product.discountPercentage }}%</span>
                     }
@@ -14252,15 +14360,7 @@ FILE: src\app\pages\purchase\purchase.html
                 </div>
                 <div class="item-actions">
                   <p class="item-total">
-                    {{
-                      currencyService.formatPrice(
-                        getItemTotal(
-                          item.product.price,
-                          item.quantity,
-                          item.product.discountPercentage
-                        )
-                      )
-                    }}
+                    {{ getFormattedItemTotal(item.product, item.quantity) }}
                   </p>
                   <button
                     class="remove-btn"
@@ -14467,6 +14567,7 @@ import { CurrencyService } from '../../core/services/currency.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
+import { Product } from '../../core/models/product.model';
 
 interface CheckoutForm {
   city: string;
@@ -14486,7 +14587,7 @@ interface CheckoutForm {
   styleUrl: './purchase.css',
 })
 export class Purchase implements OnInit {
-  private cartService = inject(CartService);
+  cartService = inject(CartService);
   public currencyService = inject(CurrencyService);
   private authService = inject(AuthService);
   private accountService = inject(AccountService);
@@ -14536,9 +14637,16 @@ export class Purchase implements OnInit {
     }
   }
 
-  getItemTotal(price: number, quantity: number, discountPercentage?: number): number {
-    const finalPrice = discountPercentage ? price * (1 - discountPercentage / 100) : price;
-    return finalPrice * quantity;
+  getFormattedUnitPrice(product: Product): string {
+    return this.currencyService.formatPrice(
+      this.currencyService.getDiscountedPrice(product),
+    );
+  }
+
+  getFormattedItemTotal(product: Product, quantity: number): string {
+    return this.currencyService.formatPrice(
+      this.cartService.getItemTotal(product, quantity),
+    );
   }
 
   async submitOrder(): Promise<void> {
@@ -14614,7 +14722,6 @@ export class Purchase implements OnInit {
     this.router.navigate(['/products']);
   }
 }
-
 
 
 ================================================================================
@@ -15679,6 +15786,7 @@ export class ProductService {
       const enriched = normalized.map((p) => enrichProduct(p, currentLang));
       this.rawProducts.set(normalized);
       this.allProductsSignal.set(enriched);
+      this.updateCategoryCounts();
       console.log(`Loaded ${products.length} products from backend`);
     } catch (err) {
       console.error('Failed to load products from backend:', err);
@@ -15715,6 +15823,7 @@ export class ProductService {
       const raw = await firstValueFrom(this.getAllCategories());
       const mapped = raw.map(mapProductCategory);
       this.categoriesSignal.set(mapped);
+      this.updateCategoryCounts();
       console.log(`Loaded ${raw.length} categories from backend`);
     } catch (err) {
       console.error('Failed to load categories from backend:', err);
@@ -15770,8 +15879,8 @@ export class ProductService {
         timeout(5000),
         map((r) => {
           if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
-          if (!Array.isArray(r.categories)) throw new Error('Invalid categories response');
-          return r.categories;
+          if (!Array.isArray(r.product_categories)) throw new Error('Invalid categories response');
+          return r.product_categories;
         }),
         catchError(this.handleError),
       );
@@ -15844,6 +15953,39 @@ export class ProductService {
       map.set(cat.id, cat.id);
     });
     return map;
+  }
+
+  /**
+   * Counts how many products belong to each category and updates
+   * the categories signal with the real counts.
+   */
+  private updateCategoryCounts(): void {
+    const products = this.allProductsSignal();
+    const categories = this.categoriesSignal();
+    if (categories.length === 0) return;
+
+    const countMap = new Map<string, number>();
+    products.forEach((p) => {
+      const catId = p.category_id ?? p.category ?? '';
+      if (catId) {
+        countMap.set(catId, (countMap.get(catId) ?? 0) + 1);
+      }
+    });
+
+    const updated = categories.map((cat) => ({
+      ...cat,
+      count: countMap.get(cat.id) ?? 0,
+    }));
+    this.categoriesSignal.set(updated);
+  }
+
+  /**
+   * Returns the Category object for a given category ID.
+   * Used by product detail components to display the category name
+   * instead of using the raw ID as a translation key.
+   */
+  getCategoryById(id: string): import('../core/models/product.model').Category | undefined {
+    return this.categoriesSignal().find((cat) => cat.id === id);
   }
 
   /**
@@ -20254,9 +20396,9 @@ FILE: src\app\shared\components\product-card\product-card.html
     </div>
 
     <div class="product-content">
-      @if (!compact) {
+      @if (!compact && categoryName) {
         <span class="product-category">
-          {{ 'category.' + product.category | translate }}
+          {{ categoryName }}
         </span>
       }
 
@@ -20353,9 +20495,10 @@ FILE: src\app\shared\components\product-card\product-card.ts
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
+import { ProductService } from '../../../services/product.service';
 import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
 
 @Component({
@@ -20368,32 +20511,31 @@ import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
 export class ProductCard {
   @Input({ required: true }) product!: ProductWithHelpers;
   @Input() compact = false;
-  @Output() addToCart = new EventEmitter<ProductWithHelpers>();
+  @Output() addToCart = new EventEmitter<{ product: ProductWithHelpers; quantity: number }>();
   @Output() viewDetails = new EventEmitter<ProductWithHelpers>();
   @Output() quantityChange = new EventEmitter<{ product: ProductWithHelpers; quantity: number }>();
 
-  // Helpers
   getImageUrl = getImageUrl;
   getCategoryIcon = getCategoryIcon;
 
   quantity = signal(1);
 
   private currencyService = inject(CurrencyService);
+  private productService = inject(ProductService);
+  private translateService = inject(TranslateService);
 
   get hasDiscount(): boolean {
     return this.product.hasDiscount;
   }
 
-  get discountedPrice(): number {
-    return this.product.price;
-  }
-
   get formattedPrice(): string {
-    return this.currencyService.formatPrice(this.product.priceNumber);
+    // getBasePrice reads the currentCurrency signal → converts HUF→USD/EUR as needed
+    return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
   }
 
   get formattedDiscountedPrice(): string {
-    return this.currencyService.formatPrice(this.product.price);
+    // getDiscountedPrice applies sale_percentage on top of the converted base price
+    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
   }
 
   get canAddToCart(): boolean {
@@ -20412,6 +20554,14 @@ export class ProductCard {
     return this.product.description;
   }
 
+  get categoryName(): string {
+    const catId = this.product.category ?? this.product.category_id ?? '';
+    const cat = this.productService.getCategoryById(catId);
+    if (!cat) return '';
+    const lang = this.translateService.currentLang || 'hu';
+    return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
+  }
+
   increaseQuantity(): void {
     if (this.quantity() < this.product.stockQuantity) {
       this.quantity.update((q) => q + 1);
@@ -20428,7 +20578,9 @@ export class ProductCard {
 
   onAddToCart(): void {
     if (this.canAddToCart) {
-      this.addToCart.emit(this.product);
+      // only event emit — the parent (product-list) manages the addtocart.
+      this.addToCart.emit({ product: this.product, quantity: this.quantity() });
+      this.quantity.set(1);
     }
   }
 
@@ -21198,7 +21350,7 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.html
       <div class="modal-details">
         <div class="modal-header">
           <span class="product-category-badge">
-            {{ 'category.' + product.category | translate }}
+            {{ categoryName }}
           </span>
 
           <h2 class="modal-title">{{ localizedName }}</h2>
@@ -21353,9 +21505,10 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.ts
 
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output, signal, computed } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
+import { ProductService } from '../../../services/product.service';
 
 @Component({
   selector: 'app-product-detail-modal',
@@ -21370,6 +21523,8 @@ export class ProductDetailModal {
   @Output() addToCart = new EventEmitter<{ product: ProductWithHelpers; quantity: number }>();
 
   private currencyService = inject(CurrencyService);
+  private productService = inject(ProductService);
+  private translateService = inject(TranslateService);
 
   quantity = signal(1);
   selectedImageIndex = signal(0);
@@ -21389,24 +21544,20 @@ export class ProductDetailModal {
     return this.product.hasDiscount;
   }
 
-  get discountedPrice(): number {
-    return this.product.price;
-  }
-
   get formattedPrice(): string {
-    return this.currencyService.formatPrice(this.product.priceNumber);
+    // getBasePrice convert HUF → actual devisa (USD/EUR/HUF)
+    // product.priceNumber and product.price always HUF!
+    return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
   }
 
   get formattedDiscountedPrice(): string {
-    return this.currencyService.formatPrice(this.product.price);
-  }
-
-  get totalPrice(): number {
-    return this.discountedPrice * this.quantity();
+    // getDiscountedPrice = getBasePrice + sale_percentage levonása
+    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
   }
 
   get formattedTotalPrice(): string {
-    return this.currencyService.formatPrice(this.totalPrice);
+    const unitPrice = this.currencyService.getDiscountedPrice(this.product);
+    return this.currencyService.formatPrice(unitPrice * this.quantity());
   }
 
   get canAddToCart(): boolean {
@@ -21423,6 +21574,13 @@ export class ProductDetailModal {
 
   get localizedDescription(): string {
     return this.product.description;
+  }
+
+  get categoryName(): string {
+    const cat = this.productService.getCategoryById(this.product.category ?? '');
+    const lang = this.translateService.currentLang || 'hu';
+    if (!cat) return '';
+    return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
   }
 
   selectImage(index: number): void {
@@ -21455,11 +21613,9 @@ export class ProductDetailModal {
 
   getRatingStars(): string {
     if (!this.product.ratingNumber) return '';
-
     const fullStars = Math.floor(this.product.ratingNumber);
     const hasHalfStar = this.product.ratingNumber % 1 >= 0.5;
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-
     return '★'.repeat(fullStars) + (hasHalfStar ? '⯨' : '') + '☆'.repeat(emptyStars);
   }
 
@@ -22336,8 +22492,8 @@ export class ProductList {
     this.scrollToTop();
   }
 
-  handleAddToCart(product: ProductWithHelpers): void {
-    this.cartService.addToCart(product);
+  handleAddToCart(event: { product: ProductWithHelpers; quantity: number }): void {
+    this.cartService.addToCart(event.product, event.quantity);
   }
 
   handleViewDetails(product: ProductWithHelpers): void {
@@ -23944,6 +24100,7 @@ FILE: src\assets\i18n\de.json
       "not_found": "Nicht gefunden",
       "invalid_login_link": "Ungültiger oder abgelaufener Anmeldelink",
       "invalid_credentials": "Ungültige E-Mail oder Passwort",
+      "invalid_credentials_or_inexistent_user": "Ungültige E-Mail oder Passwort",
       "network_error": "Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung.",
       "invalid_verification_link": "Ungültiger oder abgelaufener Bestätigungslink.",
       "already_activated": "Dieses Konto wurde bereits aktiviert.",
@@ -24556,6 +24713,7 @@ FILE: src\assets\i18n\en.json
       "not_found": "Not found",
       "invalid_login_link": "Invalid or expired login link",
       "invalid_credentials": "Invalid email or password",
+      "invalid_credentials_or_inexistent_user": "Invalid email or password",
       "network_error": "Network error. Please check your internet connection.",
       "invalid_verification_link": "Invalid or expired verification link.",
       "already_activated": "This account has already been activated.",
@@ -25168,6 +25326,7 @@ FILE: src\assets\i18n\hu.json
       "not_found": "Nem található",
       "invalid_login_link": "Érvénytelen vagy lejárt bejelentkezési link",
       "invalid_credentials": "Hibás e-mail cím vagy jelszó",
+      "invalid_credentials_or_inexistent_user": "Hibás e-mail cím vagy jelszó",
       "network_error": "Hálózati hiba. Ellenőrizze az internetkapcsolatát.",
       "invalid_verification_link": "Érvénytelen vagy lejárt megerősítő link.",
       "already_activated": "Ez a fiók már korábban aktiválva lett.",
@@ -25658,8 +25817,8 @@ FILE: src\environments\environment.prod.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://localhost:90',
-  assetsURL: 'http://localhost:90',
+  baseURL: 'http://192.168.11.213:90',
+  assetsURL: 'http://192.168.11.213:90',
 };
 
 
@@ -25670,8 +25829,8 @@ FILE: src\environments\environment.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://localhost:90',
-  assetsURL: 'http://localhost:90',
+  baseURL: 'http://192.168.11.213:90',
+  assetsURL: 'http://192.168.11.213:90',
 };
 
 

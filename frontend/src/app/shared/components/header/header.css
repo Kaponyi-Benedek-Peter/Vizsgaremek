@@ -372,11 +372,24 @@
   overflow: hidden;
 }
 
-.cart-item-price {
-  margin: 0;
+.cart-item-price-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.cart-item-unit-price {
   font-size: 0.9rem;
   color: var(--color-primary);
   font-weight: 600;
+}
+
+.cart-item-line-total {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  opacity: 0.85;
 }
 
 .cart-item-quantity {

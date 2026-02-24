@@ -100,7 +100,7 @@ export interface ProductsApiResponse {
 export interface ProductCategoriesApiResponse {
   statuscode: string;
   status: string;
-  categories: ProductCategory[];
+  product_categories: ProductCategory[];
 }
 
 export interface ProductImagesApiResponse {

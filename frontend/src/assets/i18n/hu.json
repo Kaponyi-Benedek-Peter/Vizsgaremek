@@ -123,6 +123,7 @@
       "not_found": "Nem található",
       "invalid_login_link": "Érvénytelen vagy lejárt bejelentkezési link",
       "invalid_credentials": "Hibás e-mail cím vagy jelszó",
+      "invalid_credentials_or_inexistent_user": "Hibás e-mail cím vagy jelszó",
       "network_error": "Hálózati hiba. Ellenőrizze az internetkapcsolatát.",
       "invalid_verification_link": "Érvénytelen vagy lejárt megerősítő link.",
       "already_activated": "Ez a fiók már korábban aktiválva lett.",

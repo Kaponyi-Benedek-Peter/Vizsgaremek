@@ -103,6 +103,7 @@ export class ProductService {
       const enriched = normalized.map((p) => enrichProduct(p, currentLang));
       this.rawProducts.set(normalized);
       this.allProductsSignal.set(enriched);
+      this.updateCategoryCounts();
       console.log(`Loaded ${products.length} products from backend`);
     } catch (err) {
       console.error('Failed to load products from backend:', err);
@@ -139,6 +140,7 @@ export class ProductService {
       const raw = await firstValueFrom(this.getAllCategories());
       const mapped = raw.map(mapProductCategory);
       this.categoriesSignal.set(mapped);
+      this.updateCategoryCounts();
       console.log(`Loaded ${raw.length} categories from backend`);
     } catch (err) {
       console.error('Failed to load categories from backend:', err);
@@ -194,8 +196,8 @@ export class ProductService {
         timeout(5000),
         map((r) => {
           if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
-          if (!Array.isArray(r.categories)) throw new Error('Invalid categories response');
-          return r.categories;
+          if (!Array.isArray(r.product_categories)) throw new Error('Invalid categories response');
+          return r.product_categories;
         }),
         catchError(this.handleError),
       );
@@ -268,6 +270,39 @@ export class ProductService {
       map.set(cat.id, cat.id);
     });
     return map;
+  }
+
+  /**
+   * Counts how many products belong to each category and updates
+   * the categories signal with the real counts.
+   */
+  private updateCategoryCounts(): void {
+    const products = this.allProductsSignal();
+    const categories = this.categoriesSignal();
+    if (categories.length === 0) return;
+
+    const countMap = new Map<string, number>();
+    products.forEach((p) => {
+      const catId = p.category_id ?? p.category ?? '';
+      if (catId) {
+        countMap.set(catId, (countMap.get(catId) ?? 0) + 1);
+      }
+    });
+
+    const updated = categories.map((cat) => ({
+      ...cat,
+      count: countMap.get(cat.id) ?? 0,
+    }));
+    this.categoriesSignal.set(updated);
+  }
+
+  /**
+   * Returns the Category object for a given category ID.
+   * Used by product detail components to display the category name
+   * instead of using the raw ID as a translation key.
+   */
+  getCategoryById(id: string): import('../core/models/product.model').Category | undefined {
+    return this.categoriesSignal().find((cat) => cat.id === id);
   }
 
   /**

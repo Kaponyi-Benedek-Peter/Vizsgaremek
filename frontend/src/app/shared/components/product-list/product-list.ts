@@ -72,8 +72,8 @@ export class ProductList {
     this.scrollToTop();
   }
 
-  handleAddToCart(product: ProductWithHelpers): void {
-    this.cartService.addToCart(product);
+  handleAddToCart(event: { product: ProductWithHelpers; quantity: number }): void {
+    this.cartService.addToCart(event.product, event.quantity);
   }
 
   handleViewDetails(product: ProductWithHelpers): void {

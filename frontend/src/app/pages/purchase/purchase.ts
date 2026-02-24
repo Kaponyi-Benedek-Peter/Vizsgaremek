@@ -10,6 +10,7 @@ import { CurrencyService } from '../../core/services/currency.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
+import { Product } from '../../core/models/product.model';
 
 interface CheckoutForm {
   city: string;
@@ -29,7 +30,7 @@ interface CheckoutForm {
   styleUrl: './purchase.css',
 })
 export class Purchase implements OnInit {
-  private cartService = inject(CartService);
+  cartService = inject(CartService);
   public currencyService = inject(CurrencyService);
   private authService = inject(AuthService);
   private accountService = inject(AccountService);
@@ -79,9 +80,16 @@ export class Purchase implements OnInit {
     }
   }
 
-  getItemTotal(price: number, quantity: number, discountPercentage?: number): number {
-    const finalPrice = discountPercentage ? price * (1 - discountPercentage / 100) : price;
-    return finalPrice * quantity;
+  getFormattedUnitPrice(product: Product): string {
+    return this.currencyService.formatPrice(
+      this.currencyService.getDiscountedPrice(product),
+    );
+  }
+
+  getFormattedItemTotal(product: Product, quantity: number): string {
+    return this.currencyService.formatPrice(
+      this.cartService.getItemTotal(product, quantity),
+    );
   }
 
   async submitOrder(): Promise<void> {

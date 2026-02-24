@@ -123,6 +123,7 @@
       "not_found": "Not found",
       "invalid_login_link": "Invalid or expired login link",
       "invalid_credentials": "Invalid email or password",
+      "invalid_credentials_or_inexistent_user": "Invalid email or password",
       "network_error": "Network error. Please check your internet connection.",
       "invalid_verification_link": "Invalid or expired verification link.",
       "already_activated": "This account has already been activated.",

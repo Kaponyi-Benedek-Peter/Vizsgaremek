@@ -39,9 +39,9 @@
     </div>
 
     <div class="product-content">
-      @if (!compact) {
+      @if (!compact && categoryName) {
         <span class="product-category">
-          {{ 'category.' + product.category | translate }}
+          {{ categoryName }}
         </span>
       }
 

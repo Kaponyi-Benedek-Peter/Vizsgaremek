@@ -123,6 +123,7 @@
       "not_found": "Nicht gefunden",
       "invalid_login_link": "Ungültiger oder abgelaufener Anmeldelink",
       "invalid_credentials": "Ungültige E-Mail oder Passwort",
+      "invalid_credentials_or_inexistent_user": "Ungültige E-Mail oder Passwort",
       "network_error": "Netzwerkfehler. Bitte überprüfen Sie Ihre Internetverbindung.",
       "invalid_verification_link": "Ungültiger oder abgelaufener Bestätigungslink.",
       "already_activated": "Dieses Konto wurde bereits aktiviert.",
