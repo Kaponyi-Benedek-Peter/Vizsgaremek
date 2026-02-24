@@ -20,7 +20,7 @@ namespace Servo.controller
 
 
 
-
+            // comment
 
             string admin_id = "";
             string sesstoken = "";
@@ -77,7 +77,7 @@ namespace Servo.controller
 
 
 
-                int resp = service.ban_user.process_unban_user(admin_id, sesstoken, target_user_id); // SERVICE
+                int resp = service.unban_user.process_unban_user(admin_id, sesstoken, target_user_id); // SERVICE
                 if (resp == 200)
                 {
 
