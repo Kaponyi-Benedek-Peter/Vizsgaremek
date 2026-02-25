@@ -1,102 +1,78 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
-
+/*
+ * Backend response note (bug in backend service):
+ *   On success the service returns (200, "success") instead of the JSON body,
+ *   so no JWT token is returned → the user must log in again after the reset.
+ */
 @Component({
   selector: 'app-password-reset',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [CommonModule, RouterModule, TranslateModule],
   templateUrl: './password-reset.html',
   styleUrl: './password-reset.css',
 })
 export class PasswordReset implements OnInit {
   private location = inject(Location);
+  private authService = inject(AuthService);
 
-  newPassword = signal('');
-  confirmPassword = signal('');
-  userId = signal<string>('');
-  token = signal<string>('');
-  isLoading = signal(false);
-  errorMessage = signal('');
+  isProcessing = signal(false);
   isSuccess = signal(false);
-  showPassword = signal(false);
-  showConfirmPassword = signal(false);
+  errorMessage = signal('');
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private authService: AuthService,
-  ) {}
+  constructor(private router: Router) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      const id = params['id'];
-      const token = params['token'];
+    // Read the ?chpass=B64(id);B64(token) param from the URL
+    const raw = new URLSearchParams(window.location.search).get('chpass') || '';
+    const parts = raw.split(';');
 
-      if (!id || !token) {
-        this.errorMessage.set('auth.errors.invalid_reset_link');
-        return;
-      }
-
-      const cleanUrl = `/password-reset?id=${id}&token=${token}`;
-      this.location.replaceState(cleanUrl);
-
-      this.userId.set(id);
-      this.token.set(token);
-    });
-  }
-
-  onSubmit(): void {
-    this.errorMessage.set('');
-
-    if (!this.newPassword() || !this.confirmPassword()) {
-      this.errorMessage.set('auth.errors.empty_fields');
-      return;
-    }
-
-    if (this.newPassword().length < 8) {
-      this.errorMessage.set('auth.errors.password_too_short');
-      return;
-    }
-
-    if (this.newPassword() !== this.confirmPassword()) {
-      this.errorMessage.set('auth.errors.passwords_dont_match');
-      return;
-    }
-
-    const id = this.userId();
-    const token = this.token();
-
-    if (!id || !token) {
+    if (parts.length !== 2) {
       this.errorMessage.set('auth.errors.invalid_reset_link');
       return;
     }
 
-    this.isLoading.set(true);
+    const encodedId = parts[0].trim();
+    const encodedToken = parts[1].trim();
 
-    this.authService.completePasswordChange(id, token).subscribe({
+    if (!encodedId || !encodedToken) {
+      this.errorMessage.set('auth.errors.invalid_reset_link');
+      return;
+    }
+
+    const cleanUrl = `/password-reset?chpass=${encodedId};${encodedToken}`;
+    this.location.replaceState(cleanUrl);
+
+    this.completePasswordReset(encodedId, encodedToken);
+  }
+
+  /** Calls chpass_promise endpoint with the B64 values from the email link */
+  completePasswordReset(encodedId: string, encodedToken: string): void {
+    this.isProcessing.set(true);
+    this.errorMessage.set('');
+
+    this.authService.completePasswordChange(encodedId, encodedToken).subscribe({
       next: () => {
-        this.isLoading.set(false);
+        this.isProcessing.set(false);
         this.isSuccess.set(true);
+        // Backend does not return a new JWT token (known backend bug),
+        // so we log the user out and redirect to login after success.
+        this.authService.logout();
         setTimeout(() => {
           this.router.navigate(['/login']);
-        }, 2000);
+        }, 2500);
       },
       error: (error) => {
-        this.isLoading.set(false);
+        this.isProcessing.set(false);
         this.errorMessage.set(error.message || 'auth.errors.password_reset_failed');
       },
     });
   }
 
-  togglePasswordVisibility(): void {
-    this.showPassword.set(!this.showPassword());
-  }
-
-  toggleConfirmPasswordVisibility(): void {
-    this.showConfirmPassword.set(!this.showConfirmPassword());
+  backToLogin(): void {
+    this.router.navigate(['/login']);
   }
 }

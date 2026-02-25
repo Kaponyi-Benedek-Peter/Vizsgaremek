@@ -41,6 +41,8 @@ export class Header implements OnInit {
     public currencyService: CurrencyService,
   ) {}
 
+  isAdmin = false;
+
   ngOnInit(): void {
     this.themeService.currentTheme$.subscribe((theme) => {
       this.currentTheme = theme;
@@ -49,6 +51,7 @@ export class Header implements OnInit {
     this.authService.authState$.subscribe((state) => {
       this.isAuthenticated = state.isAuthenticated;
       this.currentUser = state.user;
+      this.isAdmin = state.role === 'ADMIN';
     });
   }
 

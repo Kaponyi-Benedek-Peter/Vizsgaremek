@@ -1,7 +1,16 @@
 <section class="featured-section">
-  <h2 class="section-title">{{ 'home.featured.title' | translate }}</h2>
+  <div class="featured-header">
+    <h2 class="section-title">{{ 'home.featured.title' | translate }}</h2>
+  </div>
 
-  <div class="featured-products-grid">
+  <div class="featured-products-grid" [class.show-all]="showAll()">
     <ng-content></ng-content>
+  </div>
+
+  <div class="featured-show-more">
+    <button class="show-more-btn" (click)="toggleShowAll()">
+      {{ (showAll() ? 'home.featured.showLess' : 'home.featured.showMore') | translate }}
+      <span class="show-more-arrow" [class.rotated]="showAll()">↓</span>
+    </button>
   </div>
 </section>

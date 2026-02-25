@@ -7,7 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { AccountService } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
 
-type ProfilePanel = 'none' | 'edit' | 'delete';
+export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | 'danger';
 
 @Component({
   selector: 'app-profile',
@@ -26,70 +26,79 @@ export class Profile implements OnInit {
   isAuthenticated = this.authService.isAuthenticated;
 
   fullName = computed(() => {
-    const userData = this.user();
-    if (!userData) return '';
-    return `${userData.firstname} ${userData.lastname}`.trim();
+    const u = this.user();
+    if (!u) return '';
+    return `${u.firstname} ${u.lastname}`.trim();
   });
 
-  email = computed(() => this.user()?.email || '');
+  initials = computed(() => {
+    const u = this.user();
+    if (!u) return '?';
+    const f = u.firstname?.[0] ?? '';
+    const l = u.lastname?.[0] ?? '';
+    return (f + l).toUpperCase() || '?';
+  });
 
-  // Panel state
-  activePanel = signal<ProfilePanel>('none');
+  email = computed(() => this.user()?.email ?? '');
+  accountState = computed(() => this.user()?.account_state ?? 'verified');
 
-  // Edit profile form
-  editFirstname = signal('');
-  editLastname = signal('');
+  activeSection = signal<ProfileSection>('overview');
+
+  editFirstname = '';
+  editLastname = '';
   isUpdatingProfile = signal(false);
-  editErrorMessage = signal('');
+  profileEditError = signal('');
+  profileEditSuccess = signal(false);
 
-  // Delete account
-  deletePassword = signal('');
+  changePasswordNew = '';
+  changePasswordConfirm = '';
+  showNewPassword = signal(false);
+  showConfirmPassword = signal(false);
+  isChangingPassword = signal(false);
+  changePasswordError = signal('');
+  changePasswordEmailSent = signal(false);
+
+  deletePassword = '';
   showDeletePassword = signal(false);
   isDeletingAccount = signal(false);
-  deleteErrorMessage = signal('');
+  deleteError = signal('');
   deleteConfirmationSent = signal(false);
 
+  isSidebarOpen = signal(false);
+
   ngOnInit(): void {
-    if (!this.isAuthenticated()) {
-      this.router.navigate(['/login']);
-    }
+    this.loadPersonalInfoIntoForm();
+  }
+
+  setSection(section: ProfileSection): void {
+    this.activeSection.set(section);
+    this.isSidebarOpen.set(false);
+    this.resetForms();
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen.update((v) => !v);
   }
 
   logout(): void {
     this.authService.logout();
-    this.router.navigate(['/login']);
   }
 
-  openEditPanel(): void {
+  loadPersonalInfoIntoForm(): void {
     const u = this.user();
-    this.editFirstname.set(u?.firstname || '');
-    this.editLastname.set(u?.lastname || '');
-    this.editErrorMessage.set('');
-    this.activePanel.set('edit');
+    this.editFirstname = u?.firstname ?? '';
+    this.editLastname = u?.lastname ?? '';
   }
 
-  openDeletePanel(): void {
-    this.deletePassword.set('');
-    this.deleteErrorMessage.set('');
-    this.deleteConfirmationSent.set(false);
-    this.activePanel.set('delete');
-  }
+  savePersonalInfo(): void {
+    this.profileEditError.set('');
+    this.profileEditSuccess.set(false);
 
-  closePanel(): void {
-    this.activePanel.set('none');
-  }
-
-  goToChangePassword(): void {
-    this.router.navigate(['/password-reset-request']);
-  }
-
-  saveProfile(): void {
-    this.editErrorMessage.set('');
-    const firstname = this.editFirstname().trim();
-    const lastname = this.editLastname().trim();
+    const firstname = this.editFirstname.trim();
+    const lastname = this.editLastname.trim();
 
     if (!firstname || !lastname) {
-      this.editErrorMessage.set('profile.errors.name_required');
+      this.profileEditError.set('profile.errors.name_required');
       return;
     }
 
@@ -98,28 +107,63 @@ export class Profile implements OnInit {
     this.accountService.updateProfile({ firstname, lastname }).subscribe({
       next: () => {
         this.isUpdatingProfile.set(false);
-        this.closePanel();
+        this.profileEditSuccess.set(true);
         this.toastService.success('profile.success.profile_updated');
       },
-      error: (error) => {
+      error: (err) => {
         this.isUpdatingProfile.set(false);
-        this.editErrorMessage.set(error.message || 'profile.errors.update_failed');
+        this.profileEditError.set(err.message ?? 'profile.errors.update_failed');
+      },
+    });
+  }
+
+  requestPasswordChange(): void {
+    this.changePasswordError.set('');
+    this.changePasswordEmailSent.set(false);
+
+    if (!this.changePasswordNew || this.changePasswordNew.length < 6) {
+      this.changePasswordError.set('profile.errors.new_password_too_short');
+      return;
+    }
+    if (this.changePasswordNew !== this.changePasswordConfirm) {
+      this.changePasswordError.set('profile.errors.passwords_do_not_match');
+      return;
+    }
+
+    const userEmail = this.email();
+    if (!userEmail) {
+      this.changePasswordError.set('auth.errors.not_authenticated');
+      return;
+    }
+
+    this.isChangingPassword.set(true);
+
+    this.authService.requestPasswordChange(userEmail, this.changePasswordNew).subscribe({
+      next: () => {
+        this.isChangingPassword.set(false);
+        this.changePasswordEmailSent.set(true);
+        this.changePasswordNew = '';
+        this.changePasswordConfirm = '';
+      },
+      error: (err) => {
+        this.isChangingPassword.set(false);
+        this.changePasswordError.set(err.message ?? 'profile.errors.password_change_failed');
       },
     });
   }
 
   requestDeleteAccount(): void {
-    this.deleteErrorMessage.set('');
-    const password = this.deletePassword().trim();
+    this.deleteError.set('');
 
+    const password = this.deletePassword.trim();
     if (!password) {
-      this.deleteErrorMessage.set('auth.errors.empty_fields');
+      this.deleteError.set('auth.errors.empty_fields');
       return;
     }
 
     const userId = this.user()?.id;
     if (!userId) {
-      this.deleteErrorMessage.set('auth.errors.not_authenticated');
+      this.deleteError.set('auth.errors.not_authenticated');
       return;
     }
 
@@ -130,14 +174,28 @@ export class Profile implements OnInit {
         this.isDeletingAccount.set(false);
         this.deleteConfirmationSent.set(true);
       },
-      error: (error) => {
+      error: (err) => {
         this.isDeletingAccount.set(false);
-        this.deleteErrorMessage.set(error.message || 'profile.errors.delete_failed');
+        this.deleteError.set(err.message ?? 'profile.errors.delete_failed');
       },
     });
   }
 
-  toggleDeletePassword(): void {
-    this.showDeletePassword.set(!this.showDeletePassword());
+  togglePasswordVisibility(field: 'new' | 'confirm' | 'delete'): void {
+    if (field === 'new') this.showNewPassword.update((v) => !v);
+    else if (field === 'confirm') this.showConfirmPassword.update((v) => !v);
+    else this.showDeletePassword.update((v) => !v);
+  }
+
+  private resetForms(): void {
+    this.profileEditError.set('');
+    this.profileEditSuccess.set(false);
+    this.changePasswordError.set('');
+    this.changePasswordEmailSent.set(false);
+    this.deleteError.set('');
+    this.deleteConfirmationSent.set(false);
+    this.changePasswordNew = '';
+    this.changePasswordConfirm = '';
+    this.loadPersonalInfoIntoForm();
   }
 }

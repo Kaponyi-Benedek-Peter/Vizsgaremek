@@ -42,7 +42,7 @@
                 <div class="item-details">
                   <h3 class="item-name">{{ item.product.name }}</h3>
                   <p class="item-price">
-                    {{ currencyService.formatPrice(item.product.price) }}
+                    {{ getFormattedUnitPrice(item.product) }}
                     @if (item.product.discountPercentage) {
                       <span class="discount-badge">-{{ item.product.discountPercentage }}%</span>
                     }
@@ -67,15 +67,7 @@
                 </div>
                 <div class="item-actions">
                   <p class="item-total">
-                    {{
-                      currencyService.formatPrice(
-                        getItemTotal(
-                          item.product.price,
-                          item.quantity,
-                          item.product.discountPercentage
-                        )
-                      )
-                    }}
+                    {{ getFormattedItemTotal(item.product, item.quantity) }}
                   </p>
                   <button
                     class="remove-btn"

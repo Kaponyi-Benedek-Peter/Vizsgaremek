@@ -27,36 +27,33 @@ export class RegistrationPromise implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      const activate = params['activate'];
+    const raw = new URLSearchParams(window.location.search).get('activate') || '';
+    const parts = raw.split(';');
 
-      if (!activate) {
-        this.errorMessage.set('auth.errors.invalid_verification_link');
-        return;
-      }
+    if (!raw) {
+      this.errorMessage.set('auth.errors.invalid_verification_link');
+      return;
+    }
 
-      const parts = activate.split(';');
+    if (parts.length !== 2) {
+      this.errorMessage.set('auth.errors.invalid_verification_link');
+      return;
+    }
 
-      if (parts.length !== 2) {
-        this.errorMessage.set('auth.errors.invalid_verification_link');
-        return;
-      }
+    const id = parts[0].trim();
+    const token = parts[1].trim();
 
-      const id = parts[0].trim();
-      const token = parts[1].trim();
+    if (!id || !token) {
+      this.errorMessage.set('auth.errors.invalid_verification_link');
+      return;
+    }
 
-      if (!id || !token) {
-        this.errorMessage.set('auth.errors.invalid_verification_link');
-        return;
-      }
+    const cleanUrl = `/registration-promise?activate=${id};${token}`;
+    this.location.replaceState(cleanUrl);
 
-      const cleanUrl = `/registration-promise?activate=${id};${token}`;
-      this.location.replaceState(cleanUrl);
-
-      this.userId.set(id);
-      this.token.set(token);
-      this.verifyEmail();
-    });
+    this.userId.set(id);
+    this.token.set(token);
+    this.verifyEmail();
   }
 
   verifyEmail(): void {

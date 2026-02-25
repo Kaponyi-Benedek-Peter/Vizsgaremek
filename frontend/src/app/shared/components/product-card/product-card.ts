@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
+import { ProductService } from '../../../services/product.service';
 import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
 
 @Component({
@@ -16,32 +17,31 @@ import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
 export class ProductCard {
   @Input({ required: true }) product!: ProductWithHelpers;
   @Input() compact = false;
-  @Output() addToCart = new EventEmitter<ProductWithHelpers>();
+  @Output() addToCart = new EventEmitter<{ product: ProductWithHelpers; quantity: number }>();
   @Output() viewDetails = new EventEmitter<ProductWithHelpers>();
   @Output() quantityChange = new EventEmitter<{ product: ProductWithHelpers; quantity: number }>();
 
-  // Helpers
   getImageUrl = getImageUrl;
   getCategoryIcon = getCategoryIcon;
 
   quantity = signal(1);
 
   private currencyService = inject(CurrencyService);
+  private productService = inject(ProductService);
+  private translateService = inject(TranslateService);
 
   get hasDiscount(): boolean {
     return this.product.hasDiscount;
   }
 
-  get discountedPrice(): number {
-    return this.product.price;
-  }
-
   get formattedPrice(): string {
-    return this.currencyService.formatPrice(this.product.priceNumber);
+    // getBasePrice reads the currentCurrency signal → converts HUF→USD/EUR as needed
+    return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
   }
 
   get formattedDiscountedPrice(): string {
-    return this.currencyService.formatPrice(this.product.price);
+    // getDiscountedPrice applies sale_percentage on top of the converted base price
+    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
   }
 
   get canAddToCart(): boolean {
@@ -60,6 +60,14 @@ export class ProductCard {
     return this.product.description;
   }
 
+  get categoryName(): string {
+    const catId = this.product.category ?? this.product.category_id ?? '';
+    const cat = this.productService.getCategoryById(catId);
+    if (!cat) return '';
+    const lang = this.translateService.currentLang || 'hu';
+    return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
+  }
+
   increaseQuantity(): void {
     if (this.quantity() < this.product.stockQuantity) {
       this.quantity.update((q) => q + 1);
@@ -76,7 +84,9 @@ export class ProductCard {
 
   onAddToCart(): void {
     if (this.canAddToCart) {
-      this.addToCart.emit(this.product);
+      // only event emit — the parent (product-list) manages the addtocart.
+      this.addToCart.emit({ product: this.product, quantity: this.quantity() });
+      this.quantity.set(1);
     }
   }
 

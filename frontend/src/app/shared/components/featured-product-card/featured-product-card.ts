@@ -35,14 +35,10 @@ export class FeaturedProductCard {
     return name || this.translateService.instant('product.product_image');
   });
 
-  price = computed(() => {
-    return this.product?.price || 0;
-  });
-
-  oldPrice = computed(() => {
-    if (!this.product?.hasDiscount) return null;
-    return this.product.priceNumber || null;
-  });
+  price = computed(() => this.currencyService.getDiscountedPrice(this.product));
+  oldPrice = computed(() =>
+    this.product?.hasDiscount ? this.currencyService.getBasePrice(this.product) : null,
+  );
 
   inStock = computed(() => {
     return this.product?.inStock || false;

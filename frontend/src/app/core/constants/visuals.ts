@@ -145,10 +145,10 @@ export const IMAGES = {
   heroBg: `${ASSETS}/assets/images/herobg.webp`,
 
   // Hero slides
-  hero1: `${ASSETS}/assets/images/hero1.webp`,
-  hero2: `${ASSETS}/assets/images/hero2.webp`,
-  hero3: `${ASSETS}/assets/images/hero3.webp`,
-  hero4: `${ASSETS}/assets/images/hero4.webp`,
+  hero1: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1920&h=600&fit=crop&q=80',
+  hero2: 'https://images.unsplash.com/photo-1550572017-edd951b55104?w=1920&h=600&fit=crop&q=80',
+  hero3: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1920&h=600&fit=crop&q=80',
+  hero4: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1920&h=600&fit=crop&q=80',
 
   // Language flags - emoji version
   flagHungary: '🇭🇺',
@@ -165,30 +165,30 @@ export const IMAGES = {
 export const HERO_SLIDES: SlideData[] = [
   {
     image: IMAGES.hero1,
-    title: 'hero.slide1.title',
-    subtitle: 'hero.slide1.subtitle',
-    cta: 'hero.cta',
+    title: 'slider.slide1.title',
+    subtitle: 'slider.slide1.subtitle',
+    cta: 'slider.cta',
     link: '/products',
   },
   {
     image: IMAGES.hero2,
-    title: 'hero.slide2.title',
-    subtitle: 'hero.slide2.subtitle',
-    cta: 'hero.cta',
+    title: 'slider.slide2.title',
+    subtitle: 'slider.slide2.subtitle',
+    cta: 'slider.cta',
     link: '/products',
   },
   {
     image: IMAGES.hero3,
-    title: 'hero.slide3.title',
-    subtitle: 'hero.slide3.subtitle',
-    cta: 'hero.cta',
+    title: 'slider.slide3.title',
+    subtitle: 'slider.slide3.subtitle',
+    cta: 'slider.cta',
     link: '/products',
   },
   {
     image: IMAGES.hero4,
-    title: 'hero.slide4.title',
-    subtitle: 'hero.slide4.subtitle',
-    cta: 'hero.cta',
+    title: 'slider.slide4.title',
+    subtitle: 'slider.slide4.subtitle',
+    cta: 'slider.cta',
     link: '/products',
   },
 ];
@@ -365,9 +365,11 @@ export function isEmoji(value: string): boolean {
 export function getCategoriesFromVisuals(): Category[] {
   return Object.values(CATEGORY_VISUALS).map((visual) => ({
     id: visual.id,
-    slug: visual.id,
+    name_hu: '',
+    name_en: '',
+    name_de: '',
     icon: visual.icon,
-    color: '#067a45', // gets overrided
+    color: '#067a45',
     count: 0,
   }));
 }
@@ -377,7 +379,9 @@ export function getCategoryById(categoryId: string): Category | undefined {
   if (!visual) return undefined;
   return {
     id: visual.id,
-    slug: visual.id,
+    name_hu: '',
+    name_en: '',
+    name_de: '',
     icon: visual.icon,
     color: '#067a45',
     count: 0,

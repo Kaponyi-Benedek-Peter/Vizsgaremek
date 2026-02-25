@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../core/models/product.model';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../core/services/cart.service';
@@ -20,6 +20,7 @@ export class ProductDetail implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
   private currencyService = inject(CurrencyService);
+  private translateService = inject(TranslateService);
 
   product = signal<ProductWithHelpers | null>(null);
   isLoading = signal(true);
@@ -48,25 +49,34 @@ export class ProductDetail implements OnInit, OnDestroy {
   get formattedPrice(): string {
     const p = this.product();
     if (!p) return '';
-    return this.currencyService.formatPrice(p.priceNumber);
+    // getBasePrice converts
+    return this.currencyService.formatPrice(this.currencyService.getBasePrice(p));
   }
 
   get formattedDiscountedPrice(): string {
     const p = this.product();
     if (!p) return '';
-    return this.currencyService.formatPrice(p.price);
+    // getDiscountedPrice = converted price + sale
+    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(p));
   }
 
   get formattedTotalPrice(): string {
     const p = this.product();
     if (!p) return '';
-    const basePrice = p.hasDiscount ? p.price : p.priceNumber;
-    return this.currencyService.formatPrice(basePrice * this.quantity());
+    const unitPrice = this.currencyService.getDiscountedPrice(p);
+    return this.currencyService.formatPrice(unitPrice * this.quantity());
   }
 
   get canAddToCart(): boolean {
     const p = this.product();
     return !!(p?.inStock && !p?.requiresPrescription && this.quantity() <= p.stockQuantity);
+  }
+
+  get categoryName(): string {
+    const cat = this.productService.getCategoryById(this.product()?.category ?? '');
+    const lang = this.translateService.currentLang || 'hu';
+    if (!cat) return '';
+    return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
   }
 
   async ngOnInit(): Promise<void> {
@@ -76,7 +86,8 @@ export class ProductDetail implements OnInit, OnDestroy {
       return;
     }
 
-    await this.productService.loadProducts();
+    await Promise.all([this.productService.loadProducts(), this.productService.loadCategories()]);
+
     const all = this.productService.products();
     const found = all.find((p) => p.id === id);
 

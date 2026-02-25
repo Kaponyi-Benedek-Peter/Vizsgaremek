@@ -48,6 +48,11 @@
   pointer-events: none;
 }
 
+.hero app-slide {
+  width: 100%;
+  display: block;
+}
+
 @keyframes heroFloat {
   0% {
     transform: translate(0, 0) scale(1);
