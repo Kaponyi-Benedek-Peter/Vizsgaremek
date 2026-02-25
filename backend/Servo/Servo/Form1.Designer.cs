@@ -358,7 +358,7 @@
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(214, 46);
             this.textBox1.TabIndex = 34;
-            this.textBox1.Text = "roytest";
+            this.textBox1.Text = "roy";
             // 
             // Form1
             // 

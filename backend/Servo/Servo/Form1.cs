@@ -111,7 +111,7 @@ namespace Servo
         private void startserver()
         {
            
-            if (firstlaunch) { model.shared.init(); }
+            if (firstlaunch) { model.shared.init(textBox1.Text); }
             firstlaunch = false;
             if (!sh.isrunning)
             {

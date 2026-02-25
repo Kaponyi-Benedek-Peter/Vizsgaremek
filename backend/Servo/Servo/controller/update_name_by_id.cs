@@ -41,7 +41,7 @@ namespace Servo.controller
                 try
                 {
                     JObject jsonObj = JObject.Parse(lenyeg);
-                    id = service.shared.b64dec(jsonObj["id"].ToString());
+                    user_id = service.shared.b64dec(jsonObj["id"].ToString());
                     sesstoken = service.shared.b64dec(jsonObj["sesstoken"].ToString());
                     new_firstname = service.shared.b64dec(jsonObj["new_firstname"].ToString());
                     new_lastname = service.shared.b64dec(jsonObj["new_lastname"].ToString());

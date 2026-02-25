@@ -122,15 +122,15 @@ namespace Servo.model
 
 
         public class review
-            {
-                public string product_id { get; set; } = "";
-                public string title { get; set; } = "";
-                public string body { get; set; } = "";
-                public string rating { get; set; } = "";
-                public int created_at { get; set; } = 0;
-                public int user_id { get; set; } = 0;
-                
-            }
+        {
+            public string product_id { get; set; } = "";
+            public string title { get; set; } = "";
+            public string body { get; set; } = "";
+            public string rating { get; set; } = "";
+            public int created_at { get; set; } = 0;
+            public int user_id { get; set; } = 0;
+
+        }
 
         public class product_image
         {
@@ -144,16 +144,18 @@ namespace Servo.model
 
 
 
-        public static void init()
+        public static void init(string databasename)
         {
-            conn= new MySqlConnection(connStr);
+            connStr = $"server={service.shared.conf("r", "sql_conn_server")};port={service.shared.conf("r", "sql_conn_port")};user={service.shared.conf("r", "sql_conn_user")};password={service.shared.conf("r", "sql_conn_password")};database={databasename};";
+            conn = new MySqlConnection(connStr);
             conn.Open();
             service.shared.log("[mysql connection open]");
+
         }
-        public static string connStr = $"server={service.shared.conf("r", "sql_conn_server")};port={service.shared.conf("r","sql_conn_port")};user={service.shared.conf("r", "sql_conn_user")};password={service.shared.conf("r", "sql_conn_password")};database={service.shared.conf("r", "sql_conn_database")};";
+        public static string connStr;
 
         public static MySqlConnection conn;
-     
+
         /*
         public static string fetchsqlsing(string rw, string inntype, string inn, string outttype, string table, string newValue = null, Dictionary<string, string> lista = null)
         {
@@ -282,12 +284,12 @@ namespace Servo.model
             return ret;
         }
         */
-    
+
         public static string get_email_by_id(string id)
         {
             try
             {
-                
+
 
                 string userToken = null;
 
@@ -301,7 +303,7 @@ namespace Servo.model
                     {
                         if (reader.Read())
                         {
-                            
+
                             userToken = reader["email"]?.ToString();
                         }
                     }
@@ -325,7 +327,7 @@ namespace Servo.model
         {
             try
             {
-               
+
 
                 string userToken = null;
 
@@ -359,7 +361,7 @@ namespace Servo.model
         }
 
 
-        public static Dictionary<string, string> get_full_confirmation_by_user_id(string user_id,string type)
+        public static Dictionary<string, string> get_full_confirmation_by_user_id(string user_id, string type)
         {
             var list = new Dictionary<string, string> { };
             list.Add("error", "false");
@@ -368,8 +370,8 @@ namespace Servo.model
 
 
 
-                
-                
+
+
                 using (MySqlCommand cmd = new MySqlCommand("get_confirmations_by_user_id_and_type", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -399,9 +401,10 @@ namespace Servo.model
                         }
                     }
                 }
-                
+
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 service.shared.log($"Error 1: {ex.Message} --model.shared.get_full_confirmation_by_user_id");
                 list["error"] = "true";
             }
@@ -413,7 +416,7 @@ namespace Servo.model
         {
             try
             {
-                
+
 
                 string userToken = null;
 
@@ -450,7 +453,7 @@ namespace Servo.model
         {
             try
             {
-               
+
 
                 string userToken = null;
 
@@ -488,7 +491,7 @@ namespace Servo.model
         {
             try
             {
-                
+
 
                 string userToken = null;
 
@@ -526,7 +529,7 @@ namespace Servo.model
         {
             try
             {
-                
+
 
                 string userToken = null;
 
@@ -624,8 +627,8 @@ namespace Servo.model
                     cmd.CommandType = CommandType.StoredProcedure;
 
 
-                    
-                    
+
+
                     cmd.Parameters.AddWithValue("@p_price_huf", prod.price);
                     cmd.Parameters.AddWithValue("@p_times_ordered", prod.times_ordered);
                     cmd.Parameters.AddWithValue("@p_stock", prod.stock);
@@ -712,7 +715,7 @@ namespace Servo.model
 
 
                     cmd.Parameters.AddWithValue("@p_user_id", rev.user_id);
-                    
+
 
                     cmd.ExecuteNonQuery();
 
@@ -806,7 +809,7 @@ namespace Servo.model
         {
             try
             {
-                
+
 
                 string userToken = null;
 
@@ -1106,7 +1109,7 @@ namespace Servo.model
 
 
 
-        public static int update_name_by_id(string user_id,string new_firstname, string new_lastname)
+        public static int update_name_by_id(string user_id, string new_firstname, string new_lastname)
         {
 
             try
@@ -1214,25 +1217,12 @@ namespace Servo.model
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         }
+
+
+
+
+
+
+    }
 }

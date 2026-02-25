@@ -107,6 +107,7 @@ namespace Servo.service
                         string expiration = model.shared.get_sesstoken_expiration_by_id(controller_id);
                         string new_jwt_token = jwt_handler.generate_token(model_email);
                         string jwt_expiration = jwt_handler.generate_expiration_string();
+                        string model_user_state = model.shared.get_account_state_by_id(controller_id);
 
 
 
@@ -117,6 +118,7 @@ namespace Servo.service
                                 jwt_token = new_jwt_token,
                                 jwt_token_expiration = jwt_expiration,
                                 user_id = controller_id,
+                                user_state = model_user_state,
 
                                 session_token = new_sesstoken,
                                 session_token_expiration = expiration,

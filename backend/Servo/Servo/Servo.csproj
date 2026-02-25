@@ -240,7 +240,6 @@
     <Compile Include="service\shared.cs" />
     <Compile Include="service\unban_user.cs" />
     <Compile Include="service\update_name_by_id.cs" />
-    <Compile Include="service\update_password.cs" />
     <Compile Include="service\update_stock.cs" />
     <Compile Include="testpanel.cs">
       <SubType>Form</SubType>
