@@ -49,12 +49,14 @@ namespace Servo
                 {
                     try
                     {
+                        service.shared.log("[! server started !]");
                         //service.shared.log("[starting server 4]");
                         HttpListenerContext context = hallgatozo.GetContext();
                         ThreadPool.QueueUserWorkItem(o => controller.router.main(context, service.shared.baseDir));
 
                         //Form1.Instance.updateconnections();
                         //service.shared.log("[starting server 5]");
+                        
                     }
                     catch (HttpListenerException ex) when (token.IsCancellationRequested)
                     {
@@ -67,6 +69,7 @@ namespace Servo
                         service.shared.log($"Error 1: {ex.Message} --lib.shared.start_server > server");
                     }
                 }
+                
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
 
@@ -87,8 +90,8 @@ namespace Servo
                         service.shared.log($"Error 2: {ex.Message} --lib.shared.start_server > email_auth refresh");
                     }
 
-
-                    Thread.Sleep(300000);
+                     
+                    Thread.Sleep(150000); // 2.5m
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
