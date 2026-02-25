@@ -16,16 +16,4 @@ export class App {
     private route: ActivatedRoute,
     private router: Router,
   ) {}
-
-  ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      const login = params['login'];
-      if (login) {
-        this.router.navigate(['/login-promise'], {
-          queryParams: { login_promise: login },
-          replaceUrl: true,
-        });
-      }
-    });
-  }
 }

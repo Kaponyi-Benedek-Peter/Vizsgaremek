@@ -76,7 +76,7 @@ export interface AdminOrdersResponse {
 
 export interface AdminAuthBody {
   id: string;
-  token: string;
+  session_token: string;
 }
 
 @Injectable({
@@ -176,16 +176,15 @@ export class AccountService {
   }
 
   private buildAdminAuthBody(): AdminAuthBody {
-    const user = this.authService.currentUser();
+    const storedId = sessionStorage.getItem('user_id') ?? '';
     const sessionToken = this.authService.getSessionToken();
     const jwtToken = this.authService.getToken();
 
     const tokenToSend = sessionToken ?? jwtToken ?? '';
-    const userId = user?.id ?? '';
 
     return {
-      id: this.encodeBase64(userId),
-      token: this.encodeBase64(tokenToSend),
+      id: this.encodeBase64(storedId),
+      session_token: this.encodeBase64(tokenToSend),
     };
   }
 

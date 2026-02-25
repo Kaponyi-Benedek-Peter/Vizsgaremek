@@ -51,7 +51,7 @@ export class Header implements OnInit {
     this.authService.authState$.subscribe((state) => {
       this.isAuthenticated = state.isAuthenticated;
       this.currentUser = state.user;
-      this.isAdmin = state.role === 'ADMIN';
+      this.isAdmin = state.role === 'admin';
     });
   }
 
