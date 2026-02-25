@@ -37,7 +37,12 @@
               <img [src]="ICONS.basket" alt="orders" class="dropdown-icon" />
               {{ 'header.my_orders' | translate }}
             </a>
-            <a *ngIf="isAdmin" routerLink="/admin" (click)="closeUserMenu()">
+            <a
+              *ngIf="isAdmin"
+              routerLink="/admin"
+              class="user-dropdown-item"
+              (click)="closeUserMenu()"
+            >
               {{ 'header.admin' | translate }}
             </a>
             <div class="user-dropdown-divider"></div>

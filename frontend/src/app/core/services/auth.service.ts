@@ -96,6 +96,10 @@ export class AuthService {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
     storage.setItem('auth_role', role);
   }
+  private storeId(user_id: string, stayLoggedIn: boolean): void {
+    const storage = stayLoggedIn ? localStorage : sessionStorage;
+    storage.setItem('user_id', user_id);
+  }
 
   private getStoredRole(): UserState | null {
     return (
@@ -299,6 +303,7 @@ export class AuthService {
     user?: User,
     skipNavigation = false,
   ): void {
+    const id = response.user_id;
     const role = response.user_state;
     const jwtToken = response.jwt_token;
     const sessionToken = response.session_token ?? null;
@@ -323,6 +328,7 @@ export class AuthService {
 
     this.clearStorage();
     this.storeRole(role, stayLoggedIn);
+    this.storeId(id, stayLoggedIn);
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
     this.storeSessionToken(sessionToken, stayLoggedIn);
     if (userData) {
@@ -497,10 +503,10 @@ export class AuthService {
   }
 
   isAdmin(): boolean {
-    return this.authStateSignal().role === 'ADMIN';
+    return this.authStateSignal().role === 'admin';
   }
 
   isVerified(): boolean {
-    return this.authStateSignal().role === 'VERIFIED';
+    return this.authStateSignal().role === 'verified';
   }
 }

@@ -25,6 +25,7 @@ export interface LoginPromiseRequest {
 }
 
 export interface LoginResponse {
+  user_id: string;
   jwt_token: string;
   session_token?: string;
   jwt_token_expiration?: string;
@@ -80,7 +81,7 @@ export interface ApiErrorResponse {
   statusCode?: number;
 }
 
-export type UserState = 'ADMIN' | 'VERIFIED' | 'USER';
+export type UserState = 'admin' | 'verified' | 'superadmin';
 
 export interface AuthState {
   isAuthenticated: boolean;

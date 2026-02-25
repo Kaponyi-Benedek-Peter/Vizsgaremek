@@ -1259,8 +1259,7 @@ export const adminGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  const currentUser = authService.currentUser();
-  if (currentUser?.role === 'admin' || currentUser?.account_state === 'admin') {
+  if (authService.isAdmin()) {
     return true;
   }
 
@@ -1364,6 +1363,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           console.error('Authentication error:', error.error);
         }
       }
+      if (error.status === 403) {
+        authService.logout();
+        router.navigate(['/login']);
+      }
 
       return throwError(() => error);
     }),
@@ -1403,12 +1406,10 @@ export interface LoginPromiseRequest {
 }
 
 export interface LoginResponse {
-  status: string;
-  statuscode: number;
   jwt_token: string;
-  jwt_token_expiration: string;
-  session_token: string;
-  session_token_expiration: string;
+  session_token?: string;
+  jwt_token_expiration?: string;
+  user_state: UserState;
 }
 
 export interface RegistrationRequest {
@@ -1460,12 +1461,15 @@ export interface ApiErrorResponse {
   statusCode?: number;
 }
 
+export type UserState = 'ADMIN' | 'VERIFIED' | 'USER';
+
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
   sessionToken: string | null;
   expiresAt: Date | null;
+  role: UserState | null;
 }
 
 export interface JWTPayload {
@@ -2162,6 +2166,7 @@ import {
   PasswordChangePromiseRequest,
   AuthState,
   ApiErrorResponse,
+  UserState,
 } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
@@ -2186,6 +2191,7 @@ export class AuthService {
     token: null,
     sessionToken: null,
     expiresAt: null,
+    role: null,
   });
 
   public authState = this.authStateSignal.asReadonly();
@@ -2200,7 +2206,9 @@ export class AuthService {
     token: null,
     sessionToken: null,
     expiresAt: null,
+    role: null,
   });
+
   public authState$ = this.authStateSubject.asObservable();
 
   constructor(
@@ -2216,6 +2224,7 @@ export class AuthService {
     const user = this.getStoredUser();
     const expiresAt = this.getStoredExpiration();
     const sessionToken = this.getStoredSessionToken();
+    const role = this.getStoredRole();
 
     if (token && user && expiresAt) {
       if (new Date() < expiresAt) {
@@ -2225,11 +2234,24 @@ export class AuthService {
           token,
           sessionToken,
           expiresAt,
+          role,
         });
       } else {
         this.clearStorage();
       }
     }
+  }
+
+  private storeRole(role: UserState, stayLoggedIn: boolean): void {
+    const storage = stayLoggedIn ? localStorage : sessionStorage;
+    storage.setItem('auth_role', role);
+  }
+
+  private getStoredRole(): UserState | null {
+    return (
+      (localStorage.getItem('auth_role') as UserState) ||
+      (sessionStorage.getItem('auth_role') as UserState)
+    );
   }
 
   private setupStorageListener(): void {
@@ -2242,6 +2264,7 @@ export class AuthService {
             token: null,
             sessionToken: null,
             expiresAt: null,
+            role: null,
           });
 
           if (!this.router.url.includes('/login')) {
@@ -2369,6 +2392,7 @@ export class AuthService {
       token: null,
       sessionToken: null,
       expiresAt: null,
+      role: null,
     });
     this.router.navigate(['/login']);
   }
@@ -2425,6 +2449,7 @@ export class AuthService {
     user?: User,
     skipNavigation = false,
   ): void {
+    const role = response.user_state;
     const jwtToken = response.jwt_token;
     const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
@@ -2447,6 +2472,7 @@ export class AuthService {
     }
 
     this.clearStorage();
+    this.storeRole(role, stayLoggedIn);
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
     this.storeSessionToken(sessionToken, stayLoggedIn);
     if (userData) {
@@ -2459,6 +2485,7 @@ export class AuthService {
       token: jwtToken,
       sessionToken,
       expiresAt,
+      role,
     });
 
     if (!skipNavigation) {
@@ -2532,6 +2559,7 @@ export class AuthService {
       storage.removeItem(this.EXPIRES_KEY);
       storage.removeItem(this.STORAGE_TYPE_KEY);
       storage.removeItem(this.SESSION_TOKEN_KEY);
+      storage.removeItem('auth_role');
     });
   }
 
@@ -2616,6 +2644,14 @@ export class AuthService {
     }
 
     return throwError(() => new Error(errorMessage));
+  }
+
+  isAdmin(): boolean {
+    return this.authStateSignal().role === 'ADMIN';
+  }
+
+  isVerified(): boolean {
+    return this.authStateSignal().role === 'VERIFIED';
   }
 }
 
@@ -18405,6 +18441,9 @@ FILE: src\app\shared\components\header\header.html
               <img [src]="ICONS.basket" alt="orders" class="dropdown-icon" />
               {{ 'header.my_orders' | translate }}
             </a>
+            <a *ngIf="isAdmin" routerLink="/admin" (click)="closeUserMenu()">
+              {{ 'header.admin' | translate }}
+            </a>
             <div class="user-dropdown-divider"></div>
             <button class="user-dropdown-item logout-btn" (click)="logout()">
               <svg
@@ -18635,6 +18674,8 @@ export class Header implements OnInit {
     public currencyService: CurrencyService,
   ) {}
 
+  isAdmin = false;
+
   ngOnInit(): void {
     this.themeService.currentTheme$.subscribe((theme) => {
       this.currentTheme = theme;
@@ -18643,6 +18684,7 @@ export class Header implements OnInit {
     this.authService.authState$.subscribe((state) => {
       this.isAuthenticated = state.isAuthenticated;
       this.currentUser = state.user;
+      this.isAdmin = state.role === 'ADMIN';
     });
   }
 
@@ -24548,6 +24590,7 @@ FILE: src\assets\i18n\de.json
     "cart": "Warenkorb",
     "my_profile": "Mein Profil",
     "home": "Startseite",
+    "admin": "Admin-Modus",
     "logout": "Abmelden"
   },
   "category": {
@@ -25161,6 +25204,7 @@ FILE: src\assets\i18n\en.json
     "cart": "Shopping Cart",
     "my_profile": "My Profile",
     "home": "Home",
+    "admin": "Admin mode",
     "logout": "Logout"
   },
   "category": {
@@ -25775,6 +25819,7 @@ FILE: src\assets\i18n\hu.json
     "cart": "Kosár",
     "my_profile": "Profilom",
     "home": "Kezdőlap",
+    "admin": "Admin mód",
     "logout": "Kijelentkezés"
   },
   "category": {
@@ -25842,8 +25887,8 @@ FILE: src\environments\environment.prod.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://localhost:90',
-  assetsURL: 'http://localhost:90',
+  baseURL: 'http://192.168.11.213:90',
+  assetsURL: 'http://192.168.11.213:90',
 };
 
 
@@ -25854,8 +25899,8 @@ FILE: src\environments\environment.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://localhost:90',
-  assetsURL: 'http://localhost:90',
+  baseURL: 'http://192.168.11.213:90',
+  assetsURL: 'http://192.168.11.213:90',
 };
 
 

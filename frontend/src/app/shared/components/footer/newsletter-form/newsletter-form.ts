@@ -55,7 +55,7 @@ export class NewsletterForm {
 
     const payload = {
       email: btoa(unescape(encodeURIComponent(this.email))),
-      news_level: btoa('all'),
+      news_level: btoa('1'),
     };
 
     this.http

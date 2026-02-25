@@ -545,6 +545,10 @@
   cursor: pointer;
 }
 
+.retry-btn {
+  background-color: var(--bg-secondary);
+}
+
 .add-btn {
   padding: var(--space-2) var(--space-4);
   background: var(--color-primary);
@@ -651,7 +655,6 @@
 [data-theme='dark'] .admin-table th {
   background: var(--bg-tertiary);
 }
-
 
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar,
