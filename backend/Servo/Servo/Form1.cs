@@ -161,12 +161,12 @@ namespace Servo
         private void button3_Click(object sender, EventArgs e)
         {
             richTextBox1.Clear();
-            items_textbox.Text = "";
-            conn_textbox.Text = "";
-            files_textbox.Text = "";
-            error_textbox.Text = "";
-            susconn_textbox.Text = "";
-            users_textbox.Text = "";
+            items_textbox.Text = "0";
+            conn_textbox.Text = "0";
+            files_textbox.Text = "0";
+            error_textbox.Text = "0";
+            susconn_textbox.Text = "0";
+            users_textbox.Text = "0";
 
         }
 
@@ -210,6 +210,8 @@ namespace Servo
                 conn_textbox.BackColor = Color.FromArgb(245, 240, 225);
                 susconn_textbox.BackColor = Color.FromArgb(245, 240, 225);
                 textBox4.BackColor = Color.FromArgb(245, 240, 225);
+                textBox1.BackColor = Color.FromArgb(245, 240, 225);
+
                 items_textbox.BackColor = Color.FromArgb(245, 240, 225);
                 files_textbox.BackColor = Color.FromArgb(245, 240, 225);
                 users_textbox.BackColor = Color.FromArgb(245, 240, 225);
@@ -267,6 +269,8 @@ namespace Servo
                 conn_textbox.ForeColor = Color.FromArgb(0, 0, 0);
                 susconn_textbox.ForeColor = Color.FromArgb(0, 0, 0);
                 textBox4.ForeColor = Color.FromArgb(0, 0, 0);
+                textBox1.ForeColor = Color.FromArgb(0, 0, 0);
+
                 items_textbox.ForeColor = Color.FromArgb(0, 0, 0);
                 files_textbox.ForeColor = Color.FromArgb(0, 0, 0);
                 users_textbox.ForeColor = Color.FromArgb(0, 0, 0);
@@ -308,6 +312,8 @@ namespace Servo
                 conn_textbox.BackColor = Color.FromArgb(0, 0, 0);
                 susconn_textbox.BackColor = Color.FromArgb(0, 0, 0);
                 textBox4.BackColor = Color.FromArgb(0, 0, 0);
+                textBox1.BackColor = Color.FromArgb(0, 0, 0);
+
                 items_textbox.BackColor = Color.FromArgb(0, 0, 0);
                 files_textbox.BackColor = Color.FromArgb(0, 0, 0);
                 users_textbox.BackColor = Color.FromArgb(0, 0, 0);
@@ -358,6 +364,8 @@ namespace Servo
                 conn_textbox.ForeColor = Color.FromArgb(255, 255, 255);
                 susconn_textbox.ForeColor = Color.FromArgb(255, 255, 255);
                 textBox4.ForeColor = Color.FromArgb(255, 255, 255);
+                textBox1.ForeColor = Color.FromArgb(255, 255, 255);
+
                 items_textbox.ForeColor = Color.FromArgb(255, 255, 255);
                 files_textbox.ForeColor = Color.FromArgb(255, 255, 255);
                 users_textbox.ForeColor = Color.FromArgb(255, 255, 255);
@@ -368,6 +376,11 @@ namespace Servo
                 dark = true;
                 button5.Text = "🌙";
             }
+        }
+
+        private void richTextBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

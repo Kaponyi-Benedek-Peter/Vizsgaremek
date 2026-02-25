@@ -107,7 +107,7 @@ namespace Servo.service
          //   MessageBox.Show(expiration);
 
 
-            service.shared.send_mail(hova, "Secure Login", loginhtml_top + $"{service.shared.current_url}?login-promise=" + service.shared.b64enc(id) + ";" + service.shared.b64enc(confirmation_token) + loginhtml_bottom, "login");
+            service.shared.send_mail(hova, "Secure Login", loginhtml_top + $"{service.shared.current_url}login-promise?login_promise=" + service.shared.b64enc(id) + ";" + service.shared.b64enc(confirmation_token) + loginhtml_bottom, "login");
 
             //testpanel.Instance.textBox2.Text = session_token; // csak tesztelés miatt
 
