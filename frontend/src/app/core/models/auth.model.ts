@@ -25,12 +25,10 @@ export interface LoginPromiseRequest {
 }
 
 export interface LoginResponse {
-  status: string;
-  statuscode: number;
   jwt_token: string;
-  jwt_token_expiration: string;
-  session_token: string;
-  session_token_expiration: string;
+  session_token?: string;
+  jwt_token_expiration?: string;
+  user_state: UserState;
 }
 
 export interface RegistrationRequest {
@@ -82,12 +80,15 @@ export interface ApiErrorResponse {
   statusCode?: number;
 }
 
+export type UserState = 'ADMIN' | 'VERIFIED' | 'USER';
+
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
   sessionToken: string | null;
   expiresAt: Date | null;
+  role: UserState | null;
 }
 
 export interface JWTPayload {

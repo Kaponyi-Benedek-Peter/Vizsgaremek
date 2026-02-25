@@ -16,6 +16,7 @@ import {
   PasswordChangePromiseRequest,
   AuthState,
   ApiErrorResponse,
+  UserState,
 } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
@@ -40,6 +41,7 @@ export class AuthService {
     token: null,
     sessionToken: null,
     expiresAt: null,
+    role: null,
   });
 
   public authState = this.authStateSignal.asReadonly();
@@ -54,7 +56,9 @@ export class AuthService {
     token: null,
     sessionToken: null,
     expiresAt: null,
+    role: null,
   });
+
   public authState$ = this.authStateSubject.asObservable();
 
   constructor(
@@ -70,6 +74,7 @@ export class AuthService {
     const user = this.getStoredUser();
     const expiresAt = this.getStoredExpiration();
     const sessionToken = this.getStoredSessionToken();
+    const role = this.getStoredRole();
 
     if (token && user && expiresAt) {
       if (new Date() < expiresAt) {
@@ -79,11 +84,24 @@ export class AuthService {
           token,
           sessionToken,
           expiresAt,
+          role,
         });
       } else {
         this.clearStorage();
       }
     }
+  }
+
+  private storeRole(role: UserState, stayLoggedIn: boolean): void {
+    const storage = stayLoggedIn ? localStorage : sessionStorage;
+    storage.setItem('auth_role', role);
+  }
+
+  private getStoredRole(): UserState | null {
+    return (
+      (localStorage.getItem('auth_role') as UserState) ||
+      (sessionStorage.getItem('auth_role') as UserState)
+    );
   }
 
   private setupStorageListener(): void {
@@ -96,6 +114,7 @@ export class AuthService {
             token: null,
             sessionToken: null,
             expiresAt: null,
+            role: null,
           });
 
           if (!this.router.url.includes('/login')) {
@@ -223,6 +242,7 @@ export class AuthService {
       token: null,
       sessionToken: null,
       expiresAt: null,
+      role: null,
     });
     this.router.navigate(['/login']);
   }
@@ -279,6 +299,7 @@ export class AuthService {
     user?: User,
     skipNavigation = false,
   ): void {
+    const role = response.user_state;
     const jwtToken = response.jwt_token;
     const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
@@ -301,6 +322,7 @@ export class AuthService {
     }
 
     this.clearStorage();
+    this.storeRole(role, stayLoggedIn);
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
     this.storeSessionToken(sessionToken, stayLoggedIn);
     if (userData) {
@@ -313,6 +335,7 @@ export class AuthService {
       token: jwtToken,
       sessionToken,
       expiresAt,
+      role,
     });
 
     if (!skipNavigation) {
@@ -386,6 +409,7 @@ export class AuthService {
       storage.removeItem(this.EXPIRES_KEY);
       storage.removeItem(this.STORAGE_TYPE_KEY);
       storage.removeItem(this.SESSION_TOKEN_KEY);
+      storage.removeItem('auth_role');
     });
   }
 
@@ -470,5 +494,13 @@ export class AuthService {
     }
 
     return throwError(() => new Error(errorMessage));
+  }
+
+  isAdmin(): boolean {
+    return this.authStateSignal().role === 'ADMIN';
+  }
+
+  isVerified(): boolean {
+    return this.authStateSignal().role === 'VERIFIED';
   }
 }

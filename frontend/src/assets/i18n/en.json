@@ -546,6 +546,7 @@
     "cart": "Shopping Cart",
     "my_profile": "My Profile",
     "home": "Home",
+    "admin": "Admin mode",
     "logout": "Logout"
   },
   "category": {

@@ -65,6 +65,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           console.error('Authentication error:', error.error);
         }
       }
+      if (error.status === 403) {
+        authService.logout();
+        router.navigate(['/login']);
+      }
 
       return throwError(() => error);
     }),

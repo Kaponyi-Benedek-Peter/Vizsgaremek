@@ -37,6 +37,9 @@
               <img [src]="ICONS.basket" alt="orders" class="dropdown-icon" />
               {{ 'header.my_orders' | translate }}
             </a>
+            <a *ngIf="isAdmin" routerLink="/admin" (click)="closeUserMenu()">
+              {{ 'header.admin' | translate }}
+            </a>
             <div class="user-dropdown-divider"></div>
             <button class="user-dropdown-item logout-btn" (click)="logout()">
               <svg
