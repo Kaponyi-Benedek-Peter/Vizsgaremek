@@ -1368,6 +1368,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 FILE: src\app\core\models\auth.model.ts
 ================================================================================
 
+import { SupportedLanguage } from '../services/translation.service';
+
 export interface User {
   id: string;
   email: string;
@@ -1382,6 +1384,7 @@ export interface User {
 export interface LoginRequest {
   email: string;
   password: string;
+  language: SupportedLanguage;
 }
 
 export interface LoginRequestResponse {
@@ -1407,6 +1410,7 @@ export interface RegistrationRequest {
   password: string;
   firstname: string;
   lastname: string;
+  language: SupportedLanguage;
 }
 
 export interface RegistrationPromiseRequest {
@@ -1428,6 +1432,7 @@ export interface RegistrationResponse {
 export interface PasswordChangeRequest {
   email: string;
   password: string;
+  language: SupportedLanguage;
 }
 
 export interface PasswordChangePromiseRequest {
@@ -1438,6 +1443,7 @@ export interface PasswordChangePromiseRequest {
 export interface AccountDeletionRequest {
   id: string;
   password: string;
+  language: SupportedLanguage;
 }
 
 export interface AccountDeletionPromiseRequest {
@@ -2159,6 +2165,7 @@ import {
 } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
+import { SupportedLanguage, TranslationService } from './translation.service';
 
 @Injectable({
   providedIn: 'root',
@@ -2173,6 +2180,7 @@ export class AuthService {
   private readonly SESSION_TOKEN_KEY = 'auth_session_token';
 
   private toastService = inject(ToastService);
+  private translationService = inject(TranslationService);
 
   private authStateSignal = signal<AuthState>({
     isAuthenticated: false,
@@ -2188,6 +2196,7 @@ export class AuthService {
   public currentUser = computed(() => this.authStateSignal().user);
   public token = computed(() => this.authStateSignal().token);
   public sessionToken = computed(() => this.authStateSignal().sessionToken);
+  public language = computed(() => this.translationService.getCurrentLanguage());
 
   private authStateSubject = new BehaviorSubject<AuthState>({
     isAuthenticated: false,
@@ -2284,10 +2293,11 @@ export class AuthService {
   }
 
   // Stage 1: email + password -> email
-  loginRequest(email: string, password: string) {
+  loginRequest(email: string, password: string, language: SupportedLanguage) {
     const request: LoginRequest = {
       email: this.encodeBase64(email),
       password: this.encodeBase64(password),
+      language: this.encodeBase64(language) as SupportedLanguage,
     };
 
     return this.http
@@ -2315,12 +2325,19 @@ export class AuthService {
   }
 
   // registration_request: b64 string
-  register(email: string, password: string, firstname: string, lastname: string): Observable<void> {
+  register(
+    email: string,
+    password: string,
+    firstname: string,
+    lastname: string,
+    language: SupportedLanguage,
+  ): Observable<void> {
     const request: RegistrationRequest = {
       email: this.encodeBase64(email),
       password: this.encodeBase64(password),
       firstname: this.encodeBase64(firstname),
       lastname: this.encodeBase64(lastname),
+      language: this.encodeBase64(language) as SupportedLanguage,
     };
 
     return this.http
@@ -2355,10 +2372,11 @@ export class AuthService {
   }
 
   // chpass_request: b64 string
-  requestPasswordChange(email: string, newPassword: string) {
+  requestPasswordChange(email: string, newPassword: string, language: SupportedLanguage) {
     const request: PasswordChangeRequest = {
       email: this.encodeBase64(email),
       password: this.encodeBase64(newPassword),
+      language: this.encodeBase64(language) as SupportedLanguage,
     };
 
     return this.http
@@ -2899,31 +2917,24 @@ export class CurrencyService {
 
   currentCurrency = computed(() => this.currencyMap[this.currentLang()]);
 
-  constructor() {
-    this.fetchExchangeRates();
-  }
+  getBasePrice(product: HasPriceFields): number {
+    const code = this.currentCurrency().code;
+    const hufPrice = parseFloat(product.price_huf) || 0;
 
-  private async fetchExchangeRates(): Promise<void> {
-    try {
-      const response = await firstValueFrom(
-        this.http.get<FrankfurterResponse>(
-          'https://api.frankfurter.app/latest?from=HUF&to=USD,EUR',
-        ),
-      );
-      if (response?.rates) {
-        this.ratesSignal.set(response.rates);
-        console.log('Exchange rates updated:', response.rates);
-      }
-    } catch (err) {
-      console.warn('Failed to fetch exchange rates, using fallback values:', err);
+    switch (code) {
+      case 'USD':
+        return parseFloat(product.price_usd ?? '0') || hufPrice;
+      case 'EUR':
+        return parseFloat(product.price_eur ?? '0') || hufPrice;
+      default:
+        return hufPrice;
     }
   }
 
-  private convertFromHuf(hufPrice: number, targetCurrency: string): number {
-    if (targetCurrency === 'HUF') return hufPrice;
-    const rate = this.ratesSignal()[targetCurrency];
-    if (!rate) return hufPrice;
-    return Math.round(hufPrice * rate * 100) / 100;
+  getDiscountedPrice(product: HasPriceFields): number {
+    const base = this.getBasePrice(product);
+    const sale = parseFloat(product.sale_percentage) || 0;
+    return sale > 0 ? Math.round(base * (1 - sale / 100) * 100) / 100 : base;
   }
 
   formatPrice(price: number): string {
@@ -2935,36 +2946,6 @@ export class CurrencyService {
     return currency.code === 'HUF'
       ? `${formatted} ${currency.symbol}`
       : `${currency.symbol}${formatted}`;
-  }
-
-  getBasePrice(product: HasPriceFields): number {
-    const code = this.currentCurrency().code;
-    const hufPrice = parseFloat(product.price_huf) || 0;
-
-    switch (code) {
-      case 'USD':
-        // Use explicit price_usd if available, otherwise convert from HUF
-        if (product.price_usd && parseFloat(product.price_usd) > 0) {
-          return parseFloat(product.price_usd);
-        }
-        return this.convertFromHuf(hufPrice, 'USD');
-
-      case 'EUR':
-        // Use explicit price_eur if available, otherwise convert from HUF
-        if (product.price_eur && parseFloat(product.price_eur) > 0) {
-          return parseFloat(product.price_eur);
-        }
-        return this.convertFromHuf(hufPrice, 'EUR');
-
-      default:
-        return hufPrice;
-    }
-  }
-
-  getDiscountedPrice(product: HasPriceFields): number {
-    const base = this.getBasePrice(product);
-    const sale = parseFloat(product.sale_percentage) || 0;
-    return sale > 0 ? Math.round(base * (1 - sale / 100) * 100) / 100 : base;
   }
 
   getCurrencyForLanguage(lang: SupportedLanguage): CurrencyConfig {
@@ -9384,12 +9365,13 @@ describe('Login', () => {
 FILE: src\app\pages\login\login.ts
 ================================================================================
 
-import { Component, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { SupportedLanguage, TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-login',
@@ -9399,6 +9381,8 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './login.css',
 })
 export class Login {
+  private translationService = inject(TranslationService);
+
   email = signal('');
   password = signal('');
   stayLoggedIn = signal(false);
@@ -9406,6 +9390,8 @@ export class Login {
   errorMessage = signal('');
   showPassword = signal(false);
   isEmailSent = signal(false);
+
+  language = computed(() => this.translationService.getCurrentLanguage());
 
   constructor(
     private authService: AuthService,
@@ -9427,7 +9413,7 @@ export class Login {
 
     this.isLoading.set(true);
 
-    this.authService.loginRequest(this.email(), this.password()).subscribe({
+    this.authService.loginRequest(this.email(), this.password(), this.language()).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.isEmailSent.set(true);
@@ -9841,7 +9827,7 @@ describe('PasswordReset', () => {
 FILE: src\app\pages\password-reset\password-reset.ts
 ================================================================================
 
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -10108,12 +10094,13 @@ describe('PasswordResetRequest', () => {
 FILE: src\app\pages\password-reset-request\password-reset-request.ts
 ================================================================================
 
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-password-reset-request',
@@ -10130,10 +10117,12 @@ export class PasswordResetRequest {
   isLoading = signal(false);
   errorMessage = signal('');
   isEmailSent = signal(false);
+  language = computed(() => this.translationService.getCurrentLanguage());
 
   constructor(
     private authService: AuthService,
     private router: Router,
+    private translationService: TranslationService,
   ) {}
 
   togglePasswordVisibility(): void {
@@ -10170,16 +10159,18 @@ export class PasswordResetRequest {
 
     this.isLoading.set(true);
 
-    this.authService.requestPasswordChange(this.email(), this.newPassword()).subscribe({
-      next: () => {
-        this.isLoading.set(false);
-        this.isEmailSent.set(true);
-      },
-      error: (error) => {
-        this.isLoading.set(false);
-        this.errorMessage.set(error.message || 'auth.errors.request_failed');
-      },
-    });
+    this.authService
+      .requestPasswordChange(this.email(), this.newPassword(), this.language())
+      .subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.isEmailSent.set(true);
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(error.message || 'auth.errors.request_failed');
+        },
+      });
   }
 
   backToLogin(): void {
@@ -13678,6 +13669,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
+import { TranslationService } from '../../core/services/translation.service';
 
 export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | 'danger';
 
@@ -13693,6 +13685,7 @@ export class Profile implements OnInit {
   private accountService = inject(AccountService);
   private toastService = inject(ToastService);
   private router = inject(Router);
+  private translationService = inject(TranslationService);
 
   user = this.authService.currentUser;
   isAuthenticated = this.authService.isAuthenticated;
@@ -13713,6 +13706,7 @@ export class Profile implements OnInit {
 
   email = computed(() => this.user()?.email ?? '');
   accountState = computed(() => this.user()?.account_state ?? 'verified');
+  language = computed(() => this.translationService.getCurrentLanguage());
 
   activeSection = signal<ProfileSection>('overview');
 
@@ -13810,18 +13804,20 @@ export class Profile implements OnInit {
 
     this.isChangingPassword.set(true);
 
-    this.authService.requestPasswordChange(userEmail, this.changePasswordNew).subscribe({
-      next: () => {
-        this.isChangingPassword.set(false);
-        this.changePasswordEmailSent.set(true);
-        this.changePasswordNew = '';
-        this.changePasswordConfirm = '';
-      },
-      error: (err) => {
-        this.isChangingPassword.set(false);
-        this.changePasswordError.set(err.message ?? 'profile.errors.password_change_failed');
-      },
-    });
+    this.authService
+      .requestPasswordChange(userEmail, this.changePasswordNew, this.language())
+      .subscribe({
+        next: () => {
+          this.isChangingPassword.set(false);
+          this.changePasswordEmailSent.set(true);
+          this.changePasswordNew = '';
+          this.changePasswordConfirm = '';
+        },
+        error: (err) => {
+          this.isChangingPassword.set(false);
+          this.changePasswordError.set(err.message ?? 'profile.errors.password_change_failed');
+        },
+      });
   }
 
   requestDeleteAccount(): void {
@@ -15024,12 +15020,13 @@ describe('Register', () => {
 FILE: src\app\pages\register\register.ts
 ================================================================================
 
-import { Component, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-register',
@@ -15039,6 +15036,8 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './register.css',
 })
 export class Register {
+  private translationService = inject(TranslationService);
+
   email = signal('');
   password = signal('');
   confirmPassword = signal('');
@@ -15049,6 +15048,7 @@ export class Register {
   successMessage = signal('');
   showPassword = signal(false);
   showConfirmPassword = signal(false);
+  language = computed(() => this.translationService.getCurrentLanguage());
 
   constructor(
     private authService: AuthService,
@@ -15088,7 +15088,7 @@ export class Register {
     this.isLoading.set(true);
 
     this.authService
-      .register(this.email(), this.password(), this.firstname(), this.lastname())
+      .register(this.email(), this.password(), this.firstname(), this.lastname(), this.language())
       .subscribe({
         next: () => {
           this.isLoading.set(false);
@@ -26130,7 +26130,7 @@ FILE: src\index.html
   <head>
     <meta charset="utf-8" />
     <title>Roy's Shack</title>
-    <base href="./" />
+    <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="roy_icon_green.ico" />
   </head>

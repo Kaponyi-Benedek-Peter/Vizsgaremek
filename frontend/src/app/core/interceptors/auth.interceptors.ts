@@ -1,13 +1,12 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
 import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
   const router = inject(Router);
-  const token = authService.getToken();
+
+  const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
 
   const publicEndpoints = [
     '/login_request',
@@ -33,9 +32,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     });
   } else if (!isPublicEndpoint) {
     clonedRequest = req.clone({
-      setHeaders: {
-        'Content-Type': 'application/json',
-      },
+      setHeaders: { 'Content-Type': 'application/json' },
     });
   }
 
@@ -43,33 +40,29 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
         const errorType = error.error?.error;
-
-        if (errorType === 'hianyzo_auth_header') {
-          console.error('Missing authentication header');
-          if (!isPublicEndpoint) {
-            authService.logout();
-            router.navigate(['/login'], {
-              queryParams: { returnUrl: router.url },
-            });
-          }
+        if (errorType === 'hianyzo_auth_header' && !isPublicEndpoint) {
+          localStorage.removeItem('auth_token'); // storage listener kivált
+          router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
         } else if (errorType === 'hibas_token') {
-          console.error('Invalid or expired JWT token');
-          authService.logout();
-          router.navigate(['/login'], {
-            queryParams: {
-              returnUrl: router.url,
-              message: 'session_expired',
-            },
+          [
+            'auth_token',
+            'auth_user',
+            'auth_expires',
+            'auth_storage_type',
+            'auth_session_token',
+            'auth_role',
+          ].forEach((key) => {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
           });
-        } else {
-          console.error('Authentication error:', error.error);
+          router.navigate(['/login'], {
+            queryParams: { returnUrl: router.url, message: 'session_expired' },
+          });
         }
       }
       if (error.status === 403) {
-        authService.logout();
         router.navigate(['/login']);
       }
-
       return throwError(() => error);
     }),
   );

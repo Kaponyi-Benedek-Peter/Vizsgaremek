@@ -6,6 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
+import { TranslationService } from '../../core/services/translation.service';
 
 export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | 'danger';
 
@@ -21,6 +22,7 @@ export class Profile implements OnInit {
   private accountService = inject(AccountService);
   private toastService = inject(ToastService);
   private router = inject(Router);
+  private translationService = inject(TranslationService);
 
   user = this.authService.currentUser;
   isAuthenticated = this.authService.isAuthenticated;
@@ -41,6 +43,7 @@ export class Profile implements OnInit {
 
   email = computed(() => this.user()?.email ?? '');
   accountState = computed(() => this.user()?.account_state ?? 'verified');
+  language = computed(() => this.translationService.getCurrentLanguage());
 
   activeSection = signal<ProfileSection>('overview');
 
@@ -138,18 +141,20 @@ export class Profile implements OnInit {
 
     this.isChangingPassword.set(true);
 
-    this.authService.requestPasswordChange(userEmail, this.changePasswordNew).subscribe({
-      next: () => {
-        this.isChangingPassword.set(false);
-        this.changePasswordEmailSent.set(true);
-        this.changePasswordNew = '';
-        this.changePasswordConfirm = '';
-      },
-      error: (err) => {
-        this.isChangingPassword.set(false);
-        this.changePasswordError.set(err.message ?? 'profile.errors.password_change_failed');
-      },
-    });
+    this.authService
+      .requestPasswordChange(userEmail, this.changePasswordNew, this.language())
+      .subscribe({
+        next: () => {
+          this.isChangingPassword.set(false);
+          this.changePasswordEmailSent.set(true);
+          this.changePasswordNew = '';
+          this.changePasswordConfirm = '';
+        },
+        error: (err) => {
+          this.isChangingPassword.set(false);
+          this.changePasswordError.set(err.message ?? 'profile.errors.password_change_failed');
+        },
+      });
   }
 
   requestDeleteAccount(): void {

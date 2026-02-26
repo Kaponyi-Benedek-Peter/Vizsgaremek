@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-register',
@@ -13,6 +14,8 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './register.css',
 })
 export class Register {
+  private translationService = inject(TranslationService);
+
   email = signal('');
   password = signal('');
   confirmPassword = signal('');
@@ -23,6 +26,7 @@ export class Register {
   successMessage = signal('');
   showPassword = signal(false);
   showConfirmPassword = signal(false);
+  language = computed(() => this.translationService.getCurrentLanguage());
 
   constructor(
     private authService: AuthService,
@@ -62,7 +66,7 @@ export class Register {
     this.isLoading.set(true);
 
     this.authService
-      .register(this.email(), this.password(), this.firstname(), this.lastname())
+      .register(this.email(), this.password(), this.firstname(), this.lastname(), this.language())
       .subscribe({
         next: () => {
           this.isLoading.set(false);

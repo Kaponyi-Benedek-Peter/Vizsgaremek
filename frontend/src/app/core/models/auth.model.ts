@@ -1,3 +1,5 @@
+import { SupportedLanguage } from '../services/translation.service';
+
 export interface User {
   id: string;
   email: string;
@@ -12,6 +14,7 @@ export interface User {
 export interface LoginRequest {
   email: string;
   password: string;
+  language: SupportedLanguage;
 }
 
 export interface LoginRequestResponse {
@@ -37,6 +40,7 @@ export interface RegistrationRequest {
   password: string;
   firstname: string;
   lastname: string;
+  language: SupportedLanguage;
 }
 
 export interface RegistrationPromiseRequest {
@@ -58,6 +62,7 @@ export interface RegistrationResponse {
 export interface PasswordChangeRequest {
   email: string;
   password: string;
+  language: SupportedLanguage;
 }
 
 export interface PasswordChangePromiseRequest {
@@ -68,6 +73,7 @@ export interface PasswordChangePromiseRequest {
 export interface AccountDeletionRequest {
   id: string;
   password: string;
+  language: SupportedLanguage;
 }
 
 export interface AccountDeletionPromiseRequest {
