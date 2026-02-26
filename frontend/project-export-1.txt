@@ -585,7 +585,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideTranslateService({
-      defaultLanguage: 'hu',
+      defaultLanguage: 'en',
       loader: {
         provide: TranslateLoader,
         useFactory: HttpLoaderFactory,
@@ -758,18 +758,6 @@ export class App {
     private route: ActivatedRoute,
     private router: Router,
   ) {}
-
-  ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      const login = params['login'];
-      if (login) {
-        this.router.navigate(['/login-promise'], {
-          queryParams: { login_promise: login },
-          replaceUrl: true,
-        });
-      }
-    });
-  }
 }
 
 
@@ -792,6 +780,7 @@ FILE: src\app\core\constants\visuals.ts
 
 import { Category } from '../../core/models/product.model';
 import { environment } from '../../../environments/environment';
+import { SupportedLanguage } from '../services/translation.service';
 
 const ASSETS = environment.assetsURL;
 
@@ -808,7 +797,7 @@ export interface SlideData {
 }
 
 export interface LanguageOption {
-  code: string;
+  code: SupportedLanguage;
   name: string;
   flag: string; // emoji or IMG url
   flagImage?: string; // image url if there is
@@ -1406,6 +1395,7 @@ export interface LoginPromiseRequest {
 }
 
 export interface LoginResponse {
+  user_id: string;
   jwt_token: string;
   session_token?: string;
   jwt_token_expiration?: string;
@@ -1461,7 +1451,7 @@ export interface ApiErrorResponse {
   statusCode?: number;
 }
 
-export type UserState = 'ADMIN' | 'VERIFIED' | 'USER';
+export type UserState = 'admin' | 'verified' | 'superadmin';
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -1990,7 +1980,7 @@ export interface AdminOrdersResponse {
 
 export interface AdminAuthBody {
   id: string;
-  token: string;
+  session_token: string;
 }
 
 @Injectable({
@@ -2090,16 +2080,15 @@ export class AccountService {
   }
 
   private buildAdminAuthBody(): AdminAuthBody {
-    const user = this.authService.currentUser();
+    const storedId = sessionStorage.getItem('user_id') ?? '';
     const sessionToken = this.authService.getSessionToken();
     const jwtToken = this.authService.getToken();
 
     const tokenToSend = sessionToken ?? jwtToken ?? '';
-    const userId = user?.id ?? '';
 
     return {
-      id: this.encodeBase64(userId),
-      token: this.encodeBase64(tokenToSend),
+      id: this.encodeBase64(storedId),
+      session_token: this.encodeBase64(tokenToSend),
     };
   }
 
@@ -2245,6 +2234,10 @@ export class AuthService {
   private storeRole(role: UserState, stayLoggedIn: boolean): void {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
     storage.setItem('auth_role', role);
+  }
+  private storeId(user_id: string, stayLoggedIn: boolean): void {
+    const storage = stayLoggedIn ? localStorage : sessionStorage;
+    storage.setItem('user_id', user_id);
   }
 
   private getStoredRole(): UserState | null {
@@ -2449,6 +2442,7 @@ export class AuthService {
     user?: User,
     skipNavigation = false,
   ): void {
+    const id = response.user_id;
     const role = response.user_state;
     const jwtToken = response.jwt_token;
     const sessionToken = response.session_token ?? null;
@@ -2473,6 +2467,7 @@ export class AuthService {
 
     this.clearStorage();
     this.storeRole(role, stayLoggedIn);
+    this.storeId(id, stayLoggedIn);
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
     this.storeSessionToken(sessionToken, stayLoggedIn);
     if (userData) {
@@ -2647,11 +2642,11 @@ export class AuthService {
   }
 
   isAdmin(): boolean {
-    return this.authStateSignal().role === 'ADMIN';
+    return this.authStateSignal().role === 'admin';
   }
 
   isVerified(): boolean {
-    return this.authStateSignal().role === 'VERIFIED';
+    return this.authStateSignal().role === 'verified';
   }
 }
 
@@ -3428,7 +3423,9 @@ export type SupportedLanguage = 'hu' | 'en' | 'de';
   providedIn: 'root',
 })
 export class TranslationService {
-  private currentLangSubject = new BehaviorSubject<SupportedLanguage>('en');
+  private currentLangSubject = new BehaviorSubject<SupportedLanguage>(
+    (localStorage.getItem('preferredLanguage') as SupportedLanguage) || 'en',
+  );
   public currentLang$ = this.currentLangSubject.asObservable();
 
   constructor(private translate: TranslateService) {
@@ -4025,6 +4022,10 @@ FILE: src\app\pages\admin\admin.css
   cursor: pointer;
 }
 
+.retry-btn {
+  background-color: var(--bg-secondary);
+}
+
 .add-btn {
   padding: var(--space-2) var(--space-4);
   background: var(--color-primary);
@@ -4131,7 +4132,6 @@ FILE: src\app\pages\admin\admin.css
 [data-theme='dark'] .admin-table th {
   background: var(--bg-tertiary);
 }
-
 
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar,
@@ -9640,29 +9640,29 @@ export class LoginPromise implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const raw = new URLSearchParams(window.location.search).get('login_promise') || '';
-    const parts = raw.split(';');
+    this.route.queryParamMap.subscribe((params) => {
+      const raw = params.get('login_promise') ?? '';
 
-    if (parts.length !== 2) {
-      this.errorMessage.set('auth.errors.invalid_login_link');
-      return;
-    }
+      const parts = raw.split(';');
 
-    const id = parts[0].trim();
-    const confirmationToken = parts[1].trim();
+      if (parts.length !== 2) {
+        this.errorMessage.set('auth.errors.invalid_login_link');
+        return;
+      }
 
-    if (!id || !confirmationToken) {
-      this.errorMessage.set('auth.errors.invalid_login_link');
-      return;
-    }
+      const id = parts[0].trim();
+      const confirmationToken = parts[1].trim();
 
-    const cleanUrl = `/login-promise?login_promise=${id};${confirmationToken}`;
-    this.location.replaceState(cleanUrl);
+      if (!id || !confirmationToken) {
+        this.errorMessage.set('auth.errors.invalid_login_link');
+        return;
+      }
 
-    const stayLoggedIn = sessionStorage.getItem('login_stay') === '1';
-    sessionStorage.removeItem('login_stay');
+      const stayLoggedIn = sessionStorage.getItem('login_stay') === '1';
+      sessionStorage.removeItem('login_stay');
 
-    this.completeLogin(id, confirmationToken, stayLoggedIn);
+      this.completeLogin(id, confirmationToken, stayLoggedIn);
+    });
   }
 
   completeLogin(id: string, confirmationToken: string, stayLoggedIn: boolean): void {
@@ -10771,7 +10771,7 @@ FILE: src\app\pages\product-detail\product-detail.css
 .total-label {
   font-size: var(--text-base);
   font-weight: var(--font-medium);
-  color: var(--color-text-secondary);
+  color: var(--color-text-on-primary);
 }
 
 .total-value {
@@ -11258,11 +11258,14 @@ FILE: src\app\pages\product-detail\product-detail.ts
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ProductWithHelpers } from '../../core/models/product.model';
+import { TranslateModule } from '@ngx-translate/core';
+import { ProductWithHelpers, enrichProduct } from '../../core/models/product.model';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
+import { TranslationService } from '../../core/services/translation.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-product-detail',
@@ -11277,7 +11280,12 @@ export class ProductDetail implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
   private currencyService = inject(CurrencyService);
-  private translateService = inject(TranslateService);
+  private translationService = inject(TranslationService);
+
+  private currentLang = toSignal(this.translationService.currentLang$, {
+    initialValue: this.translationService.getCurrentLanguage(),
+  });
+  private langSub?: Subscription;
 
   product = signal<ProductWithHelpers | null>(null);
   isLoading = signal(true);
@@ -11306,14 +11314,12 @@ export class ProductDetail implements OnInit, OnDestroy {
   get formattedPrice(): string {
     const p = this.product();
     if (!p) return '';
-    // getBasePrice converts
     return this.currencyService.formatPrice(this.currencyService.getBasePrice(p));
   }
 
   get formattedDiscountedPrice(): string {
     const p = this.product();
     if (!p) return '';
-    // getDiscountedPrice = converted price + sale
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(p));
   }
 
@@ -11331,7 +11337,7 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   get categoryName(): string {
     const cat = this.productService.getCategoryById(this.product()?.category ?? '');
-    const lang = this.translateService.currentLang || 'hu';
+    const lang = this.currentLang();
     if (!cat) return '';
     return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
   }
@@ -11355,9 +11361,17 @@ export class ProductDetail implements OnInit, OnDestroy {
     }
 
     this.isLoading.set(false);
+
+    this.langSub = this.translationService.currentLang$.subscribe((lang) => {
+      const current = this.product();
+      if (current) {
+        this.product.set(enrichProduct(current, lang));
+      }
+    });
   }
 
   ngOnDestroy(): void {
+    this.langSub?.unsubscribe();
     document.body.style.overflow = '';
   }
 
@@ -17141,6 +17155,8 @@ import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyPipe } from '../../pipes/currency.pipe';
 import { IMAGES } from '../../../core/constants/visuals';
+import { TranslationService } from '../../../core/services/translation.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-featured-product-card',
@@ -17153,10 +17169,13 @@ export class FeaturedProductCard {
   @Output() cardClick = new EventEmitter<void>();
 
   private currencyService = inject(CurrencyService);
-  private translateService = inject(TranslateService);
+  private translationService = inject(TranslationService);
+  private currentLang = toSignal(this.translationService.currentLang$, {
+    initialValue: this.translationService.getCurrentLanguage(),
+  });
 
   productName = computed(() => {
-    const lang = this.translateService.currentLang;
+    const lang = this.currentLang();
     if (lang === 'hu') return this.product?.name_hu || this.product?.name || '';
     if (lang === 'de') return this.product?.name_de || this.product?.name || '';
     return this.product?.name_en || this.product?.name || '';
@@ -17168,7 +17187,7 @@ export class FeaturedProductCard {
 
   altText = computed(() => {
     const name = this.productName();
-    return name || this.translateService.instant('product.product_image');
+    return name || this.translationService.instant('product.product_image');
   });
 
   price = computed(() => this.currencyService.getDiscountedPrice(this.product));
@@ -17484,7 +17503,7 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.css
   outline-offset: -2px;
 }
 
-.newsletter button {
+.newsletter button[type='submit'] {
   width: 80px;
   height: 35px;
   color: #111;
@@ -17495,12 +17514,17 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.css
   transition: opacity 0.2s ease;
 }
 
-.newsletter button:hover {
+.newsletter button[type='submit']:hover {
   opacity: 0.9;
 }
 
-.newsletter button:active {
+.newsletter button[type='submit']:active {
   opacity: 0.8;
+}
+
+.newsletter button[type='submit']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .newsletter p {
@@ -17608,6 +17632,108 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.css
   }
 }
 
+.newsletter-lang-selector {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.newsletter-lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  color: var(--text-inverse);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.newsletter-lang-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.newsletter-flag {
+  width: 20px;
+  height: 14px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.newsletter-lang-name {
+  font-weight: 500;
+}
+
+.newsletter-lang-arrow {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  transition: transform 0.2s ease;
+  line-height: 1;
+}
+
+.newsletter-lang-arrow.open {
+  transform: rotate(180deg);
+}
+
+.newsletter-lang-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  z-index: 100;
+  min-width: 140px;
+  animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.newsletter-lang-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+}
+
+.newsletter-lang-item:hover {
+  background: var(--bg-secondary);
+}
+
+.newsletter-lang-item.active {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
 @media (max-width: 480px) {
   .newsletter form {
     flex-direction: column;
@@ -17619,7 +17745,7 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.css
     min-height: 44px;
   }
 
-  .newsletter button {
+  .newsletter button[type='submit'] {
     width: 100%;
     min-height: 44px;
   }
@@ -17630,12 +17756,12 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.css
   }
 }
 
-[data-theme='dark'] .newsletter button {
+[data-theme='dark'] .newsletter button[type='submit'] {
   color: var(--text-inverse);
   background-color: #111;
 }
 
-[data-theme='dark'] .newsletter button:hover {
+[data-theme='dark'] .newsletter button[type='submit']:hover {
   background-color: #e8e8e8;
 }
 
@@ -17676,18 +17802,44 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.html
       </div>
     }
   </div>
-  
+
   <p>{{ 'footer.newsletter' | translate }}</p>
 
+  <div class="newsletter-lang-selector">
+    <button class="newsletter-lang-btn" ...>
+      <img [src]="currentLangOption.flag" [alt]="currentLangOption.name" class="newsletter-flag" />
+      <span class="newsletter-lang-name">{{ currentLangOption.name }}</span>
+      <span class="newsletter-lang-arrow" [class.open]="isLangDropdownOpen">▾</span>
+    </button>
+
+    @if (isLangDropdownOpen) {
+      <div class="newsletter-lang-dropdown">
+        @for (lang of languages; track lang.code) {
+          <button
+            class="newsletter-lang-item"
+            type="button"
+            [class.active]="newsletterLang === lang.code"
+            (click)="selectNewsletterLang(lang.code)"
+          >
+            <img [src]="lang.flag" [alt]="lang.name" class="newsletter-flag" />
+            <span>{{ lang.name }}</span>
+          </button>
+        }
+      </div>
+    }
+  </div>
+
   <form (ngSubmit)="onSubmit()">
-    <input 
-      type="email" 
+    <input
+      type="email"
       [placeholder]="'footer.emailPlaceholder' | translate"
       [(ngModel)]="email"
       name="email"
       required
     />
-    <button type="submit">{{ 'footer.send' | translate }}</button>
+    <button type="submit" [disabled]="isSubmitting">
+      {{ isSubmitting ? ('footer.sending' | translate) : ('footer.send' | translate) }}
+    </button>
   </form>
 </div>
 
@@ -17702,9 +17854,21 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
-import { ICONS, IMAGES } from '../../../../core/constants/visuals';
+import { ICONS, IMAGES, LANGUAGE_OPTIONS } from '../../../../core/constants/visuals';
 import { environment } from '../../../../../environments/environment';
 import { ToastService } from '../../../../core/services/toast.service';
+import {
+  TranslationService,
+  SupportedLanguage,
+} from '../../../../core/services/translation.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+
+// Backend által várt language értékek
+const LANG_TO_BACKEND: Record<SupportedLanguage, string> = {
+  hu: 'hungarian',
+  en: 'english',
+  de: 'german',
+};
 
 interface SocialLink {
   name: string;
@@ -17722,19 +17886,46 @@ interface SocialLink {
 export class NewsletterForm {
   private http = inject(HttpClient);
   private toastService = inject(ToastService);
+  private translationService = inject(TranslationService);
   private readonly API_URL = environment.baseURL;
 
   ICONS = ICONS;
   IMAGES = IMAGES;
+
   email = '';
   isSubmitting = false;
+  isLangDropdownOpen = false;
   activeSocialTooltip: string | null = null;
+
+  // Az aktuális app-nyelv mint alapértelmezett hírlevél-nyelv
+  selectedLang = toSignal(this.translationService.currentLang$, {
+    initialValue: this.translationService.getCurrentLanguage(),
+  });
+
+  // Saját writeable signal a kiválasztott hírlevél-nyelvhez
+  newsletterLang: SupportedLanguage = this.translationService.getCurrentLanguage();
+
+  // Elérhető nyelvek (a visuals.ts LANGUAGE_OPTIONS-ből)
+  readonly languages = LANGUAGE_OPTIONS;
 
   socialLinks: SocialLink[] = [
     { name: 'Facebook', icon: ICONS.facebook, url: null },
     { name: 'Instagram', icon: ICONS.instagram, url: null },
     { name: 'X (Twitter)', icon: ICONS.x, url: null },
   ];
+
+  get currentLangOption() {
+    return this.languages.find((l) => l.code === this.newsletterLang) ?? this.languages[0];
+  }
+
+  toggleLangDropdown(): void {
+    this.isLangDropdownOpen = !this.isLangDropdownOpen;
+  }
+
+  selectNewsletterLang(code: SupportedLanguage): void {
+    this.newsletterLang = code;
+    this.isLangDropdownOpen = false;
+  }
 
   toggleSocialTooltip(name: string): void {
     this.activeSocialTooltip = this.activeSocialTooltip === name ? null : name;
@@ -17754,7 +17945,8 @@ export class NewsletterForm {
 
     const payload = {
       email: btoa(unescape(encodeURIComponent(this.email))),
-      news_level: btoa('all'),
+      news_level: btoa('1'),
+      language: LANG_TO_BACKEND[this.newsletterLang],
     };
 
     this.http
@@ -18441,7 +18633,12 @@ FILE: src\app\shared\components\header\header.html
               <img [src]="ICONS.basket" alt="orders" class="dropdown-icon" />
               {{ 'header.my_orders' | translate }}
             </a>
-            <a *ngIf="isAdmin" routerLink="/admin" (click)="closeUserMenu()">
+            <a
+              *ngIf="isAdmin"
+              routerLink="/admin"
+              class="user-dropdown-item"
+              (click)="closeUserMenu()"
+            >
               {{ 'header.admin' | translate }}
             </a>
             <div class="user-dropdown-divider"></div>
@@ -18684,7 +18881,7 @@ export class Header implements OnInit {
     this.authService.authState$.subscribe((state) => {
       this.isAuthenticated = state.isAuthenticated;
       this.currentUser = state.user;
-      this.isAdmin = state.role === 'ADMIN';
+      this.isAdmin = state.role === 'admin';
     });
   }
 
@@ -20426,11 +20623,11 @@ FILE: src\app\shared\components\product-card\product-card.html
   class="product-card"
   [class.compact]="compact"
   [class.out-of-stock]="!product.inStock"
-  [attr.aria-label]="localizedName"
+  [attr.aria-label]="localizedName()"
 >
   <a [routerLink]="['/products', product.id]" class="product-link">
     <div class="product-image-wrapper">
-      <img [src]="product.imageUrl" [alt]="localizedName" class="product-image" loading="lazy" />
+      <img [src]="product.imageUrl" [alt]="localizedName()" class="product-image" loading="lazy" />
 
       <div class="product-image-overlay"></div>
 
@@ -20470,11 +20667,11 @@ FILE: src\app\shared\components\product-card\product-card.html
       }
 
       <h3 class="product-title" [class.compact]="compact">
-        {{ localizedName }}
+        {{ localizedName() }}
       </h3>
 
       @if (!compact) {
-        <p class="product-description">{{ localizedDescription }}</p>
+        <p class="product-description">{{ localizedDescription() }}</p>
       }
 
       @if (product.manufacturer && !compact) {
@@ -20560,13 +20757,15 @@ FILE: src\app\shared\components\product-card\product-card.ts
 ================================================================================
 
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
 import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
+import { TranslationService } from '../../../core/services/translation.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-product-card',
@@ -20589,7 +20788,10 @@ export class ProductCard {
 
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
-  private translateService = inject(TranslateService);
+  private translationService = inject(TranslationService);
+  private currentLang = toSignal(this.translationService.currentLang$, {
+    initialValue: this.translationService.getCurrentLanguage(),
+  });
 
   get hasDiscount(): boolean {
     return this.product.hasDiscount;
@@ -20613,19 +20815,25 @@ export class ProductCard {
     );
   }
 
-  get localizedName(): string {
-    return this.product.name;
-  }
+  localizedName = computed(() => {
+    const lang = this.currentLang();
+    if (lang === 'hu') return this.product?.name_hu || this.product?.name || '';
+    if (lang === 'de') return this.product?.name_de || this.product?.name || '';
+    return this.product?.name_en || this.product?.name || '';
+  });
 
-  get localizedDescription(): string {
-    return this.product.description;
-  }
+  localizedDescription = computed(() => {
+    const lang = this.currentLang();
+    if (lang === 'hu') return this.product?.description_hu || '';
+    if (lang === 'de') return this.product?.description_de || '';
+    return this.product?.description_en || '';
+  });
 
   get categoryName(): string {
     const catId = this.product.category ?? this.product.category_id ?? '';
     const cat = this.productService.getCategoryById(catId);
     if (!cat) return '';
-    const lang = this.translateService.currentLang || 'hu';
+    const lang = this.currentLang(); // ← reaktív
     return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
   }
 
@@ -24527,7 +24735,9 @@ FILE: src\assets\i18n\de.json
     "no_social_link": "Wir sind auf dieser Plattform noch nicht verfügbar",
     "legal": "Rechtliches",
     "newsletter_success": "Erfolgreich abonniert!",
-    "copyright": "Urheberrecht © 2025 Roy's shack"
+    "copyright": "Urheberrecht © 2025 Roy's shack",
+    "newsletter_language": "Newsletter-Sprache",
+    "sending": "Wird gesendet..."
   },
   "filter": {
     "clear_all": "Filter löschen",
@@ -25141,7 +25351,9 @@ FILE: src\assets\i18n\en.json
     "no_social_link": "We are not yet available on this platform",
     "legal": "Legal",
     "newsletter_success": "Successfully subscribed!",
-    "copyright": "Copyright © 2025 Roy's shack"
+    "copyright": "Copyright © 2025 Roy's shack",
+    "newsletter_language": "Newsletter language",
+    "sending": "Sending..."
   },
   "filter": {
     "clear_all": "Clear filters",
@@ -25756,7 +25968,9 @@ FILE: src\assets\i18n\hu.json
     "no_social_link": "Jelenleg nincs elérhetőségünk ezen a platformon",
     "legal": "Jogi információk",
     "newsletter_success": "Sikeres feliratkozás!",
-    "copyright": "Szerzői jog © 2025 Roy's shack"
+    "copyright": "Szerzői jog © 2025 Roy's shack",
+    "newsletter_language": "Hírlevél nyelve",
+    "sending": "Küldés..."
   },
   "filter": {
     "clear_all": "Szűrők törlése",

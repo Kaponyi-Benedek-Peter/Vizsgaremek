@@ -483,7 +483,9 @@
     "no_social_link": "We are not yet available on this platform",
     "legal": "Legal",
     "newsletter_success": "Successfully subscribed!",
-    "copyright": "Copyright © 2025 Roy's shack"
+    "copyright": "Copyright © 2025 Roy's shack",
+    "newsletter_language": "Newsletter language",
+    "sending": "Sending..."
   },
   "filter": {
     "clear_all": "Clear filters",

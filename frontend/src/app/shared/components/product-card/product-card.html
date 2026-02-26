@@ -2,11 +2,11 @@
   class="product-card"
   [class.compact]="compact"
   [class.out-of-stock]="!product.inStock"
-  [attr.aria-label]="localizedName"
+  [attr.aria-label]="localizedName()"
 >
   <a [routerLink]="['/products', product.id]" class="product-link">
     <div class="product-image-wrapper">
-      <img [src]="product.imageUrl" [alt]="localizedName" class="product-image" loading="lazy" />
+      <img [src]="product.imageUrl" [alt]="localizedName()" class="product-image" loading="lazy" />
 
       <div class="product-image-overlay"></div>
 
@@ -46,11 +46,11 @@
       }
 
       <h3 class="product-title" [class.compact]="compact">
-        {{ localizedName }}
+        {{ localizedName() }}
       </h3>
 
       @if (!compact) {
-        <p class="product-description">{{ localizedDescription }}</p>
+        <p class="product-description">{{ localizedDescription() }}</p>
       }
 
       @if (product.manufacturer && !compact) {

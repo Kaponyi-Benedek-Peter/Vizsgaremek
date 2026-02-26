@@ -12,6 +12,7 @@
 
 import { Category } from '../../core/models/product.model';
 import { environment } from '../../../environments/environment';
+import { SupportedLanguage } from '../services/translation.service';
 
 const ASSETS = environment.assetsURL;
 
@@ -28,7 +29,7 @@ export interface SlideData {
 }
 
 export interface LanguageOption {
-  code: string;
+  code: SupportedLanguage;
   name: string;
   flag: string; // emoji or IMG url
   flagImage?: string; // image url if there is

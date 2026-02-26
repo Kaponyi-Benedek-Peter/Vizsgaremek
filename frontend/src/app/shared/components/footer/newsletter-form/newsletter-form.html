@@ -23,17 +23,43 @@
       </div>
     }
   </div>
-  
+
   <p>{{ 'footer.newsletter' | translate }}</p>
 
+  <div class="newsletter-lang-selector">
+    <button class="newsletter-lang-btn" ...>
+      <img [src]="currentLangOption.flag" [alt]="currentLangOption.name" class="newsletter-flag" />
+      <span class="newsletter-lang-name">{{ currentLangOption.name }}</span>
+      <span class="newsletter-lang-arrow" [class.open]="isLangDropdownOpen">▾</span>
+    </button>
+
+    @if (isLangDropdownOpen) {
+      <div class="newsletter-lang-dropdown">
+        @for (lang of languages; track lang.code) {
+          <button
+            class="newsletter-lang-item"
+            type="button"
+            [class.active]="newsletterLang === lang.code"
+            (click)="selectNewsletterLang(lang.code)"
+          >
+            <img [src]="lang.flag" [alt]="lang.name" class="newsletter-flag" />
+            <span>{{ lang.name }}</span>
+          </button>
+        }
+      </div>
+    }
+  </div>
+
   <form (ngSubmit)="onSubmit()">
-    <input 
-      type="email" 
+    <input
+      type="email"
       [placeholder]="'footer.emailPlaceholder' | translate"
       [(ngModel)]="email"
       name="email"
       required
     />
-    <button type="submit">{{ 'footer.send' | translate }}</button>
+    <button type="submit" [disabled]="isSubmitting">
+      {{ isSubmitting ? ('footer.sending' | translate) : ('footer.send' | translate) }}
+    </button>
   </form>
 </div>
