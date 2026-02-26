@@ -1,7 +1,7 @@
 <div class="footer-main">
   <div class="footer-column">
     <h4>
-      {{ 'footer.copyright' | translate }}
+      {{ 'footer.copyright' | translate: { year: currentYear } }}
       <span class="underline"></span>
     </h4>
 
@@ -11,7 +11,7 @@
       </p>
     </div>
   </div>
-  
+
   <div class="footer-column">
     <h4>
       {{ 'footer.contactInfo' | translate }}
@@ -24,7 +24,7 @@
       </ul>
     </div>
   </div>
-  
+
   <div class="footer-column">
     <h4>
       {{ 'footer.followUs' | translate }}

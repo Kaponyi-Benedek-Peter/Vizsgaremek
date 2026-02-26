@@ -17374,7 +17374,7 @@ FILE: src\app\shared\components\footer\footer-main\footer-main.html
 <div class="footer-main">
   <div class="footer-column">
     <h4>
-      {{ 'footer.copyright' | translate }}
+      {{ 'footer.copyright' | translate: { year: currentYear } }}
       <span class="underline"></span>
     </h4>
 
@@ -17384,7 +17384,7 @@ FILE: src\app\shared\components\footer\footer-main\footer-main.html
       </p>
     </div>
   </div>
-  
+
   <div class="footer-column">
     <h4>
       {{ 'footer.contactInfo' | translate }}
@@ -17397,7 +17397,7 @@ FILE: src\app\shared\components\footer\footer-main\footer-main.html
       </ul>
     </div>
   </div>
-  
+
   <div class="footer-column">
     <h4>
       {{ 'footer.followUs' | translate }}
@@ -17427,7 +17427,9 @@ import { NewsletterForm } from '../newsletter-form/newsletter-form';
   templateUrl: './footer-main.html',
   styleUrl: './footer-main.css',
 })
-export class FooterMain {}
+export class FooterMain {
+  readonly currentYear = new Date().getFullYear();
+}
 
 
 
@@ -24735,7 +24737,7 @@ FILE: src\assets\i18n\de.json
     "no_social_link": "Wir sind auf dieser Plattform noch nicht verfügbar",
     "legal": "Rechtliches",
     "newsletter_success": "Erfolgreich abonniert!",
-    "copyright": "Urheberrecht © 2025 Roy's shack",
+    "copyright": "Urheberrecht © {{ year }} Roy's Shack",
     "newsletter_language": "Newsletter-Sprache",
     "sending": "Wird gesendet..."
   },
@@ -25351,7 +25353,7 @@ FILE: src\assets\i18n\en.json
     "no_social_link": "We are not yet available on this platform",
     "legal": "Legal",
     "newsletter_success": "Successfully subscribed!",
-    "copyright": "Copyright © 2025 Roy's shack",
+    "copyright": "Copyright © {{ year }} Roy's Shack",
     "newsletter_language": "Newsletter language",
     "sending": "Sending..."
   },
@@ -25968,7 +25970,7 @@ FILE: src\assets\i18n\hu.json
     "no_social_link": "Jelenleg nincs elérhetőségünk ezen a platformon",
     "legal": "Jogi információk",
     "newsletter_success": "Sikeres feliratkozás!",
-    "copyright": "Szerzői jog © 2025 Roy's shack",
+    "copyright": "Szerzői jog © {{ year }} Roy's Shack",
     "newsletter_language": "Hírlevél nyelve",
     "sending": "Küldés..."
   },

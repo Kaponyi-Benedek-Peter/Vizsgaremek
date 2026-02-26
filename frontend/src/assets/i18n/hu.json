@@ -484,7 +484,7 @@
     "no_social_link": "Jelenleg nincs elérhetőségünk ezen a platformon",
     "legal": "Jogi információk",
     "newsletter_success": "Sikeres feliratkozás!",
-    "copyright": "Szerzői jog © 2025 Roy's shack",
+    "copyright": "Szerzői jog © {{ year }} Roy's Shack",
     "newsletter_language": "Hírlevél nyelve",
     "sending": "Küldés..."
   },
