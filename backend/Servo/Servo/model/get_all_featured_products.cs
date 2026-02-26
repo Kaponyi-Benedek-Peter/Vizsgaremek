@@ -44,7 +44,7 @@ namespace Servo.model
                             string[] fields = { "id","name_hu","name_en", "name_de","description_preview_hu","description_preview_en",  "description_preview_de", "price_huf", 
                                       "stock", "sale_percentage",
                                       "category_id", "manufacturer", "brand",
-                                      "rating", "packaging", "created_at", "thumbnail_url",
+                                      "rating", "packaging", "created_at",
                                       };
 
                             foreach (string field in fields)
@@ -54,6 +54,7 @@ namespace Servo.model
 
                             product["price_usd"] = service.shared.exchange(Convert.ToDouble(product["price_huf"]))[0].ToString();
                             product["price_eur"] = service.shared.exchange(Convert.ToDouble(product["price_huf"]))[1].ToString();
+                            product["thumbnail_url"] = service.shared.current_url+"assets/products/"+product["id"]+"/thumbnail.webp";
 
 
                             products.Add(product);
