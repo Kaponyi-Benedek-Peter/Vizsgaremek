@@ -326,42 +326,37 @@ namespace Servo.controller
             }
             // =========== NEMAPI =========== 
 
-            else 
+            else
             {
                 if (kert.StartsWith("static/", StringComparison.OrdinalIgnoreCase))
                 {
-                    kert = kert.Substring(7); 
+                    kert = kert.Substring(7);
                 }
 
-                
-                
-                
-
-              
+                if (kert.EndsWith("/"))
+                    kert = kert.TrimEnd('/');
 
                 string hely = Path.Combine(alap, kert.Replace("/", Path.DirectorySeparatorChar.ToString()));
+                service.shared.log("> requested file: " + kert + " -> " + hely);
 
-            //    service.shared.log("> Served path: " + hely);
+                bool is_file = File.Exists(hely) && !Directory.Exists(hely);
 
-
-                bool isPhysicalFile = File.Exists(hely) && !Directory.Exists(hely);
-
-                if (!isPhysicalFile)
+                if (!is_file)
                 {
-                   
-                    string extension = Path.GetExtension(hely);
+                    // SPA halal
+                    string static_path = Path.Combine(alap, "static", kert.Replace("/", Path.DirectorySeparatorChar.ToString()));
+                    bool is_static = File.Exists(static_path);
 
-                    if (string.IsNullOrEmpty(extension))
+                    if (is_static)
                     {
-                        hely = Path.Combine(alap, "index.html");
-                        service.shared.log(">> SPA Navigation Route!");
+                        hely = static_path;
+                        service.shared.log(">> static: " + static_path);
                     }
                     else
                     {
-                        data.Response.StatusCode = 404;
-                        byte[] buffer = Encoding.UTF8.GetBytes("Asset not found");
-                        data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                        service.shared.log("ERROR 2: asset not found (" + hely + ") --controller.router.main");
+                        // !!! indeexxx
+                        hely = Path.Combine(alap, "index.html");
+                        service.shared.log(">> SPA: " + kert + " -> index.html");
                     }
                 }
 
@@ -372,17 +367,14 @@ namespace Servo.controller
                         byte[] fileBytes = File.ReadAllBytes(hely);
                         data.Response.ContentType = service.shared.mime(Path.GetExtension(hely));
                         data.Response.OutputStream.Write(fileBytes, 0, fileBytes.Length);
-
-                        //Form1.Instance.updatefilesserved();
-         //               service.shared.log($"{data.Request.RemoteEndPoint.Address} --> {kert} || OK");
+                        service.shared.log(">> served: " + hely);
                     }
                     else
                     {
-                        
                         data.Response.StatusCode = 404;
-                        byte[] buffer = Encoding.UTF8.GetBytes("Internal error");
+                        byte[] buffer = Encoding.UTF8.GetBytes("File not found");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                        service.shared.log("ERROR 3: index.html not found (" + hely+") --controller.router.main");
+                        service.shared.log("ERROR: File not found (" + hely + ")");
                     }
                 }
                 catch (Exception ex)
@@ -390,18 +382,15 @@ namespace Servo.controller
                     data.Response.StatusCode = 500;
                     byte[] buffer = Encoding.UTF8.GetBytes("Internal error");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-
-                   // Form1.Instance.updateerrorcount();
-                   service.shared.log($"ERROR 4: {ex.Message} --controller.router.main");
+                    service.shared.log($"ERROR: {ex.Message}");
                 }
-
-
-
             }
 
 
 
-            
+
+
+
 
 
 

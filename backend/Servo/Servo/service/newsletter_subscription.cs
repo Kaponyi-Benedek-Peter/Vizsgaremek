@@ -11,7 +11,7 @@ namespace Servo.service
     internal class newsletter_subscription
     {
 
-        public static int process_newsletter_subscription(string news_level, string email)
+        public static int process_newsletter_subscription(string news_level, string email,string language)
         {
 
            
@@ -27,7 +27,8 @@ namespace Servo.service
                 {
                     email = email,
                     news_level = news_level,
-                    
+                    language = language,
+
 
 
                 };

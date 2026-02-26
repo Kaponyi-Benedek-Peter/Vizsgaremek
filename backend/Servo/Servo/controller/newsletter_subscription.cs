@@ -24,6 +24,7 @@ namespace Servo.controller
 
             string email = "";
             string news_level = "";
+            string language = "";
 
             try
             {
@@ -41,6 +42,7 @@ namespace Servo.controller
                     email = service.shared.b64dec(jsonObj["email"].ToString());
 
                     news_level = service.shared.b64dec(jsonObj["news_level"].ToString());
+                    language = service.shared.b64dec(jsonObj["language"].ToString());
                 }
                 catch
                 {
@@ -73,7 +75,7 @@ namespace Servo.controller
 
 
 
-                int resp = service.newsletter_subscription.process_newsletter_subscription(news_level, email); // SERVICE
+                int resp = service.newsletter_subscription.process_newsletter_subscription(news_level, email,language); // SERVICE
                 if (resp == 200)
                 {
 

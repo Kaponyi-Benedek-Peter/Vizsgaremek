@@ -44,12 +44,13 @@ namespace Servo
 
             server_main = Task.Factory.StartNew(() =>
             {
+                service.shared.log("[! server started !]");
                 //service.shared.log("[starting server 3]");
                 while (!token.IsCancellationRequested)
                 {
                     try
                     {
-                        service.shared.log("[! server started !]");
+                      
                         //service.shared.log("[starting server 4]");
                         HttpListenerContext context = hallgatozo.GetContext();
                         ThreadPool.QueueUserWorkItem(o => controller.router.main(context, service.shared.baseDir));

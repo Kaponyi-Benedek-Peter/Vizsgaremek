@@ -50,6 +50,8 @@ namespace Servo.model
             public string email { get; set; } = "";
             public string news_level { get; set; } = "";
             public string received_current_newsletter { get; set; } = "";
+            public string language { get; set; } = "";
+
             public string id { get; set; } = "";
 
         }
@@ -1052,6 +1054,7 @@ namespace Servo.model
 
                     cmd.Parameters.AddWithValue("@p_email", recip.email);
                     cmd.Parameters.AddWithValue("@p_news_level", recip.news_level);
+                    cmd.Parameters.AddWithValue("@p_language", recip.language);
 
                     cmd.ExecuteNonQuery();
 
