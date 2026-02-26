@@ -146,10 +146,10 @@ export const IMAGES = {
   heroBg: `${ASSETS}/assets/images/herobg.webp`,
 
   // Hero slides
-  hero1: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1920&h=600&fit=crop&q=80',
-  hero2: 'https://images.unsplash.com/photo-1550572017-edd951b55104?w=1920&h=600&fit=crop&q=80',
-  hero3: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1920&h=600&fit=crop&q=80',
-  hero4: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1920&h=600&fit=crop&q=80',
+  hero1: `${ASSETS}/assets/images/hero1.webp`,
+  hero2: `${ASSETS}/assets/images/hero2.webp`,
+  hero3: `${ASSETS}/assets/images/hero3.webp`,
+  hero4: `${ASSETS}/assets/images/hero4.webp`,
 
   // Language flags - emoji version
   flagHungary: '🇭🇺',
