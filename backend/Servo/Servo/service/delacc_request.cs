@@ -24,10 +24,10 @@ namespace Servo.service
 
 
             string emailhtml = File.ReadAllText($"templates/password_reset_{language.ToUpper()}.html"
-                .Replace("{FIRST_NAME}", name.firstname)
+            )    .Replace("{FIRST_NAME}", name.firstname)
                 .Replace("{LAST_NAME}", name.lastname)
                 .Replace("{CONFIRM_DELETE_URL}", $"{service.shared.current_url}?accdel=" + service.shared.b64enc(email) + ";" + service.shared.b64enc(token))
-            );
+            ;
 
 
             service.shared.send_mail(email, "Account deletion", emailhtml, "accdeletion");
