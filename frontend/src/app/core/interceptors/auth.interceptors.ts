@@ -18,21 +18,21 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/get_all_products',
     '/get_all_featured_products',
     '/newsletter_subscription',
+    '/get_all_product_categories',
   ];
 
   const isPublicEndpoint = publicEndpoints.some((endpoint) => req.url.includes(endpoint));
 
-  let clonedRequest = req;
+  let clonedRequest = req.clone({
+    setHeaders: { 'Content-Type': 'application/json' },
+  });
+
   if (token && !isPublicEndpoint) {
     clonedRequest = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-    });
-  } else if (!isPublicEndpoint) {
-    clonedRequest = req.clone({
-      setHeaders: { 'Content-Type': 'application/json' },
     });
   }
 
