@@ -1064,6 +1064,11 @@ namespace Servo.model
             catch (Exception ex)
             {
                 service.shared.log($"Error 1: {ex.Message} --model.shared.add_newsletter_recipient");
+                if(ex.Message.Contains("Duplicate"))
+                {
+                    service.shared.log("Duplicate entry detected");
+                    return 409;
+                }
                 return 500;
             }
         }
@@ -1225,7 +1230,7 @@ namespace Servo.model
 
 
 
-
+        //Duplicate 
 
     }
 }

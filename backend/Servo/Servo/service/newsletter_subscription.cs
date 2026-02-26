@@ -37,12 +37,8 @@ namespace Servo.service
 
                 int result = model.shared.add_newsletter_recipient(recip);
 
-                if (result != 200)
-                {
+                return result;
 
-                    return 500;
-
-                }
 
 
 

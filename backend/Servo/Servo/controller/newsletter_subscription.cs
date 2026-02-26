@@ -102,7 +102,22 @@ namespace Servo.controller
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
-               
+                else if (resp == 409)
+                {
+
+                    var respon = new
+                    {
+                        status = "user_already_subscribed",
+                        statuscode = "409"
+                    };
+
+                    string jsonrespon = JsonSerializer.Serialize(respon);
+
+
+                    data.Response.StatusCode = 500;
+                    byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
+                    data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                }
                 else //if (resp == 500)
                 {
 
