@@ -69,10 +69,7 @@ namespace Servo.controller
 
 
 
-                using (StreamReader reader = new StreamReader(data.Request.InputStream, data.Request.ContentEncoding))
-                {
-                    lenyeg = reader.ReadToEnd();
-                }
+                
 
                 service.shared.log($"Body received: {lenyeg}");
 
@@ -108,7 +105,7 @@ namespace Servo.controller
                     var respon = new
                     {
                         status = resp.responsedata,
-                        statuscode = 401
+                        statuscode = "401"
                     };
 
                     string jsonrespon = JsonSerializer.Serialize(respon);

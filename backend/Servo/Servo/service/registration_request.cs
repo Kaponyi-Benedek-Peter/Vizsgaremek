@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace Servo.service
 
 
 
-        public static int process_registration_request(string controller_email, string controller_jelszo, string controller_lastname, string controller_firstname,string ip)
+        public static int process_registration_request(string controller_email, string controller_jelszo, string controller_lastname, string controller_firstname,string language,string ip)
         {
             try
             {
@@ -46,7 +47,7 @@ namespace Servo.service
 
                     if (model.registration_request.communicate_registration_request(usr) == true){
                             string controller_id = model.shared.get_id_by_email(controller_email);
-                            sendregistration(controller_email, controller_id, session_token);
+                            sendregistration(controller_email, controller_id, session_token,language);
                         service.shared.log($"Debug 1: {session_token} --service.registration_request.process_registration_request");
 
 
@@ -75,10 +76,23 @@ namespace Servo.service
 
 
 
-        protected static void sendregistration(string email,string id,string session_token)
+        protected static void sendregistration(string email,string id,string session_token,string language)
         {
+            //string firstname= model.shared.get_firstname_by_id(id);
+            //string lastname = model.shared.get_lastname_by_id(id);
             
-            service.shared.send_mail(email, "Confirm your registration", registerhtml_top + $"{service.shared.current_url}registration-promise?activate={service.shared.b64enc(id)};{service.shared.b64enc(session_token)}" + registerhtml_bottom, "registration");
+            (string firstname,string lastname) name = model.shared.get_name_by_id(id);
+
+
+
+            string emailhtml = File.ReadAllText($"templates/registration_{language}.html"
+                .Replace("{FIRST_NAME}", name.firstname)
+                .Replace("{LAST_NAME}", name.lastname)
+                .Replace("{CONFIRM_URL}", $"{service.shared.current_url}registration-promise?activate={service.shared.b64enc(id)};{service.shared.b64enc(session_token)}")
+            );
+
+            service.shared.send_mail(email, "Confirm your registration", emailhtml, "registration");
+
 
 
         }

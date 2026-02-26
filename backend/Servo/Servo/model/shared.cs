@@ -293,7 +293,7 @@ namespace Servo.model
             {
 
 
-                string userToken = null;
+                string toreturn = null;
 
                 using (MySqlCommand cmd = new MySqlCommand("get_user_by_id", conn))
                 {
@@ -306,13 +306,13 @@ namespace Servo.model
                         if (reader.Read())
                         {
 
-                            userToken = reader["email"]?.ToString();
+                            toreturn = reader["email"]?.ToString();
                         }
                     }
                 }
 
-                if (userToken != null)
-                    return userToken;
+                if (toreturn != null)
+                    return toreturn;
                 else
                     return "404";
             }
@@ -323,6 +323,54 @@ namespace Servo.model
             }
 
         }
+
+
+        public static (string firstname,string lastname) get_name_by_id(string id)
+        {
+            try
+            {
+
+
+                
+                string firstname = null;
+                string lastname= null;
+
+
+                using (MySqlCommand cmd = new MySqlCommand("get_user_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_id", id);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+
+                            lastname = reader["last_name"]?.ToString();
+                            firstname = reader["first_name"]?.ToString();
+
+                        }
+                    }
+                }
+
+                (string firstname, string lastname) toreturn;
+                toreturn.firstname = firstname;
+                toreturn.lastname = lastname;
+
+                if (toreturn != (null,null))
+                    return toreturn;
+                else
+                    return ("404","404");
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_email_by_id");
+                return ("404","404");
+            }
+
+        }
+
 
 
         public static string get_token_by_id(string id)

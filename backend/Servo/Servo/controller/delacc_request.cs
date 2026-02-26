@@ -42,6 +42,7 @@ namespace Servo.controller
           
             string id = "";
             string jelszo = "";
+            string language = "";
 
 
 
@@ -81,6 +82,8 @@ namespace Servo.controller
                 JObject jsonObj = JObject.Parse(lenyeg);
                 id = service.shared.b64dec(jsonObj["id"].ToString());
                 jelszo = service.shared.b64dec(jsonObj["password"].ToString());
+                 language = service.shared.b64dec(jsonObj["language"].ToString());
+
                 }
                 catch
                 {
@@ -105,7 +108,7 @@ namespace Servo.controller
                 try
                 {
                     service.shared.log("Debug 2: controller.delacc_request.main");
-                    resp = service.delacc_request.process_delacc_request(id, jelszo, data.Request.RemoteEndPoint.Address.ToString());
+                    resp = service.delacc_request.process_delacc_request(id, jelszo,language, data.Request.RemoteEndPoint.Address.ToString());
                     service.shared.log("Debug 3: controller.delacc_request.main");
                 }
                 catch (Exception ex)
