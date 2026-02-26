@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { SupportedLanguage, TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +14,8 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './login.css',
 })
 export class Login {
+  private translationService = inject(TranslationService);
+
   email = signal('');
   password = signal('');
   stayLoggedIn = signal(false);
@@ -20,6 +23,8 @@ export class Login {
   errorMessage = signal('');
   showPassword = signal(false);
   isEmailSent = signal(false);
+
+  language = computed(() => this.translationService.getCurrentLanguage());
 
   constructor(
     private authService: AuthService,
@@ -41,7 +46,7 @@ export class Login {
 
     this.isLoading.set(true);
 
-    this.authService.loginRequest(this.email(), this.password()).subscribe({
+    this.authService.loginRequest(this.email(), this.password(), this.language()).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.isEmailSent.set(true);

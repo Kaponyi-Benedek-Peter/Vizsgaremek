@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
+import { TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-password-reset-request',
@@ -20,10 +21,12 @@ export class PasswordResetRequest {
   isLoading = signal(false);
   errorMessage = signal('');
   isEmailSent = signal(false);
+  language = computed(() => this.translationService.getCurrentLanguage());
 
   constructor(
     private authService: AuthService,
     private router: Router,
+    private translationService: TranslationService,
   ) {}
 
   togglePasswordVisibility(): void {
@@ -60,16 +63,18 @@ export class PasswordResetRequest {
 
     this.isLoading.set(true);
 
-    this.authService.requestPasswordChange(this.email(), this.newPassword()).subscribe({
-      next: () => {
-        this.isLoading.set(false);
-        this.isEmailSent.set(true);
-      },
-      error: (error) => {
-        this.isLoading.set(false);
-        this.errorMessage.set(error.message || 'auth.errors.request_failed');
-      },
-    });
+    this.authService
+      .requestPasswordChange(this.email(), this.newPassword(), this.language())
+      .subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.isEmailSent.set(true);
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(error.message || 'auth.errors.request_failed');
+        },
+      });
   }
 
   backToLogin(): void {

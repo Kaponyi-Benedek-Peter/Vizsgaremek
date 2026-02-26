@@ -20,6 +20,7 @@ import {
 } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
+import { SupportedLanguage, TranslationService } from './translation.service';
 
 @Injectable({
   providedIn: 'root',
@@ -34,6 +35,7 @@ export class AuthService {
   private readonly SESSION_TOKEN_KEY = 'auth_session_token';
 
   private toastService = inject(ToastService);
+  private translationService = inject(TranslationService);
 
   private authStateSignal = signal<AuthState>({
     isAuthenticated: false,
@@ -49,6 +51,7 @@ export class AuthService {
   public currentUser = computed(() => this.authStateSignal().user);
   public token = computed(() => this.authStateSignal().token);
   public sessionToken = computed(() => this.authStateSignal().sessionToken);
+  public language = computed(() => this.translationService.getCurrentLanguage());
 
   private authStateSubject = new BehaviorSubject<AuthState>({
     isAuthenticated: false,
@@ -145,10 +148,11 @@ export class AuthService {
   }
 
   // Stage 1: email + password -> email
-  loginRequest(email: string, password: string) {
+  loginRequest(email: string, password: string, language: SupportedLanguage) {
     const request: LoginRequest = {
       email: this.encodeBase64(email),
       password: this.encodeBase64(password),
+      language: this.encodeBase64(language) as SupportedLanguage,
     };
 
     return this.http
@@ -176,12 +180,19 @@ export class AuthService {
   }
 
   // registration_request: b64 string
-  register(email: string, password: string, firstname: string, lastname: string): Observable<void> {
+  register(
+    email: string,
+    password: string,
+    firstname: string,
+    lastname: string,
+    language: SupportedLanguage,
+  ): Observable<void> {
     const request: RegistrationRequest = {
       email: this.encodeBase64(email),
       password: this.encodeBase64(password),
       firstname: this.encodeBase64(firstname),
       lastname: this.encodeBase64(lastname),
+      language: this.encodeBase64(language) as SupportedLanguage,
     };
 
     return this.http
@@ -216,10 +227,11 @@ export class AuthService {
   }
 
   // chpass_request: b64 string
-  requestPasswordChange(email: string, newPassword: string) {
+  requestPasswordChange(email: string, newPassword: string, language: SupportedLanguage) {
     const request: PasswordChangeRequest = {
       email: this.encodeBase64(email),
       password: this.encodeBase64(newPassword),
+      language: this.encodeBase64(language) as SupportedLanguage,
     };
 
     return this.http
