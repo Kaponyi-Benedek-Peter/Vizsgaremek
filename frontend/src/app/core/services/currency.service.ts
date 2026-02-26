@@ -46,31 +46,24 @@ export class CurrencyService {
 
   currentCurrency = computed(() => this.currencyMap[this.currentLang()]);
 
-  constructor() {
-    this.fetchExchangeRates();
-  }
+  getBasePrice(product: HasPriceFields): number {
+    const code = this.currentCurrency().code;
+    const hufPrice = parseFloat(product.price_huf) || 0;
 
-  private async fetchExchangeRates(): Promise<void> {
-    try {
-      const response = await firstValueFrom(
-        this.http.get<FrankfurterResponse>(
-          'https://api.frankfurter.app/latest?from=HUF&to=USD,EUR',
-        ),
-      );
-      if (response?.rates) {
-        this.ratesSignal.set(response.rates);
-        console.log('Exchange rates updated:', response.rates);
-      }
-    } catch (err) {
-      console.warn('Failed to fetch exchange rates, using fallback values:', err);
+    switch (code) {
+      case 'USD':
+        return parseFloat(product.price_usd ?? '0') || hufPrice;
+      case 'EUR':
+        return parseFloat(product.price_eur ?? '0') || hufPrice;
+      default:
+        return hufPrice;
     }
   }
 
-  private convertFromHuf(hufPrice: number, targetCurrency: string): number {
-    if (targetCurrency === 'HUF') return hufPrice;
-    const rate = this.ratesSignal()[targetCurrency];
-    if (!rate) return hufPrice;
-    return Math.round(hufPrice * rate * 100) / 100;
+  getDiscountedPrice(product: HasPriceFields): number {
+    const base = this.getBasePrice(product);
+    const sale = parseFloat(product.sale_percentage) || 0;
+    return sale > 0 ? Math.round(base * (1 - sale / 100) * 100) / 100 : base;
   }
 
   formatPrice(price: number): string {
@@ -82,36 +75,6 @@ export class CurrencyService {
     return currency.code === 'HUF'
       ? `${formatted} ${currency.symbol}`
       : `${currency.symbol}${formatted}`;
-  }
-
-  getBasePrice(product: HasPriceFields): number {
-    const code = this.currentCurrency().code;
-    const hufPrice = parseFloat(product.price_huf) || 0;
-
-    switch (code) {
-      case 'USD':
-        // Use explicit price_usd if available, otherwise convert from HUF
-        if (product.price_usd && parseFloat(product.price_usd) > 0) {
-          return parseFloat(product.price_usd);
-        }
-        return this.convertFromHuf(hufPrice, 'USD');
-
-      case 'EUR':
-        // Use explicit price_eur if available, otherwise convert from HUF
-        if (product.price_eur && parseFloat(product.price_eur) > 0) {
-          return parseFloat(product.price_eur);
-        }
-        return this.convertFromHuf(hufPrice, 'EUR');
-
-      default:
-        return hufPrice;
-    }
-  }
-
-  getDiscountedPrice(product: HasPriceFields): number {
-    const base = this.getBasePrice(product);
-    const sale = parseFloat(product.sale_percentage) || 0;
-    return sale > 0 ? Math.round(base * (1 - sale / 100) * 100) / 100 : base;
   }
 
   getCurrencyForLanguage(lang: SupportedLanguage): CurrencyConfig {

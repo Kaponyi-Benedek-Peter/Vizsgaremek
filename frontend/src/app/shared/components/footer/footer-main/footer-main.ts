@@ -9,4 +9,6 @@ import { NewsletterForm } from '../newsletter-form/newsletter-form';
   templateUrl: './footer-main.html',
   styleUrl: './footer-main.css',
 })
-export class FooterMain {}
+export class FooterMain {
+  readonly currentYear = new Date().getFullYear();
+}

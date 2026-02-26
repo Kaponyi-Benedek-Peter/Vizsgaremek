@@ -571,7 +571,7 @@
 .total-label {
   font-size: var(--text-base);
   font-weight: var(--font-medium);
-  color: var(--color-text-secondary);
+  color: var(--color-text-on-primary);
 }
 
 .total-value {

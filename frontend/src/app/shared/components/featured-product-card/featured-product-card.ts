@@ -5,6 +5,8 @@ import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyPipe } from '../../pipes/currency.pipe';
 import { IMAGES } from '../../../core/constants/visuals';
+import { TranslationService } from '../../../core/services/translation.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-featured-product-card',
@@ -17,10 +19,13 @@ export class FeaturedProductCard {
   @Output() cardClick = new EventEmitter<void>();
 
   private currencyService = inject(CurrencyService);
-  private translateService = inject(TranslateService);
+  private translationService = inject(TranslationService);
+  private currentLang = toSignal(this.translationService.currentLang$, {
+    initialValue: this.translationService.getCurrentLanguage(),
+  });
 
   productName = computed(() => {
-    const lang = this.translateService.currentLang;
+    const lang = this.currentLang();
     if (lang === 'hu') return this.product?.name_hu || this.product?.name || '';
     if (lang === 'de') return this.product?.name_de || this.product?.name || '';
     return this.product?.name_en || this.product?.name || '';
@@ -32,7 +37,7 @@ export class FeaturedProductCard {
 
   altText = computed(() => {
     const name = this.productName();
-    return name || this.translateService.instant('product.product_image');
+    return name || this.translationService.instant('product.product_image');
   });
 
   price = computed(() => this.currencyService.getDiscountedPrice(this.product));

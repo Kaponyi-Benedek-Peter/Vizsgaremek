@@ -8,7 +8,9 @@ export type SupportedLanguage = 'hu' | 'en' | 'de';
   providedIn: 'root',
 })
 export class TranslationService {
-  private currentLangSubject = new BehaviorSubject<SupportedLanguage>('en');
+  private currentLangSubject = new BehaviorSubject<SupportedLanguage>(
+    (localStorage.getItem('preferredLanguage') as SupportedLanguage) || 'en',
+  );
   public currentLang$ = this.currentLangSubject.asObservable();
 
   constructor(private translate: TranslateService) {

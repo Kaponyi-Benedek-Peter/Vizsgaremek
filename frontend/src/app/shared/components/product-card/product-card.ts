@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
 import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
+import { TranslationService } from '../../../core/services/translation.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-product-card',
@@ -28,7 +30,10 @@ export class ProductCard {
 
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
-  private translateService = inject(TranslateService);
+  private translationService = inject(TranslationService);
+  private currentLang = toSignal(this.translationService.currentLang$, {
+    initialValue: this.translationService.getCurrentLanguage(),
+  });
 
   get hasDiscount(): boolean {
     return this.product.hasDiscount;
@@ -52,19 +57,25 @@ export class ProductCard {
     );
   }
 
-  get localizedName(): string {
-    return this.product.name;
-  }
+  localizedName = computed(() => {
+    const lang = this.currentLang();
+    if (lang === 'hu') return this.product?.name_hu || this.product?.name || '';
+    if (lang === 'de') return this.product?.name_de || this.product?.name || '';
+    return this.product?.name_en || this.product?.name || '';
+  });
 
-  get localizedDescription(): string {
-    return this.product.description;
-  }
+  localizedDescription = computed(() => {
+    const lang = this.currentLang();
+    if (lang === 'hu') return this.product?.description_hu || '';
+    if (lang === 'de') return this.product?.description_de || '';
+    return this.product?.description_en || '';
+  });
 
   get categoryName(): string {
     const catId = this.product.category ?? this.product.category_id ?? '';
     const cat = this.productService.getCategoryById(catId);
     if (!cat) return '';
-    const lang = this.translateService.currentLang || 'hu';
+    const lang = this.currentLang(); // ← reaktív
     return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
   }
 
