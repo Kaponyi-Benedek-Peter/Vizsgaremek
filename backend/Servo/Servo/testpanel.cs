@@ -133,8 +133,14 @@ namespace Servo
         private void button5_Click(object sender, EventArgs e)
         {
             string otp = service.shared.gen_code(true);
-            service.shared.send_mail(otptestbox.Text, "Your OTP code", service.registration_request.registerhtml_top + $"{otp}" + service.registration_request.registerhtml_bottom, "otp");
+            service.shared.send_mail(otptestbox.Text, "Your OTP code",  $"{otp}", "otp");
             textBox2.Text=otp;
+
+
+
+
+
+
         }
 
         private void button16_Click(object sender, EventArgs e)

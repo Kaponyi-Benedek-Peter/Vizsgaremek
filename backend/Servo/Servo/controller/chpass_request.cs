@@ -44,6 +44,8 @@ namespace Servo.controller
 
             string email = "";
             string controller_jelszo = "";
+            string language = "";
+
 
             try
             {
@@ -60,6 +62,8 @@ namespace Servo.controller
                 JObject jsonObj = JObject.Parse(lenyeg);
                 email = service.shared.b64dec(jsonObj["email"].ToString());
                 controller_jelszo = service.shared.b64dec(jsonObj["password"].ToString());
+                    language = service.shared.b64dec(jsonObj["language"].ToString());
+
                 }
                 catch
                 {
@@ -82,7 +86,7 @@ namespace Servo.controller
                 int resp = 0;
                 try
                 {
-                    resp = service.chpass_request.process_chpas_request(email, controller_jelszo, data.Request.RemoteEndPoint.Address.ToString());
+                    resp = service.chpass_request.process_chpass_request(email, controller_jelszo,language, data.Request.RemoteEndPoint.Address.ToString());
                 }
                 catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --controller.chpass_request"); }
 

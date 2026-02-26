@@ -24,6 +24,7 @@ namespace Servo.controller
           
             string email = "";
             string jelszo = "";
+            string language = "";
 
             try
             {
@@ -39,6 +40,7 @@ namespace Servo.controller
                 JObject jsonObj = JObject.Parse(lenyeg);
                 email = service.shared.b64dec(jsonObj["email"].ToString());
                 jelszo = service.shared.b64dec(jsonObj["password"].ToString());
+                language = service.shared.b64dec(jsonObj["password"].ToString());
                 }
                 catch
                 {
@@ -71,7 +73,7 @@ namespace Servo.controller
                
 
 
-                int resp = service.login_request.process_login(jelszo, email); // SERVICE
+                int resp = service.login_request.process_login(jelszo, email,language); // SERVICE
                 if (resp == 200)
                 {
 

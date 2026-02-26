@@ -19,6 +19,7 @@ namespace Servo.controller
             string jelszo = "";
             string lastname = "";
             string firstname = "";
+            string language = "";
 
             try
             {
@@ -36,6 +37,7 @@ namespace Servo.controller
                     jelszo = service.shared.b64dec(jsonObj["password"].ToString());
                     lastname = service.shared.b64dec(jsonObj["lastname"].ToString());
                                         firstname = service.shared.b64dec(jsonObj["firstname"].ToString());
+                    language = service.shared.b64dec(jsonObj["language"].ToString());
                 }
                 catch {
 
@@ -71,7 +73,7 @@ namespace Servo.controller
 
                 service.shared.log("Registration request: " + email + "  " + jelszo + "  (" + data.Request.RemoteEndPoint.Address.ToString() + ")");
 
-                int resp = service.registration_request.process_registration_request(email, jelszo, lastname, firstname, data.Request.RemoteEndPoint.Address.ToString());
+                int resp = service.registration_request.process_registration_request(email, jelszo, lastname, firstname,language, data.Request.RemoteEndPoint.Address.ToString());
                 if (resp == 200)
                 {
 
