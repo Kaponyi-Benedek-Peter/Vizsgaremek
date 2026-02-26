@@ -1,0 +1,74 @@
+<div
+  class="slider"
+  (mouseenter)="pause()"
+  (mouseleave)="resume()"
+  role="region"
+  [attr.aria-label]="'slider.aria_label' | translate"
+>
+  <div class="blur-edge blur-top"></div>
+  <div class="blur-edge blur-bottom"></div>
+  <div class="blur-edge blur-left"></div>
+  <div class="blur-edge blur-right"></div>
+
+  <div class="slides">
+    @for (slide of slides; track slide.image; let i = $index) {
+      <div class="slide" [class.active]="isActive(i)" [class.prev]="isPrevious(i)">
+        <img
+          [src]="slide.image"
+          [alt]="'slider.slide_alt' | translate: { number: i + 1 }"
+          class="slide-img"
+          [loading]="i === 0 ? 'eager' : 'lazy'"
+        />
+
+        <div class="slide-overlay"></div>
+
+        <div class="slide-content" [class.visible]="isActive(i)">
+          <div class="slide-text-wrapper">
+            <span class="slide-badge">{{ 'slider.badge' | translate }}</span>
+            <h2 class="slide-title">{{ slide.title | translate }}</h2>
+            <p class="slide-subtitle">{{ slide.subtitle | translate }}</p>
+            <a [routerLink]="slide.link" class="slide-cta">
+              {{ slide.cta | translate }}
+              <span class="slide-cta-arrow">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <button
+    class="arrow arrow-left"
+    (click)="prev()"
+    [attr.aria-label]="'slider.previous' | translate"
+  >
+    <span class="arrow-icon">‹</span>
+  </button>
+
+  <button class="arrow arrow-right" (click)="next()" [attr.aria-label]="'slider.next' | translate">
+    <span class="arrow-icon">›</span>
+  </button>
+
+  <div class="slider-footer">
+    <div class="dots" role="tablist" [attr.aria-label]="'slider.navigation' | translate">
+      @for (slide of slides; track slide.image; let i = $index) {
+        <button
+          class="dot"
+          [class.active]="isActive(i)"
+          (click)="goTo(i)"
+          [attr.aria-label]="'slider.go_to' | translate: { number: i + 1 }"
+          [attr.aria-selected]="isActive(i)"
+          role="tab"
+        >
+          <span class="dot-progress" [style.animation-duration]="autoplayDuration + 'ms'"></span>
+        </button>
+      }
+    </div>
+
+    <div class="slide-counter">
+      <span class="counter-current">{{ (currentIndex + 1).toString().padStart(2, '0') }}</span>
+      <span class="counter-sep">/</span>
+      <span class="counter-total">{{ slides.length.toString().padStart(2, '0') }}</span>
+    </div>
+  </div>
+</div>

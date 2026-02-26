@@ -1,0 +1,103 @@
+<div class="auth-container">
+  <div class="auth-card verification-card">
+    @if (!token() && !isVerifying() && !isVerified() && !errorMessage()) {
+      <div class="verification-content">
+        <div class="icon-wrapper">
+          <svg class="mail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+
+        <h1>{{ 'auth.email.check_inbox' | translate }}</h1>
+        <p class="verification-text">{{ 'auth.email.sent_message' | translate }}</p>
+
+        <div class="verification-steps">
+          <div class="step">
+            <span class="step-number">1</span>
+            <p>{{ 'auth.email.step_1' | translate }}</p>
+          </div>
+          <div class="step">
+            <span class="step-number">2</span>
+            <p>{{ 'auth.email.step_2' | translate }}</p>
+          </div>
+          <div class="step">
+            <span class="step-number">3</span>
+            <p>{{ 'auth.email.step_3' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="verification-help">
+          <p>{{ 'auth.email.no_email' | translate }}</p>
+          <button class="link-btn" (click)="resendEmail()">
+            {{ 'auth.email.resend' | translate }}
+          </button>
+        </div>
+
+        <a routerLink="/login" class="back-link">
+          {{ 'auth.email.back_to_login' | translate }}
+        </a>
+      </div>
+    }
+
+    @if (isVerifying()) {
+      <div class="verification-content">
+        <div class="icon-wrapper">
+          <div class="spinner-large"></div>
+        </div>
+
+        <h1>{{ 'auth.email.verifying' | translate }}</h1>
+        <p class="verification-text">{{ 'auth.email.verifying_message' | translate }}</p>
+      </div>
+    }
+
+    @if (isVerified() && !errorMessage()) {
+      <div class="verification-content">
+        <div class="icon-wrapper success">
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="3"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+
+        <h1>{{ 'auth.email.verified' | translate }}</h1>
+        <p class="verification-text">{{ 'auth.email.verified_message' | translate }}</p>
+
+        <div class="redirect-info">
+          <p>{{ 'auth.email.redirecting' | translate }}</p>
+        </div>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="verification-content">
+        <div class="icon-wrapper error">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" stroke-width="2" />
+            <path stroke-linecap="round" stroke-width="2" d="M12 8v4M12 16h.01" />
+          </svg>
+        </div>
+
+        <h1>{{ 'auth.email.verification_failed' | translate }}</h1>
+        <p class="error-message">{{ errorMessage() | translate }}</p>
+
+        <div class="error-actions">
+          <button class="submit-btn" (click)="resendEmail()">
+            {{ 'auth.email.try_again' | translate }}
+          </button>
+          <a routerLink="/register" class="link">
+            {{ 'auth.email.back_to_register' | translate }}
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+</div>

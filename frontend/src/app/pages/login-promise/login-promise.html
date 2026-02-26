@@ -1,0 +1,38 @@
+<div class="auth-container">
+  <div class="auth-card">
+    @if (isVerifying()) {
+      <div class="verification-content">
+        <div class="spinner-large"></div>
+        <h1>{{ 'auth.login_promise.verifying' | translate }}</h1>
+        <p class="verification-text">{{ 'auth.login_promise.please_wait' | translate }}</p>
+      </div>
+    }
+
+    @if (!isVerifying() && isSuccess()) {
+      <div class="verification-content">
+        <div class="icon-wrapper success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h1>{{ 'auth.login_promise.success_title' | translate }}</h1>
+        <p class="verification-text">{{ 'auth.login_promise.success_message' | translate }}</p>
+      </div>
+    }
+
+    @if (!isVerifying() && errorMessage()) {
+      <div class="verification-content">
+        <div class="icon-wrapper error">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        <h1>{{ 'auth.login_promise.error_title' | translate }}</h1>
+        <p class="verification-text error-text">{{ errorMessage() | translate }}</p>
+        <button class="submit-btn" (click)="backToLogin()">
+          {{ 'auth.login_promise.back_to_login' | translate }}
+        </button>
+      </div>
+    }
+  </div>
+</div>

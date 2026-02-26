@@ -1,0 +1,43 @@
+<div class="featured-product-card" (click)="onCardClick()">
+  <div class="featured-product-image-wrapper">
+    <img *ngIf="imageUrl()" [src]="imageUrl()" [alt]="altText()" class="featured-product-image" />
+
+    <div class="featured-badges" *ngIf="discountPercentage() || requiresPrescription()">
+      <span *ngIf="discountPercentage()" class="featured-badge featured-badge-discount">
+        -{{ discountPercentage() }}%
+      </span>
+      <span
+        *ngIf="requiresPrescription()"
+        class="featured-badge featured-badge-prescription"
+        [title]="'product.requires_prescription' | translate"
+      >
+        ℞
+      </span>
+    </div>
+  </div>
+
+  <div *ngIf="!imageUrl()" class="featured-product-card-placeholder">
+    <div class="featured-placeholder-icon">?</div>
+    <div class="featured-placeholder-text">{{ 'product.no_image' | translate }}</div>
+  </div>
+
+  <div class="featured-product-info" *ngIf="productName()">
+    <h3 class="featured-product-name">{{ productName() }}</h3>
+
+    <div class="featured-product-price-row">
+      <span class="featured-product-price">{{ price() | appCurrency }}</span>
+      <span class="featured-product-old-price" *ngIf="oldPrice()">
+        {{ oldPrice() | appCurrency }}
+      </span>
+    </div>
+
+    <div
+      class="featured-product-stock"
+      [class.featured-stock-in]="inStock()"
+      [class.featured-stock-out]="!inStock()"
+    >
+      <span class="featured-stock-indicator"></span>
+      <span>{{ (inStock() ? 'product.in_stock' : 'product.out_of_stock') | translate }}</span>
+    </div>
+  </div>
+</div>

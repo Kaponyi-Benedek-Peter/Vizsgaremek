@@ -1,0 +1,226 @@
+<div class="forum-detail-page">
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>{{ 'common.loading' | translate }}</p>
+    </div>
+  }
+
+  @if (!isLoading() && post()) {
+    <article class="article">
+      @if (post()!.imageUrl) {
+        <div class="article-hero">
+          <img [src]="post()!.imageUrl" [alt]="post()!.title" class="hero-image" />
+          <div class="hero-overlay"></div>
+        </div>
+      }
+
+      <div class="article-container">
+        <header class="article-header">
+          @if (getCategoryInfo(post()!.category); as cat) {
+            <div class="article-category" [class]="cat.colorClass">
+              <span>{{ cat.icon }}</span>
+              <span>{{ cat.translationKey | translate }}</span>
+            </div>
+          }
+
+          <h1 class="article-title">{{ post()!.title }}</h1>
+
+          <div class="article-meta">
+            <div class="meta-author">
+              @if (post()!.author.avatar) {
+                <img
+                  [src]="post()!.author.avatar"
+                  [alt]="post()!.author.name"
+                  class="author-avatar"
+                />
+              } @else {
+                <div class="author-avatar-placeholder">
+                  {{ post()!.author.name.charAt(0).toUpperCase() }}
+                </div>
+              }
+              <div class="author-info">
+                <span class="author-name">{{ post()!.author.name }}</span>
+                @if (post()!.author.verified) {
+                  <span class="verified-badge">✓</span>
+                }
+                <span class="author-role">{{
+                  'forum.role.' + post()!.author.role | translate
+                }}</span>
+              </div>
+            </div>
+
+            <div class="meta-details">
+              <span class="meta-date">📅 {{ formatDate(post()!.createdAt) }}</span>
+              @if (getReadingTime()) {
+                <span class="meta-reading"
+                  >📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span
+                >
+              }
+            </div>
+          </div>
+        </header>
+
+        <div class="article-body" [class.collapsed]="!contentExpanded()">
+          <p class="article-excerpt">{{ post()!.excerpt }}</p>
+          <div class="article-content">
+            <p>{{ post()!.content }}</p>
+          </div>
+        </div>
+
+        @if (!contentExpanded()) {
+          <div class="read-more-section">
+            <button class="read-more-btn" (click)="toggleContent()">
+              <span class="dots">•••</span>
+              <span>{{ 'forum.read_more' | translate }}</span>
+            </button>
+          </div>
+        }
+
+        <div class="article-stats">
+          <div class="stat">
+            <span class="stat-icon">👁️</span>
+            <span>{{ post()!.views }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">❤️</span>
+            <span>{{ post()!.likes }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">💬</span>
+            <span>{{ comments().length }}</span>
+          </div>
+        </div>
+
+        @if (post()!.tags.length > 0) {
+          <div class="article-tags">
+            @for (tag of post()!.tags; track tag) {
+              <span class="tag">#{{ tag }}</span>
+            }
+          </div>
+        }
+      </div>
+    </article>
+
+    <section class="comments-section">
+      <div class="comments-container">
+        <h2 class="comments-title">
+          💬 {{ 'forum.comments' | translate }} ({{ comments().length }})
+        </h2>
+
+        @if (comments().length > 0) {
+          <div class="comments-list">
+            @for (comment of comments(); track comment.id) {
+              <div class="comment">
+                <div class="comment-avatar-placeholder">
+                  {{ comment.author.name.charAt(0).toUpperCase() }}
+                </div>
+                <div class="comment-body">
+                  <div class="comment-header">
+                    <span class="comment-author">{{ comment.author.name }}</span>
+                    @if (comment.author.verified) {
+                      <span class="verified-badge">✓</span>
+                    }
+                    <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                  </div>
+                  <p class="comment-content">{{ comment.content }}</p>
+                  <div class="comment-footer">
+                    <span class="comment-likes">❤️ {{ comment.likes }}</span>
+                    @if (comment.isEdited) {
+                      <span class="comment-edited">{{ 'forum.comment_edited' | translate }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (isAuthenticated()) {
+          <div class="new-comment">
+            <h3 class="new-comment-title">{{ 'forum.write_comment' | translate }}</h3>
+            <textarea
+              class="comment-input"
+              [(ngModel)]="newComment"
+              [placeholder]="'forum.comment_placeholder' | translate"
+              rows="4"
+            ></textarea>
+            <button
+              class="submit-comment-btn"
+              (click)="submitComment()"
+              [disabled]="!newComment().trim() || isSubmittingComment()"
+            >
+              @if (isSubmittingComment()) {
+                <span class="btn-spinner"></span>
+              }
+              {{ 'forum.submit_comment' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="login-to-comment">
+            <p>{{ 'forum.login_to_comment' | translate }}</p>
+            <a routerLink="/login" class="login-link">{{ 'header.login' | translate }}</a>
+          </div>
+        }
+      </div>
+    </section>
+
+    @if (relatedPosts().length > 0) {
+      <section class="related-section">
+        <div class="related-container">
+          <h2 class="related-title">{{ 'forum.related_posts' | translate }}</h2>
+          <div class="slider-wrapper">
+            <button
+              class="slider-btn slider-btn-prev"
+              (click)="sliderPrev()"
+              [disabled]="!canSliderPrev"
+              [attr.aria-label]="'common.previous' | translate"
+            >
+              ‹
+            </button>
+
+            <div class="slider-track">
+              @for (related of sliderVisible; track related.id) {
+                <a class="related-card" [routerLink]="['/forum', related.slug]">
+                  @if (related.imageUrl) {
+                    <div class="related-image">
+                      <img [src]="related.imageUrl" [alt]="related.title" loading="lazy" />
+                    </div>
+                  }
+                  <div class="related-info">
+                    <h3 class="related-post-title">{{ related.title }}</h3>
+                    <p class="related-excerpt">{{ related.excerpt }}</p>
+                    <div class="related-meta">
+                      <span>{{ related.author.name }}</span>
+                      <span>{{ formatDate(related.createdAt) }}</span>
+                    </div>
+                  </div>
+                </a>
+              }
+            </div>
+
+            <button
+              class="slider-btn slider-btn-next"
+              (click)="sliderNext()"
+              [disabled]="!canSliderNext"
+              [attr.aria-label]="'common.next' | translate"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+
+    <div class="back-section">
+      <a routerLink="/forum" class="back-link"> ← {{ 'forum.back_to_forum' | translate }} </a>
+    </div>
+  }
+
+  @if (!isLoading() && !post()) {
+    <div class="not-found">
+      <h2>{{ 'forum.post_not_found' | translate }}</h2>
+      <a routerLink="/forum" class="back-link">← {{ 'forum.back_to_forum' | translate }}</a>
+    </div>
+  }
+</div>

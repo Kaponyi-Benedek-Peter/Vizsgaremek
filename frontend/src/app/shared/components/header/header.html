@@ -1,0 +1,227 @@
+<header class="header">
+  <div class="header-left">
+    <a routerLink="/home">
+      <img class="logo" [src]="IMAGES.logo" alt="Roy's Shack official logo" />
+    </a>
+  </div>
+
+  <div class="header-center">
+    <app-primary-btn routerLink="/home">{{ 'header.home' | translate }}</app-primary-btn>
+    <app-primary-btn routerLink="/forum">{{ 'header.forum' | translate }}</app-primary-btn>
+    <app-primary-btn routerLink="/products">{{ 'header.products' | translate }}</app-primary-btn>
+  </div>
+
+  <div class="header-right">
+    @if (isAuthenticated) {
+      <div class="user-menu-wrapper">
+        <app-icon-btn
+          [iconImg]="ICONS.user"
+          [attr.aria-label]="'header.profile' | translate"
+          (click)="toggleUserMenu()"
+          class="user-menu-trigger"
+        >
+        </app-icon-btn>
+
+        @if (showUserMenu()) {
+          <div class="user-dropdown">
+            <div class="user-dropdown-header">
+              <p class="user-name">{{ currentUser?.firstname }} {{ currentUser?.lastname }}</p>
+              <p class="user-email">{{ currentUser?.email }}</p>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <a routerLink="/profile" class="user-dropdown-item" (click)="closeUserMenu()">
+              <img [src]="ICONS.user" alt="profile" class="dropdown-icon" />
+              {{ 'header.my_profile' | translate }}
+            </a>
+            <a routerLink="/purchase" class="user-dropdown-item" (click)="closeUserMenu()">
+              <img [src]="ICONS.basket" alt="orders" class="dropdown-icon" />
+              {{ 'header.my_orders' | translate }}
+            </a>
+            <a
+              *ngIf="isAdmin"
+              routerLink="/admin"
+              class="user-dropdown-item"
+              (click)="closeUserMenu()"
+            >
+              {{ 'header.admin' | translate }}
+            </a>
+            <div class="user-dropdown-divider"></div>
+            <button class="user-dropdown-item logout-btn" (click)="logout()">
+              <svg
+                class="dropdown-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              {{ 'header.logout' | translate }}
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <app-icon-btn
+        routerLink="/login"
+        [iconImg]="ICONS.login"
+        [attr.aria-label]="'header.login' | translate"
+      >
+      </app-icon-btn>
+    }
+
+    <div class="cart-menu-wrapper">
+      <button
+        class="cart-button"
+        (click)="toggleCartDropdown()"
+        [attr.aria-label]="'header.cart' | translate"
+      >
+        <app-icon-btn [iconImg]="ICONS.basket"></app-icon-btn>
+        @if (cartItemCount() > 0) {
+          <span class="cart-badge">{{ cartItemCount() }}</span>
+        }
+      </button>
+
+      @if (showCartDropdown()) {
+        <div class="cart-dropdown">
+          <div class="cart-dropdown-header">
+            <h3>{{ 'cart.title' | translate }}</h3>
+            <span class="cart-item-count"
+              >{{ cartItemCount() }} {{ 'cart.items' | translate }}</span
+            >
+          </div>
+
+          @if (cartItems().length === 0) {
+            <div class="cart-empty">
+              <img [src]="ICONS.basket" alt="Empty cart" class="empty-cart-icon" />
+              <p>{{ 'cart.empty' | translate }}</p>
+            </div>
+          } @else {
+            <div class="cart-items">
+              @for (item of cartItems(); track item.product.id) {
+                <div class="cart-item">
+                  <img
+                    [src]="item.product.imageUrl"
+                    [alt]="item.product.name"
+                    class="cart-item-image"
+                  />
+                  <div class="cart-item-details">
+                    <h4 class="cart-item-name">{{ item.product.name }}</h4>
+                    <div class="cart-item-price-row">
+                      <span class="cart-item-unit-price">
+                        {{
+                          currencyService.formatPrice(
+                            currencyService.getDiscountedPrice(item.product)
+                          )
+                        }}
+                      </span>
+                      @if (item.quantity > 1) {
+                        <span class="cart-item-line-total">
+                          =
+                          {{
+                            currencyService.formatPrice(
+                              currencyService.getDiscountedPrice(item.product) * item.quantity
+                            )
+                          }}
+                        </span>
+                      }
+                    </div>
+                    <div class="cart-item-quantity">
+                      <button
+                        class="quantity-btn"
+                        (click)="updateQuantity(item.product.id, item.quantity - 1)"
+                        [disabled]="item.quantity <= 1"
+                      >
+                        -
+                      </button>
+                      <span class="quantity-value">{{ item.quantity }}</span>
+                      <button
+                        class="quantity-btn"
+                        (click)="updateQuantity(item.product.id, item.quantity + 1)"
+                        [disabled]="item.quantity >= item.product.stockQuantity"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    class="remove-item-btn"
+                    (click)="removeFromCart(item.product.id)"
+                    [attr.aria-label]="'cart.remove' | translate"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+
+            <div class="cart-dropdown-footer">
+              <div class="cart-footer-actions">
+                <div class="cart-total">
+                  <span>{{ 'cart.total' | translate }}:</span>
+                  <strong>{{ currencyService.formatPrice(cartTotal()) }}</strong>
+                </div>
+                <button class="clear-cart-btn" (click)="clearCart()">
+                  {{ 'cart.clear_all' | translate }}
+                </button>
+              </div>
+              <button class="checkout-btn" routerLink="/purchase" (click)="goToCheckout()">
+                {{ 'cart.checkout' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <app-icon-btn
+      [iconImg]="currentTheme === 'dark' ? ICONS.sun : ICONS.moon"
+      (click)="toggleTheme()"
+      [attr.aria-label]="'theme.toggle' | translate"
+    >
+    </app-icon-btn>
+
+    <app-language-switcher></app-language-switcher>
+
+    <div class="mobile-menu-wrapper">
+      <button
+        class="hamburger-btn"
+        (click)="toggleMobileMenu()"
+        [attr.aria-label]="'header.menu' | translate"
+        [attr.aria-expanded]="showMobileMenu()"
+      >
+        <span class="hamburger-line" [class.open]="showMobileMenu()"></span>
+        <span class="hamburger-line" [class.open]="showMobileMenu()"></span>
+        <span class="hamburger-line" [class.open]="showMobileMenu()"></span>
+      </button>
+
+      @if (showMobileMenu()) {
+        <nav class="mobile-dropdown" role="navigation">
+          <a routerLink="/home" class="mobile-nav-item" (click)="closeMobileMenu()">
+            {{ 'header.home' | translate }}
+          </a>
+          <a routerLink="/forum" class="mobile-nav-item" (click)="closeMobileMenu()">
+            {{ 'header.forum' | translate }}
+          </a>
+          <a routerLink="/products" class="mobile-nav-item" (click)="closeMobileMenu()">
+            {{ 'header.products' | translate }}
+          </a>
+          @if (isAuthenticated) {
+            <div class="mobile-nav-divider"></div>
+            <a routerLink="/profile" class="mobile-nav-item" (click)="closeMobileMenu()">
+              {{ 'header.my_profile' | translate }}
+            </a>
+            <a routerLink="/purchase" class="mobile-nav-item" (click)="closeMobileMenu()">
+              {{ 'header.my_orders' | translate }}
+            </a>
+          }
+        </nav>
+      }
+    </div>
+  </div>
+</header>

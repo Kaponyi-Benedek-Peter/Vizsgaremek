@@ -1,0 +1,61 @@
+<div class="product-list-page">
+  <app-category-bar
+    [categories]="categories()"
+    [selectedCategories]="filters().categories || []"
+    (categorySelected)="handleCategorySelected($event)"
+    (clearCategories)="handleClearCategories()"
+  />
+
+  <section class="filter-section">
+    <app-product-filter
+      (filterChanged)="handleFilterChanged($event)"
+      (clearFilters)="handleClearFilters()"
+    />
+  </section>
+
+  <section class="products-section">
+    @if (products().length > 0) {
+      <div class="products-grid">
+        @for (product of products(); track product.id) {
+          <app-product-card
+            [product]="product"
+            (addToCart)="handleAddToCart($event)"
+            (viewDetails)="handleViewDetails($event)"
+          />
+        }
+      </div>
+
+      <app-product-pagination
+        [pagination]="pagination()"
+        (pageChange)="handlePageChange($event)"
+        (itemsPerPageChange)="handleItemsPerPageChange($event)"
+      />
+    } @else {
+      @if (allProducts().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">📦</div>
+          <h3 class="empty-title-no-products">{{ 'products.empty' | translate }}</h3>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3 class="empty-title">{{ 'product.no_products_found' | translate }}</h3>
+          <p class="empty-description">
+            {{ 'product.try_different_filters' | translate }}
+          </p>
+          <button class="clear-filters-button" (click)="handleClearFilters()">
+            {{ 'filter.clear_all' | translate }}
+          </button>
+        </div>
+      }
+    }
+  </section>
+
+  @if (showModal && selectedProduct) {
+    <app-product-detail-modal
+      [product]="selectedProduct"
+      (close)="handleModalClose()"
+      (addToCart)="handleModalAddToCart($event)"
+    />
+  }
+</div>
