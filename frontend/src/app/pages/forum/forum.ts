@@ -14,6 +14,8 @@ import {
   PostCategory,
   POST_CATEGORIES,
 } from '../../core/models/forum-blog.model';
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-forum',
@@ -30,6 +32,7 @@ export class Forum implements OnInit {
 
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
+  private http = inject(HttpClient);
 
   isAuthenticated = computed(() => this.authService.isAuthenticated());
 
@@ -51,9 +54,7 @@ export class Forum implements OnInit {
   ngOnInit(): void {
     this.isLoading.set(true);
     this.forumService.setFilters({ type: 'forum' });
-    setTimeout(() => {
-      this.isLoading.set(false);
-    }, 300);
+    setTimeout(() => this.isLoading.set(false), 300);
   }
 
   applySearch(): void {
