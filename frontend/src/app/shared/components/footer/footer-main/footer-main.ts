@@ -5,7 +5,7 @@ import { NewsletterForm } from '../newsletter-form/newsletter-form';
 @Component({
   selector: 'app-footer-main',
   standalone: true,
-  imports: [NewsletterForm, TranslateModule],
+  imports: [TranslateModule, NewsletterForm],
   templateUrl: './footer-main.html',
   styleUrl: './footer-main.css',
 })

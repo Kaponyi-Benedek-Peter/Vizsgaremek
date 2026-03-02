@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
@@ -28,7 +28,7 @@ interface SocialLink {
 @Component({
   selector: 'app-newsletter-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, NgFor, NgIf],
   templateUrl: './newsletter-form.html',
   styleUrl: './newsletter-form.css',
 })
@@ -85,6 +85,14 @@ export class NewsletterForm {
         }
       }, 3000);
     }
+  }
+
+  trackByLangCode(index: number, lang: any) {
+    return lang.code;
+  }
+
+  trackBySocialName(index: number, social: any) {
+    return social.name;
   }
 
   onSubmit(): void {
