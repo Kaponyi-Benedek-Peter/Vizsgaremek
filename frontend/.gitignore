@@ -43,3 +43,8 @@ __screenshots__/
 Thumbs.db
 
 .claude/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/

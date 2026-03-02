@@ -83,6 +83,9 @@ export const ICONS = {
   user: `${ASSETS}/assets/icons/userwhite.webp`,
   login: `${ASSETS}/assets/icons/loginwhite.webp`,
 
+  // Admin
+  admin: `${ASSETS}/assets/icons/adminwhite.webp`,
+
   // Shopping
   basket: `${ASSETS}/assets/icons/basketwhite.webp`,
   buy: `${ASSETS}/assets/icons/buywhite.webp`,
