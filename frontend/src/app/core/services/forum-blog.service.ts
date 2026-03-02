@@ -14,7 +14,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class ForumBlogService {
-  private postsSignal = signal<Post[]>(this.getMockPosts());
+  private postsSignal = signal<Post[]>([]);
   private filtersSignal = signal<PostFilters>({});
   private sortBySignal = signal<SortOption>('newest');
   private currentPageSignal = signal(1);
@@ -96,6 +96,11 @@ export class ForumBlogService {
     }
   }
 
+  setPosts(posts: Post[]): void {
+    this.postsSignal.set(posts);
+    this.currentPageSignal.set(1);
+  }
+
   private applyFilters(posts: Post[], filters: PostFilters): Post[] {
     return posts.filter((post) => {
       if (filters.category && post.category !== filters.category) return false;
@@ -143,158 +148,5 @@ export class ForumBlogService {
     const recencyScore = Math.max(0, 7 - daysSincePublished);
     const activityScore = post.views * 0.1 + post.likes * 2 + post.commentCount * 5;
     return recencyScore * 10 + activityScore;
-  }
-
-  private getMockPosts(): Post[] {
-    const mockAuthors: Author[] = [
-      { id: '1', name: 'Dr. Nagy Katalin', role: 'pharmacist', verified: true },
-      { id: '2', name: 'Roy patika', role: 'admin', verified: true },
-      { id: '3', name: 'Kovács Anna', role: 'user', verified: false },
-      { id: '4', name: 'Dr. Szabó Péter', role: 'pharmacist', verified: true },
-    ];
-
-    const blogPosts: BlogPost[] = [
-      {
-        id: 'blog-1',
-        type: 'blog',
-        title: 'Téli influenza megelőzés: amit tudnod kell',
-        slug: 'teli-influenza-megelozes',
-        excerpt:
-          'A téli hónapok beköszöntével különösen fontos az influenza elleni védelem. Ebben a cikkben megmutatjuk, hogyan erősítheted immunrendszeredet.',
-        content: 'A téli influenza minden évben milliók életét nehezíti meg világszerte.',
-        author: mockAuthors[0],
-        category: 'seasonal-health',
-        tags: ['influenza', 'megelőzés', 'tél', 'vitamin'],
-        imageUrl: `${environment.assetsURL}/assets/images/blog/influenza-prevention.jpg`,
-        status: 'published',
-        createdAt: new Date('2024-11-15'),
-        publishedAt: new Date('2024-11-15'),
-        views: 1234,
-        likes: 89,
-        commentCount: 12,
-        isFeatured: true,
-        isPinned: true,
-        readingTime: 5,
-      },
-      {
-        id: 'blog-2',
-        type: 'blog',
-        title: 'Allergiás tünetek enyhítése természetes módon',
-        slug: 'allergias-tunetek-termeszetes-enyhites',
-        excerpt:
-          'A tavaszi allergiaszezon kihívást jelenthet sokak számára. Ismerd meg a természetes módszereket!',
-        content: 'Az allergia egy túlérzékenységi reakció.',
-        author: mockAuthors[1],
-        category: 'natural-remedies',
-        tags: ['allergia', 'természetes gyógymód', 'tavasz'],
-        imageUrl: `${environment.assetsURL}/assets/images/blog/allergy-natural-remedies.jpg`,
-        status: 'published',
-        createdAt: new Date('2024-03-10'),
-        publishedAt: new Date('2024-03-10'),
-        views: 856,
-        likes: 67,
-        commentCount: 8,
-        isFeatured: true,
-        isPinned: false,
-        readingTime: 4,
-      },
-      {
-        id: 'blog-3',
-        type: 'blog',
-        title: 'Baba bőrápolás: alapvető tudnivalók',
-        slug: 'baba-borapolas-alapok',
-        excerpt:
-          'Az újszülött bőrápolása különleges figyelmet igényel. Tippek a legkisebbek bőrének védelmére.',
-        content: 'A babák bőre rendkívül érzékeny és vékony.',
-        author: mockAuthors[0],
-        category: 'baby-mother',
-        tags: ['baba', 'bőrápolás', 'újszülött'],
-        imageUrl: `${environment.assetsURL}/assets/images/blog/baby-skincare.jpg`,
-        status: 'published',
-        createdAt: new Date('2024-12-01'),
-        publishedAt: new Date('2024-12-01'),
-        views: 643,
-        likes: 54,
-        commentCount: 15,
-        isFeatured: false,
-        isPinned: false,
-        readingTime: 6,
-      },
-    ];
-
-    const forumPosts: ForumPost[] = [
-      {
-        id: 'forum-1',
-        type: 'forum',
-        title: 'Melyik fájdalomcsillapítót válasszam?',
-        slug: 'melyik-fajdalomcsillapito',
-        excerpt:
-          'Gyakran fejfájós vagyok, de nem tudom, hogy paracetamol vagy ibuprofen lenne-e jobb nekem.',
-        content: 'Sziasztok! Rendszeresen küzdök fejfájással...',
-        author: mockAuthors[2],
-        category: 'qa',
-        tags: ['fájdalomcsillapító', 'paracetamol', 'ibuprofen'],
-        status: 'published',
-        createdAt: new Date('2024-12-10'),
-        publishedAt: new Date('2024-12-10'),
-        views: 342,
-        likes: 23,
-        commentCount: 7,
-        isFeatured: false,
-        isPinned: false,
-        isQuestion: true,
-        hasAcceptedAnswer: true,
-        acceptedAnswerId: 'comment-1',
-        lastActivityAt: new Date('2024-12-12'),
-      },
-      {
-        id: 'forum-2',
-        type: 'forum',
-        title: 'D-vitamin pótlás télen - ki mennyit szed?',
-        slug: 'd-vitamin-potlas-telen',
-        excerpt: 'A téli hónapokban sokan küzdenek D-vitamin hiánnyal. Ki milyen adagot szed?',
-        content: 'Sziasztok! Télen mindig fáradtabb vagyok...',
-        author: mockAuthors[2],
-        category: 'healthy-lifestyle',
-        tags: ['D-vitamin', 'tél', 'vitamin pótlás'],
-        status: 'published',
-        createdAt: new Date('2024-11-20'),
-        publishedAt: new Date('2024-11-20'),
-        views: 567,
-        likes: 45,
-        commentCount: 18,
-        isFeatured: false,
-        isPinned: false,
-        isQuestion: true,
-        hasAcceptedAnswer: false,
-        lastActivityAt: new Date('2024-12-11'),
-      },
-      {
-        id: 'forum-3',
-        type: 'forum',
-        title: 'Probiotikumok antibiotikum kúra után',
-        slug: 'probiotikumok-antibiotikum-utan',
-        excerpt:
-          'Antibiotikum kúrát követően érdemes probiotikumot szedni? Mikor kezdjem és meddig?',
-        content: 'Nemrég fejeztem be egy 10 napos antibiotikum kúrát...',
-        author: mockAuthors[2],
-        category: 'medicines',
-        tags: ['probiotikum', 'antibiotikum', 'bélflóra'],
-        status: 'published',
-        createdAt: new Date('2024-12-05'),
-        publishedAt: new Date('2024-12-05'),
-        views: 421,
-        likes: 31,
-        commentCount: 9,
-        isFeatured: false,
-        isPinned: false,
-        isQuestion: true,
-        hasAcceptedAnswer: true,
-        acceptedAnswerId: 'comment-2',
-        lastActivityAt: new Date('2024-12-09'),
-      },
-    ];
-
-    return [...blogPosts, ...forumPosts];
   }
 }

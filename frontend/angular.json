@@ -50,9 +50,9 @@
           },
           "configurations": {
             "production": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true,
+              "optimization": true,
+              "sourceMap": false,
+              "extractLicenses": true,
               "baseHref": "/",
               "fileReplacements": [
                 {
