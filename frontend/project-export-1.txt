@@ -307,7 +307,7 @@ FILE: angular.json
               }
             ],
             "styles": ["src/styles/styles.css"],
-            "baseHref": "./"
+            "baseHref": "/"
           },
           "configurations": {
             "production": {
@@ -488,6 +488,7 @@ FILE: package.json
     "@angular/build": "^21.0.2",
     "@angular/cli": "^21.0.2",
     "@angular/compiler-cli": "^21.0.0",
+    "cypress": "^15.11.0",
     "jsdom": "^27.1.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
@@ -26098,8 +26099,8 @@ FILE: src\environments\environment.prod.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://192.168.0.95:90',
-  assetsURL: 'http://192.168.0.95:90',
+  baseURL: 'http://192.168.11.213:90',
+  assetsURL: '',
 };
 
 
@@ -26111,7 +26112,7 @@ FILE: src\environments\environment.ts
 export const environment = {
   production: false,
   baseURL: 'http://localhost:90',
-  assetsURL: 'http://localhost:90',
+  assetsURL: '',
 };
 
 

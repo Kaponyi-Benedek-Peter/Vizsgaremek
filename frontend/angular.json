@@ -46,7 +46,7 @@
               }
             ],
             "styles": ["src/styles/styles.css"],
-            "baseHref": "./"
+            "baseHref": "/"
           },
           "configurations": {
             "production": {
