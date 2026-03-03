@@ -107,11 +107,11 @@
           <div class="price-block">
             @if (hasDiscount) {
               <div class="price-with-discount">
-                <span class="original-price">{{ formattedPrice }}</span>
-                <span class="discounted-price">{{ formattedDiscountedPrice }}</span>
+                <span class="original-price">{{ formattedPrice() }}</span>
+                <span class="discounted-price">{{ formattedDiscountedPrice() }}</span>
               </div>
             } @else {
-              <span class="price">{{ formattedPrice }}</span>
+              <span class="price">{{ formattedPrice() }}</span>
             }
           </div>
 
@@ -176,7 +176,7 @@
 
             <div class="total-display">
               <span class="total-label">{{ 'product.total' | translate }}:</span>
-              <span class="total-value">{{ formattedTotalPrice }}</span>
+              <span class="total-value">{{ formattedTotalPrice() }}</span>
             </div>
 
             <button

@@ -14,9 +14,9 @@ import { TranslationService } from '../../core/services/translation.service';
   styleUrl: './password-reset-request.css',
 })
 export class PasswordResetRequest {
-  email = signal('');
-  newPassword = signal('');
-  confirmPassword = signal('');
+  email = '';
+  newPassword = '';
+  confirmPassword = '';
   showPassword = signal(false);
   isLoading = signal(false);
   errorMessage = signal('');
@@ -36,27 +36,27 @@ export class PasswordResetRequest {
   onSubmit(): void {
     this.errorMessage.set('');
 
-    if (!this.email()) {
+    if (!this.email) {
       this.errorMessage.set('auth.errors.email_required');
       return;
     }
 
-    if (!this.isValidEmail(this.email())) {
+    if (!this.isValidEmail(this.email)) {
       this.errorMessage.set('auth.errors.invalid_email');
       return;
     }
 
-    if (!this.newPassword()) {
+    if (!this.newPassword) {
       this.errorMessage.set('auth.errors.empty_fields');
       return;
     }
 
-    if (this.newPassword().length < 8) {
+    if (this.newPassword.length < 8) {
       this.errorMessage.set('auth.errors.password_too_short');
       return;
     }
 
-    if (this.newPassword() !== this.confirmPassword()) {
+    if (this.newPassword !== this.confirmPassword) {
       this.errorMessage.set('auth.errors.passwords_dont_match');
       return;
     }
@@ -64,7 +64,7 @@ export class PasswordResetRequest {
     this.isLoading.set(true);
 
     this.authService
-      .requestPasswordChange(this.email(), this.newPassword(), this.language())
+      .requestPasswordChange(this.email, this.newPassword, this.language())
       .subscribe({
         next: () => {
           this.isLoading.set(false);

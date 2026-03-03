@@ -753,6 +753,16 @@ export class App {
     private router: Router,
     private translationService: TranslationService,
   ) {}
+
+  ngOnInit(): void {
+    const chpass = new URLSearchParams(window.location.search).get('chpass');
+    if (chpass) {
+      this.router.navigate(['/password-reset'], {
+        queryParams: { chpass },
+        replaceUrl: true,
+      });
+    }
+  }
 }
 
 
@@ -9954,9 +9964,9 @@ import { TranslationService } from '../../core/services/translation.service';
   styleUrl: './password-reset-request.css',
 })
 export class PasswordResetRequest {
-  email = signal('');
-  newPassword = signal('');
-  confirmPassword = signal('');
+  email = '';
+  newPassword = '';
+  confirmPassword = '';
   showPassword = signal(false);
   isLoading = signal(false);
   errorMessage = signal('');
@@ -9976,27 +9986,27 @@ export class PasswordResetRequest {
   onSubmit(): void {
     this.errorMessage.set('');
 
-    if (!this.email()) {
+    if (!this.email) {
       this.errorMessage.set('auth.errors.email_required');
       return;
     }
 
-    if (!this.isValidEmail(this.email())) {
+    if (!this.isValidEmail(this.email)) {
       this.errorMessage.set('auth.errors.invalid_email');
       return;
     }
 
-    if (!this.newPassword()) {
+    if (!this.newPassword) {
       this.errorMessage.set('auth.errors.empty_fields');
       return;
     }
 
-    if (this.newPassword().length < 8) {
+    if (this.newPassword.length < 8) {
       this.errorMessage.set('auth.errors.password_too_short');
       return;
     }
 
-    if (this.newPassword() !== this.confirmPassword()) {
+    if (this.newPassword !== this.confirmPassword) {
       this.errorMessage.set('auth.errors.passwords_dont_match');
       return;
     }
@@ -10004,7 +10014,7 @@ export class PasswordResetRequest {
     this.isLoading.set(true);
 
     this.authService
-      .requestPasswordChange(this.email(), this.newPassword(), this.language())
+      .requestPasswordChange(this.email, this.newPassword, this.language())
       .subscribe({
         next: () => {
           this.isLoading.set(false);
@@ -10612,7 +10622,7 @@ FILE: src\app\pages\product-detail\product-detail.css
 .total-value {
   font-size: var(--text-2xl);
   font-weight: 800;
-  color: var(--color-primary);
+  color: var(--color-text-on-primary);
 }
 
 .add-to-cart-btn {
@@ -10924,11 +10934,11 @@ FILE: src\app\pages\product-detail\product-detail.html
           <div class="price-block">
             @if (hasDiscount) {
               <div class="price-with-discount">
-                <span class="original-price">{{ formattedPrice }}</span>
-                <span class="discounted-price">{{ formattedDiscountedPrice }}</span>
+                <span class="original-price">{{ formattedPrice() }}</span>
+                <span class="discounted-price">{{ formattedDiscountedPrice() }}</span>
               </div>
             } @else {
-              <span class="price">{{ formattedPrice }}</span>
+              <span class="price">{{ formattedPrice() }}</span>
             }
           </div>
 
@@ -10993,7 +11003,7 @@ FILE: src\app\pages\product-detail\product-detail.html
 
             <div class="total-display">
               <span class="total-label">{{ 'product.total' | translate }}:</span>
-              <span class="total-value">{{ formattedTotalPrice }}</span>
+              <span class="total-value">{{ formattedTotalPrice() }}</span>
             </div>
 
             <button
@@ -11146,24 +11156,24 @@ export class ProductDetail implements OnInit, OnDestroy {
     return this.product()?.hasDiscount ?? false;
   }
 
-  get formattedPrice(): string {
+  formattedPrice = computed(() => {
     const p = this.product();
     if (!p) return '';
     return this.currencyService.formatPrice(this.currencyService.getBasePrice(p));
-  }
+  });
 
-  get formattedDiscountedPrice(): string {
+  formattedDiscountedPrice = computed(() => {
     const p = this.product();
     if (!p) return '';
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(p));
-  }
+  });
 
-  get formattedTotalPrice(): string {
+  formattedTotalPrice = computed(() => {
     const p = this.product();
     if (!p) return '';
     const unitPrice = this.currencyService.getDiscountedPrice(p);
     return this.currencyService.formatPrice(unitPrice * this.quantity());
-  }
+  });
 
   get canAddToCart(): boolean {
     const p = this.product();
@@ -24390,34 +24400,33 @@ FILE: src\assets\i18n\de.json
       "alternative_flow": "Alternative"
     },
     "orders": {
-      "subtitle": "Bestellverlauf und Sendungsverfolgung",
+      "subtitle": "Bestellverlauf und Verfolgung",
       "empty_title": "Noch keine Bestellungen",
-      "empty_desc": "Sie haben noch keine Bestellungen aufgegeben. Stöbern Sie in unserem Produktkatalog!",
+      "empty_desc": "Sobald Sie eine Bestellung aufgeben, erscheint der Verlauf hier.",
       "browse_products": "Produkte durchsuchen"
     },
     "danger": {
-      "subtitle": "Irreversible Kontoaktionen",
-      "warning_banner": "Die Aktionen auf dieser Seite sind dauerhaft und können nicht rückgängig gemacht werden. Bitte gehen Sie mit Vorsicht vor.",
+      "subtitle": "Unwiderrufliche Kontoaktionen verwalten",
+      "warning_banner": "Achtung! Die folgenden Aktionen können nicht rückgängig gemacht werden.",
       "delete_account": "Konto löschen",
-      "delete_desc": "Ihr Konto und alle zugehörigen Daten – einschließlich Bestellverlauf, Bewertungen und persönliche Informationen – werden dauerhaft gelöscht. Eine Bestätigungs-E-Mail wird zur Verifizierung der Anfrage gesendet.",
-      "confirm_password": "Mit Passwort bestätigen",
-      "password_placeholder": "Aktuelles Passwort eingeben",
-      "password_hint": "Zur Bestätigung wird ein Link an Ihre E-Mail-Adresse gesendet. Das Konto wird erst nach dem Klicken auf den Link gelöscht.",
+      "delete_desc": "Durch das Löschen Ihres Kontos werden alle Ihre Daten und der Bestellverlauf dauerhaft entfernt. Zur Bestätigung wird eine E-Mail an Ihre registrierte Adresse gesendet.",
+      "confirm_password": "Passwort bestätigen",
+      "password_placeholder": "Passwort zur Bestätigung eingeben",
+      "password_hint": "Ein Löschlink wird an Ihre E-Mail-Adresse gesendet.",
       "delete_btn": "Kontolöschung beantragen",
       "email_sent_title": "Bestätigungs-E-Mail gesendet",
-      "email_sent_desc": "Prüfen Sie Ihren Posteingang und klicken Sie auf den Link, um die Kontolöschung zu bestätigen. Der Link ist 7 Tage gültig."
+      "email_sent_desc": "Wir haben eine Bestätigungs-E-Mail an Ihre registrierte Adresse gesendet. Klicken Sie auf den Link in der E-Mail, um die Löschung abzuschließen."
     },
     "errors": {
       "name_required": "Vor- und Nachname sind erforderlich.",
       "update_failed": "Profil konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
-      "current_password_required": "Bitte geben Sie Ihr aktuelles Passwort ein.",
       "new_password_too_short": "Das neue Passwort muss mindestens 6 Zeichen lang sein.",
-      "passwords_do_not_match": "Die neuen Passwörter stimmen nicht überein.",
-      "password_change_failed": "Passwortänderung fehlgeschlagen. Überprüfen Sie Ihr aktuelles Passwort und versuchen Sie es erneut.",
-      "delete_failed": "Löschanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+      "passwords_do_not_match": "Die beiden Passwörter stimmen nicht überein.",
+      "password_change_failed": "Anfrage zur Passwortänderung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "delete_failed": "Anfrage zur Kontolöschung fehlgeschlagen. Bitte überprüfen Sie Ihr Passwort."
     },
     "success": {
-      "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
+      "profile_updated": "Profil erfolgreich aktualisiert."
     }
   },
   "product": {
@@ -25004,6 +25013,35 @@ FILE: src\assets\i18n\en.json
       "email_sent_check": "Email sent! Check your inbox and click the confirmation link.",
       "forgot_password_desc_alt": "If you can't access your account, you can also reset your password by entering your email address.",
       "alternative_flow": "Alternative"
+    },
+    "danger": {
+      "subtitle": "Manage irreversible account actions",
+      "warning_banner": "Warning! The actions below cannot be undone.",
+      "delete_account": "Delete Account",
+      "delete_desc": "Deleting your account will permanently remove all your data and order history. A confirmation email will be sent to your registered email address.",
+      "confirm_password": "Confirm Password",
+      "password_placeholder": "Enter your password to confirm",
+      "password_hint": "A deletion link will be sent to your email address.",
+      "delete_btn": "Request Account Deletion",
+      "email_sent_title": "Confirmation Email Sent",
+      "email_sent_desc": "We have sent a confirmation email to your registered address. Click the link in the email to finalize the deletion."
+    },
+    "orders": {
+      "subtitle": "Order history and tracking",
+      "empty_title": "No orders yet",
+      "empty_desc": "Once you place an order, your history will appear here.",
+      "browse_products": "Browse Products"
+    },
+    "success": {
+      "profile_updated": "Profile updated successfully."
+    },
+    "errors": {
+      "name_required": "First name and last name are required.",
+      "update_failed": "Failed to update profile. Please try again.",
+      "new_password_too_short": "New password must be at least 6 characters long.",
+      "passwords_do_not_match": "The two passwords do not match.",
+      "password_change_failed": "Password change request failed. Please try again.",
+      "delete_failed": "Account deletion request failed. Please check your password."
     }
   },
   "orders": {
@@ -25620,6 +25658,35 @@ FILE: src\assets\i18n\hu.json
       "email_sent_check": "Email elküldve! Ellenőrizd a postaládádat, és kattints a megerősítő linkre.",
       "forgot_password_desc_alt": "Ha nincs hozzáférésed a fiókodhoz, a jelszót az email-cím megadásával is visszaállíthatod.",
       "alternative_flow": "Alternatív megoldás"
+    },
+    "danger": {
+      "subtitle": "Visszafordíthatatlan műveletek kezelése",
+      "warning_banner": "Figyelem! Az alábbi műveletek nem vonhatók vissza.",
+      "delete_account": "Fiók törlése",
+      "delete_desc": "A fiók törlésével minden adatod és rendelési előzményed véglegesen eltörlésre kerül. A törlés megerősítéséhez egy emailt küldünk a regisztrált email-címedre.",
+      "confirm_password": "Jelszó megerősítése",
+      "password_placeholder": "Adja meg jelszavát a megerősítéshez",
+      "password_hint": "A törlési link az email-fiókodba kerül kiküldésre.",
+      "delete_btn": "Fiók törlésének kérése",
+      "email_sent_title": "Megerősítő email elküldve",
+      "email_sent_desc": "Küldtünk egy megerősítő emailt a fiókodhoz tartozó email-címre. Kattints a levélben lévő linkre a törlés véglegesítéséhez."
+    },
+    "orders": {
+      "subtitle": "Rendelési előzmények és nyomon követés",
+      "empty_title": "Még nincs rendelésed",
+      "empty_desc": "Ha leadtál rendelést, itt fogod látni az előzményeidet.",
+      "browse_products": "Termékek böngészése"
+    },
+    "success": {
+      "profile_updated": "Profil sikeresen frissítve."
+    },
+    "errors": {
+      "name_required": "A keresztnév és a vezetéknév megadása kötelező.",
+      "update_failed": "A profil frissítése nem sikerült. Kérjük, próbálja újra.",
+      "new_password_too_short": "Az új jelszónak legalább 6 karakter hosszúnak kell lennie.",
+      "passwords_do_not_match": "A két jelszó nem egyezik meg.",
+      "password_change_failed": "A jelszóváltoztatási kérés sikertelen. Kérjük, próbálja újra.",
+      "delete_failed": "A fiók törlési kérés sikertelen. Kérjük, ellenőrizze jelszavát."
     }
   },
   "orders": {
@@ -25652,7 +25719,6 @@ FILE: src\assets\i18n\hu.json
   "success": {
     "profile_updated": "Profilja sikeresen frissítve."
   },
-
   "product": {
     "in_stock": "Raktáron",
     "sku": "Cikkszám",

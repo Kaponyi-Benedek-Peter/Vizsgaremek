@@ -54,24 +54,24 @@ export class ProductDetail implements OnInit, OnDestroy {
     return this.product()?.hasDiscount ?? false;
   }
 
-  get formattedPrice(): string {
+  formattedPrice = computed(() => {
     const p = this.product();
     if (!p) return '';
     return this.currencyService.formatPrice(this.currencyService.getBasePrice(p));
-  }
+  });
 
-  get formattedDiscountedPrice(): string {
+  formattedDiscountedPrice = computed(() => {
     const p = this.product();
     if (!p) return '';
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(p));
-  }
+  });
 
-  get formattedTotalPrice(): string {
+  formattedTotalPrice = computed(() => {
     const p = this.product();
     if (!p) return '';
     const unitPrice = this.currencyService.getDiscountedPrice(p);
     return this.currencyService.formatPrice(unitPrice * this.quantity());
-  }
+  });
 
   get canAddToCart(): boolean {
     const p = this.product();
