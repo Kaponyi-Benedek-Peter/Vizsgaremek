@@ -18,7 +18,7 @@ namespace Servo.service
             string accstate = model.shared.get_account_state_by_id(controller_user_id);
             string model_sesstoken = model.shared.get_token_by_id(controller_user_id);
 
-            if (model_sesstoken ==  controller_sesstoken&& (accstate == "verified" || accstate == "admin"))
+            if (model_sesstoken ==  controller_sesstoken&& (accstate == "verified" || accstate == "admin" || accstate == "superadmin"))
             {
                 // bejelentkeztetés oké
 

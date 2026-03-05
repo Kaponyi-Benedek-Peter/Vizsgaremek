@@ -90,7 +90,7 @@ namespace Servo.service
                 string model_password = model.shared.get_passhash_by_id(controller_id);
                 string accstate = model.shared.get_account_state_by_id(controller_id);
                 service.shared.log($"Debug 1: {accstate} --service.chpass_request.process_chpas_request ");
-                if (accstate == "verified")
+                if (accstate == "verified" || accstate == "admin" || accstate == "superadmin")
                 {
 
                     int result1 = model.shared.delete_confirmations_by_user_id_and_type(controller_id, "password_change");

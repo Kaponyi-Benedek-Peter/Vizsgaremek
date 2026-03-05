@@ -71,7 +71,7 @@ namespace Servo.service
 
                 try
                 {
-                    if (accstate == "verified" || accstate == "admin")
+                    if (accstate == "verified" || accstate == "admin" || accstate == "superadmin")
                     {
                         string controller_email = "";
                         try

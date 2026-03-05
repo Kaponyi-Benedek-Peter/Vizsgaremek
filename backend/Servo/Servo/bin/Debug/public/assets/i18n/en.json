@@ -281,6 +281,35 @@
       "email_sent_check": "Email sent! Check your inbox and click the confirmation link.",
       "forgot_password_desc_alt": "If you can't access your account, you can also reset your password by entering your email address.",
       "alternative_flow": "Alternative"
+    },
+    "danger": {
+      "subtitle": "Manage irreversible account actions",
+      "warning_banner": "Warning! The actions below cannot be undone.",
+      "delete_account": "Delete Account",
+      "delete_desc": "Deleting your account will permanently remove all your data and order history. A confirmation email will be sent to your registered email address.",
+      "confirm_password": "Confirm Password",
+      "password_placeholder": "Enter your password to confirm",
+      "password_hint": "A deletion link will be sent to your email address.",
+      "delete_btn": "Request Account Deletion",
+      "email_sent_title": "Confirmation Email Sent",
+      "email_sent_desc": "We have sent a confirmation email to your registered address. Click the link in the email to finalize the deletion."
+    },
+    "orders": {
+      "subtitle": "Order history and tracking",
+      "empty_title": "No orders yet",
+      "empty_desc": "Once you place an order, your history will appear here.",
+      "browse_products": "Browse Products"
+    },
+    "success": {
+      "profile_updated": "Profile updated successfully."
+    },
+    "errors": {
+      "name_required": "First name and last name are required.",
+      "update_failed": "Failed to update profile. Please try again.",
+      "new_password_too_short": "New password must be at least 6 characters long.",
+      "passwords_do_not_match": "The two passwords do not match.",
+      "password_change_failed": "Password change request failed. Please try again.",
+      "delete_failed": "Account deletion request failed. Please check your password."
     }
   },
   "orders": {

@@ -281,6 +281,35 @@
       "email_sent_check": "Email elküldve! Ellenőrizd a postaládádat, és kattints a megerősítő linkre.",
       "forgot_password_desc_alt": "Ha nincs hozzáférésed a fiókodhoz, a jelszót az email-cím megadásával is visszaállíthatod.",
       "alternative_flow": "Alternatív megoldás"
+    },
+    "danger": {
+      "subtitle": "Visszafordíthatatlan műveletek kezelése",
+      "warning_banner": "Figyelem! Az alábbi műveletek nem vonhatók vissza.",
+      "delete_account": "Fiók törlése",
+      "delete_desc": "A fiók törlésével minden adatod és rendelési előzményed véglegesen eltörlésre kerül. A törlés megerősítéséhez egy emailt küldünk a regisztrált email-címedre.",
+      "confirm_password": "Jelszó megerősítése",
+      "password_placeholder": "Adja meg jelszavát a megerősítéshez",
+      "password_hint": "A törlési link az email-fiókodba kerül kiküldésre.",
+      "delete_btn": "Fiók törlésének kérése",
+      "email_sent_title": "Megerősítő email elküldve",
+      "email_sent_desc": "Küldtünk egy megerősítő emailt a fiókodhoz tartozó email-címre. Kattints a levélben lévő linkre a törlés véglegesítéséhez."
+    },
+    "orders": {
+      "subtitle": "Rendelési előzmények és nyomon követés",
+      "empty_title": "Még nincs rendelésed",
+      "empty_desc": "Ha leadtál rendelést, itt fogod látni az előzményeidet.",
+      "browse_products": "Termékek böngészése"
+    },
+    "success": {
+      "profile_updated": "Profil sikeresen frissítve."
+    },
+    "errors": {
+      "name_required": "A keresztnév és a vezetéknév megadása kötelező.",
+      "update_failed": "A profil frissítése nem sikerült. Kérjük, próbálja újra.",
+      "new_password_too_short": "Az új jelszónak legalább 6 karakter hosszúnak kell lennie.",
+      "passwords_do_not_match": "A két jelszó nem egyezik meg.",
+      "password_change_failed": "A jelszóváltoztatási kérés sikertelen. Kérjük, próbálja újra.",
+      "delete_failed": "A fiók törlési kérés sikertelen. Kérjük, ellenőrizze jelszavát."
     }
   },
   "orders": {
@@ -313,7 +342,6 @@
   "success": {
     "profile_updated": "Profilja sikeresen frissítve."
   },
-
   "product": {
     "in_stock": "Raktáron",
     "sku": "Cikkszám",
