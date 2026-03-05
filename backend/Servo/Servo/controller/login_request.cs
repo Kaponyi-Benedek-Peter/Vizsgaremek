@@ -40,7 +40,7 @@ namespace Servo.controller
                 JObject jsonObj = JObject.Parse(lenyeg);
                 email = service.shared.b64dec(jsonObj["email"].ToString());
                 jelszo = service.shared.b64dec(jsonObj["password"].ToString());
-                language = service.shared.b64dec(jsonObj["password"].ToString());
+                language = service.shared.b64dec(jsonObj["language"].ToString());
                 }
                 catch
                 {

@@ -117,8 +117,8 @@ namespace Servo.service
 
 
             string emailhtml = File.ReadAllText($"templates/login_{language.ToUpper()}.html"
-                .Replace("{LOGIN_URL}", $"{service.shared.current_url}login-promise?login_promise=" + service.shared.b64enc(id) + ";" + service.shared.b64enc(confirmation_token))
-            );
+             ).Replace("{LOGIN_URL}", $"{service.shared.current_url}login-promise?login_promise=" + service.shared.b64enc(id) + ";" + service.shared.b64enc(confirmation_token))
+           ;
 
 
             service.shared.send_mail(hova, "Secure Login", emailhtml , "login");

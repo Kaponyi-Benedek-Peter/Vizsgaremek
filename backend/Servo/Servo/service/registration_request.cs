@@ -85,11 +85,11 @@ namespace Servo.service
 
 
 
-            string emailhtml = File.ReadAllText($"templates/registration_{language}.html"
+            string emailhtml = File.ReadAllText($"templates/registration_{language}.html")
                 .Replace("{FIRST_NAME}", name.firstname)
                 .Replace("{LAST_NAME}", name.lastname)
                 .Replace("{CONFIRM_URL}", $"{service.shared.current_url}registration-promise?activate={service.shared.b64enc(id)};{service.shared.b64enc(session_token)}")
-            );
+            ;
 
             service.shared.send_mail(email, "Confirm your registration", emailhtml, "registration");
 

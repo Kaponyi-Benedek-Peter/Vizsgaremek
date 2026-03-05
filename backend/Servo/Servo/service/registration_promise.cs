@@ -58,7 +58,7 @@ namespace Servo.service
 
                         return 401;
                     }
-                    else if (accstate == "verified")
+                    else if (accstate == "verified" || accstate == "admin" || accstate == "superadmin")
                     {
                         service.shared.log($"Debug 4: {accstate} --service.registration_promise.process_registration_promise");
                         return 409;
