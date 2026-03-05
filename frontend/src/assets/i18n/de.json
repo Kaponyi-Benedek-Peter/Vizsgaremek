@@ -283,34 +283,33 @@
       "alternative_flow": "Alternative"
     },
     "orders": {
-      "subtitle": "Bestellverlauf und Sendungsverfolgung",
+      "subtitle": "Bestellverlauf und Verfolgung",
       "empty_title": "Noch keine Bestellungen",
-      "empty_desc": "Sie haben noch keine Bestellungen aufgegeben. Stöbern Sie in unserem Produktkatalog!",
+      "empty_desc": "Sobald Sie eine Bestellung aufgeben, erscheint der Verlauf hier.",
       "browse_products": "Produkte durchsuchen"
     },
     "danger": {
-      "subtitle": "Irreversible Kontoaktionen",
-      "warning_banner": "Die Aktionen auf dieser Seite sind dauerhaft und können nicht rückgängig gemacht werden. Bitte gehen Sie mit Vorsicht vor.",
+      "subtitle": "Unwiderrufliche Kontoaktionen verwalten",
+      "warning_banner": "Achtung! Die folgenden Aktionen können nicht rückgängig gemacht werden.",
       "delete_account": "Konto löschen",
-      "delete_desc": "Ihr Konto und alle zugehörigen Daten – einschließlich Bestellverlauf, Bewertungen und persönliche Informationen – werden dauerhaft gelöscht. Eine Bestätigungs-E-Mail wird zur Verifizierung der Anfrage gesendet.",
-      "confirm_password": "Mit Passwort bestätigen",
-      "password_placeholder": "Aktuelles Passwort eingeben",
-      "password_hint": "Zur Bestätigung wird ein Link an Ihre E-Mail-Adresse gesendet. Das Konto wird erst nach dem Klicken auf den Link gelöscht.",
+      "delete_desc": "Durch das Löschen Ihres Kontos werden alle Ihre Daten und der Bestellverlauf dauerhaft entfernt. Zur Bestätigung wird eine E-Mail an Ihre registrierte Adresse gesendet.",
+      "confirm_password": "Passwort bestätigen",
+      "password_placeholder": "Passwort zur Bestätigung eingeben",
+      "password_hint": "Ein Löschlink wird an Ihre E-Mail-Adresse gesendet.",
       "delete_btn": "Kontolöschung beantragen",
       "email_sent_title": "Bestätigungs-E-Mail gesendet",
-      "email_sent_desc": "Prüfen Sie Ihren Posteingang und klicken Sie auf den Link, um die Kontolöschung zu bestätigen. Der Link ist 7 Tage gültig."
+      "email_sent_desc": "Wir haben eine Bestätigungs-E-Mail an Ihre registrierte Adresse gesendet. Klicken Sie auf den Link in der E-Mail, um die Löschung abzuschließen."
     },
     "errors": {
       "name_required": "Vor- und Nachname sind erforderlich.",
       "update_failed": "Profil konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
-      "current_password_required": "Bitte geben Sie Ihr aktuelles Passwort ein.",
       "new_password_too_short": "Das neue Passwort muss mindestens 6 Zeichen lang sein.",
-      "passwords_do_not_match": "Die neuen Passwörter stimmen nicht überein.",
-      "password_change_failed": "Passwortänderung fehlgeschlagen. Überprüfen Sie Ihr aktuelles Passwort und versuchen Sie es erneut.",
-      "delete_failed": "Löschanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+      "passwords_do_not_match": "Die beiden Passwörter stimmen nicht überein.",
+      "password_change_failed": "Anfrage zur Passwortänderung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "delete_failed": "Anfrage zur Kontolöschung fehlgeschlagen. Bitte überprüfen Sie Ihr Passwort."
     },
     "success": {
-      "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
+      "profile_updated": "Profil erfolgreich aktualisiert."
     }
   },
   "product": {

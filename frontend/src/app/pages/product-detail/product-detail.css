@@ -577,7 +577,7 @@
 .total-value {
   font-size: var(--text-2xl);
   font-weight: 800;
-  color: var(--color-primary);
+  color: var(--color-text-on-primary);
 }
 
 .add-to-cart-btn {

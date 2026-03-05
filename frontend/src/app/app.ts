@@ -18,4 +18,14 @@ export class App {
     private router: Router,
     private translationService: TranslationService,
   ) {}
+
+  ngOnInit(): void {
+    const chpass = new URLSearchParams(window.location.search).get('chpass');
+    if (chpass) {
+      this.router.navigate(['/password-reset'], {
+        queryParams: { chpass },
+        replaceUrl: true,
+      });
+    }
+  }
 }
