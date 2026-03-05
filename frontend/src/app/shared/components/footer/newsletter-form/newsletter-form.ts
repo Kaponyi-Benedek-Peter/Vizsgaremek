@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
@@ -28,7 +28,7 @@ interface SocialLink {
 @Component({
   selector: 'app-newsletter-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, NgFor, NgIf],
   templateUrl: './newsletter-form.html',
   styleUrl: './newsletter-form.css',
 })
@@ -37,6 +37,12 @@ export class NewsletterForm {
   private toastService = inject(ToastService);
   private translationService = inject(TranslationService);
   private readonly API_URL = environment.baseURL;
+  private toBase64(str: string): string {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    bytes.forEach((b) => (binary += String.fromCharCode(b)));
+    return btoa(binary);
+  }
 
   ICONS = ICONS;
   IMAGES = IMAGES;
@@ -46,15 +52,15 @@ export class NewsletterForm {
   isLangDropdownOpen = false;
   activeSocialTooltip: string | null = null;
 
-  // Az aktuális app-nyelv mint alapértelmezett hírlevél-nyelv
+  // current language as default language
   selectedLang = toSignal(this.translationService.currentLang$, {
     initialValue: this.translationService.getCurrentLanguage(),
   });
 
-  // Saját writeable signal a kiválasztott hírlevél-nyelvhez
+  // writeable signal for the newsletter language
   newsletterLang: SupportedLanguage = this.translationService.getCurrentLanguage();
 
-  // Elérhető nyelvek (a visuals.ts LANGUAGE_OPTIONS-ből)
+  // languages from visuals.ts
   readonly languages = LANGUAGE_OPTIONS;
 
   socialLinks: SocialLink[] = [
@@ -87,13 +93,21 @@ export class NewsletterForm {
     }
   }
 
+  trackByLangCode(index: number, lang: any) {
+    return lang.code;
+  }
+
+  trackBySocialName(index: number, social: any) {
+    return social.name;
+  }
+
   onSubmit(): void {
     if (!this.email || this.isSubmitting) return;
 
     this.isSubmitting = true;
 
     const payload = {
-      email: btoa(unescape(encodeURIComponent(this.email))),
+      email: this.toBase64(this.email),
       news_level: btoa('1'),
       language: LANG_TO_BACKEND[this.newsletterLang],
     };

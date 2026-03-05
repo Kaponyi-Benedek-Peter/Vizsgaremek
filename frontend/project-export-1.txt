@@ -307,26 +307,18 @@ FILE: angular.json
               }
             ],
             "styles": ["src/styles/styles.css"],
-            "baseHref": "./"
+            "baseHref": "/"
           },
           "configurations": {
             "production": {
+              "optimization": true,
+              "sourceMap": false,
+              "extractLicenses": true,
+              "baseHref": "/",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
-                }
-              ],
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "1MB",
-                  "maximumError": "2MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "32kB",
-                  "maximumError": "64kB"
                 }
               ],
               "outputHashing": "all"
@@ -488,6 +480,7 @@ FILE: package.json
     "@angular/build": "^21.0.2",
     "@angular/cli": "^21.0.2",
     "@angular/compiler-cli": "^21.0.0",
+    "cypress": "^15.11.0",
     "jsdom": "^27.1.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
@@ -852,6 +845,9 @@ export const ICONS = {
   // User & Auth
   user: `${ASSETS}/assets/icons/userwhite.webp`,
   login: `${ASSETS}/assets/icons/loginwhite.webp`,
+
+  // Admin
+  admin: `${ASSETS}/assets/icons/adminwhite.webp`,
 
   // Shopping
   basket: `${ASSETS}/assets/icons/basketwhite.webp`,
@@ -2978,7 +2974,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class ForumBlogService {
-  private postsSignal = signal<Post[]>(this.getMockPosts());
+  private postsSignal = signal<Post[]>([]);
   private filtersSignal = signal<PostFilters>({});
   private sortBySignal = signal<SortOption>('newest');
   private currentPageSignal = signal(1);
@@ -3060,6 +3056,11 @@ export class ForumBlogService {
     }
   }
 
+  setPosts(posts: Post[]): void {
+    this.postsSignal.set(posts);
+    this.currentPageSignal.set(1);
+  }
+
   private applyFilters(posts: Post[], filters: PostFilters): Post[] {
     return posts.filter((post) => {
       if (filters.category && post.category !== filters.category) return false;
@@ -3107,159 +3108,6 @@ export class ForumBlogService {
     const recencyScore = Math.max(0, 7 - daysSincePublished);
     const activityScore = post.views * 0.1 + post.likes * 2 + post.commentCount * 5;
     return recencyScore * 10 + activityScore;
-  }
-
-  private getMockPosts(): Post[] {
-    const mockAuthors: Author[] = [
-      { id: '1', name: 'Dr. Nagy Katalin', role: 'pharmacist', verified: true },
-      { id: '2', name: 'Roy patika', role: 'admin', verified: true },
-      { id: '3', name: 'Kovács Anna', role: 'user', verified: false },
-      { id: '4', name: 'Dr. Szabó Péter', role: 'pharmacist', verified: true },
-    ];
-
-    const blogPosts: BlogPost[] = [
-      {
-        id: 'blog-1',
-        type: 'blog',
-        title: 'Téli influenza megelőzés: amit tudnod kell',
-        slug: 'teli-influenza-megelozes',
-        excerpt:
-          'A téli hónapok beköszöntével különösen fontos az influenza elleni védelem. Ebben a cikkben megmutatjuk, hogyan erősítheted immunrendszeredet.',
-        content: 'A téli influenza minden évben milliók életét nehezíti meg világszerte.',
-        author: mockAuthors[0],
-        category: 'seasonal-health',
-        tags: ['influenza', 'megelőzés', 'tél', 'vitamin'],
-        imageUrl: `${environment.assetsURL}/assets/images/blog/influenza-prevention.jpg`,
-        status: 'published',
-        createdAt: new Date('2024-11-15'),
-        publishedAt: new Date('2024-11-15'),
-        views: 1234,
-        likes: 89,
-        commentCount: 12,
-        isFeatured: true,
-        isPinned: true,
-        readingTime: 5,
-      },
-      {
-        id: 'blog-2',
-        type: 'blog',
-        title: 'Allergiás tünetek enyhítése természetes módon',
-        slug: 'allergias-tunetek-termeszetes-enyhites',
-        excerpt:
-          'A tavaszi allergiaszezon kihívást jelenthet sokak számára. Ismerd meg a természetes módszereket!',
-        content: 'Az allergia egy túlérzékenységi reakció.',
-        author: mockAuthors[1],
-        category: 'natural-remedies',
-        tags: ['allergia', 'természetes gyógymód', 'tavasz'],
-        imageUrl: `${environment.assetsURL}/assets/images/blog/allergy-natural-remedies.jpg`,
-        status: 'published',
-        createdAt: new Date('2024-03-10'),
-        publishedAt: new Date('2024-03-10'),
-        views: 856,
-        likes: 67,
-        commentCount: 8,
-        isFeatured: true,
-        isPinned: false,
-        readingTime: 4,
-      },
-      {
-        id: 'blog-3',
-        type: 'blog',
-        title: 'Baba bőrápolás: alapvető tudnivalók',
-        slug: 'baba-borapolas-alapok',
-        excerpt:
-          'Az újszülött bőrápolása különleges figyelmet igényel. Tippek a legkisebbek bőrének védelmére.',
-        content: 'A babák bőre rendkívül érzékeny és vékony.',
-        author: mockAuthors[0],
-        category: 'baby-mother',
-        tags: ['baba', 'bőrápolás', 'újszülött'],
-        imageUrl: `${environment.assetsURL}/assets/images/blog/baby-skincare.jpg`,
-        status: 'published',
-        createdAt: new Date('2024-12-01'),
-        publishedAt: new Date('2024-12-01'),
-        views: 643,
-        likes: 54,
-        commentCount: 15,
-        isFeatured: false,
-        isPinned: false,
-        readingTime: 6,
-      },
-    ];
-
-    const forumPosts: ForumPost[] = [
-      {
-        id: 'forum-1',
-        type: 'forum',
-        title: 'Melyik fájdalomcsillapítót válasszam?',
-        slug: 'melyik-fajdalomcsillapito',
-        excerpt:
-          'Gyakran fejfájós vagyok, de nem tudom, hogy paracetamol vagy ibuprofen lenne-e jobb nekem.',
-        content: 'Sziasztok! Rendszeresen küzdök fejfájással...',
-        author: mockAuthors[2],
-        category: 'qa',
-        tags: ['fájdalomcsillapító', 'paracetamol', 'ibuprofen'],
-        status: 'published',
-        createdAt: new Date('2024-12-10'),
-        publishedAt: new Date('2024-12-10'),
-        views: 342,
-        likes: 23,
-        commentCount: 7,
-        isFeatured: false,
-        isPinned: false,
-        isQuestion: true,
-        hasAcceptedAnswer: true,
-        acceptedAnswerId: 'comment-1',
-        lastActivityAt: new Date('2024-12-12'),
-      },
-      {
-        id: 'forum-2',
-        type: 'forum',
-        title: 'D-vitamin pótlás télen - ki mennyit szed?',
-        slug: 'd-vitamin-potlas-telen',
-        excerpt: 'A téli hónapokban sokan küzdenek D-vitamin hiánnyal. Ki milyen adagot szed?',
-        content: 'Sziasztok! Télen mindig fáradtabb vagyok...',
-        author: mockAuthors[2],
-        category: 'healthy-lifestyle',
-        tags: ['D-vitamin', 'tél', 'vitamin pótlás'],
-        status: 'published',
-        createdAt: new Date('2024-11-20'),
-        publishedAt: new Date('2024-11-20'),
-        views: 567,
-        likes: 45,
-        commentCount: 18,
-        isFeatured: false,
-        isPinned: false,
-        isQuestion: true,
-        hasAcceptedAnswer: false,
-        lastActivityAt: new Date('2024-12-11'),
-      },
-      {
-        id: 'forum-3',
-        type: 'forum',
-        title: 'Probiotikumok antibiotikum kúra után',
-        slug: 'probiotikumok-antibiotikum-utan',
-        excerpt:
-          'Antibiotikum kúrát követően érdemes probiotikumot szedni? Mikor kezdjem és meddig?',
-        content: 'Nemrég fejeztem be egy 10 napos antibiotikum kúrát...',
-        author: mockAuthors[2],
-        category: 'medicines',
-        tags: ['probiotikum', 'antibiotikum', 'bélflóra'],
-        status: 'published',
-        createdAt: new Date('2024-12-05'),
-        publishedAt: new Date('2024-12-05'),
-        views: 421,
-        likes: 31,
-        commentCount: 9,
-        isFeatured: false,
-        isPinned: false,
-        isQuestion: true,
-        hasAcceptedAnswer: true,
-        acceptedAnswerId: 'comment-2',
-        lastActivityAt: new Date('2024-12-09'),
-      },
-    ];
-
-    return [...blogPosts, ...forumPosts];
   }
 }
 
@@ -6383,6 +6231,8 @@ import {
   PostCategory,
   POST_CATEGORIES,
 } from '../../core/models/forum-blog.model';
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-forum',
@@ -6399,6 +6249,7 @@ export class Forum implements OnInit {
 
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
+  private http = inject(HttpClient);
 
   isAuthenticated = computed(() => this.authService.isAuthenticated());
 
@@ -6420,9 +6271,7 @@ export class Forum implements OnInit {
   ngOnInit(): void {
     this.isLoading.set(true);
     this.forumService.setFilters({ type: 'forum' });
-    setTimeout(() => {
-      this.isLoading.set(false);
-    }, 300);
+    setTimeout(() => this.isLoading.set(false), 300);
   }
 
   applySearch(): void {
@@ -17418,7 +17267,7 @@ import { NewsletterForm } from '../newsletter-form/newsletter-form';
 @Component({
   selector: 'app-footer-main',
   standalone: true,
-  imports: [NewsletterForm, TranslateModule],
+  imports: [TranslateModule, NewsletterForm],
   templateUrl: './footer-main.html',
   styleUrl: './footer-main.css',
 })
@@ -17776,54 +17625,48 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.html
 
 <div class="newsletter">
   <div class="social-icons">
-    @for (social of socialLinks; track social.name) {
-      <div class="social-icon-wrapper">
-        @if (social.url) {
-          <a [href]="social.url" target="_blank" [attr.aria-label]="social.name">
-            <img [src]="social.icon" [alt]="social.name" />
-          </a>
-        } @else {
-          <button
-            class="social-icon-btn"
-            (click)="toggleSocialTooltip(social.name)"
-            [attr.aria-label]="social.name"
-          >
-            <img [src]="social.icon" [alt]="social.name" />
-          </button>
-          @if (activeSocialTooltip === social.name) {
-            <div class="social-tooltip">
-              {{ 'footer.no_social_link' | translate }}
-            </div>
-          }
-        }
-      </div>
-    }
+    <div class="social-icon-wrapper" *ngFor="let social of socialLinks; trackBy: trackBySocialName">
+      <a *ngIf="social.url" [href]="social.url" target="_blank" [attr.aria-label]="social.name">
+        <img [src]="social.icon" [alt]="social.name" />
+      </a>
+
+      <ng-container *ngIf="!social.url">
+        <button
+          class="social-icon-btn"
+          (click)="toggleSocialTooltip(social.name)"
+          [attr.aria-label]="social.name"
+        >
+          <img [src]="social.icon" [alt]="social.name" />
+        </button>
+
+        <div class="social-tooltip" *ngIf="activeSocialTooltip === social.name">
+          {{ 'footer.no_social_link' | translate }}
+        </div>
+      </ng-container>
+    </div>
   </div>
 
   <p>{{ 'footer.newsletter' | translate }}</p>
 
   <div class="newsletter-lang-selector">
-    <button class="newsletter-lang-btn" ...>
+    <button class="newsletter-lang-btn">
       <img [src]="currentLangOption.flag" [alt]="currentLangOption.name" class="newsletter-flag" />
       <span class="newsletter-lang-name">{{ currentLangOption.name }}</span>
       <span class="newsletter-lang-arrow" [class.open]="isLangDropdownOpen">▾</span>
     </button>
 
-    @if (isLangDropdownOpen) {
-      <div class="newsletter-lang-dropdown">
-        @for (lang of languages; track lang.code) {
-          <button
-            class="newsletter-lang-item"
-            type="button"
-            [class.active]="newsletterLang === lang.code"
-            (click)="selectNewsletterLang(lang.code)"
-          >
-            <img [src]="lang.flag" [alt]="lang.name" class="newsletter-flag" />
-            <span>{{ lang.name }}</span>
-          </button>
-        }
-      </div>
-    }
+    <div class="newsletter-lang-dropdown" *ngIf="isLangDropdownOpen">
+      <button
+        class="newsletter-lang-item"
+        type="button"
+        *ngFor="let lang of languages; trackBy: trackByLangCode"
+        [class.active]="newsletterLang === lang.code"
+        (click)="selectNewsletterLang(lang.code)"
+      >
+        <img [src]="lang.flag" [alt]="lang.name" class="newsletter-flag" />
+        <span>{{ lang.name }}</span>
+      </button>
+    </div>
   </div>
 
   <form (ngSubmit)="onSubmit()">
@@ -17847,7 +17690,7 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.ts
 ================================================================================
 
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
@@ -17876,7 +17719,7 @@ interface SocialLink {
 @Component({
   selector: 'app-newsletter-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, NgFor, NgIf],
   templateUrl: './newsletter-form.html',
   styleUrl: './newsletter-form.css',
 })
@@ -17885,6 +17728,12 @@ export class NewsletterForm {
   private toastService = inject(ToastService);
   private translationService = inject(TranslationService);
   private readonly API_URL = environment.baseURL;
+  private toBase64(str: string): string {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    bytes.forEach((b) => (binary += String.fromCharCode(b)));
+    return btoa(binary);
+  }
 
   ICONS = ICONS;
   IMAGES = IMAGES;
@@ -17894,15 +17743,15 @@ export class NewsletterForm {
   isLangDropdownOpen = false;
   activeSocialTooltip: string | null = null;
 
-  // Az aktuális app-nyelv mint alapértelmezett hírlevél-nyelv
+  // current language as default language
   selectedLang = toSignal(this.translationService.currentLang$, {
     initialValue: this.translationService.getCurrentLanguage(),
   });
 
-  // Saját writeable signal a kiválasztott hírlevél-nyelvhez
+  // writeable signal for the newsletter language
   newsletterLang: SupportedLanguage = this.translationService.getCurrentLanguage();
 
-  // Elérhető nyelvek (a visuals.ts LANGUAGE_OPTIONS-ből)
+  // languages from visuals.ts
   readonly languages = LANGUAGE_OPTIONS;
 
   socialLinks: SocialLink[] = [
@@ -17935,13 +17784,21 @@ export class NewsletterForm {
     }
   }
 
+  trackByLangCode(index: number, lang: any) {
+    return lang.code;
+  }
+
+  trackBySocialName(index: number, social: any) {
+    return social.name;
+  }
+
   onSubmit(): void {
     if (!this.email || this.isSubmitting) return;
 
     this.isSubmitting = true;
 
     const payload = {
-      email: btoa(unescape(encodeURIComponent(this.email))),
+      email: this.toBase64(this.email),
       news_level: btoa('1'),
       language: LANG_TO_BACKEND[this.newsletterLang],
     };
@@ -18636,6 +18493,7 @@ FILE: src\app\shared\components\header\header.html
               class="user-dropdown-item"
               (click)="closeUserMenu()"
             >
+              <img [src]="ICONS.admin" alt="orders" class="dropdown-icon" />
               {{ 'header.admin' | translate }}
             </a>
             <div class="user-dropdown-divider"></div>
@@ -26098,8 +25956,8 @@ FILE: src\environments\environment.prod.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://192.168.0.95:90',
-  assetsURL: 'http://192.168.0.95:90',
+  baseURL: 'http://192.168.11.213:90',
+  assetsURL: '',
 };
 
 
@@ -26111,7 +25969,7 @@ FILE: src\environments\environment.ts
 export const environment = {
   production: false,
   baseURL: 'http://localhost:90',
-  assetsURL: 'http://localhost:90',
+  assetsURL: '',
 };
 
 
