@@ -60,11 +60,10 @@
         </p>
       }
 
-      @if (product.rating && !compact) {
+      @if (hasRating && !compact) {
         <div class="product-rating">
-          <span class="rating-stars">★★★★☆</span>
-          <span class="rating-value">{{ product.rating }}</span>
-          <span class="rating-count">({{ product.reviewCount }})</span>
+          <span class="rating-stars">{{ getRatingStars() }}</span>
+          <span class="rating-value">{{ product.ratingNumber.toFixed(1) }}</span>
         </div>
       }
 
@@ -111,7 +110,7 @@
       [class.compact]="compact"
       [disabled]="!canAddToCart"
       (click)="onAddToCart()"
-      [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName"
+      [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName()"
     >
       <span class="button-icon">🛒</span>
       {{ 'common.add_to_cart' | translate }}
@@ -121,7 +120,7 @@
       <button
         class="details-button"
         (click)="onViewDetails()"
-        [attr.aria-label]="('product.view_details' | translate) + ': ' + localizedName"
+        [attr.aria-label]="('product.view_details' | translate) + ': ' + localizedName()"
       >
         {{ 'product.view_details' | translate }}
       </button>

@@ -33,7 +33,8 @@
     "success": {
       "welcome_back": "Successfully logged in! Welcome back!",
       "registered": "Registration successful! Check your email.",
-      "logged_in": "Successfully logged in"
+      "logged_in": "Successfully logged in",
+      "password_changed": "Password changed successfully!"
     },
     "login": {
       "title": "Sign In",
@@ -359,6 +360,8 @@
     "previous_image": "Previous image",
     "out_of_stock": "Out of Stock",
     "reviews": "reviews",
+    "reviews_title": "Reviews",
+    "no_reviews": "No reviews yet for this product.",
     "prescription_required_notice": "This product requires a prescription. Please upload your prescription when ordering.",
     "packaging": "Packaging",
     "dosage": "Dosage",
@@ -634,5 +637,13 @@
       "subtitle": "Blood pressure monitors, wound care and diagnostic tools — professional quality, home prices."
     },
     "cta": "Browse Products"
+  },
+  "not_found": {
+    "title": "Page not found",
+    "subtitle": "Looks like this page got lost somewhere in the pharmacy aisles. Let us help you find your way back.",
+    "go_home": "Back to Home",
+    "browse_products": "Browse Products",
+    "quick_links": "Or jump to",
+    "quick_links_label": "Quick navigation"
   }
 }

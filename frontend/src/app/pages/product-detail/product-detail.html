@@ -93,13 +93,15 @@
 
             <h1 class="product-title">{{ product()!.name }}</h1>
 
-            @if (product()!.rating) {
+            @if (product()!.ratingNumber > 0) {
               <div class="rating-row">
                 <span class="rating-stars">{{ getRatingStars() }}</span>
-                <span class="rating-value">{{ product()!.rating }}</span>
-                <span class="rating-count"
-                  >({{ product()!.reviewCount }} {{ 'product.reviews' | translate }})</span
-                >
+                <span class="rating-value">{{ product()!.ratingNumber.toFixed(1) }}</span>
+                @if (reviewCount() > 0) {
+                  <span class="rating-count"
+                    >({{ reviewCount() }} {{ 'product.reviews' | translate }})</span
+                  >
+                }
               </div>
             }
           </div>
@@ -231,6 +233,37 @@
               }
             </div>
           }
+
+          <!-- ─── Reviews section ──────────────────────────────────────────── -->
+          <div class="reviews-block">
+            <h2 class="section-heading">{{ 'product.reviews_title' | translate }}</h2>
+
+            @if (reviewsLoading()) {
+              <div class="reviews-loading">
+                <div class="spinner spinner-sm"></div>
+              </div>
+            } @else if (reviews().length === 0) {
+              <div class="reviews-empty">
+                <span class="reviews-empty-icon">💬</span>
+                <p class="reviews-empty-text">{{ 'product.no_reviews' | translate }}</p>
+              </div>
+            } @else {
+              <div class="reviews-list">
+                @for (review of reviews(); track review.id) {
+                  <div class="review-item">
+                    <div class="review-header">
+                      <span class="review-stars">{{ getRatingStars(review.ratingNumber) }}</span>
+                      <span class="review-title">{{ review.title }}</span>
+                      <span class="review-date">{{
+                        review.created_at | date: 'yyyy. MM. dd.'
+                      }}</span>
+                    </div>
+                    <p class="review-body">{{ review.body }}</p>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>

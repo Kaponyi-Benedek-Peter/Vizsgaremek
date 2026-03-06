@@ -3,11 +3,14 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers, enrichProduct } from '../../core/models/product.model';
+import { ReviewWithHelpers } from '../../core/models/review.model';
 import { ProductService } from '../../services/product.service';
+import { ReviewService } from '../../core/services/review.service';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -21,6 +24,7 @@ export class ProductDetail implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private productService = inject(ProductService);
+  private reviewService = inject(ReviewService);
   private cartService = inject(CartService);
   private currencyService = inject(CurrencyService);
   private translationService = inject(TranslationService);
@@ -31,7 +35,9 @@ export class ProductDetail implements OnInit, OnDestroy {
   private langSub?: Subscription;
 
   product = signal<ProductWithHelpers | null>(null);
+  reviews = signal<ReviewWithHelpers[]>([]);
   isLoading = signal(true);
+  reviewsLoading = signal(false);
   notFound = signal(false);
   quantity = signal(1);
   selectedImageIndex = signal(0);
@@ -41,6 +47,8 @@ export class ProductDetail implements OnInit, OnDestroy {
   canGoNext = computed(
     () => this.product() !== null && this.selectedImageIndex() < this.product()!.images.length - 1,
   );
+
+  reviewCount = computed(() => this.reviews().length);
 
   get images(): string[] {
     return this.product()?.images ?? [];
@@ -99,6 +107,7 @@ export class ProductDetail implements OnInit, OnDestroy {
 
     if (found) {
       this.product.set(found);
+      this.loadReviews(id);
     } else {
       this.notFound.set(true);
     }
@@ -116,6 +125,25 @@ export class ProductDetail implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
     document.body.style.overflow = '';
+  }
+
+  private async loadReviews(productId: string): Promise<void> {
+    this.reviewsLoading.set(true);
+    try {
+      const reviews = await firstValueFrom(this.reviewService.getReviewsByProductId(productId));
+      this.reviews.set(reviews);
+    } finally {
+      this.reviewsLoading.set(false);
+    }
+  }
+
+  getRatingStars(ratingNumber?: number): string {
+    const rating = ratingNumber ?? this.product()?.ratingNumber ?? 0;
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   selectImage(index: number): void {
@@ -154,15 +182,6 @@ export class ProductDetail implements OnInit, OnDestroy {
       this.addedToCart.set(true);
       setTimeout(() => this.addedToCart.set(false), 2500);
     }
-  }
-
-  getRatingStars(): string {
-    const p = this.product();
-    if (!p?.ratingNumber) return '';
-    const full = Math.floor(p.ratingNumber);
-    const half = p.ratingNumber % 1 >= 0.5;
-    const empty = 5 - full - (half ? 1 : 0);
-    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   goBack(): void {

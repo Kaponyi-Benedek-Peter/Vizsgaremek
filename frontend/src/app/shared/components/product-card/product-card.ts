@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
@@ -40,12 +40,10 @@ export class ProductCard {
   }
 
   get formattedPrice(): string {
-    // getBasePrice reads the currentCurrency signal → converts HUF→USD/EUR as needed
     return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
   }
 
   get formattedDiscountedPrice(): string {
-    // getDiscountedPrice applies sale_percentage on top of the converted base price
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
   }
 
@@ -55,6 +53,19 @@ export class ProductCard {
       !this.product.requiresPrescription &&
       this.quantity() <= this.product.stockQuantity
     );
+  }
+
+  get hasRating(): boolean {
+    return this.product.ratingNumber > 0;
+  }
+
+  getRatingStars(): string {
+    const rating = this.product.ratingNumber;
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   localizedName = computed(() => {
@@ -75,7 +86,7 @@ export class ProductCard {
     const catId = this.product.category ?? this.product.category_id ?? '';
     const cat = this.productService.getCategoryById(catId);
     if (!cat) return '';
-    const lang = this.currentLang(); // ← reaktív
+    const lang = this.currentLang();
     return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
   }
 
@@ -95,7 +106,6 @@ export class ProductCard {
 
   onAddToCart(): void {
     if (this.canAddToCart) {
-      // only event emit — the parent (product-list) manages the addtocart.
       this.addToCart.emit({ product: this.product, quantity: this.quantity() });
       this.quantity.set(1);
     }

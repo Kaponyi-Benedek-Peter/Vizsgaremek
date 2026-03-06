@@ -33,7 +33,8 @@
     "success": {
       "welcome_back": "Erfolgreich angemeldet! Willkommen zurück!",
       "registered": "Registrierung erfolgreich! Überprüfen Sie Ihre E-Mail.",
-      "logged_in": "Erfolgreich angemeldet"
+      "logged_in": "Erfolgreich angemeldet",
+      "password_changed": "Passwort erfolgreich geändert!"
     },
     "login": {
       "title": "Anmelden",
@@ -329,6 +330,8 @@
     "previous_image": "Vorheriges Bild",
     "out_of_stock": "Nicht vorrätig",
     "reviews": "Bewertungen",
+    "reviews_title": "Bewertungen",
+    "no_reviews": "Für dieses Produkt gibt es noch keine Bewertungen.",
     "prescription_required_notice": "Dieses Produkt ist verschreibungspflichtig. Bitte laden Sie Ihr Rezept beim Bestellen hoch.",
     "packaging": "Verpackung",
     "dosage": "Dosierung",
@@ -604,5 +607,13 @@
       "subtitle": "Blutdruckmessgeräte, Wundpflege und Diagnosemittel – Profiqualität zum Heimpreis."
     },
     "cta": "Produkte ansehen"
+  },
+  "not_found": {
+    "title": "Seite nicht gefunden",
+    "subtitle": "Diese Seite scheint sich in den Apothekenregalen verirrt zu haben. Wir helfen dir zurück.",
+    "go_home": "Zur Startseite",
+    "browse_products": "Produkte entdecken",
+    "quick_links": "Oder springe zu",
+    "quick_links_label": "Schnellnavigation"
   }
 }

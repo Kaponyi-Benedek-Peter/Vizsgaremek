@@ -27,13 +27,15 @@ PROJECT STRUCTURE
 │   │   │   ├── 📁 models/
 │   │   │   │   ├── 📄 auth.model.ts
 │   │   │   │   ├── 📄 forum-blog.model.ts
-│   │   │   │   └── 📄 product.model.ts
+│   │   │   │   ├── 📄 product.model.ts
+│   │   │   │   └── 📄 review.model.ts
 │   │   │   └── 📁 services/
 │   │   │       ├── 📄 account.service.ts
 │   │   │       ├── 📄 auth.service.ts
 │   │   │       ├── 📄 cart.service.ts
 │   │   │       ├── 📄 currency.service.ts
 │   │   │       ├── 📄 forum-blog.service.ts
+│   │   │       ├── 📄 review.service.ts
 │   │   │       ├── 📄 theme.service.ts
 │   │   │       ├── 📄 toast.service.ts
 │   │   │       └── 📄 translation.service.ts
@@ -1436,9 +1438,10 @@ export interface PasswordChangeRequest {
   language: SupportedLanguage;
 }
 
-export interface PasswordChangePromiseRequest {
+export interface PasswordChangePromise {
   id: string;
   token: string;
+  user?: User;
 }
 
 export interface AccountDeletionRequest {
@@ -1828,10 +1831,10 @@ export function enrichProduct(
   currentLang: 'hu' | 'en' | 'de' = 'hu',
   galleryImages: ProductImage[] = [],
 ): ProductWithHelpers {
-  const priceNumber = parseFloat(product.price_huf) || 0;
+  const priceNumber = parseFloat(product.price_huf?.replace(',', '.')) || 0;
   const stockNumber = parseInt(product.stock) || 0;
-  const salePercentageNumber = parseFloat(product.sale_percentage) || 0;
-  const ratingNumber = parseFloat(product.rating) || 0;
+  const salePercentageNumber = parseFloat(product.sale_percentage?.replace(',', '.')) || 0;
+  const ratingNumber = parseFloat(product.rating?.replace(',', '.')) || 0;
 
   const inStock = stockNumber > 0;
   const hasDiscount = salePercentageNumber > 0;
@@ -1900,6 +1903,40 @@ export function enrichProduct(
     imageUrl,
     images,
     dosage: undefined,
+  };
+}
+
+
+
+================================================================================
+FILE: src\app\core\models\review.model.ts
+================================================================================
+
+export interface Review {
+  id: string;
+  product_id: string;
+  user_id: string;
+  title: string;
+  body: string;
+  rating: string;
+  created_at: string;
+}
+
+export interface ReviewsApiResponse {
+  statuscode: string;
+  status: string;
+  reviews: Review[];
+  total?: string;
+}
+
+export interface ReviewWithHelpers extends Review {
+  ratingNumber: number;
+}
+
+export function enrichReview(review: Review): ReviewWithHelpers {
+  return {
+    ...review,
+    ratingNumber: parseFloat(review.rating?.replace(',', '.')) || 0,
   };
 }
 
@@ -2148,7 +2185,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import {
   User,
   LoginRequest,
@@ -2159,10 +2196,10 @@ import {
   RegistrationPromiseRequest,
   RegistrationResponse,
   PasswordChangeRequest,
-  PasswordChangePromiseRequest,
   AuthState,
   ApiErrorResponse,
   UserState,
+  PasswordChangePromise,
 } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
@@ -2386,14 +2423,28 @@ export class AuthService {
   }
 
   completePasswordChange(id: string, token: string) {
-    const request: PasswordChangePromiseRequest = {
-      id, // b64 from url
-      token, // b64 from url
+    const request: PasswordChangePromise = {
+      id,
+      token,
     };
+    const stayLoggedIn = localStorage.getItem(this.STORAGE_TYPE_KEY) === 'local';
 
     return this.http
-      .post<void>(`${this.API_URL}/api/chpass_promise`, request)
-      .pipe(catchError(this.handleError.bind(this)));
+      .post(`${this.API_URL}/api/chpass_promise`, request, {
+        responseType: 'text' as 'json',
+      })
+      .pipe(
+        tap((body: any) => {
+          try {
+            const response = (typeof body === 'string' ? JSON.parse(body) : body) as LoginResponse;
+            if (response?.jwt_token) {
+              this.handleLoginSuccess(response, stayLoggedIn, undefined, true);
+            }
+          } catch {}
+        }),
+        map(() => undefined as unknown as void),
+        catchError(this.handleError.bind(this)),
+      );
   }
 
   logout(): void {
@@ -3118,6 +3169,69 @@ export class ForumBlogService {
     const recencyScore = Math.max(0, 7 - daysSincePublished);
     const activityScore = post.views * 0.1 + post.likes * 2 + post.commentCount * 5;
     return recencyScore * 10 + activityScore;
+  }
+}
+
+
+
+================================================================================
+FILE: src\app\core\services\review.service.ts
+================================================================================
+
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map, timeout } from 'rxjs/operators';
+import {
+  Review,
+  ReviewsApiResponse,
+  ReviewWithHelpers,
+  enrichReview,
+} from '../../core/models/review.model';
+import { environment } from '../../../environments/environment';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ReviewService {
+  private readonly API_URL = environment.baseURL;
+  private http = inject(HttpClient);
+
+  getReviewsByProductId(productId: string, page = 1, amount = 50): Observable<ReviewWithHelpers[]> {
+    const body = {
+      product_id: btoa(productId),
+      page: btoa(String(page)),
+      amount: btoa(String(amount)),
+    };
+
+    return this.http
+      .post<ReviewsApiResponse>(`${this.API_URL}/api/get_all_reviews_by_product_id`, body)
+      .pipe(
+        timeout(5000),
+        map((r) => {
+          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+          if (!Array.isArray(r.reviews)) return [];
+          return r.reviews.map(enrichReview);
+        }),
+        catchError((err) => {
+          console.error('ReviewService: Failed to load reviews', err);
+          return of([]);
+        }),
+      );
+  }
+
+  getAverageRating(reviews: ReviewWithHelpers[]): number {
+    if (reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc, r) => acc + r.ratingNumber, 0);
+    return sum / reviews.length;
+  }
+
+  getRatingStars(ratingNumber: number): string {
+    if (!ratingNumber) return '';
+    const full = Math.floor(ratingNumber);
+    const half = ratingNumber % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 }
 
@@ -9622,9 +9736,6 @@ FILE: src\app\pages\password-reset\password-reset.html
         </div>
         <h1>{{ 'auth.password_change.success' | translate }}</h1>
         <p class="verification-text">{{ 'auth.password_change.success_message' | translate }}</p>
-        <div class="redirect-info">
-          <p>{{ 'auth.password_change.redirecting' | translate }}</p>
-        </div>
       </div>
     }
 
@@ -9681,16 +9792,13 @@ describe('PasswordReset', () => {
 FILE: src\app\pages\password-reset\password-reset.ts
 ================================================================================
 
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
-/*
- * Backend response note (bug in backend service):
- *   On success the service returns (200, "success") instead of the JSON body,
- *   so no JWT token is returned → the user must log in again after the reset.
- */
+import { ToastService } from '../../core/services/toast.service';
+
 @Component({
   selector: 'app-password-reset',
   standalone: true,
@@ -9701,6 +9809,8 @@ import { AuthService } from '../../core/services/auth.service';
 export class PasswordReset implements OnInit {
   private location = inject(Location);
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
+  private translateService = inject(TranslateService);
 
   isProcessing = signal(false);
   isSuccess = signal(false);
@@ -9709,7 +9819,6 @@ export class PasswordReset implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    // Read the ?chpass=B64(id);B64(token) param from the URL
     const raw = new URLSearchParams(window.location.search).get('chpass') || '';
     const parts = raw.split(';');
 
@@ -9732,7 +9841,6 @@ export class PasswordReset implements OnInit {
     this.completePasswordReset(encodedId, encodedToken);
   }
 
-  /** Calls chpass_promise endpoint with the B64 values from the email link */
   completePasswordReset(encodedId: string, encodedToken: string): void {
     this.isProcessing.set(true);
     this.errorMessage.set('');
@@ -9741,16 +9849,13 @@ export class PasswordReset implements OnInit {
       next: () => {
         this.isProcessing.set(false);
         this.isSuccess.set(true);
-        // Backend does not return a new JWT token (known backend bug),
-        // so we log the user out and redirect to login after success.
-        this.authService.logout();
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2500);
+        const message = this.translateService.instant('auth.success.password_changed');
+        this.toastService.success(message);
       },
       error: (error) => {
         this.isProcessing.set(false);
         this.errorMessage.set(error.message || 'auth.errors.password_reset_failed');
+        this.authService.logout();
       },
     });
   }
@@ -10388,7 +10493,7 @@ FILE: src\app\pages\product-detail\product-detail.css
   width: fit-content;
   padding: 5px 14px;
   background: var(--color-primary-light);
-  color: var(--color-text-on-primary);
+  color: var(--color-text-primary);
   border: 1px solid rgba(6, 122, 69, 0.2);
   border-radius: var(--radius-full);
   font-size: 0.7rem;
@@ -10622,7 +10727,7 @@ FILE: src\app\pages\product-detail\product-detail.css
 .total-value {
   font-size: var(--text-2xl);
   font-weight: 800;
-  color: var(--color-text-on-primary);
+  color: var(--color-text-primary);
 }
 
 .add-to-cart-btn {
@@ -10819,6 +10924,118 @@ FILE: src\app\pages\product-detail\product-detail.css
   }
 }
 
+.reviews-block {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.reviews-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) 0;
+}
+
+.spinner-sm {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+}
+
+.reviews-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-4);
+  text-align: center;
+}
+
+.reviews-empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.45;
+}
+
+.reviews-empty-text {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.review-item {
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition-normal);
+}
+
+.review-item:hover {
+  border-color: var(--color-primary-mid);
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2);
+}
+
+.review-stars {
+  color: var(--color-warning);
+  letter-spacing: -1px;
+  font-size: var(--text-base);
+  flex-shrink: 0;
+}
+
+.review-title {
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--text-base);
+  flex: 1;
+  min-width: 0;
+}
+
+.review-date {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.review-body {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .review-item {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .review-header {
+    gap: var(--space-2);
+  }
+
+  .review-date {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-item {
+    transition: none;
+  }
+}
+
 
 
 ================================================================================
@@ -10920,13 +11137,15 @@ FILE: src\app\pages\product-detail\product-detail.html
 
             <h1 class="product-title">{{ product()!.name }}</h1>
 
-            @if (product()!.rating) {
+            @if (product()!.ratingNumber > 0) {
               <div class="rating-row">
                 <span class="rating-stars">{{ getRatingStars() }}</span>
-                <span class="rating-value">{{ product()!.rating }}</span>
-                <span class="rating-count"
-                  >({{ product()!.reviewCount }} {{ 'product.reviews' | translate }})</span
-                >
+                <span class="rating-value">{{ product()!.ratingNumber.toFixed(1) }}</span>
+                @if (reviewCount() > 0) {
+                  <span class="rating-count"
+                    >({{ reviewCount() }} {{ 'product.reviews' | translate }})</span
+                  >
+                }
               </div>
             }
           </div>
@@ -11058,6 +11277,37 @@ FILE: src\app\pages\product-detail\product-detail.html
               }
             </div>
           }
+
+          <!-- ─── Reviews section ──────────────────────────────────────────── -->
+          <div class="reviews-block">
+            <h2 class="section-heading">{{ 'product.reviews_title' | translate }}</h2>
+
+            @if (reviewsLoading()) {
+              <div class="reviews-loading">
+                <div class="spinner spinner-sm"></div>
+              </div>
+            } @else if (reviews().length === 0) {
+              <div class="reviews-empty">
+                <span class="reviews-empty-icon">💬</span>
+                <p class="reviews-empty-text">{{ 'product.no_reviews' | translate }}</p>
+              </div>
+            } @else {
+              <div class="reviews-list">
+                @for (review of reviews(); track review.id) {
+                  <div class="review-item">
+                    <div class="review-header">
+                      <span class="review-stars">{{ getRatingStars(review.ratingNumber) }}</span>
+                      <span class="review-title">{{ review.title }}</span>
+                      <span class="review-date">{{
+                        review.created_at | date: 'yyyy. MM. dd.'
+                      }}</span>
+                    </div>
+                    <p class="review-body">{{ review.body }}</p>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>
@@ -11105,11 +11355,14 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers, enrichProduct } from '../../core/models/product.model';
+import { ReviewWithHelpers } from '../../core/models/review.model';
 import { ProductService } from '../../services/product.service';
+import { ReviewService } from '../../core/services/review.service';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -11123,6 +11376,7 @@ export class ProductDetail implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private productService = inject(ProductService);
+  private reviewService = inject(ReviewService);
   private cartService = inject(CartService);
   private currencyService = inject(CurrencyService);
   private translationService = inject(TranslationService);
@@ -11133,7 +11387,9 @@ export class ProductDetail implements OnInit, OnDestroy {
   private langSub?: Subscription;
 
   product = signal<ProductWithHelpers | null>(null);
+  reviews = signal<ReviewWithHelpers[]>([]);
   isLoading = signal(true);
+  reviewsLoading = signal(false);
   notFound = signal(false);
   quantity = signal(1);
   selectedImageIndex = signal(0);
@@ -11143,6 +11399,8 @@ export class ProductDetail implements OnInit, OnDestroy {
   canGoNext = computed(
     () => this.product() !== null && this.selectedImageIndex() < this.product()!.images.length - 1,
   );
+
+  reviewCount = computed(() => this.reviews().length);
 
   get images(): string[] {
     return this.product()?.images ?? [];
@@ -11201,6 +11459,7 @@ export class ProductDetail implements OnInit, OnDestroy {
 
     if (found) {
       this.product.set(found);
+      this.loadReviews(id);
     } else {
       this.notFound.set(true);
     }
@@ -11218,6 +11477,25 @@ export class ProductDetail implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
     document.body.style.overflow = '';
+  }
+
+  private async loadReviews(productId: string): Promise<void> {
+    this.reviewsLoading.set(true);
+    try {
+      const reviews = await firstValueFrom(this.reviewService.getReviewsByProductId(productId));
+      this.reviews.set(reviews);
+    } finally {
+      this.reviewsLoading.set(false);
+    }
+  }
+
+  getRatingStars(ratingNumber?: number): string {
+    const rating = ratingNumber ?? this.product()?.ratingNumber ?? 0;
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   selectImage(index: number): void {
@@ -11256,15 +11534,6 @@ export class ProductDetail implements OnInit, OnDestroy {
       this.addedToCart.set(true);
       setTimeout(() => this.addedToCart.set(false), 2500);
     }
-  }
-
-  getRatingStars(): string {
-    const p = this.product();
-    if (!p?.ratingNumber) return '';
-    const full = Math.floor(p.ratingNumber);
-    const half = p.ratingNumber % 1 >= 0.5;
-    const empty = 5 - full - (half ? 1 : 0);
-    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   goBack(): void {
@@ -17842,20 +18111,46 @@ export class NewsletterForm {
 FILE: src\app\shared\components\header\header.css
 ================================================================================
 
+/* ══════════════════════════════════════════════════════════════
+   HEADER — Glass Morphism Sticky Navigation
+   ══════════════════════════════════════════════════════════════ */
+
 .header {
   position: sticky;
   top: 0;
+  left: 0;
+  width: 100%;
   z-index: 1000;
-  background-color: var(--color-primary);
+
+  background-color: rgba(6, 122, 69, 0.55);
+
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+
   color: var(--color-white);
-  border-bottom: none;
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  transition: all var(--transition-speed) var(--transition-ease);
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
+
+[data-theme='dark'] .header {
+  background-color: rgba(15, 30, 22, 0.65);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LAYOUT SECTIONS
+   ══════════════════════════════════════════════════════════════ */
 
 .header-left {
   flex-shrink: 0;
@@ -17866,6 +18161,7 @@ FILE: src\app\shared\components\header\header.css
   width: auto;
   display: block;
   transition: transform 0.3s ease;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.25));
 }
 
 .logo:hover {
@@ -17944,6 +18240,8 @@ FILE: src\app\shared\components\header\header.css
   top: calc(100% + 10px);
   right: 0;
   background-color: var(--bg-primary);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
@@ -17991,12 +18289,18 @@ FILE: src\app\shared\components\header\header.css
   top: calc(100% + 10px);
   right: 0;
   background-color: var(--bg-primary);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
   min-width: 250px;
   z-index: 1001;
   animation: slideDown 0.2s ease;
+}
+
+[data-theme='dark'] .user-dropdown {
+  background-color: rgba(20, 35, 28, 0.95);
 }
 
 .user-dropdown-header {
@@ -18084,8 +18388,8 @@ FILE: src\app\shared\components\header\header.css
   position: absolute;
   top: -8px;
   right: -8px;
-  background-color: var(--color-primary);
-  color: white;
+  background-color: #ffffff;
+  color: var(--color-primary);
   border-radius: 50%;
   width: 20px;
   height: 20px;
@@ -18095,7 +18399,13 @@ FILE: src\app\shared\components\header\header.css
   font-size: 0.7rem;
   font-weight: 700;
   border: 2px solid var(--bg-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+[data-theme='dark'] .cart-badge {
+  background-color: var(--color-primary);
+  color: #ffffff;
 }
 
 @keyframes popIn {
@@ -18115,6 +18425,8 @@ FILE: src\app\shared\components\header\header.css
   top: calc(100% + 10px);
   right: 0;
   background-color: var(--bg-primary);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
@@ -20546,11 +20858,10 @@ FILE: src\app\shared\components\product-card\product-card.html
         </p>
       }
 
-      @if (product.rating && !compact) {
+      @if (hasRating && !compact) {
         <div class="product-rating">
-          <span class="rating-stars">★★★★☆</span>
-          <span class="rating-value">{{ product.rating }}</span>
-          <span class="rating-count">({{ product.reviewCount }})</span>
+          <span class="rating-stars">{{ getRatingStars() }}</span>
+          <span class="rating-value">{{ product.ratingNumber.toFixed(1) }}</span>
         </div>
       }
 
@@ -20597,7 +20908,7 @@ FILE: src\app\shared\components\product-card\product-card.html
       [class.compact]="compact"
       [disabled]="!canAddToCart"
       (click)="onAddToCart()"
-      [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName"
+      [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName()"
     >
       <span class="button-icon">🛒</span>
       {{ 'common.add_to_cart' | translate }}
@@ -20607,7 +20918,7 @@ FILE: src\app\shared\components\product-card\product-card.html
       <button
         class="details-button"
         (click)="onViewDetails()"
-        [attr.aria-label]="('product.view_details' | translate) + ': ' + localizedName"
+        [attr.aria-label]="('product.view_details' | translate) + ': ' + localizedName()"
       >
         {{ 'product.view_details' | translate }}
       </button>
@@ -20624,7 +20935,7 @@ FILE: src\app\shared\components\product-card\product-card.ts
 import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
@@ -20663,12 +20974,10 @@ export class ProductCard {
   }
 
   get formattedPrice(): string {
-    // getBasePrice reads the currentCurrency signal → converts HUF→USD/EUR as needed
     return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
   }
 
   get formattedDiscountedPrice(): string {
-    // getDiscountedPrice applies sale_percentage on top of the converted base price
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
   }
 
@@ -20678,6 +20987,19 @@ export class ProductCard {
       !this.product.requiresPrescription &&
       this.quantity() <= this.product.stockQuantity
     );
+  }
+
+  get hasRating(): boolean {
+    return this.product.ratingNumber > 0;
+  }
+
+  getRatingStars(): string {
+    const rating = this.product.ratingNumber;
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   localizedName = computed(() => {
@@ -20698,7 +21020,7 @@ export class ProductCard {
     const catId = this.product.category ?? this.product.category_id ?? '';
     const cat = this.productService.getCategoryById(catId);
     if (!cat) return '';
-    const lang = this.currentLang(); // ← reaktív
+    const lang = this.currentLang();
     return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
   }
 
@@ -20718,7 +21040,6 @@ export class ProductCard {
 
   onAddToCart(): void {
     if (this.canAddToCart) {
-      // only event emit — the parent (product-list) manages the addtocart.
       this.addToCart.emit({ product: this.product, quantity: this.quantity() });
       this.quantity.set(1);
     }
@@ -24150,7 +24471,8 @@ FILE: src\assets\i18n\de.json
     "success": {
       "welcome_back": "Erfolgreich angemeldet! Willkommen zurück!",
       "registered": "Registrierung erfolgreich! Überprüfen Sie Ihre E-Mail.",
-      "logged_in": "Erfolgreich angemeldet"
+      "logged_in": "Erfolgreich angemeldet",
+      "password_changed": "Passwort erfolgreich geändert!"
     },
     "login": {
       "title": "Anmelden",
@@ -24446,6 +24768,8 @@ FILE: src\assets\i18n\de.json
     "previous_image": "Vorheriges Bild",
     "out_of_stock": "Nicht vorrätig",
     "reviews": "Bewertungen",
+    "reviews_title": "Bewertungen",
+    "no_reviews": "Für dieses Produkt gibt es noch keine Bewertungen.",
     "prescription_required_notice": "Dieses Produkt ist verschreibungspflichtig. Bitte laden Sie Ihr Rezept beim Bestellen hoch.",
     "packaging": "Verpackung",
     "dosage": "Dosierung",
@@ -24765,7 +25089,8 @@ FILE: src\assets\i18n\en.json
     "success": {
       "welcome_back": "Successfully logged in! Welcome back!",
       "registered": "Registration successful! Check your email.",
-      "logged_in": "Successfully logged in"
+      "logged_in": "Successfully logged in",
+      "password_changed": "Password changed successfully!"
     },
     "login": {
       "title": "Sign In",
@@ -25091,6 +25416,8 @@ FILE: src\assets\i18n\en.json
     "previous_image": "Previous image",
     "out_of_stock": "Out of Stock",
     "reviews": "reviews",
+    "reviews_title": "Reviews",
+    "no_reviews": "No reviews yet for this product.",
     "prescription_required_notice": "This product requires a prescription. Please upload your prescription when ordering.",
     "packaging": "Packaging",
     "dosage": "Dosage",
@@ -25410,7 +25737,8 @@ FILE: src\assets\i18n\hu.json
     "success": {
       "welcome_back": "Sikeres bejelentkezés! Üdvözöljük!",
       "registered": "Sikeres regisztráció! Ellenőrizze e-mail fiókját.",
-      "logged_in": "Sikeresen bejelentkezett"
+      "logged_in": "Sikeresen bejelentkezett",
+      "password_changed": "Jelszó sikeresen megváltoztatva!"
     },
     "login": {
       "title": "Bejelentkezés",
@@ -25736,6 +26064,8 @@ FILE: src\assets\i18n\hu.json
     "previous_image": "Előző kép",
     "out_of_stock": "Nincs raktáron",
     "reviews": "értékelés",
+    "reviews_title": "Értékelések",
+    "no_reviews": "Erre a termékre nincsenek még értékelések.",
     "prescription_required_notice": "Ez a termék vényköteles. Rendeléshez recept feltöltése szükséges.",
     "packaging": "Kiszerelés",
     "dosage": "Adagolás",

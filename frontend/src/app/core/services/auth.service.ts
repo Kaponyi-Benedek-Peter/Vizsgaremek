@@ -2,7 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import {
   User,
   LoginRequest,
@@ -13,10 +13,10 @@ import {
   RegistrationPromiseRequest,
   RegistrationResponse,
   PasswordChangeRequest,
-  PasswordChangePromiseRequest,
   AuthState,
   ApiErrorResponse,
   UserState,
+  PasswordChangePromise,
 } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
@@ -240,14 +240,28 @@ export class AuthService {
   }
 
   completePasswordChange(id: string, token: string) {
-    const request: PasswordChangePromiseRequest = {
-      id, // b64 from url
-      token, // b64 from url
+    const request: PasswordChangePromise = {
+      id,
+      token,
     };
+    const stayLoggedIn = localStorage.getItem(this.STORAGE_TYPE_KEY) === 'local';
 
     return this.http
-      .post<void>(`${this.API_URL}/api/chpass_promise`, request)
-      .pipe(catchError(this.handleError.bind(this)));
+      .post(`${this.API_URL}/api/chpass_promise`, request, {
+        responseType: 'text' as 'json',
+      })
+      .pipe(
+        tap((body: any) => {
+          try {
+            const response = (typeof body === 'string' ? JSON.parse(body) : body) as LoginResponse;
+            if (response?.jwt_token) {
+              this.handleLoginSuccess(response, stayLoggedIn, undefined, true);
+            }
+          } catch {}
+        }),
+        map(() => undefined as unknown as void),
+        catchError(this.handleError.bind(this)),
+      );
   }
 
   logout(): void {
