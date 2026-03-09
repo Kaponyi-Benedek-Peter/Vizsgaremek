@@ -141,6 +141,12 @@ export const ICONS = {
 // PICS (Current + Placeholders)
 // ═══════════════════════════════════════════════════════════════════════════
 
+export function getLogoSrc(theme: 'dark' | 'light'): string {
+  return theme === 'dark'
+    ? `${ASSETS}/assets/images/ROYS_SHACK_WHITE_NF.webp`
+    : `${ASSETS}/assets/images/ROYS_SHACK_BLACK_NF.webp`;
+}
+
 export const IMAGES = {
   // Logo
   logo: `${ASSETS}/assets/images/ROYS_SHACK_WHITE.webp`,

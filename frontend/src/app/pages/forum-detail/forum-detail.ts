@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ForumBlogService } from '../../core/services/forum-blog.service';
+import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
 import {
   Post,
@@ -12,7 +12,7 @@ import {
   Comment,
   POST_CATEGORIES,
   CategoryInfo,
-} from '../../core/models/forum-blog.model';
+} from '../../core/models/forum.model';
 
 @Component({
   selector: 'app-forum-detail',
@@ -23,7 +23,7 @@ import {
 })
 export class ForumDetail implements OnInit {
   private route = inject(ActivatedRoute);
-  private forumBlogService = inject(ForumBlogService);
+  private forumBlogService = inject(ForumService);
   private authService = inject(AuthService);
   private translate = inject(TranslateService);
 
@@ -38,6 +38,11 @@ export class ForumDetail implements OnInit {
 
   isAuthenticated = this.authService.isAuthenticated;
   currentUser = this.authService.currentUser;
+
+  // Session token from authservice
+  private get sessionToken(): string {
+    return this.authService.sessionToken() ?? '';
+  }
 
   categories = POST_CATEGORIES;
 
@@ -72,21 +77,22 @@ export class ForumDetail implements OnInit {
     const mock: Comment[] = [
       {
         id: 'c1',
-        postId,
+        post_id: postId,
         author: { id: 'u1', name: 'Kovács Anna', role: 'user', verified: false },
         content: 'Nagyon hasznos bejegyzés, köszönöm!',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3),
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
         likes: 4,
-        isEdited: false,
+        is_edited: false,
       },
       {
         id: 'c2',
-        postId,
+        post_id: postId,
         author: { id: 'u2', name: 'Dr. Nagy Péter', role: 'pharmacist', verified: true },
-        content: 'Fontos kiegészítés: mindig konzultálj gyógyszerésszel, mielőtt bármilyen szert szednél.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 1),
+        content:
+          'Fontos kiegészítés: mindig konzultálj gyógyszerésszel, mielőtt bármilyen szert szednél.',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 1).toISOString(),
         likes: 11,
-        isEdited: false,
+        is_edited: false,
       },
     ];
     this.comments.set(mock);
@@ -98,19 +104,19 @@ export class ForumDetail implements OnInit {
 
   getReadingTime(): number {
     const p = this.post();
-    if (p && 'readingTime' in p) {
-      return (p as BlogPost).readingTime;
+    if (p && p.type === 'blog') {
+      return (p as BlogPost).reading_time;
     }
     return 0;
   }
 
-  formatDate(date: Date): string {
-    if (!date) return '';
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
     return new Intl.DateTimeFormat(this.translate.currentLang || 'hu', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(new Date(date));
+    }).format(new Date(dateStr));
   }
 
   toggleContent(): void {
@@ -123,10 +129,15 @@ export class ForumDetail implements OnInit {
 
     this.isSubmittingComment.set(true);
     const user = this.currentUser();
+    const post = this.post();
+    if (!post) return;
+
+    // TODO:
+    // this.forumBlogService.addComment(post.id, user!.id, this.sessionToken, text).subscribe(...)
 
     const comment: Comment = {
       id: 'c' + Date.now(),
-      postId: this.post()?.id || '',
+      post_id: post.id,
       author: {
         id: user?.id || 'me',
         name: `${user?.firstname || ''} ${user?.lastname || ''}`.trim() || user?.email || 'Te',
@@ -134,9 +145,9 @@ export class ForumDetail implements OnInit {
         verified: false,
       },
       content: text,
-      createdAt: new Date(),
+      created_at: new Date().toISOString(),
       likes: 0,
-      isEdited: false,
+      is_edited: false,
     };
 
     setTimeout(() => {
@@ -146,7 +157,18 @@ export class ForumDetail implements OnInit {
     }, 400);
   }
 
-  // Slider
+  likePost(): void {
+    const post = this.post();
+    if (!post || !this.isAuthenticated()) return;
+    // TODO: this.forumBlogService.likePost(post.id, this.currentUser()!.id, this.sessionToken).subscribe();
+  }
+
+  unlikePost(): void {
+    const post = this.post();
+    if (!post || !this.isAuthenticated()) return;
+    // TODO: this.forumBlogService.unlikePost(post.id, this.currentUser()!.id, this.sessionToken).subscribe();
+  }
+
   get sliderVisible(): Post[] {
     return this.relatedPosts().slice(this.sliderIndex(), this.sliderIndex() + 3);
   }
@@ -156,9 +178,7 @@ export class ForumDetail implements OnInit {
   }
 
   sliderNext(): void {
-    this.sliderIndex.update((i) =>
-      Math.min(this.relatedPosts().length - 3, i + 1),
-    );
+    this.sliderIndex.update((i) => Math.min(this.relatedPosts().length - 3, i + 1));
   }
 
   get canSliderPrev(): boolean {

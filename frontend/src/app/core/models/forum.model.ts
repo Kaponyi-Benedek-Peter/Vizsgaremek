@@ -1,3 +1,7 @@
+// ============================================================
+// forum-blog.model.ts — snake_case, matches backend API 1:1
+// ============================================================
+
 export type PostCategory =
   | 'medicines'
   | 'natural-remedies'
@@ -23,13 +27,13 @@ export interface Author {
 
 export interface Comment {
   id: string;
-  postId: string;
+  post_id: string;
   author: Author;
   content: string;
-  createdAt: Date;
-  updatedAt?: Date;
+  created_at: string; // ISO 8601 string from backend
+  updated_at?: string;
   likes: number;
-  isEdited: boolean;
+  is_edited: boolean;
 }
 
 export interface BasePost {
@@ -41,62 +45,66 @@ export interface BasePost {
   author: Author;
   category: PostCategory;
   tags: string[];
-  imageUrl?: string;
+  image_url?: string;
   status: PostStatus;
-  createdAt: Date;
-  updatedAt?: Date;
-  publishedAt?: Date;
+  created_at: string; // ISO 8601 string from backend
+  updated_at?: string;
+  published_at?: string;
   views: number;
   likes: number;
-  commentCount: number;
-  isFeatured: boolean;
-  isPinned: boolean;
+  comment_count: number;
+  is_featured: boolean;
+  is_pinned: boolean;
 }
 
 export interface BlogPost extends BasePost {
   type: 'blog';
-  readingTime: number;
-  relatedProducts?: string[];
-  seoDescription?: string;
-  seoKeywords?: string[];
+  reading_time: number;
+  related_products?: string[];
+  seo_description?: string;
+  seo_keywords?: string[];
 }
 
 export interface ForumPost extends BasePost {
   type: 'forum';
-  isQuestion: boolean;
-  hasAcceptedAnswer: boolean;
-  acceptedAnswerId?: string;
-  lastActivityAt: Date;
+  is_question: boolean;
+  has_accepted_answer: boolean;
+  accepted_answer_id?: string;
+  last_activity_at: string;
 }
 
 export type Post = BlogPost | ForumPost;
 
+// ---- Filter / Pagination ----
+
 export interface PostFilters {
   category?: PostCategory;
   tags?: string[];
-  authorRole?: AuthorRole;
-  searchQuery?: string;
+  author_role?: AuthorRole;
+  search_query?: string;
   status?: PostStatus;
   type?: PostType;
-  isFeatured?: boolean;
-  isPinned?: boolean;
+  is_featured?: boolean;
+  is_pinned?: boolean;
 }
 
 export type SortOption = 'newest' | 'oldest' | 'most-viewed' | 'most-liked' | 'trending';
 
 export interface PaginationOptions {
   page: number;
-  pageSize: number;
-  totalItems?: number;
-  totalPages?: number;
+  page_size: number;
+  total_items?: number;
+  total_pages?: number;
 }
 
 export interface PostListResponse {
   posts: Post[];
   pagination: PaginationOptions;
   filters: PostFilters;
-  sortBy: SortOption;
+  sort_by: SortOption;
 }
+
+// ---- Category metadata (frontend-only, not from API) ----
 
 export interface CategoryInfo {
   id: PostCategory;
@@ -105,7 +113,6 @@ export interface CategoryInfo {
   translationKey: string;
 }
 
-//Mock
 export const POST_CATEGORIES: CategoryInfo[] = [
   {
     id: 'medicines',
@@ -127,13 +134,13 @@ export const POST_CATEGORIES: CategoryInfo[] = [
   },
   {
     id: 'healthy-lifestyle',
-    icon: '💪',
+    icon: '🏃',
     colorClass: 'category-lifestyle',
     translationKey: 'forum.category.healthy_lifestyle',
   },
   {
     id: 'seasonal-health',
-    icon: '🤧',
+    icon: '🌸',
     colorClass: 'category-seasonal',
     translationKey: 'forum.category.seasonal_health',
   },
@@ -145,7 +152,7 @@ export const POST_CATEGORIES: CategoryInfo[] = [
   },
   {
     id: 'general',
-    icon: '📝',
+    icon: '💬',
     colorClass: 'category-general',
     translationKey: 'forum.category.general',
   },

@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 
 import { ThemeService, Theme } from '../../core/services/theme.service';
 import { environment } from '../../../environments/environment';
+import { getLogoSrc } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-not-found',
@@ -20,12 +21,8 @@ export class NotFound implements OnInit, OnDestroy {
 
   currentTheme = signal<Theme>('light');
 
-  private readonly ASSETS = environment.assetsURL;
-
   get logoSrc(): string {
-    return this.currentTheme() === 'dark'
-      ? `${this.ASSETS}/assets/icons/ROYS_SHACK_WHITE_NF.webp`
-      : `${this.ASSETS}/assets/icons/ROYS_SHACK_BLACK_NF.webp`;
+    return getLogoSrc(this.currentTheme() as 'dark' | 'light');
   }
 
   ngOnInit(): void {

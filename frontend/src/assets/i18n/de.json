@@ -391,6 +391,22 @@
     "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
     "verified": "Verifiziert",
     "all_categories": "Alle Kategorien",
+    "category": {
+      "medicines": "Arzneimittel",
+      "natural_remedies": "Natürliche Behandlungen",
+      "baby_mother": "Babys und Mütter",
+      "healthy_lifestyle": "Gesunder Lebensstil",
+      "seasonal_health": "Saisonale Gesundheit",
+      "qa": "F&A",
+      "general": "Generisch"
+    },
+    "sort": {
+      "newest": "neuestes",
+      "oldest": "älteste",
+      "most_viewed": "meistgesehene",
+      "most_liked": "beliebteste",
+      "trending": "trending"
+    },
     "description": "Teilen Sie Fragen, Antworten und Erfahrungen mit unserer Community",
     "reset_filters": "Filter zurücksetzen",
     "answered": "Beantwortet",

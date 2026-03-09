@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Post, POST_CATEGORIES } from '../../../core/models/forum-blog.model';
+import { Post, POST_CATEGORIES } from '../../../core/models/forum.model';
 
 @Component({
   selector: 'app-post-card',
@@ -43,7 +43,7 @@ export class PostCardComponent {
 
   getRelativeTime(): string {
     const now = new Date();
-    const postDate = this.post.createdAt;
+    const postDate = new Date(this.post.created_at); // snake_case
     const diffMs = now.getTime() - postDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
@@ -74,15 +74,16 @@ export class PostCardComponent {
     this.cardClick.emit(this.post);
   }
 
+  // Type narrowing — discriminated union `type`
   get readingTime(): number | null {
-    return this.post.type === 'blog' ? this.post.readingTime : null;
+    return this.post.type === 'blog' ? this.post.reading_time : null;
   }
 
   get isQuestion(): boolean {
-    return this.post.type === 'forum' ? this.post.isQuestion : false;
+    return this.post.type === 'forum' ? this.post.is_question : false;
   }
 
   get hasAcceptedAnswer(): boolean {
-    return this.post.type === 'forum' ? this.post.hasAcceptedAnswer : false;
+    return this.post.type === 'forum' ? this.post.has_accepted_answer : false;
   }
 }

@@ -26,7 +26,7 @@ PROJECT STRUCTURE
 │   │   │   │   └── 📄 auth.interceptors.ts
 │   │   │   ├── 📁 models/
 │   │   │   │   ├── 📄 auth.model.ts
-│   │   │   │   ├── 📄 forum-blog.model.ts
+│   │   │   │   ├── 📄 forum.model.ts
 │   │   │   │   ├── 📄 product.model.ts
 │   │   │   │   └── 📄 review.model.ts
 │   │   │   └── 📁 services/
@@ -34,7 +34,7 @@ PROJECT STRUCTURE
 │   │   │       ├── 📄 auth.service.ts
 │   │   │       ├── 📄 cart.service.ts
 │   │   │       ├── 📄 currency.service.ts
-│   │   │       ├── 📄 forum-blog.service.ts
+│   │   │       ├── 📄 forum.service.ts
 │   │   │       ├── 📄 review.service.ts
 │   │   │       ├── 📄 theme.service.ts
 │   │   │       ├── 📄 toast.service.ts
@@ -916,6 +916,12 @@ export const ICONS = {
 // PICS (Current + Placeholders)
 // ═══════════════════════════════════════════════════════════════════════════
 
+export function getLogoSrc(theme: 'dark' | 'light'): string {
+  return theme === 'dark'
+    ? `${ASSETS}/assets/images/ROYS_SHACK_WHITE_NF.webp`
+    : `${ASSETS}/assets/images/ROYS_SHACK_BLACK_NF.webp`;
+}
+
 export const IMAGES = {
   // Logo
   logo: `${ASSETS}/assets/images/ROYS_SHACK_WHITE.webp`,
@@ -1488,8 +1494,12 @@ export interface JWTPayload {
 
 
 ================================================================================
-FILE: src\app\core\models\forum-blog.model.ts
+FILE: src\app\core\models\forum.model.ts
 ================================================================================
+
+// ============================================================
+// forum-blog.model.ts — snake_case, matches backend API 1:1
+// ============================================================
 
 export type PostCategory =
   | 'medicines'
@@ -1516,13 +1526,13 @@ export interface Author {
 
 export interface Comment {
   id: string;
-  postId: string;
+  post_id: string;
   author: Author;
   content: string;
-  createdAt: Date;
-  updatedAt?: Date;
+  created_at: string; // ISO 8601 string from backend
+  updated_at?: string;
   likes: number;
-  isEdited: boolean;
+  is_edited: boolean;
 }
 
 export interface BasePost {
@@ -1534,62 +1544,66 @@ export interface BasePost {
   author: Author;
   category: PostCategory;
   tags: string[];
-  imageUrl?: string;
+  image_url?: string;
   status: PostStatus;
-  createdAt: Date;
-  updatedAt?: Date;
-  publishedAt?: Date;
+  created_at: string; // ISO 8601 string from backend
+  updated_at?: string;
+  published_at?: string;
   views: number;
   likes: number;
-  commentCount: number;
-  isFeatured: boolean;
-  isPinned: boolean;
+  comment_count: number;
+  is_featured: boolean;
+  is_pinned: boolean;
 }
 
 export interface BlogPost extends BasePost {
   type: 'blog';
-  readingTime: number;
-  relatedProducts?: string[];
-  seoDescription?: string;
-  seoKeywords?: string[];
+  reading_time: number;
+  related_products?: string[];
+  seo_description?: string;
+  seo_keywords?: string[];
 }
 
 export interface ForumPost extends BasePost {
   type: 'forum';
-  isQuestion: boolean;
-  hasAcceptedAnswer: boolean;
-  acceptedAnswerId?: string;
-  lastActivityAt: Date;
+  is_question: boolean;
+  has_accepted_answer: boolean;
+  accepted_answer_id?: string;
+  last_activity_at: string;
 }
 
 export type Post = BlogPost | ForumPost;
 
+// ---- Filter / Pagination ----
+
 export interface PostFilters {
   category?: PostCategory;
   tags?: string[];
-  authorRole?: AuthorRole;
-  searchQuery?: string;
+  author_role?: AuthorRole;
+  search_query?: string;
   status?: PostStatus;
   type?: PostType;
-  isFeatured?: boolean;
-  isPinned?: boolean;
+  is_featured?: boolean;
+  is_pinned?: boolean;
 }
 
 export type SortOption = 'newest' | 'oldest' | 'most-viewed' | 'most-liked' | 'trending';
 
 export interface PaginationOptions {
   page: number;
-  pageSize: number;
-  totalItems?: number;
-  totalPages?: number;
+  page_size: number;
+  total_items?: number;
+  total_pages?: number;
 }
 
 export interface PostListResponse {
   posts: Post[];
   pagination: PaginationOptions;
   filters: PostFilters;
-  sortBy: SortOption;
+  sort_by: SortOption;
 }
+
+// ---- Category metadata (frontend-only, not from API) ----
 
 export interface CategoryInfo {
   id: PostCategory;
@@ -1598,7 +1612,6 @@ export interface CategoryInfo {
   translationKey: string;
 }
 
-//Mock
 export const POST_CATEGORIES: CategoryInfo[] = [
   {
     id: 'medicines',
@@ -1620,13 +1633,13 @@ export const POST_CATEGORIES: CategoryInfo[] = [
   },
   {
     id: 'healthy-lifestyle',
-    icon: '💪',
+    icon: '🏃',
     colorClass: 'category-lifestyle',
     translationKey: 'forum.category.healthy_lifestyle',
   },
   {
     id: 'seasonal-health',
-    icon: '🤧',
+    icon: '🌸',
     colorClass: 'category-seasonal',
     translationKey: 'forum.category.seasonal_health',
   },
@@ -1638,7 +1651,7 @@ export const POST_CATEGORIES: CategoryInfo[] = [
   },
   {
     id: 'general',
-    icon: '📝',
+    icon: '💬',
     colorClass: 'category-general',
     translationKey: 'forum.category.general',
   },
@@ -3016,25 +3029,18 @@ export class CurrencyService {
 
 
 ================================================================================
-FILE: src\app\core\services\forum-blog.service.ts
+FILE: src\app\core\services\forum.service.ts
 ================================================================================
 
 import { Injectable, signal, computed } from '@angular/core';
 import { Observable, of, delay } from 'rxjs';
-import {
-  Post,
-  BlogPost,
-  ForumPost,
-  PostFilters,
-  SortOption,
-  Author,
-} from '../models/forum-blog.model';
+import { Post, BlogPost, ForumPost, PostFilters, SortOption } from '../models/forum.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ForumBlogService {
+export class ForumService {
   private postsSignal = signal<Post[]>([]);
   private filtersSignal = signal<PostFilters>({});
   private sortBySignal = signal<SortOption>('newest');
@@ -3087,7 +3093,7 @@ export class ForumBlogService {
 
   getFeaturedBlogPosts(limit = 3): Observable<BlogPost[]> {
     const featured = this.postsSignal()
-      .filter((post): post is BlogPost => post.type === 'blog' && post.isFeatured)
+      .filter((post): post is BlogPost => post.type === 'blog' && post.is_featured)
       .slice(0, limit);
     return of(featured).pipe(delay(200));
   }
@@ -3126,11 +3132,12 @@ export class ForumBlogService {
     return posts.filter((post) => {
       if (filters.category && post.category !== filters.category) return false;
       if (filters.type && post.type !== filters.type) return false;
-      if (filters.authorRole && post.author.role !== filters.authorRole) return false;
-      if (filters.isFeatured !== undefined && post.isFeatured !== filters.isFeatured) return false;
-      if (filters.isPinned !== undefined && post.isPinned !== filters.isPinned) return false;
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
+      if (filters.author_role && post.author.role !== filters.author_role) return false;
+      if (filters.is_featured !== undefined && post.is_featured !== filters.is_featured)
+        return false;
+      if (filters.is_pinned !== undefined && post.is_pinned !== filters.is_pinned) return false;
+      if (filters.search_query) {
+        const query = filters.search_query.toLowerCase();
         const searchable = `${post.title} ${post.excerpt} ${post.content}`.toLowerCase();
         if (!searchable.includes(query)) return false;
       }
@@ -3146,9 +3153,13 @@ export class ForumBlogService {
     const sorted = [...posts];
     switch (sortBy) {
       case 'newest':
-        return sorted.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        return sorted.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
       case 'oldest':
-        return sorted.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+        return sorted.sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+        );
       case 'most-viewed':
         return sorted.sort((a, b) => b.views - a.views);
       case 'most-liked':
@@ -3163,11 +3174,12 @@ export class ForumBlogService {
   }
 
   private calculateTrendingScore(post: Post): number {
-    const daysSincePublished = post.publishedAt
-      ? (Date.now() - post.publishedAt.getTime()) / (1000 * 60 * 60 * 24)
+    const publishedAt = post.published_at ? new Date(post.published_at).getTime() : 0;
+    const daysSincePublished = publishedAt
+      ? (Date.now() - publishedAt) / (1000 * 60 * 60 * 24)
       : 999;
     const recencyScore = Math.max(0, 7 - daysSincePublished);
-    const activityScore = post.views * 0.1 + post.likes * 2 + post.commentCount * 5;
+    const activityScore = post.views * 0.1 + post.likes * 2 + post.comment_count * 5;
     return recencyScore * 10 + activityScore;
   }
 }
@@ -6189,7 +6201,7 @@ FILE: src\app\pages\forum\forum.html
         </div>
 
         @if (isAuthenticated()) {
-          <button class="new-post-button">
+          <button class="new-post-button" routerLink="/forum/new">
             <span class="icon">✏️</span>
             {{ 'forum.new_post' | translate }}
           </button>
@@ -6225,6 +6237,7 @@ FILE: src\app\pages\forum\forum.html
       }
     </section>
 
+    <!-- ── Loading ── -->
     @if (isLoading()) {
       <div class="loading-container" role="status" [attr.aria-label]="'common.loading' | translate">
         <div class="spinner"></div>
@@ -6232,7 +6245,19 @@ FILE: src\app\pages\forum\forum.html
       </div>
     }
 
-    @if (!isLoading()) {
+    <!-- ── Error ── -->
+    @if (!isLoading() && loadError()) {
+      <div class="error-container">
+        <p class="error-icon">⚠️</p>
+        <p class="error-message">{{ 'forum.load_error' | translate }}</p>
+        <button class="retry-button" (click)="forumService.loadPosts()">
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+    }
+
+    <!-- ── Content ── -->
+    @if (!isLoading() && !loadError()) {
       @if (posts().length > 0) {
         <section class="posts-grid">
           @for (post of posts(); track post.id) {
@@ -6248,6 +6273,7 @@ FILE: src\app\pages\forum\forum.html
           }
         </section>
 
+        <!-- ── Pagination ── -->
         @if (totalPages() > 1) {
           <nav class="pagination" aria-label="Pagination">
             <button
@@ -6288,12 +6314,13 @@ FILE: src\app\pages\forum\forum.html
           </nav>
         }
       } @else {
+        <!-- ── No results ── -->
         <div class="no-results">
           <div class="no-results-icon">🔍</div>
           <h3 class="no-results-title">{{ 'forum.no_results_title' | translate }}</h3>
           <p class="no-results-description">{{ 'forum.no_results_description' | translate }}</p>
           @if (searchQuery() || selectedCategory() !== 'all') {
-            <button class="reset-filters-button" (click)="selectCategory('all'); clearSearch()">
+            <button class="reset-filters-button" (click)="resetFilters()">
               {{ 'forum.reset_filters' | translate }}
             </button>
           }
@@ -6345,7 +6372,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ForumBlogService } from '../../core/services/forum-blog.service';
+import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PostCardComponent } from '../../shared/components/post-card/post-card';
 import {
@@ -6354,9 +6381,7 @@ import {
   SortOption,
   PostCategory,
   POST_CATEGORIES,
-} from '../../core/models/forum-blog.model';
-import { environment } from '../../../environments/environment';
-import { HttpClient } from '@angular/common/http';
+} from '../../core/models/forum.model';
 
 @Component({
   selector: 'app-forum',
@@ -6373,11 +6398,10 @@ export class Forum implements OnInit {
 
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
-  private http = inject(HttpClient);
 
   isAuthenticated = computed(() => this.authService.isAuthenticated());
 
-  constructor(public forumService: ForumBlogService) {}
+  constructor(public forumService: ForumService) {}
 
   posts = computed(() => this.forumService.paginatedPosts());
   totalPages = computed(() => this.forumService.totalPages());
@@ -6401,7 +6425,7 @@ export class Forum implements OnInit {
   applySearch(): void {
     const filters: PostFilters = {
       type: 'forum',
-      searchQuery: this.searchQuery() || undefined,
+      search_query: this.searchQuery() || undefined, // snake_case
       category:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
@@ -6472,10 +6496,6 @@ export class Forum implements OnInit {
 
   onPostClick(post: Post): void {
     console.log('Post clicked:', post.title);
-  }
-
-  getCategoryChipClass(colorClass: string): string {
-    return `category-chip ${colorClass}`;
   }
 }
 
@@ -7213,9 +7233,9 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 
   @if (!isLoading() && post()) {
     <article class="article">
-      @if (post()!.imageUrl) {
+      @if (post()!.image_url) {
         <div class="article-hero">
-          <img [src]="post()!.imageUrl" [alt]="post()!.title" class="hero-image" />
+          <img [src]="post()!.image_url" [alt]="post()!.title" class="hero-image" />
           <div class="hero-overlay"></div>
         </div>
       }
@@ -7256,7 +7276,7 @@ FILE: src\app\pages\forum-detail\forum-detail.html
             </div>
 
             <div class="meta-details">
-              <span class="meta-date">📅 {{ formatDate(post()!.createdAt) }}</span>
+              <span class="meta-date">📅 {{ formatDate(post()!.created_at) }}</span>
               @if (getReadingTime()) {
                 <span class="meta-reading"
                   >📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span
@@ -7326,12 +7346,12 @@ FILE: src\app\pages\forum-detail\forum-detail.html
                     @if (comment.author.verified) {
                       <span class="verified-badge">✓</span>
                     }
-                    <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                    <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
                   </div>
                   <p class="comment-content">{{ comment.content }}</p>
                   <div class="comment-footer">
                     <span class="comment-likes">❤️ {{ comment.likes }}</span>
-                    @if (comment.isEdited) {
+                    @if (comment.is_edited) {
                       <span class="comment-edited">{{ 'forum.comment_edited' | translate }}</span>
                     }
                   </div>
@@ -7387,9 +7407,9 @@ FILE: src\app\pages\forum-detail\forum-detail.html
             <div class="slider-track">
               @for (related of sliderVisible; track related.id) {
                 <a class="related-card" [routerLink]="['/forum', related.slug]">
-                  @if (related.imageUrl) {
+                  @if (related.image_url) {
                     <div class="related-image">
-                      <img [src]="related.imageUrl" [alt]="related.title" loading="lazy" />
+                      <img [src]="related.image_url" [alt]="related.title" loading="lazy" />
                     </div>
                   }
                   <div class="related-info">
@@ -7397,7 +7417,7 @@ FILE: src\app\pages\forum-detail\forum-detail.html
                     <p class="related-excerpt">{{ related.excerpt }}</p>
                     <div class="related-meta">
                       <span>{{ related.author.name }}</span>
-                      <span>{{ formatDate(related.createdAt) }}</span>
+                      <span>{{ formatDate(related.created_at) }}</span>
                     </div>
                   </div>
                 </a>
@@ -7442,7 +7462,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ForumBlogService } from '../../core/services/forum-blog.service';
+import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
 import {
   Post,
@@ -7450,7 +7470,7 @@ import {
   Comment,
   POST_CATEGORIES,
   CategoryInfo,
-} from '../../core/models/forum-blog.model';
+} from '../../core/models/forum.model';
 
 @Component({
   selector: 'app-forum-detail',
@@ -7461,7 +7481,7 @@ import {
 })
 export class ForumDetail implements OnInit {
   private route = inject(ActivatedRoute);
-  private forumBlogService = inject(ForumBlogService);
+  private forumBlogService = inject(ForumService);
   private authService = inject(AuthService);
   private translate = inject(TranslateService);
 
@@ -7476,6 +7496,11 @@ export class ForumDetail implements OnInit {
 
   isAuthenticated = this.authService.isAuthenticated;
   currentUser = this.authService.currentUser;
+
+  // Session token from authservice
+  private get sessionToken(): string {
+    return this.authService.sessionToken() ?? '';
+  }
 
   categories = POST_CATEGORIES;
 
@@ -7510,21 +7535,22 @@ export class ForumDetail implements OnInit {
     const mock: Comment[] = [
       {
         id: 'c1',
-        postId,
+        post_id: postId,
         author: { id: 'u1', name: 'Kovács Anna', role: 'user', verified: false },
         content: 'Nagyon hasznos bejegyzés, köszönöm!',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3),
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
         likes: 4,
-        isEdited: false,
+        is_edited: false,
       },
       {
         id: 'c2',
-        postId,
+        post_id: postId,
         author: { id: 'u2', name: 'Dr. Nagy Péter', role: 'pharmacist', verified: true },
-        content: 'Fontos kiegészítés: mindig konzultálj gyógyszerésszel, mielőtt bármilyen szert szednél.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 1),
+        content:
+          'Fontos kiegészítés: mindig konzultálj gyógyszerésszel, mielőtt bármilyen szert szednél.',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 1).toISOString(),
         likes: 11,
-        isEdited: false,
+        is_edited: false,
       },
     ];
     this.comments.set(mock);
@@ -7536,19 +7562,19 @@ export class ForumDetail implements OnInit {
 
   getReadingTime(): number {
     const p = this.post();
-    if (p && 'readingTime' in p) {
-      return (p as BlogPost).readingTime;
+    if (p && p.type === 'blog') {
+      return (p as BlogPost).reading_time;
     }
     return 0;
   }
 
-  formatDate(date: Date): string {
-    if (!date) return '';
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
     return new Intl.DateTimeFormat(this.translate.currentLang || 'hu', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(new Date(date));
+    }).format(new Date(dateStr));
   }
 
   toggleContent(): void {
@@ -7561,10 +7587,15 @@ export class ForumDetail implements OnInit {
 
     this.isSubmittingComment.set(true);
     const user = this.currentUser();
+    const post = this.post();
+    if (!post) return;
+
+    // TODO:
+    // this.forumBlogService.addComment(post.id, user!.id, this.sessionToken, text).subscribe(...)
 
     const comment: Comment = {
       id: 'c' + Date.now(),
-      postId: this.post()?.id || '',
+      post_id: post.id,
       author: {
         id: user?.id || 'me',
         name: `${user?.firstname || ''} ${user?.lastname || ''}`.trim() || user?.email || 'Te',
@@ -7572,9 +7603,9 @@ export class ForumDetail implements OnInit {
         verified: false,
       },
       content: text,
-      createdAt: new Date(),
+      created_at: new Date().toISOString(),
       likes: 0,
-      isEdited: false,
+      is_edited: false,
     };
 
     setTimeout(() => {
@@ -7584,7 +7615,18 @@ export class ForumDetail implements OnInit {
     }, 400);
   }
 
-  // Slider
+  likePost(): void {
+    const post = this.post();
+    if (!post || !this.isAuthenticated()) return;
+    // TODO: this.forumBlogService.likePost(post.id, this.currentUser()!.id, this.sessionToken).subscribe();
+  }
+
+  unlikePost(): void {
+    const post = this.post();
+    if (!post || !this.isAuthenticated()) return;
+    // TODO: this.forumBlogService.unlikePost(post.id, this.currentUser()!.id, this.sessionToken).subscribe();
+  }
+
   get sliderVisible(): Post[] {
     return this.relatedPosts().slice(this.sliderIndex(), this.sliderIndex() + 3);
   }
@@ -7594,9 +7636,7 @@ export class ForumDetail implements OnInit {
   }
 
   sliderNext(): void {
-    this.sliderIndex.update((i) =>
-      Math.min(this.relatedPosts().length - 3, i + 1),
-    );
+    this.sliderIndex.update((i) => Math.min(this.relatedPosts().length - 3, i + 1));
   }
 
   get canSliderPrev(): boolean {
@@ -9647,6 +9687,448 @@ export class LoginPromise implements OnInit {
 FILE: src\app\pages\not-found\not-found.css
 ================================================================================
 
+/* ═══════════════════════════════════════════════════════════════════════
+   404 Not Found Page
+   Roy's Shack Est. 1888
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+/* ─── Page layout ─────────────────────────────────────────────────────── */
+
+.nf-page {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--color-background);
+  padding: var(--space-8) var(--space-4);
+}
+
+/* Subtle radial glow behind content */
+.nf-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 40%,
+    rgba(6, 122, 69, 0.07) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ─── Floating particles ──────────────────────────────────────────────── */
+
+.nf-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--color-green-primary);
+  opacity: 0.08;
+  animation: particle-float linear infinite;
+}
+
+[data-theme='dark'] .particle {
+  opacity: 0.12;
+}
+
+.particle-1 {
+  width: 180px;
+  height: 180px;
+  top: -60px;
+  left: -40px;
+  animation-duration: 18s;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  width: 100px;
+  height: 100px;
+  top: 15%;
+  right: 8%;
+  animation-duration: 22s;
+  animation-delay: -4s;
+}
+
+.particle-3 {
+  width: 60px;
+  height: 60px;
+  top: 60%;
+  left: 6%;
+  animation-duration: 16s;
+  animation-delay: -8s;
+}
+
+.particle-4 {
+  width: 220px;
+  height: 220px;
+  bottom: -80px;
+  right: -60px;
+  animation-duration: 26s;
+  animation-delay: -12s;
+}
+
+.particle-5 {
+  width: 40px;
+  height: 40px;
+  top: 40%;
+  left: 20%;
+  animation-duration: 14s;
+  animation-delay: -6s;
+}
+
+.particle-6 {
+  width: 80px;
+  height: 80px;
+  bottom: 20%;
+  right: 20%;
+  animation-duration: 20s;
+  animation-delay: -2s;
+}
+
+@keyframes particle-float {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+  33% {
+    transform: translateY(-18px) scale(1.04);
+  }
+  66% {
+    transform: translateY(10px) scale(0.97);
+  }
+}
+
+/* ─── Content container ───────────────────────────────────────────────── */
+
+.nf-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-6);
+  max-width: 560px;
+  width: 100%;
+  animation: nf-entrance 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes nf-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── 404 number ──────────────────────────────────────────────────────── */
+
+.nf-code-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.05em;
+  line-height: 1;
+  user-select: none;
+}
+
+.nf-digit {
+  font-family: var(--font-mono, 'Inconsolata', monospace);
+  font-size: clamp(5rem, 18vw, 10rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+
+  /* Green gradient fill */
+  background: var(--gradient-primary, linear-gradient(135deg, #067a45, #0a9e5a));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  /* Subtle glow */
+  filter: drop-shadow(0 2px 16px rgba(6, 122, 69, 0.25));
+}
+
+/* The zero in the middle gets a special "glitch" wobble */
+.nf-digit--zero {
+  animation: digit-wobble 6s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes digit-wobble {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  20% {
+    transform: rotate(-3deg) scale(1.02);
+  }
+  40% {
+    transform: rotate(3deg) scale(0.98);
+  }
+  60% {
+    transform: rotate(-1.5deg) scale(1.01);
+  }
+  80% {
+    transform: rotate(1deg) scale(0.99);
+  }
+}
+
+/* ─── Logo ────────────────────────────────────────────────────────────── */
+
+.nf-logo-wrapper {
+  padding: var(--space-2) 0;
+}
+
+.nf-logo {
+  height: clamp(64px, 12vw, 96px);
+  width: auto;
+  object-fit: contain;
+
+  /* Smooth theme transition */
+  transition: opacity var(--transition-normal);
+  animation: logo-appear 0.5s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes logo-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ─── Divider ─────────────────────────────────────────────────────────── */
+
+.nf-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 320px;
+}
+
+.nf-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-border), transparent);
+}
+
+.nf-divider-icon {
+  font-size: 0.75rem;
+  color: var(--color-green-primary);
+  opacity: 0.6;
+}
+
+/* ─── Message ─────────────────────────────────────────────────────────── */
+
+.nf-message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.nf-title {
+  font-family: var(--font-primary);
+  font-size: var(--text-2xl, clamp(1.4rem, 4vw, 1.9rem));
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.nf-subtitle {
+  font-size: var(--text-base, 1rem);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed, 1.75);
+  max-width: 420px;
+}
+
+/* ─── Action buttons ──────────────────────────────────────────────────── */
+
+.nf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+  width: 100%;
+}
+
+.nf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full, 999px);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--transition-normal),
+    box-shadow var(--transition-normal),
+    transform var(--transition-fast),
+    color var(--transition-normal);
+  white-space: nowrap;
+}
+
+.nf-btn:focus-visible {
+  outline: 2px solid var(--color-green-primary);
+  outline-offset: 3px;
+}
+
+/* Primary — filled green */
+.nf-btn--primary {
+  background: var(--gradient-primary, linear-gradient(135deg, #067a45, #0a9e5a));
+  color: #fff;
+  box-shadow: var(--shadow-primary, 0 6px 20px rgba(6, 122, 69, 0.35));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nf-btn--primary:hover {
+    background: var(--gradient-primary-hover, linear-gradient(135deg, #055c34, #067a45));
+    box-shadow: var(--shadow-primary-lg, 0 8px 28px rgba(6, 122, 69, 0.5));
+    transform: translateY(-2px);
+  }
+
+  .nf-btn--primary:active {
+    transform: translateY(0);
+  }
+}
+
+/* Secondary — outlined */
+.nf-btn--secondary {
+  background: transparent;
+  color: var(--color-green-primary);
+  border: 1.5px solid var(--color-green-primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nf-btn--secondary:hover {
+    background: rgba(6, 122, 69, 0.06);
+    box-shadow: 0 4px 12px rgba(6, 122, 69, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .nf-btn--secondary:active {
+    transform: translateY(0);
+  }
+}
+
+.nf-btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ─── Quick links ─────────────────────────────────────────────────────── */
+
+.nf-quick-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.nf-quick-links-label {
+  font-size: var(--text-xs, 0.78rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+.nf-quick-links-list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nf-quick-link {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nf-quick-link:hover {
+    color: var(--color-green-primary);
+  }
+}
+
+.nf-quick-link:focus-visible {
+  outline: 2px solid var(--color-green-primary);
+  border-radius: 2px;
+  outline-offset: 2px;
+}
+
+.nf-quick-link-sep {
+  color: var(--color-border);
+  font-size: var(--text-base, 1rem);
+  user-select: none;
+}
+
+/* ─── Est. badge ──────────────────────────────────────────────────────── */
+
+.nf-est-badge {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-6);
+
+  font-family: var(--font-mono, 'Inconsolata', monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--color-text-secondary);
+  opacity: 0.3;
+  user-select: none;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .nf-content {
+    gap: var(--space-5);
+  }
+
+  .nf-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nf-btn {
+    justify-content: center;
+  }
+
+  .nf-est-badge {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .nf-content {
+    gap: var(--space-8);
+  }
+}
 
 
 
@@ -9654,7 +10136,90 @@ FILE: src\app\pages\not-found\not-found.css
 FILE: src\app\pages\not-found\not-found.html
 ================================================================================
 
-<p>not-found works!</p>
+<div class="nf-page">
+  <div class="nf-particles" aria-hidden="true">
+    <span class="particle particle-1"></span>
+    <span class="particle particle-2"></span>
+    <span class="particle particle-3"></span>
+    <span class="particle particle-4"></span>
+    <span class="particle particle-5"></span>
+    <span class="particle particle-6"></span>
+  </div>
+
+  <div class="nf-content">
+    <div class="nf-code-wrapper" aria-hidden="true">
+      <span class="nf-digit">4</span>
+      <span class="nf-digit nf-digit--zero">0</span>
+      <span class="nf-digit">4</span>
+    </div>
+
+    <div class="nf-logo-wrapper">
+      <img [src]="logoSrc" alt="Roy's Shack Est. 1888" class="nf-logo" />
+    </div>
+
+    <div class="nf-divider" aria-hidden="true">
+      <span class="nf-divider-line"></span>
+      <span class="nf-divider-icon">✦</span>
+      <span class="nf-divider-line"></span>
+    </div>
+
+    <div class="nf-message">
+      <h1 class="nf-title">{{ 'not_found.title' | translate }}</h1>
+      <p class="nf-subtitle">{{ 'not_found.subtitle' | translate }}</p>
+    </div>
+
+    <div class="nf-actions">
+      <a routerLink="/home" class="nf-btn nf-btn--primary">
+        <svg
+          class="nf-btn-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"
+          />
+        </svg>
+        {{ 'not_found.go_home' | translate }}
+      </a>
+
+      <a routerLink="/products" class="nf-btn nf-btn--secondary">
+        <svg
+          class="nf-btn-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M20 7H4a1 1 0 00-1 1v10a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1zM16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"
+          />
+        </svg>
+        {{ 'not_found.browse_products' | translate }}
+      </a>
+    </div>
+
+    <nav class="nf-quick-links" aria-label="{{ 'not_found.quick_links_label' | translate }}">
+      <span class="nf-quick-links-label">{{ 'not_found.quick_links' | translate }}</span>
+      <div class="nf-quick-links-list">
+        <a routerLink="/forum" class="nf-quick-link">{{ 'header.forum' | translate }}</a>
+        <span class="nf-quick-link-sep" aria-hidden="true">·</span>
+        <a routerLink="/profile" class="nf-quick-link">{{ 'header.profile' | translate }}</a>
+        <span class="nf-quick-link-sep" aria-hidden="true">·</span>
+        <a routerLink="/legal" class="nf-quick-link">{{ 'footer.legal' | translate }}</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="nf-est-badge" aria-hidden="true">Est. 1888</div>
+</div>
 
 
 
@@ -9692,16 +10257,44 @@ describe('NotFound', () => {
 FILE: src\app\pages\not-found\not-found.ts
 ================================================================================
 
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
+
+import { ThemeService, Theme } from '../../core/services/theme.service';
+import { environment } from '../../../environments/environment';
+import { getLogoSrc } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-not-found',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, RouterModule, TranslateModule],
   templateUrl: './not-found.html',
   styleUrl: './not-found.css',
 })
-export class NotFound {}
+export class NotFound implements OnInit, OnDestroy {
+  private themeService = inject(ThemeService);
+  private themeSub!: Subscription;
+
+  currentTheme = signal<Theme>('light');
+
+  get logoSrc(): string {
+    return getLogoSrc(this.currentTheme() as 'dark' | 'light');
+  }
+
+  ngOnInit(): void {
+    this.currentTheme.set(this.themeService.getCurrentTheme());
+    this.themeSub = this.themeService.currentTheme$.subscribe((theme) => {
+      this.currentTheme.set(theme);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.themeSub?.unsubscribe();
+  }
+}
 
 
 
@@ -18122,7 +18715,7 @@ FILE: src\app\shared\components\header\header.css
   width: 100%;
   z-index: 1000;
 
-  background-color: rgba(6, 122, 69, 0.55);
+  background-color: rgba(6, 122, 69, 0.92);
 
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
@@ -18143,7 +18736,7 @@ FILE: src\app\shared\components\header\header.css
 }
 
 [data-theme='dark'] .header {
-  background-color: rgba(15, 30, 22, 0.65);
+  background-color: rgba(15, 30, 22, 0.88);
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
@@ -19947,28 +20540,28 @@ FILE: src\app\shared\components\post-card\post-card.html
 <article
   class="post-card"
   [class.compact]="compactMode"
-  [class.pinned]="post.isPinned"
-  [class.featured]="post.isFeatured"
+  [class.pinned]="post.is_pinned"
+  [class.featured]="post.is_featured"
   [routerLink]="[post.type === 'blog' ? '/blog' : '/forum', post.slug]"
   (click)="handleCardClick()"
 >
-  @if (post.isPinned) {
+  @if (post.is_pinned) {
     <div class="pinned-badge">
       <span class="pin-icon">📌</span>
       <span>{{ 'forum.pinned' | translate }}</span>
     </div>
   }
 
-  @if (post.isFeatured && !post.isPinned) {
+  @if (post.is_featured && !post.is_pinned) {
     <div class="featured-badge">
       <span class="star-icon">⭐</span>
       <span>{{ 'forum.featured' | translate }}</span>
     </div>
   }
 
-  @if (showImage && post.imageUrl) {
+  @if (showImage && post.image_url) {
     <div class="post-image">
-      <img [src]="post.imageUrl" [alt]="post.title" loading="lazy" />
+      <img [src]="post.image_url" [alt]="post.title" loading="lazy" />
 
       @if (showCategory && categoryInfo) {
         <div class="category-badge-overlay" [class]="categoryInfo.colorClass">
@@ -19992,7 +20585,7 @@ FILE: src\app\shared\components\post-card\post-card.html
 
   <div class="post-content">
     <div class="post-header">
-      @if (showCategory && categoryInfo && !post.imageUrl) {
+      @if (showCategory && categoryInfo && !post.image_url) {
         <div class="category-badge-inline" [class]="categoryInfo.colorClass">
           <span class="category-icon">{{ categoryInfo.icon }}</span>
           <span class="category-name">{{ categoryInfo.translationKey | translate }}</span>
@@ -20052,7 +20645,7 @@ FILE: src\app\shared\components\post-card\post-card.html
         </div>
         <div class="stat-item">
           <span class="stat-icon">💬</span>
-          <span class="stat-value">{{ post.commentCount }}</span>
+          <span class="stat-value">{{ post.comment_count }}</span>
         </div>
       </div>
     }
@@ -20077,7 +20670,7 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Post, POST_CATEGORIES } from '../../../core/models/forum-blog.model';
+import { Post, POST_CATEGORIES } from '../../../core/models/forum.model';
 
 @Component({
   selector: 'app-post-card',
@@ -20118,7 +20711,7 @@ export class PostCardComponent {
 
   getRelativeTime(): string {
     const now = new Date();
-    const postDate = this.post.createdAt;
+    const postDate = new Date(this.post.created_at); // snake_case
     const diffMs = now.getTime() - postDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
@@ -20149,16 +20742,17 @@ export class PostCardComponent {
     this.cardClick.emit(this.post);
   }
 
+  // Type narrowing — discriminated union `type`
   get readingTime(): number | null {
-    return this.post.type === 'blog' ? this.post.readingTime : null;
+    return this.post.type === 'blog' ? this.post.reading_time : null;
   }
 
   get isQuestion(): boolean {
-    return this.post.type === 'forum' ? this.post.isQuestion : false;
+    return this.post.type === 'forum' ? this.post.is_question : false;
   }
 
   get hasAcceptedAnswer(): boolean {
-    return this.post.type === 'forum' ? this.post.hasAcceptedAnswer : false;
+    return this.post.type === 'forum' ? this.post.has_accepted_answer : false;
   }
 }
 
@@ -24829,6 +25423,22 @@ FILE: src\assets\i18n\de.json
     "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
     "verified": "Verifiziert",
     "all_categories": "Alle Kategorien",
+    "category": {
+      "medicines": "Arzneimittel",
+      "natural_remedies": "Natürliche Behandlungen",
+      "baby_mother": "Babys und Mütter",
+      "healthy_lifestyle": "Gesunder Lebensstil",
+      "seasonal_health": "Saisonale Gesundheit",
+      "qa": "F&A",
+      "general": "Generisch"
+    },
+    "sort": {
+      "newest": "neuestes",
+      "oldest": "älteste",
+      "most_viewed": "meistgesehene",
+      "most_liked": "beliebteste",
+      "trending": "trending"
+    },
     "description": "Teilen Sie Fragen, Antworten und Erfahrungen mit unserer Community",
     "reset_filters": "Filter zurücksetzen",
     "answered": "Beantwortet",
@@ -25045,6 +25655,14 @@ FILE: src\assets\i18n\de.json
       "subtitle": "Blutdruckmessgeräte, Wundpflege und Diagnosemittel – Profiqualität zum Heimpreis."
     },
     "cta": "Produkte ansehen"
+  },
+  "not_found": {
+    "title": "Seite nicht gefunden",
+    "subtitle": "Diese Seite scheint sich in den Apothekenregalen verirrt zu haben. Wir helfen dir zurück.",
+    "go_home": "Zur Startseite",
+    "browse_products": "Produkte entdecken",
+    "quick_links": "Oder springe zu",
+    "quick_links_label": "Schnellnavigation"
   }
 }
 
@@ -25477,6 +26095,22 @@ FILE: src\assets\i18n\en.json
     "no_results_description": "Try different search terms or select another category.",
     "verified": "Verified",
     "all_categories": "All Categories",
+    "category": {
+      "medicines": "Medicines",
+      "natural_remedies": "Natural Remedies",
+      "baby_mother": "Babies and Mothers",
+      "healthy_lifestyle": "Healthy Lifestyle",
+      "seasonal_health": "Seasonal Health",
+      "qa": "Q&A",
+      "general": "General"
+    },
+    "sort": {
+      "newest": "newest",
+      "oldest": "oldest",
+      "most_viewed": "most viewed",
+      "most_liked": "most liked",
+      "trending": "trending"
+    },
     "description": "Share questions, answers, and experiences with our community",
     "reset_filters": "Reset Filters",
     "answered": "Answered",
@@ -25693,6 +26327,14 @@ FILE: src\assets\i18n\en.json
       "subtitle": "Blood pressure monitors, wound care and diagnostic tools — professional quality, home prices."
     },
     "cta": "Browse Products"
+  },
+  "not_found": {
+    "title": "Page not found",
+    "subtitle": "Looks like this page got lost somewhere in the pharmacy aisles. Let us help you find your way back.",
+    "go_home": "Back to Home",
+    "browse_products": "Browse Products",
+    "quick_links": "Or jump to",
+    "quick_links_label": "Quick navigation"
   }
 }
 
@@ -26125,6 +26767,22 @@ FILE: src\assets\i18n\hu.json
     "no_results_description": "Próbálj meg más keresési kifejezést vagy kategóriát választani.",
     "verified": "Hitelesített",
     "all_categories": "Minden kategória",
+    "category": {
+      "medicines": "Gyógyszerek",
+      "natural_remedies": "Természetes Gyógymódok",
+      "baby_mother": "Babák és Anyák",
+      "healthy_lifestyle": "Egészséges Életmód",
+      "seasonal_health": "Szezonális Egészség",
+      "qa": "Q&A",
+      "general": "Általános"
+    },
+    "sort": {
+      "newest": "legújabb",
+      "oldest": "legrégibb",
+      "most_viewed": "legnézettebb",
+      "most_liked": "legkedveltebb",
+      "trending": "trending"
+    },
     "description": "Kérdések, válaszok és tapasztalatok megosztása közösségünkkel",
     "reset_filters": "Szűrők visszaállítása",
     "answered": "Megválaszolva",
@@ -26341,6 +26999,14 @@ FILE: src\assets\i18n\hu.json
       "subtitle": "Vérnyomásmérők, sebkezelési termékek, diagnosztikai eszközök – professzionális minőség, otthoni áron."
     },
     "cta": "Termékek megtekintése"
+  },
+  "not_found": {
+    "title": "Az oldal nem található",
+    "subtitle": "Úgy tűnik, ez az oldal eltévedt a patika folyosóin. Talán visszatalálsz onnan, ahonnan jöttél?",
+    "go_home": "Vissza a főoldalra",
+    "browse_products": "Termékek böngészése",
+    "quick_links": "Vagy ugorj ide",
+    "quick_links_label": "Gyors navigáció"
   }
 }
 

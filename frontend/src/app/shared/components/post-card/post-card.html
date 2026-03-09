@@ -1,28 +1,28 @@
 <article
   class="post-card"
   [class.compact]="compactMode"
-  [class.pinned]="post.isPinned"
-  [class.featured]="post.isFeatured"
+  [class.pinned]="post.is_pinned"
+  [class.featured]="post.is_featured"
   [routerLink]="[post.type === 'blog' ? '/blog' : '/forum', post.slug]"
   (click)="handleCardClick()"
 >
-  @if (post.isPinned) {
+  @if (post.is_pinned) {
     <div class="pinned-badge">
       <span class="pin-icon">📌</span>
       <span>{{ 'forum.pinned' | translate }}</span>
     </div>
   }
 
-  @if (post.isFeatured && !post.isPinned) {
+  @if (post.is_featured && !post.is_pinned) {
     <div class="featured-badge">
       <span class="star-icon">⭐</span>
       <span>{{ 'forum.featured' | translate }}</span>
     </div>
   }
 
-  @if (showImage && post.imageUrl) {
+  @if (showImage && post.image_url) {
     <div class="post-image">
-      <img [src]="post.imageUrl" [alt]="post.title" loading="lazy" />
+      <img [src]="post.image_url" [alt]="post.title" loading="lazy" />
 
       @if (showCategory && categoryInfo) {
         <div class="category-badge-overlay" [class]="categoryInfo.colorClass">
@@ -46,7 +46,7 @@
 
   <div class="post-content">
     <div class="post-header">
-      @if (showCategory && categoryInfo && !post.imageUrl) {
+      @if (showCategory && categoryInfo && !post.image_url) {
         <div class="category-badge-inline" [class]="categoryInfo.colorClass">
           <span class="category-icon">{{ categoryInfo.icon }}</span>
           <span class="category-name">{{ categoryInfo.translationKey | translate }}</span>
@@ -106,7 +106,7 @@
         </div>
         <div class="stat-item">
           <span class="stat-icon">💬</span>
-          <span class="stat-value">{{ post.commentCount }}</span>
+          <span class="stat-value">{{ post.comment_count }}</span>
         </div>
       </div>
     }

@@ -8,9 +8,9 @@
 
   @if (!isLoading() && post()) {
     <article class="article">
-      @if (post()!.imageUrl) {
+      @if (post()!.image_url) {
         <div class="article-hero">
-          <img [src]="post()!.imageUrl" [alt]="post()!.title" class="hero-image" />
+          <img [src]="post()!.image_url" [alt]="post()!.title" class="hero-image" />
           <div class="hero-overlay"></div>
         </div>
       }
@@ -51,7 +51,7 @@
             </div>
 
             <div class="meta-details">
-              <span class="meta-date">📅 {{ formatDate(post()!.createdAt) }}</span>
+              <span class="meta-date">📅 {{ formatDate(post()!.created_at) }}</span>
               @if (getReadingTime()) {
                 <span class="meta-reading"
                   >📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span
@@ -121,12 +121,12 @@
                     @if (comment.author.verified) {
                       <span class="verified-badge">✓</span>
                     }
-                    <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                    <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
                   </div>
                   <p class="comment-content">{{ comment.content }}</p>
                   <div class="comment-footer">
                     <span class="comment-likes">❤️ {{ comment.likes }}</span>
-                    @if (comment.isEdited) {
+                    @if (comment.is_edited) {
                       <span class="comment-edited">{{ 'forum.comment_edited' | translate }}</span>
                     }
                   </div>
@@ -182,9 +182,9 @@
             <div class="slider-track">
               @for (related of sliderVisible; track related.id) {
                 <a class="related-card" [routerLink]="['/forum', related.slug]">
-                  @if (related.imageUrl) {
+                  @if (related.image_url) {
                     <div class="related-image">
-                      <img [src]="related.imageUrl" [alt]="related.title" loading="lazy" />
+                      <img [src]="related.image_url" [alt]="related.title" loading="lazy" />
                     </div>
                   }
                   <div class="related-info">
@@ -192,7 +192,7 @@
                     <p class="related-excerpt">{{ related.excerpt }}</p>
                     <div class="related-meta">
                       <span>{{ related.author.name }}</span>
-                      <span>{{ formatDate(related.createdAt) }}</span>
+                      <span>{{ formatDate(related.created_at) }}</span>
                     </div>
                   </div>
                 </a>

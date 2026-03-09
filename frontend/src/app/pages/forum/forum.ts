@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ForumBlogService } from '../../core/services/forum-blog.service';
+import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PostCardComponent } from '../../shared/components/post-card/post-card';
 import {
@@ -13,9 +13,7 @@ import {
   SortOption,
   PostCategory,
   POST_CATEGORIES,
-} from '../../core/models/forum-blog.model';
-import { environment } from '../../../environments/environment';
-import { HttpClient } from '@angular/common/http';
+} from '../../core/models/forum.model';
 
 @Component({
   selector: 'app-forum',
@@ -32,11 +30,10 @@ export class Forum implements OnInit {
 
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
-  private http = inject(HttpClient);
 
   isAuthenticated = computed(() => this.authService.isAuthenticated());
 
-  constructor(public forumService: ForumBlogService) {}
+  constructor(public forumService: ForumService) {}
 
   posts = computed(() => this.forumService.paginatedPosts());
   totalPages = computed(() => this.forumService.totalPages());
@@ -60,7 +57,7 @@ export class Forum implements OnInit {
   applySearch(): void {
     const filters: PostFilters = {
       type: 'forum',
-      searchQuery: this.searchQuery() || undefined,
+      search_query: this.searchQuery() || undefined, // snake_case
       category:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
@@ -131,9 +128,5 @@ export class Forum implements OnInit {
 
   onPostClick(post: Post): void {
     console.log('Post clicked:', post.title);
-  }
-
-  getCategoryChipClass(colorClass: string): string {
-    return `category-chip ${colorClass}`;
   }
 }

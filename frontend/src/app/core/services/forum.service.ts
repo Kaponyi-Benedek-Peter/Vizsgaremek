@@ -1,19 +1,12 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Observable, of, delay } from 'rxjs';
-import {
-  Post,
-  BlogPost,
-  ForumPost,
-  PostFilters,
-  SortOption,
-  Author,
-} from '../models/forum-blog.model';
+import { Post, BlogPost, ForumPost, PostFilters, SortOption } from '../models/forum.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ForumBlogService {
+export class ForumService {
   private postsSignal = signal<Post[]>([]);
   private filtersSignal = signal<PostFilters>({});
   private sortBySignal = signal<SortOption>('newest');
@@ -66,7 +59,7 @@ export class ForumBlogService {
 
   getFeaturedBlogPosts(limit = 3): Observable<BlogPost[]> {
     const featured = this.postsSignal()
-      .filter((post): post is BlogPost => post.type === 'blog' && post.isFeatured)
+      .filter((post): post is BlogPost => post.type === 'blog' && post.is_featured)
       .slice(0, limit);
     return of(featured).pipe(delay(200));
   }
@@ -105,11 +98,12 @@ export class ForumBlogService {
     return posts.filter((post) => {
       if (filters.category && post.category !== filters.category) return false;
       if (filters.type && post.type !== filters.type) return false;
-      if (filters.authorRole && post.author.role !== filters.authorRole) return false;
-      if (filters.isFeatured !== undefined && post.isFeatured !== filters.isFeatured) return false;
-      if (filters.isPinned !== undefined && post.isPinned !== filters.isPinned) return false;
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
+      if (filters.author_role && post.author.role !== filters.author_role) return false;
+      if (filters.is_featured !== undefined && post.is_featured !== filters.is_featured)
+        return false;
+      if (filters.is_pinned !== undefined && post.is_pinned !== filters.is_pinned) return false;
+      if (filters.search_query) {
+        const query = filters.search_query.toLowerCase();
         const searchable = `${post.title} ${post.excerpt} ${post.content}`.toLowerCase();
         if (!searchable.includes(query)) return false;
       }
@@ -125,9 +119,13 @@ export class ForumBlogService {
     const sorted = [...posts];
     switch (sortBy) {
       case 'newest':
-        return sorted.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        return sorted.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
       case 'oldest':
-        return sorted.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+        return sorted.sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+        );
       case 'most-viewed':
         return sorted.sort((a, b) => b.views - a.views);
       case 'most-liked':
@@ -142,11 +140,12 @@ export class ForumBlogService {
   }
 
   private calculateTrendingScore(post: Post): number {
-    const daysSincePublished = post.publishedAt
-      ? (Date.now() - post.publishedAt.getTime()) / (1000 * 60 * 60 * 24)
+    const publishedAt = post.published_at ? new Date(post.published_at).getTime() : 0;
+    const daysSincePublished = publishedAt
+      ? (Date.now() - publishedAt) / (1000 * 60 * 60 * 24)
       : 999;
     const recencyScore = Math.max(0, 7 - daysSincePublished);
-    const activityScore = post.views * 0.1 + post.likes * 2 + post.commentCount * 5;
+    const activityScore = post.views * 0.1 + post.likes * 2 + post.comment_count * 5;
     return recencyScore * 10 + activityScore;
   }
 }

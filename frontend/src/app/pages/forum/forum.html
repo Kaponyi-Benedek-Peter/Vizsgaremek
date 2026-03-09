@@ -49,7 +49,7 @@
         </div>
 
         @if (isAuthenticated()) {
-          <button class="new-post-button">
+          <button class="new-post-button" routerLink="/forum/new">
             <span class="icon">✏️</span>
             {{ 'forum.new_post' | translate }}
           </button>
@@ -85,6 +85,7 @@
       }
     </section>
 
+    <!-- ── Loading ── -->
     @if (isLoading()) {
       <div class="loading-container" role="status" [attr.aria-label]="'common.loading' | translate">
         <div class="spinner"></div>
@@ -92,7 +93,19 @@
       </div>
     }
 
-    @if (!isLoading()) {
+    <!-- ── Error ── -->
+    @if (!isLoading() && loadError()) {
+      <div class="error-container">
+        <p class="error-icon">⚠️</p>
+        <p class="error-message">{{ 'forum.load_error' | translate }}</p>
+        <button class="retry-button" (click)="forumService.loadPosts()">
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+    }
+
+    <!-- ── Content ── -->
+    @if (!isLoading() && !loadError()) {
       @if (posts().length > 0) {
         <section class="posts-grid">
           @for (post of posts(); track post.id) {
@@ -108,6 +121,7 @@
           }
         </section>
 
+        <!-- ── Pagination ── -->
         @if (totalPages() > 1) {
           <nav class="pagination" aria-label="Pagination">
             <button
@@ -148,12 +162,13 @@
           </nav>
         }
       } @else {
+        <!-- ── No results ── -->
         <div class="no-results">
           <div class="no-results-icon">🔍</div>
           <h3 class="no-results-title">{{ 'forum.no_results_title' | translate }}</h3>
           <p class="no-results-description">{{ 'forum.no_results_description' | translate }}</p>
           @if (searchQuery() || selectedCategory() !== 'all') {
-            <button class="reset-filters-button" (click)="selectCategory('all'); clearSearch()">
+            <button class="reset-filters-button" (click)="resetFilters()">
               {{ 'forum.reset_filters' | translate }}
             </button>
           }

@@ -421,6 +421,22 @@
     "no_results_description": "Próbálj meg más keresési kifejezést vagy kategóriát választani.",
     "verified": "Hitelesített",
     "all_categories": "Minden kategória",
+    "category": {
+      "medicines": "Gyógyszerek",
+      "natural_remedies": "Természetes Gyógymódok",
+      "baby_mother": "Babák és Anyák",
+      "healthy_lifestyle": "Egészséges Életmód",
+      "seasonal_health": "Szezonális Egészség",
+      "qa": "Q&A",
+      "general": "Általános"
+    },
+    "sort": {
+      "newest": "legújabb",
+      "oldest": "legrégibb",
+      "most_viewed": "legnézettebb",
+      "most_liked": "legkedveltebb",
+      "trending": "trending"
+    },
     "description": "Kérdések, válaszok és tapasztalatok megosztása közösségünkkel",
     "reset_filters": "Szűrők visszaállítása",
     "answered": "Megválaszolva",
