@@ -2,7 +2,9 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Post, POST_CATEGORIES } from '../../../core/models/forum.model';
+import { Post } from '../../../core/models/forum.model';
+import { ForumService } from '../../../core/services/forum.service';
+import { ICONS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-post-card',
@@ -22,10 +24,13 @@ export class PostCardComponent {
 
   @Output() cardClick = new EventEmitter<Post>();
 
+  readonly ICONS = ICONS;
+
   private translateService = inject(TranslateService);
+  private forumService = inject(ForumService);
 
   get categoryInfo() {
-    return POST_CATEGORIES.find((cat) => cat.id === this.post.category);
+    return this.forumService.categories().find((cat) => cat.id === this.post.category);
   }
 
   get authorBadgeClass(): string {
@@ -34,16 +39,14 @@ export class PostCardComponent {
         return 'badge-admin';
       case 'pharmacist':
         return 'badge-pharmacist';
-      case 'user':
-        return 'badge-user';
       default:
-        return '';
+        return 'badge-user';
     }
   }
 
   getRelativeTime(): string {
     const now = new Date();
-    const postDate = new Date(this.post.created_at); // snake_case
+    const postDate = new Date(this.post.created_at);
     const diffMs = now.getTime() - postDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
@@ -59,14 +62,11 @@ export class PostCardComponent {
     } else if (diffDays < 7) {
       return this.translateService.instant('time.days_ago', { count: diffDays });
     } else if (diffDays < 30) {
-      const diffWeeks = Math.floor(diffDays / 7);
-      return this.translateService.instant('time.weeks_ago', { count: diffWeeks });
+      return this.translateService.instant('time.weeks_ago', { count: Math.floor(diffDays / 7) });
     } else if (diffDays < 365) {
-      const diffMonths = Math.floor(diffDays / 30);
-      return this.translateService.instant('time.months_ago', { count: diffMonths });
+      return this.translateService.instant('time.months_ago', { count: Math.floor(diffDays / 30) });
     } else {
-      const diffYears = Math.floor(diffDays / 365);
-      return this.translateService.instant('time.years_ago', { count: diffYears });
+      return this.translateService.instant('time.years_ago', { count: Math.floor(diffDays / 365) });
     }
   }
 
@@ -74,9 +74,8 @@ export class PostCardComponent {
     this.cardClick.emit(this.post);
   }
 
-  // Type narrowing — discriminated union `type`
   get readingTime(): number | null {
-    return this.post.type === 'blog' ? this.post.reading_time : null;
+    return this.post.type === 'blog' ? (this.post.reading_time ?? null) : null;
   }
 
   get isQuestion(): boolean {

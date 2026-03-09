@@ -1,15 +1,4 @@
-// ============================================================
-// forum-blog.model.ts — snake_case, matches backend API 1:1
-// ============================================================
-
-export type PostCategory =
-  | 'medicines'
-  | 'natural-remedies'
-  | 'baby-mother'
-  | 'healthy-lifestyle'
-  | 'seasonal-health'
-  | 'qa'
-  | 'general';
+export type PostCategory = string;
 
 export type PostStatus = 'draft' | 'published' | 'archived' | 'pending';
 
@@ -30,7 +19,7 @@ export interface Comment {
   post_id: string;
   author: Author;
   content: string;
-  created_at: string; // ISO 8601 string from backend
+  created_at: string;
   updated_at?: string;
   likes: number;
   is_edited: boolean;
@@ -47,29 +36,29 @@ export interface BasePost {
   tags: string[];
   image_url?: string;
   status: PostStatus;
-  created_at: string; // ISO 8601 string from backend
-  updated_at?: string;
-  published_at?: string;
+  type: PostType;
   views: number;
   likes: number;
   comment_count: number;
   is_featured: boolean;
   is_pinned: boolean;
+  created_at: string;
+  updated_at: string;
+  published_at?: string;
 }
 
 export interface BlogPost extends BasePost {
   type: 'blog';
-  reading_time: number;
+  reading_time?: number;
   related_products?: string[];
+  seo_title?: string;
   seo_description?: string;
-  seo_keywords?: string[];
 }
 
 export interface ForumPost extends BasePost {
   type: 'forum';
   is_question: boolean;
   has_accepted_answer: boolean;
-  accepted_answer_id?: string;
   last_activity_at: string;
 }
 
@@ -97,63 +86,45 @@ export interface PaginationOptions {
   total_pages?: number;
 }
 
-export interface PostListResponse {
-  posts: Post[];
-  pagination: PaginationOptions;
-  filters: PostFilters;
-  sort_by: SortOption;
+// ---- Backend API response shapes ----
+
+export interface BackendCategory {
+  id: string;
+  name_hu: string;
+  name_en: string;
+  name_de: string;
 }
 
-// ---- Category metadata (frontend-only, not from API) ----
+export interface BackendCategoryResponse {
+  status: string;
+  statuscode: number;
+  categories: BackendCategory[];
+}
+
+export interface BackendPostsResponse {
+  status: string;
+  statuscode: number;
+  posts: Post[];
+}
+
+// ---- CategoryInfo ----
 
 export interface CategoryInfo {
   id: PostCategory;
-  icon: string;
+  /** Image path from ICONS.category* in visuals.ts */
+  iconSrc: string;
   colorClass: string;
-  translationKey: string;
+  displayName: string;
 }
 
-export const POST_CATEGORIES: CategoryInfo[] = [
-  {
-    id: 'medicines',
-    icon: '💊',
-    colorClass: 'category-medicines',
-    translationKey: 'forum.category.medicines',
-  },
-  {
-    id: 'natural-remedies',
-    icon: '🌿',
-    colorClass: 'category-natural',
-    translationKey: 'forum.category.natural_remedies',
-  },
-  {
-    id: 'baby-mother',
-    icon: '👶',
-    colorClass: 'category-baby',
-    translationKey: 'forum.category.baby_mother',
-  },
-  {
-    id: 'healthy-lifestyle',
-    icon: '🏃',
-    colorClass: 'category-lifestyle',
-    translationKey: 'forum.category.healthy_lifestyle',
-  },
-  {
-    id: 'seasonal-health',
-    icon: '🌸',
-    colorClass: 'category-seasonal',
-    translationKey: 'forum.category.seasonal_health',
-  },
-  {
-    id: 'qa',
-    icon: '❓',
-    colorClass: 'category-qa',
-    translationKey: 'forum.category.qa',
-  },
-  {
-    id: 'general',
-    icon: '💬',
-    colorClass: 'category-general',
-    translationKey: 'forum.category.general',
-  },
-];
+export const CATEGORY_COLOR_MAP: Record<string, string> = {
+  medicines: 'category-medicines',
+  'natural-remedies': 'category-natural',
+  'baby-mother': 'category-baby',
+  'healthy-lifestyle': 'category-lifestyle',
+  'seasonal-health': 'category-seasonal',
+  qa: 'category-qa',
+  general: 'category-general',
+};
+
+export const DEFAULT_CATEGORY_COLOR = 'category-default';

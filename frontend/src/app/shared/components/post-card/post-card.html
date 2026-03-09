@@ -8,14 +8,14 @@
 >
   @if (post.is_pinned) {
     <div class="pinned-badge">
-      <span class="pin-icon">📌</span>
+      <img [src]="ICONS.badgePinned" alt="" class="badge-icon" aria-hidden="true" />
       <span>{{ 'forum.pinned' | translate }}</span>
     </div>
   }
 
   @if (post.is_featured && !post.is_pinned) {
     <div class="featured-badge">
-      <span class="star-icon">⭐</span>
+      <img [src]="ICONS.badgeFeatured" alt="" class="badge-icon" aria-hidden="true" />
       <span>{{ 'forum.featured' | translate }}</span>
     </div>
   }
@@ -26,18 +26,24 @@
 
       @if (showCategory && categoryInfo) {
         <div class="category-badge-overlay" [class]="categoryInfo.colorClass">
-          <span class="category-icon">{{ categoryInfo.icon }}</span>
-          <span class="category-name">{{ categoryInfo.translationKey | translate }}</span>
+          <img [src]="categoryInfo.iconSrc" [alt]="categoryInfo.displayName" class="badge-icon" />
+          <span class="category-name">{{ categoryInfo.displayName }}</span>
         </div>
       }
 
       @if (post.type === 'forum') {
         <div class="forum-badges">
           @if (isQuestion) {
-            <div class="question-badge"><span>❓</span> {{ 'forum.question' | translate }}</div>
+            <div class="question-badge">
+              <img [src]="ICONS.badgeQuestion" alt="" class="badge-icon" aria-hidden="true" />
+              {{ 'forum.question' | translate }}
+            </div>
           }
           @if (hasAcceptedAnswer) {
-            <div class="answered-badge"><span>✓</span> {{ 'forum.answered' | translate }}</div>
+            <div class="answered-badge">
+              <img [src]="ICONS.badgeAnswered" alt="" class="badge-icon" aria-hidden="true" />
+              {{ 'forum.answered' | translate }}
+            </div>
           }
         </div>
       }
@@ -48,8 +54,8 @@
     <div class="post-header">
       @if (showCategory && categoryInfo && !post.image_url) {
         <div class="category-badge-inline" [class]="categoryInfo.colorClass">
-          <span class="category-icon">{{ categoryInfo.icon }}</span>
-          <span class="category-name">{{ categoryInfo.translationKey | translate }}</span>
+          <img [src]="categoryInfo.iconSrc" [alt]="categoryInfo.displayName" class="badge-icon" />
+          <span class="category-name">{{ categoryInfo.displayName }}</span>
         </div>
       }
 
@@ -57,7 +63,7 @@
         <span class="post-date">{{ getRelativeTime() }}</span>
         @if (readingTime) {
           <span class="reading-time">
-            <span class="icon">📖</span>
+            <img [src]="ICONS.forumReadingTime" alt="" class="meta-icon" aria-hidden="true" />
             {{ readingTime }} {{ 'common.minutes' | translate }}
           </span>
         }
@@ -80,11 +86,15 @@
               {{ post.author.name.charAt(0).toUpperCase() }}
             </div>
           }
-
           <div class="author-details">
             <span class="author-name">{{ post.author.name }}</span>
             @if (post.author.verified) {
-              <span class="verified-icon" title="{{ 'forum.verified' | translate }}">✓</span>
+              <img
+                [src]="ICONS.badgeVerified"
+                [title]="'forum.verified' | translate"
+                [alt]="'forum.verified' | translate"
+                class="verified-icon"
+              />
             }
             <span class="author-role" [class]="authorBadgeClass">
               {{ 'forum.role.' + post.author.role | translate }}
@@ -97,15 +107,15 @@
     @if (showStats) {
       <div class="post-stats">
         <div class="stat-item">
-          <span class="stat-icon">👁️</span>
+          <img [src]="ICONS.statViews" alt="" class="stat-icon-img" aria-hidden="true" />
           <span class="stat-value">{{ post.views }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-icon">❤️</span>
+          <img [src]="ICONS.statLikes" alt="" class="stat-icon-img" aria-hidden="true" />
           <span class="stat-value">{{ post.likes }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-icon">💬</span>
+          <img [src]="ICONS.statComments" alt="" class="stat-icon-img" aria-hidden="true" />
           <span class="stat-value">{{ post.comment_count }}</span>
         </div>
       </div>

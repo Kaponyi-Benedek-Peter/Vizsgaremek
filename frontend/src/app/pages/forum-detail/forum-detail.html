@@ -19,8 +19,8 @@
         <header class="article-header">
           @if (getCategoryInfo(post()!.category); as cat) {
             <div class="article-category" [class]="cat.colorClass">
-              <span>{{ cat.icon }}</span>
-              <span>{{ cat.translationKey | translate }}</span>
+              <img [src]="cat.iconSrc" [alt]="cat.displayName" class="category-icon-img" />
+              <span>{{ cat.displayName }}</span>
             </div>
           }
 
@@ -42,7 +42,11 @@
               <div class="author-info">
                 <span class="author-name">{{ post()!.author.name }}</span>
                 @if (post()!.author.verified) {
-                  <span class="verified-badge">✓</span>
+                  <img
+                    [src]="ICONS.badgeVerified"
+                    [alt]="'forum.verified' | translate"
+                    class="verified-badge"
+                  />
                 }
                 <span class="author-role">{{
                   'forum.role.' + post()!.author.role | translate
@@ -51,11 +55,15 @@
             </div>
 
             <div class="meta-details">
-              <span class="meta-date">📅 {{ formatDate(post()!.created_at) }}</span>
+              <span class="meta-date">
+                <img [src]="ICONS.forumDate" alt="" class="meta-icon" aria-hidden="true" />
+                {{ formatDate(post()!.created_at) }}
+              </span>
               @if (getReadingTime()) {
-                <span class="meta-reading"
-                  >📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span
-                >
+                <span class="meta-reading">
+                  <img [src]="ICONS.forumReadingTime" alt="" class="meta-icon" aria-hidden="true" />
+                  {{ getReadingTime() }} {{ 'common.minutes' | translate }}
+                </span>
               }
             </div>
           </div>
@@ -79,15 +87,15 @@
 
         <div class="article-stats">
           <div class="stat">
-            <span class="stat-icon">👁️</span>
+            <img [src]="ICONS.statViews" alt="" class="stat-icon-img" aria-hidden="true" />
             <span>{{ post()!.views }}</span>
           </div>
           <div class="stat">
-            <span class="stat-icon">❤️</span>
+            <img [src]="ICONS.statLikes" alt="" class="stat-icon-img" aria-hidden="true" />
             <span>{{ post()!.likes }}</span>
           </div>
           <div class="stat">
-            <span class="stat-icon">💬</span>
+            <img [src]="ICONS.statComments" alt="" class="stat-icon-img" aria-hidden="true" />
             <span>{{ comments().length }}</span>
           </div>
         </div>
@@ -104,9 +112,7 @@
 
     <section class="comments-section">
       <div class="comments-container">
-        <h2 class="comments-title">
-          💬 {{ 'forum.comments' | translate }} ({{ comments().length }})
-        </h2>
+        <h2 class="comments-title">{{ 'forum.comments' | translate }} ({{ comments().length }})</h2>
 
         @if (comments().length > 0) {
           <div class="comments-list">
@@ -119,13 +125,25 @@
                   <div class="comment-header">
                     <span class="comment-author">{{ comment.author.name }}</span>
                     @if (comment.author.verified) {
-                      <span class="verified-badge">✓</span>
+                      <img
+                        [src]="ICONS.badgeVerified"
+                        [alt]="'forum.verified' | translate"
+                        class="verified-badge"
+                      />
                     }
                     <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
                   </div>
                   <p class="comment-content">{{ comment.content }}</p>
                   <div class="comment-footer">
-                    <span class="comment-likes">❤️ {{ comment.likes }}</span>
+                    <span class="comment-likes">
+                      <img
+                        [src]="ICONS.statLikes"
+                        alt=""
+                        class="stat-icon-img"
+                        aria-hidden="true"
+                      />
+                      {{ comment.likes }}
+                    </span>
                     @if (comment.is_edited) {
                       <span class="comment-edited">{{ 'forum.comment_edited' | translate }}</span>
                     }

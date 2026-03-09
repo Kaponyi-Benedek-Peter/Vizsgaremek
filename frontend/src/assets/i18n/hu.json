@@ -444,7 +444,12 @@
     "comments": "Hozzászólások",
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
-    "comment_edited": "szerkesztve"
+    "comment_edited": "szerkesztve",
+
+    "empty_title": "Még nincsenek posztok",
+    "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
+    "error_title": "Nem sikerült betölteni",
+    "error_description": "Hiba történt a posztok lekérésekor. Ellenőrizd a kapcsolatot, majd próbáld újra."
   },
   "pagination": {
     "of": "/",

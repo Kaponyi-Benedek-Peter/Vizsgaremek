@@ -828,23 +828,14 @@ const SECONDARY_COLOR = '0b5f39'; // dark green
  * Placeholder generator functions
  */
 export const PLACEHOLDERS = {
-  /** Products pic placeholder */
   product: (width = 400, height = 400, text = 'Product') =>
     `${PLACEHOLDER_BASE}/${width}x${height}/${PRIMARY_COLOR}/ffffff?text=${encodeURIComponent(text)}`,
-
-  /** Hero/Slide pic placeholder */
   hero: (width = 1920, height = 600, text = 'Hero') =>
     `${PLACEHOLDER_BASE}/${width}x${height}/${PRIMARY_COLOR}/ffffff?text=${encodeURIComponent(text)}`,
-
-  /** Category pic placeholder */
   category: (width = 300, height = 300, text = 'Category') =>
     `${PLACEHOLDER_BASE}/${width}x${height}/${SECONDARY_COLOR}/ffffff?text=${encodeURIComponent(text)}`,
-
-  /** Avatar/profil pic placeholder */
   avatar: (width = 100, height = 100) =>
     `${PLACEHOLDER_BASE}/${width}x${height}/cccccc/666666?text=User`,
-
-  /** Logo placeholder */
   logo: (width = 200, height = 60) =>
     `${PLACEHOLDER_BASE}/${width}x${height}/${PRIMARY_COLOR}/ffffff?text=Roy's+Shack`,
 };
@@ -910,6 +901,36 @@ export const ICONS = {
   ship: `${ASSETS}/assets/icons/shipwhite.webp`,
   sort: `${ASSETS}/assets/icons/sortwhite.webp`,
   support247: `${ASSETS}/assets/icons/247white.webp`,
+
+  // ── Forum / Blog ──────────────────────────────────────────────────────────
+  forumSearch: `${ASSETS}/assets/icons/forum/search.webp`,
+  forumNewPost: `${ASSETS}/assets/icons/forum/new-post.webp`,
+  forumReadingTime: `${ASSETS}/assets/icons/forum/reading-time.webp`,
+  forumDate: `${ASSETS}/assets/icons/forum/date.webp`,
+  forumRetry: `${ASSETS}/assets/icons/forum/retry.webp`,
+
+  // ── Post stats ────────────────────────────────────────────────────────────
+  statViews: `${ASSETS}/assets/icons/stats/views.webp`,
+  statLikes: `${ASSETS}/assets/icons/stats/likes.webp`,
+  statComments: `${ASSETS}/assets/icons/stats/comments.webp`,
+
+  // ── Post badges ───────────────────────────────────────────────────────────
+  badgePinned: `${ASSETS}/assets/icons/badges/pinned.webp`,
+  badgeFeatured: `${ASSETS}/assets/icons/badges/featured.webp`,
+  badgeQuestion: `${ASSETS}/assets/icons/badges/question.webp`,
+  badgeAnswered: `${ASSETS}/assets/icons/badges/answered.webp`,
+  badgeVerified: `${ASSETS}/assets/icons/badges/verified.webp`,
+
+  // ── Category icons (forum chips + post cards) ─────────────────────────────
+  categoryDefault: `${ASSETS}/assets/icons/categories/default.webp`,
+  categoryAll: `${ASSETS}/assets/icons/categories/all.webp`,
+  categoryMedicines: `${ASSETS}/assets/icons/categories/medicines.webp`,
+  categoryNaturalRemedies: `${ASSETS}/assets/icons/categories/natural-remedies.webp`,
+  categoryBabyMother: `${ASSETS}/assets/icons/categories/baby-mother.webp`,
+  categoryLifestyle: `${ASSETS}/assets/icons/categories/healthy-lifestyle.webp`,
+  categorySeasonalHealth: `${ASSETS}/assets/icons/categories/seasonal-health.webp`,
+  categoryQa: `${ASSETS}/assets/icons/categories/qa.webp`,
+  categoryGeneral: `${ASSETS}/assets/icons/categories/general.webp`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -935,12 +956,17 @@ export const IMAGES = {
   hero3: `${ASSETS}/assets/images/hero3.webp`,
   hero4: `${ASSETS}/assets/images/hero4.webp`,
 
-  // Language flags - emoji version
+  // Language flags
   flagHungary: '🇭🇺',
   flagEnglish: '🇬🇧',
   flagGerman: '🇩🇪',
 
   productDefault: PLACEHOLDERS.product(400, 400, 'Termék'),
+
+  // ── Empty / error state illustrations ─────────────────────────────────────
+  stateError: `${ASSETS}/assets/images/states/error.webp`,
+  stateEmptyForum: `${ASSETS}/assets/images/states/empty-forum.webp`,
+  stateNoResults: `${ASSETS}/assets/images/states/no-results.webp`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -983,25 +1009,13 @@ export const HERO_SLIDES: SlideData[] = [
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const LANGUAGE_OPTIONS: LanguageOption[] = [
-  {
-    code: 'hu',
-    name: 'Magyar',
-    flag: IMAGES.flagHungary,
-  },
-  {
-    code: 'en',
-    name: 'English',
-    flag: IMAGES.flagEnglish,
-  },
-  {
-    code: 'de',
-    name: 'Deutsch',
-    flag: IMAGES.flagGerman,
-  },
+  { code: 'hu', name: 'Magyar', flag: IMAGES.flagHungary },
+  { code: 'en', name: 'English', flag: IMAGES.flagEnglish },
+  { code: 'de', name: 'Deutsch', flag: IMAGES.flagGerman },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
-// NAVIGATION ICONS (Unicode)
+// NAVIGATION ICONS (Unicode — nem kép, ezek maradnak szövegként)
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const NAV_ICONS = {
@@ -1009,11 +1023,9 @@ export const NAV_ICONS = {
   arrowRight: '›',
   arrowUp: '▴',
   arrowDown: '▾',
-
   close: '✕',
   check: '✓',
   menu: '☰',
-
   star: '★',
   starEmpty: '☆',
   heart: '♥',
@@ -1021,21 +1033,10 @@ export const NAV_ICONS = {
 } as const;
 
 export const NAV_SVG = {
-  arrowLeft: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M15 18l-6-6 6-6"/>
-  </svg>`,
-
-  arrowRight: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M9 18l6-6-6-6"/>
-  </svg>`,
-
-  close: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M18 6L6 18M6 6l12 12"/>
-  </svg>`,
-
-  check: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M20 6L9 17l-5-5"/>
-  </svg>`,
+  arrowLeft: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>`,
+  arrowRight: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>`,
+  close: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>`,
+  check: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1045,70 +1046,69 @@ export const NAV_SVG = {
 export const CATEGORY_VISUALS: Record<string, CategoryVisual> = {
   medicine: {
     id: 'medicine',
-    icon: '💊',
+    icon: ICONS.categoryMedicines,
     image: PLACEHOLDERS.category(300, 300, 'Gyógyszerek'),
   },
   vitamins: {
     id: 'vitamins',
-    icon: '🍊',
+    icon: ICONS.categoryNaturalRemedies,
     image: PLACEHOLDERS.category(300, 300, 'Vitaminok'),
   },
   supplements: {
     id: 'supplements',
-    icon: '💪',
+    icon: ICONS.categoryNaturalRemedies,
     image: PLACEHOLDERS.category(300, 300, 'Táplálékkiegészítők'),
   },
   cosmetics: {
     id: 'cosmetics',
-    icon: '💄',
+    icon: ICONS.categoryGeneral,
     image: PLACEHOLDERS.category(300, 300, 'Kozmetikumok'),
   },
   'baby-care': {
     id: 'baby-care',
-    icon: '👶',
+    icon: ICONS.categoryBabyMother,
     image: PLACEHOLDERS.category(300, 300, 'Babaápolás'),
   },
   'medical-devices': {
     id: 'medical-devices',
-    icon: '🩺',
+    icon: ICONS.categoryMedicines,
     image: PLACEHOLDERS.category(300, 300, 'Orvosi eszközök'),
   },
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-// CATEGORY NAMES (for conversion to full Category interface)
-// ═══════════════════════════════════════════════════════════════════════════
-
-const CATEGORY_NAMES: Record<string, { hu: string; en: string; de: string }> = {
-  medicine: {
-    hu: 'Gyógyszerek',
-    en: 'Medicines',
-    de: 'Medikamente',
+  // ── Forum categories ──
+  medicines: {
+    id: 'medicines',
+    icon: ICONS.categoryMedicines,
+    image: PLACEHOLDERS.category(300, 300, 'Gyógyszerek'),
   },
-  vitamins: {
-    hu: 'Vitaminok',
-    en: 'Vitamins',
-    de: 'Vitamine',
+  'natural-remedies': {
+    id: 'natural-remedies',
+    icon: ICONS.categoryNaturalRemedies,
+    image: PLACEHOLDERS.category(300, 300, 'Természetes gyógymódok'),
   },
-  supplements: {
-    hu: 'Táplálékkiegészítők',
-    en: 'Supplements',
-    de: 'Nahrungsergänzungsmittel',
+  'baby-mother': {
+    id: 'baby-mother',
+    icon: ICONS.categoryBabyMother,
+    image: PLACEHOLDERS.category(300, 300, 'Baba & Anya'),
   },
-  cosmetics: {
-    hu: 'Kozmetikumok',
-    en: 'Cosmetics',
-    de: 'Kosmetika',
+  'healthy-lifestyle': {
+    id: 'healthy-lifestyle',
+    icon: ICONS.categoryLifestyle,
+    image: PLACEHOLDERS.category(300, 300, 'Egészséges életmód'),
   },
-  'baby-care': {
-    hu: 'Babaápolás',
-    en: 'Baby Care',
-    de: 'Babypflege',
+  'seasonal-health': {
+    id: 'seasonal-health',
+    icon: ICONS.categorySeasonalHealth,
+    image: PLACEHOLDERS.category(300, 300, 'Szezonális egészség'),
   },
-  'medical-devices': {
-    hu: 'Orvosi eszközök',
-    en: 'Medical Devices',
-    de: 'Medizinische Geräte',
+  qa: {
+    id: 'qa',
+    icon: ICONS.categoryQa,
+    image: PLACEHOLDERS.category(300, 300, 'Kérdések & Válaszok'),
+  },
+  general: {
+    id: 'general',
+    icon: ICONS.categoryGeneral,
+    image: PLACEHOLDERS.category(300, 300, 'Általános'),
   },
 };
 
@@ -1124,7 +1124,7 @@ export function getImageUrl(path: string | undefined | null, fallback?: string):
 }
 
 export function getCategoryIcon(categoryId: string): string {
-  return CATEGORY_VISUALS[categoryId]?.icon || '📦';
+  return CATEGORY_VISUALS[categoryId]?.icon || ICONS.categoryDefault;
 }
 
 export function getCategoryImage(categoryId: string): string {
@@ -1497,18 +1497,7 @@ export interface JWTPayload {
 FILE: src\app\core\models\forum.model.ts
 ================================================================================
 
-// ============================================================
-// forum-blog.model.ts — snake_case, matches backend API 1:1
-// ============================================================
-
-export type PostCategory =
-  | 'medicines'
-  | 'natural-remedies'
-  | 'baby-mother'
-  | 'healthy-lifestyle'
-  | 'seasonal-health'
-  | 'qa'
-  | 'general';
+export type PostCategory = string;
 
 export type PostStatus = 'draft' | 'published' | 'archived' | 'pending';
 
@@ -1529,7 +1518,7 @@ export interface Comment {
   post_id: string;
   author: Author;
   content: string;
-  created_at: string; // ISO 8601 string from backend
+  created_at: string;
   updated_at?: string;
   likes: number;
   is_edited: boolean;
@@ -1546,29 +1535,29 @@ export interface BasePost {
   tags: string[];
   image_url?: string;
   status: PostStatus;
-  created_at: string; // ISO 8601 string from backend
-  updated_at?: string;
-  published_at?: string;
+  type: PostType;
   views: number;
   likes: number;
   comment_count: number;
   is_featured: boolean;
   is_pinned: boolean;
+  created_at: string;
+  updated_at: string;
+  published_at?: string;
 }
 
 export interface BlogPost extends BasePost {
   type: 'blog';
-  reading_time: number;
+  reading_time?: number;
   related_products?: string[];
+  seo_title?: string;
   seo_description?: string;
-  seo_keywords?: string[];
 }
 
 export interface ForumPost extends BasePost {
   type: 'forum';
   is_question: boolean;
   has_accepted_answer: boolean;
-  accepted_answer_id?: string;
   last_activity_at: string;
 }
 
@@ -1596,66 +1585,48 @@ export interface PaginationOptions {
   total_pages?: number;
 }
 
-export interface PostListResponse {
-  posts: Post[];
-  pagination: PaginationOptions;
-  filters: PostFilters;
-  sort_by: SortOption;
+// ---- Backend API response shapes ----
+
+export interface BackendCategory {
+  id: string;
+  name_hu: string;
+  name_en: string;
+  name_de: string;
 }
 
-// ---- Category metadata (frontend-only, not from API) ----
+export interface BackendCategoryResponse {
+  status: string;
+  statuscode: number;
+  categories: BackendCategory[];
+}
+
+export interface BackendPostsResponse {
+  status: string;
+  statuscode: number;
+  posts: Post[];
+}
+
+// ---- CategoryInfo ----
 
 export interface CategoryInfo {
   id: PostCategory;
-  icon: string;
+  /** Image path from ICONS.category* in visuals.ts */
+  iconSrc: string;
   colorClass: string;
-  translationKey: string;
+  displayName: string;
 }
 
-export const POST_CATEGORIES: CategoryInfo[] = [
-  {
-    id: 'medicines',
-    icon: '💊',
-    colorClass: 'category-medicines',
-    translationKey: 'forum.category.medicines',
-  },
-  {
-    id: 'natural-remedies',
-    icon: '🌿',
-    colorClass: 'category-natural',
-    translationKey: 'forum.category.natural_remedies',
-  },
-  {
-    id: 'baby-mother',
-    icon: '👶',
-    colorClass: 'category-baby',
-    translationKey: 'forum.category.baby_mother',
-  },
-  {
-    id: 'healthy-lifestyle',
-    icon: '🏃',
-    colorClass: 'category-lifestyle',
-    translationKey: 'forum.category.healthy_lifestyle',
-  },
-  {
-    id: 'seasonal-health',
-    icon: '🌸',
-    colorClass: 'category-seasonal',
-    translationKey: 'forum.category.seasonal_health',
-  },
-  {
-    id: 'qa',
-    icon: '❓',
-    colorClass: 'category-qa',
-    translationKey: 'forum.category.qa',
-  },
-  {
-    id: 'general',
-    icon: '💬',
-    colorClass: 'category-general',
-    translationKey: 'forum.category.general',
-  },
-];
+export const CATEGORY_COLOR_MAP: Record<string, string> = {
+  medicines: 'category-medicines',
+  'natural-remedies': 'category-natural',
+  'baby-mother': 'category-baby',
+  'healthy-lifestyle': 'category-lifestyle',
+  'seasonal-health': 'category-seasonal',
+  qa: 'category-qa',
+  general: 'category-general',
+};
+
+export const DEFAULT_CATEGORY_COLOR = 'category-default';
 
 
 
@@ -3032,24 +3003,55 @@ export class CurrencyService {
 FILE: src\app\core\services\forum.service.ts
 ================================================================================
 
-import { Injectable, signal, computed } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
-import { Post, BlogPost, ForumPost, PostFilters, SortOption } from '../models/forum.model';
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { TranslateService } from '@ngx-translate/core';
+import { catchError, map, timeout, forkJoin, of } from 'rxjs';
+
+import {
+  Post,
+  BlogPost,
+  PostFilters,
+  SortOption,
+  CategoryInfo,
+  BackendCategory,
+  BackendCategoryResponse,
+  BackendPostsResponse,
+  CATEGORY_COLOR_MAP,
+  DEFAULT_CATEGORY_COLOR,
+} from '../models/forum.model';
+import { getCategoryIcon } from '../constants/visuals';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ForumService {
+  private http = inject(HttpClient);
+  private translate = inject(TranslateService);
+
+  private readonly API_URL = environment.baseURL;
+  private readonly REQUEST_TIMEOUT = 8000;
+
+  // ── Private state ──────────────────────────────────────────────────────────
+
   private postsSignal = signal<Post[]>([]);
+  private categoriesSignal = signal<CategoryInfo[]>([]);
   private filtersSignal = signal<PostFilters>({});
   private sortBySignal = signal<SortOption>('newest');
   private currentPageSignal = signal(1);
   private pageSizeSignal = signal(9);
+  private isLoadingSignal = signal(false);
+  private loadErrorSignal = signal(false);
+
+  // ── Public readonly signals ────────────────────────────────────────────────
 
   posts = this.postsSignal.asReadonly();
+  categories = this.categoriesSignal.asReadonly();
   filters = this.filtersSignal.asReadonly();
   sortBy = this.sortBySignal.asReadonly();
+  isLoading = this.isLoadingSignal.asReadonly();
+  loadError = this.loadErrorSignal.asReadonly();
 
   currentPage = computed(() => this.currentPageSignal());
 
@@ -3062,50 +3064,120 @@ export class ForumService {
     const posts = this.filteredPosts();
     const page = this.currentPageSignal();
     const pageSize = this.pageSizeSignal();
-    const startIndex = (page - 1) * pageSize;
-    return posts.slice(startIndex, startIndex + pageSize);
+    const start = (page - 1) * pageSize;
+    return posts.slice(start, start + pageSize);
   });
 
-  totalPages = computed(() => {
-    return Math.ceil(this.filteredPosts().length / this.pageSizeSignal());
-  });
+  totalPages = computed(() => Math.ceil(this.filteredPosts().length / this.pageSizeSignal()));
 
-  getAllPosts(): Observable<Post[]> {
-    return of(this.postsSignal()).pipe(delay(300));
+  // ── Backend loading ────────────────────────────────────────────────────────
+
+  loadPosts(): void {
+    this.isLoadingSignal.set(true);
+    this.loadErrorSignal.set(false);
+
+    forkJoin({
+      categories: this.fetchCategories(),
+      posts: this.fetchPosts(),
+    }).subscribe({
+      next: ({ categories, posts }) => {
+        this.categoriesSignal.set(categories);
+        this.postsSignal.set(posts);
+        this.isLoadingSignal.set(false);
+      },
+      error: () => {
+        this.loadErrorSignal.set(true);
+        this.isLoadingSignal.set(false);
+      },
+    });
   }
 
-  getBlogPosts(): Observable<BlogPost[]> {
-    const blogPosts = this.postsSignal().filter((post): post is BlogPost => post.type === 'blog');
-    return of(blogPosts).pipe(delay(300));
-  }
-
-  getForumPosts(): Observable<ForumPost[]> {
-    const forumPosts = this.postsSignal().filter(
-      (post): post is ForumPost => post.type === 'forum',
+  private fetchCategories() {
+    return this.http.get<BackendCategoryResponse>(`${this.API_URL}/get_forum_categories`).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      map((res) => {
+        if (res?.status === 'success' && Array.isArray(res.categories)) {
+          return this.mapBackendCategories(res.categories);
+        }
+        return [] as CategoryInfo[];
+      }),
+      catchError(() => of([] as CategoryInfo[])),
     );
-    return of(forumPosts).pipe(delay(300));
   }
 
-  getPostById(idOrSlug: string): Observable<Post | null> {
-    const post = this.postsSignal().find((p) => p.id === idOrSlug || p.slug === idOrSlug) || null;
-    return of(post).pipe(delay(200));
+  private fetchPosts() {
+    return this.http
+      .post<BackendPostsResponse>(`${this.API_URL}/get_forum_posts`, { type: 'forum' })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => {
+          if (res?.status === 'success' && Array.isArray(res.posts)) {
+            return res.posts;
+          }
+          return [] as Post[];
+        }),
+        catchError(() => {
+          this.loadErrorSignal.set(true);
+          return of([] as Post[]);
+        }),
+      );
   }
 
-  getFeaturedBlogPosts(limit = 3): Observable<BlogPost[]> {
-    const featured = this.postsSignal()
-      .filter((post): post is BlogPost => post.type === 'blog' && post.is_featured)
-      .slice(0, limit);
-    return of(featured).pipe(delay(200));
+  private mapBackendCategories(backendCategories: BackendCategory[]): CategoryInfo[] {
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return backendCategories.map(
+      (bc): CategoryInfo => ({
+        id: bc.id,
+        iconSrc: getCategoryIcon(bc.id), // ← existing helper from visuals.ts
+        colorClass: CATEGORY_COLOR_MAP[bc.id] ?? DEFAULT_CATEGORY_COLOR,
+        displayName: this.resolveName(bc, lang),
+      }),
+    );
   }
 
-  getRelatedPosts(postId: string, limit = 3): Observable<Post[]> {
-    const currentPost = this.postsSignal().find((p) => p.id === postId);
-    if (!currentPost) return of([]);
+  private resolveName(bc: BackendCategory, lang: string): string {
+    if (lang === 'hu' && bc.name_hu) return bc.name_hu;
+    if (lang === 'de' && bc.name_de) return bc.name_de;
+    return bc.name_en || bc.name_hu || bc.id;
+  }
+
+  // ── Observable helpers (used by forum-detail) ─────────────────────────────
+
+  getPostById(idOrSlug: string) {
+    return this.http
+      .post<{
+        status: string;
+        statuscode: number;
+        post: Post;
+      }>(`${this.API_URL}/get_forum_post`, { id: idOrSlug, slug: idOrSlug })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => (res?.status === 'success' ? res.post : null)),
+        catchError(() => {
+          const cached =
+            this.postsSignal().find((p) => p.id === idOrSlug || p.slug === idOrSlug) ?? null;
+          return of(cached);
+        }),
+      );
+  }
+
+  getRelatedPosts(postId: string, limit = 6) {
+    const current = this.postsSignal().find((p) => p.id === postId);
+    if (!current) return of([] as Post[]);
     const related = this.postsSignal()
-      .filter((p) => p.id !== postId && p.category === currentPost.category)
+      .filter((p) => p.id !== postId && p.category === current.category)
       .slice(0, limit);
-    return of(related).pipe(delay(200));
+    return of(related);
   }
+
+  getFeaturedBlogPosts(limit = 3) {
+    const featured = this.postsSignal()
+      .filter((p): p is BlogPost => p.type === 'blog' && p.is_featured)
+      .slice(0, limit);
+    return of(featured);
+  }
+
+  // ── Filter / sort / pagination ─────────────────────────────────────────────
 
   setFilters(filters: PostFilters): void {
     this.filtersSignal.set(filters);
@@ -3142,8 +3214,7 @@ export class ForumService {
         if (!searchable.includes(query)) return false;
       }
       if (filters.tags && filters.tags.length > 0) {
-        const hasMatchingTag = filters.tags.some((tag) => post.tags.includes(tag));
-        if (!hasMatchingTag) return false;
+        if (!filters.tags.some((tag) => post.tags.includes(tag))) return false;
       }
       return true;
     });
@@ -3165,22 +3236,18 @@ export class ForumService {
       case 'most-liked':
         return sorted.sort((a, b) => b.likes - a.likes);
       case 'trending':
-        return sorted.sort(
-          (a, b) => this.calculateTrendingScore(b) - this.calculateTrendingScore(a),
-        );
+        return sorted.sort((a, b) => this.trendingScore(b) - this.trendingScore(a));
       default:
         return sorted;
     }
   }
 
-  private calculateTrendingScore(post: Post): number {
-    const publishedAt = post.published_at ? new Date(post.published_at).getTime() : 0;
-    const daysSincePublished = publishedAt
-      ? (Date.now() - publishedAt) / (1000 * 60 * 60 * 24)
-      : 999;
-    const recencyScore = Math.max(0, 7 - daysSincePublished);
-    const activityScore = post.views * 0.1 + post.likes * 2 + post.comment_count * 5;
-    return recencyScore * 10 + activityScore;
+  private trendingScore(post: Post): number {
+    const publishedMs = post.published_at ? new Date(post.published_at).getTime() : 0;
+    const daysSince = publishedMs ? (Date.now() - publishedMs) / (1000 * 60 * 60 * 24) : 999;
+    const recency = Math.max(0, 7 - daysSince);
+    const activity = post.views * 0.1 + post.likes * 2 + post.comment_count * 5;
+    return recency * 10 + activity;
   }
 }
 
@@ -6159,10 +6226,11 @@ FILE: src\app\pages\forum\forum.html
   </section>
 
   <div class="forum-container">
+    <!-- ── Search + Sort ── -->
     <section class="search-filters">
       <div class="search-bar">
         <div class="search-input-wrapper">
-          <span class="search-icon">🔍</span>
+          <img [src]="ICONS.forumSearch" alt="" class="search-icon-img" aria-hidden="true" />
           <input
             type="search"
             [(ngModel)]="searchQuery"
@@ -6202,62 +6270,67 @@ FILE: src\app\pages\forum\forum.html
 
         @if (isAuthenticated()) {
           <button class="new-post-button" routerLink="/forum/new">
-            <span class="icon">✏️</span>
+            <img [src]="ICONS.forumNewPost" alt="" class="btn-icon" aria-hidden="true" />
             {{ 'forum.new_post' | translate }}
           </button>
         }
       </div>
     </section>
 
-    <section
-      class="category-filters"
-      role="group"
-      [attr.aria-label]="'forum.filter_by_category' | translate"
-    >
-      <button
-        [class]="'category-chip' + (selectedCategory() === 'all' ? ' active' : '')"
-        (click)="selectCategory('all')"
+    <!-- ── Category chips ── -->
+    @if (categories().length > 0) {
+      <section
+        class="category-filters"
+        role="group"
+        [attr.aria-label]="'forum.filter_by_category' | translate"
       >
-        <span class="category-icon">🌍</span>
-        <span class="category-name">{{ 'forum.all_categories' | translate }}</span>
-      </button>
-
-      @for (category of categories; track category.id) {
         <button
-          [class]="
-            'category-chip ' +
-            category.colorClass +
-            (selectedCategory() === category.id ? ' active' : '')
-          "
-          (click)="selectCategory(category.id)"
+          [class]="'category-chip' + (selectedCategory() === 'all' ? ' active' : '')"
+          (click)="selectCategory('all')"
         >
-          <span class="category-icon">{{ category.icon }}</span>
-          <span class="category-name">{{ category.translationKey | translate }}</span>
+          <img [src]="ICONS.categoryAll" alt="" class="category-icon-img" aria-hidden="true" />
+          <span class="category-name">{{ 'forum.all_categories' | translate }}</span>
         </button>
-      }
-    </section>
+
+        @for (category of categories(); track category.id) {
+          <button
+            [class]="
+              'category-chip ' +
+              category.colorClass +
+              (selectedCategory() === category.id ? ' active' : '')
+            "
+            (click)="selectCategory(category.id)"
+          >
+            <img [src]="category.iconSrc" [alt]="category.displayName" class="category-icon-img" />
+            <span class="category-name">{{ category.displayName }}</span>
+          </button>
+        }
+      </section>
+    }
 
     <!-- ── Loading ── -->
-    @if (isLoading()) {
+    @if (forumService.isLoading()) {
       <div class="loading-container" role="status" [attr.aria-label]="'common.loading' | translate">
         <div class="spinner"></div>
         <p>{{ 'common.loading' | translate }}</p>
       </div>
     }
 
-    <!-- ── Error ── -->
-    @if (!isLoading() && loadError()) {
-      <div class="error-container">
-        <p class="error-icon">⚠️</p>
-        <p class="error-message">{{ 'forum.load_error' | translate }}</p>
-        <button class="retry-button" (click)="forumService.loadPosts()">
+    <!-- ── Error state: backend unreachable ── -->
+    @if (!forumService.isLoading() && forumService.loadError()) {
+      <div class="empty-state">
+        <img [src]="IMAGES.stateError" alt="" class="empty-state-img" aria-hidden="true" />
+        <h3 class="empty-state-title">{{ 'forum.error_title' | translate }}</h3>
+        <p class="empty-state-description">{{ 'forum.error_description' | translate }}</p>
+        <button class="empty-state-action" (click)="forumService.loadPosts()">
+          <img [src]="ICONS.forumRetry" alt="" class="btn-icon" aria-hidden="true" />
           {{ 'common.retry' | translate }}
         </button>
       </div>
     }
 
     <!-- ── Content ── -->
-    @if (!isLoading() && !loadError()) {
+    @if (!forumService.isLoading() && !forumService.loadError()) {
       @if (posts().length > 0) {
         <section class="posts-grid">
           @for (post of posts(); track post.id) {
@@ -6273,7 +6346,6 @@ FILE: src\app\pages\forum\forum.html
           }
         </section>
 
-        <!-- ── Pagination ── -->
         @if (totalPages() > 1) {
           <nav class="pagination" aria-label="Pagination">
             <button
@@ -6313,15 +6385,26 @@ FILE: src\app\pages\forum\forum.html
             </button>
           </nav>
         }
+      } @else if (searchQuery() || selectedCategory() !== 'all') {
+        <!-- ── No results (active search/filter) ── -->
+        <div class="empty-state">
+          <img [src]="IMAGES.stateNoResults" alt="" class="empty-state-img" aria-hidden="true" />
+          <h3 class="empty-state-title">{{ 'forum.no_results_title' | translate }}</h3>
+          <p class="empty-state-description">{{ 'forum.no_results_description' | translate }}</p>
+          <button class="empty-state-action" (click)="resetFilters()">
+            {{ 'forum.reset_filters' | translate }}
+          </button>
+        </div>
       } @else {
-        <!-- ── No results ── -->
-        <div class="no-results">
-          <div class="no-results-icon">🔍</div>
-          <h3 class="no-results-title">{{ 'forum.no_results_title' | translate }}</h3>
-          <p class="no-results-description">{{ 'forum.no_results_description' | translate }}</p>
-          @if (searchQuery() || selectedCategory() !== 'all') {
-            <button class="reset-filters-button" (click)="resetFilters()">
-              {{ 'forum.reset_filters' | translate }}
+        <!-- ── Truly empty: no posts on the forum yet ── -->
+        <div class="empty-state">
+          <img [src]="IMAGES.stateEmptyForum" alt="" class="empty-state-img" aria-hidden="true" />
+          <h3 class="empty-state-title">{{ 'forum.empty_title' | translate }}</h3>
+          <p class="empty-state-description">{{ 'forum.empty_description' | translate }}</p>
+          @if (isAuthenticated()) {
+            <button class="empty-state-action" routerLink="/forum/new">
+              <img [src]="ICONS.forumNewPost" alt="" class="btn-icon" aria-hidden="true" />
+              {{ 'forum.new_post' | translate }}
             </button>
           }
         </div>
@@ -6375,13 +6458,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PostCardComponent } from '../../shared/components/post-card/post-card';
-import {
-  Post,
-  PostFilters,
-  SortOption,
-  PostCategory,
-  POST_CATEGORIES,
-} from '../../core/models/forum.model';
+import { Post, PostFilters, SortOption, PostCategory } from '../../core/models/forum.model';
+import { ICONS, IMAGES } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-forum',
@@ -6391,10 +6469,12 @@ import {
   styleUrl: './forum.css',
 })
 export class Forum implements OnInit {
-  isLoading = signal(false);
   searchQuery = signal('');
   selectedCategory = signal<PostCategory | 'all'>('all');
   selectedSort = signal<SortOption>('newest');
+
+  readonly ICONS = ICONS;
+  readonly IMAGES = IMAGES;
 
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
@@ -6405,8 +6485,7 @@ export class Forum implements OnInit {
 
   posts = computed(() => this.forumService.paginatedPosts());
   totalPages = computed(() => this.forumService.totalPages());
-
-  categories = POST_CATEGORIES;
+  categories = computed(() => this.forumService.categories());
 
   sortOptions: { value: SortOption; translateKey: string }[] = [
     { value: 'newest', translateKey: 'forum.sort.newest' },
@@ -6417,15 +6496,14 @@ export class Forum implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.isLoading.set(true);
     this.forumService.setFilters({ type: 'forum' });
-    setTimeout(() => this.isLoading.set(false), 300);
+    this.forumService.loadPosts();
   }
 
   applySearch(): void {
     const filters: PostFilters = {
       type: 'forum',
-      search_query: this.searchQuery() || undefined, // snake_case
+      search_query: this.searchQuery() || undefined,
       category:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
@@ -6447,24 +6525,25 @@ export class Forum implements OnInit {
     this.applySearch();
   }
 
+  resetFilters(): void {
+    this.searchQuery.set('');
+    this.selectedCategory.set('all');
+    this.forumService.setFilters({ type: 'forum' });
+  }
+
   goToPage(page: number): void {
     this.forumService.setPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   previousPage(): void {
-    const currentPage = this.forumService.currentPage();
-    if (currentPage > 1) {
-      this.goToPage(currentPage - 1);
-    }
+    const current = this.forumService.currentPage();
+    if (current > 1) this.goToPage(current - 1);
   }
 
   nextPage(): void {
-    const currentPage = this.forumService.currentPage();
-    const totalPages = this.totalPages();
-    if (currentPage < totalPages) {
-      this.goToPage(currentPage + 1);
-    }
+    const current = this.forumService.currentPage();
+    if (current < this.totalPages()) this.goToPage(current + 1);
   }
 
   getPageNumbers(): number[] {
@@ -6473,18 +6552,11 @@ export class Forum implements OnInit {
     const pages: number[] = [];
 
     pages.push(1);
-
     const start = Math.max(2, current - 1);
     const end = Math.min(total - 1, current + 1);
-
     if (start > 2) pages.push(-1);
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
+    for (let i = start; i <= end; i++) pages.push(i);
     if (end < total - 1) pages.push(-1);
-
     if (total > 1) pages.push(total);
 
     return pages;
@@ -6495,7 +6567,7 @@ export class Forum implements OnInit {
   }
 
   onPostClick(post: Post): void {
-    console.log('Post clicked:', post.title);
+    void post;
   }
 }
 
@@ -7244,8 +7316,8 @@ FILE: src\app\pages\forum-detail\forum-detail.html
         <header class="article-header">
           @if (getCategoryInfo(post()!.category); as cat) {
             <div class="article-category" [class]="cat.colorClass">
-              <span>{{ cat.icon }}</span>
-              <span>{{ cat.translationKey | translate }}</span>
+              <img [src]="cat.iconSrc" [alt]="cat.displayName" class="category-icon-img" />
+              <span>{{ cat.displayName }}</span>
             </div>
           }
 
@@ -7267,7 +7339,11 @@ FILE: src\app\pages\forum-detail\forum-detail.html
               <div class="author-info">
                 <span class="author-name">{{ post()!.author.name }}</span>
                 @if (post()!.author.verified) {
-                  <span class="verified-badge">✓</span>
+                  <img
+                    [src]="ICONS.badgeVerified"
+                    [alt]="'forum.verified' | translate"
+                    class="verified-badge"
+                  />
                 }
                 <span class="author-role">{{
                   'forum.role.' + post()!.author.role | translate
@@ -7276,11 +7352,15 @@ FILE: src\app\pages\forum-detail\forum-detail.html
             </div>
 
             <div class="meta-details">
-              <span class="meta-date">📅 {{ formatDate(post()!.created_at) }}</span>
+              <span class="meta-date">
+                <img [src]="ICONS.forumDate" alt="" class="meta-icon" aria-hidden="true" />
+                {{ formatDate(post()!.created_at) }}
+              </span>
               @if (getReadingTime()) {
-                <span class="meta-reading"
-                  >📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span
-                >
+                <span class="meta-reading">
+                  <img [src]="ICONS.forumReadingTime" alt="" class="meta-icon" aria-hidden="true" />
+                  {{ getReadingTime() }} {{ 'common.minutes' | translate }}
+                </span>
               }
             </div>
           </div>
@@ -7304,15 +7384,15 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 
         <div class="article-stats">
           <div class="stat">
-            <span class="stat-icon">👁️</span>
+            <img [src]="ICONS.statViews" alt="" class="stat-icon-img" aria-hidden="true" />
             <span>{{ post()!.views }}</span>
           </div>
           <div class="stat">
-            <span class="stat-icon">❤️</span>
+            <img [src]="ICONS.statLikes" alt="" class="stat-icon-img" aria-hidden="true" />
             <span>{{ post()!.likes }}</span>
           </div>
           <div class="stat">
-            <span class="stat-icon">💬</span>
+            <img [src]="ICONS.statComments" alt="" class="stat-icon-img" aria-hidden="true" />
             <span>{{ comments().length }}</span>
           </div>
         </div>
@@ -7329,9 +7409,7 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 
     <section class="comments-section">
       <div class="comments-container">
-        <h2 class="comments-title">
-          💬 {{ 'forum.comments' | translate }} ({{ comments().length }})
-        </h2>
+        <h2 class="comments-title">{{ 'forum.comments' | translate }} ({{ comments().length }})</h2>
 
         @if (comments().length > 0) {
           <div class="comments-list">
@@ -7344,13 +7422,25 @@ FILE: src\app\pages\forum-detail\forum-detail.html
                   <div class="comment-header">
                     <span class="comment-author">{{ comment.author.name }}</span>
                     @if (comment.author.verified) {
-                      <span class="verified-badge">✓</span>
+                      <img
+                        [src]="ICONS.badgeVerified"
+                        [alt]="'forum.verified' | translate"
+                        class="verified-badge"
+                      />
                     }
                     <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
                   </div>
                   <p class="comment-content">{{ comment.content }}</p>
                   <div class="comment-footer">
-                    <span class="comment-likes">❤️ {{ comment.likes }}</span>
+                    <span class="comment-likes">
+                      <img
+                        [src]="ICONS.statLikes"
+                        alt=""
+                        class="stat-icon-img"
+                        aria-hidden="true"
+                      />
+                      {{ comment.likes }}
+                    </span>
                     @if (comment.is_edited) {
                       <span class="comment-edited">{{ 'forum.comment_edited' | translate }}</span>
                     }
@@ -7456,7 +7546,7 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 FILE: src\app\pages\forum-detail\forum-detail.ts
 ================================================================================
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7464,13 +7554,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
-import {
-  Post,
-  BlogPost,
-  Comment,
-  POST_CATEGORIES,
-  CategoryInfo,
-} from '../../core/models/forum.model';
+import { Post, BlogPost, Comment, CategoryInfo } from '../../core/models/forum.model';
+import { ICONS, IMAGES } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-forum-detail',
@@ -7494,22 +7579,22 @@ export class ForumDetail implements OnInit {
   isSubmittingComment = signal(false);
   sliderIndex = signal(0);
 
+  readonly ICONS = ICONS;
+  readonly IMAGES = IMAGES;
+
   isAuthenticated = this.authService.isAuthenticated;
   currentUser = this.authService.currentUser;
 
-  // Session token from authservice
   private get sessionToken(): string {
     return this.authService.sessionToken() ?? '';
   }
 
-  categories = POST_CATEGORIES;
+  categories = computed(() => this.forumBlogService.categories());
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       const slug = params.get('slug');
-      if (slug) {
-        this.loadPost(slug);
-      }
+      if (slug) this.loadPost(slug);
     });
   }
 
@@ -7517,6 +7602,7 @@ export class ForumDetail implements OnInit {
     this.isLoading.set(true);
     this.contentExpanded.set(false);
     this.sliderIndex.set(0);
+    this.comments.set([]);
 
     this.forumBlogService.getPostById(slug).subscribe((post) => {
       this.post.set(post);
@@ -7526,46 +7612,17 @@ export class ForumDetail implements OnInit {
         this.forumBlogService.getRelatedPosts(post.id, 6).subscribe((related) => {
           this.relatedPosts.set(related);
         });
-        this.loadMockComments(post.id);
       }
     });
   }
 
-  private loadMockComments(postId: string): void {
-    const mock: Comment[] = [
-      {
-        id: 'c1',
-        post_id: postId,
-        author: { id: 'u1', name: 'Kovács Anna', role: 'user', verified: false },
-        content: 'Nagyon hasznos bejegyzés, köszönöm!',
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-        likes: 4,
-        is_edited: false,
-      },
-      {
-        id: 'c2',
-        post_id: postId,
-        author: { id: 'u2', name: 'Dr. Nagy Péter', role: 'pharmacist', verified: true },
-        content:
-          'Fontos kiegészítés: mindig konzultálj gyógyszerésszel, mielőtt bármilyen szert szednél.',
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 1).toISOString(),
-        likes: 11,
-        is_edited: false,
-      },
-    ];
-    this.comments.set(mock);
-  }
-
   getCategoryInfo(categoryId: string): CategoryInfo | undefined {
-    return this.categories.find((c) => c.id === categoryId);
+    return this.categories().find((c: CategoryInfo) => c.id === categoryId);
   }
 
   getReadingTime(): number {
     const p = this.post();
-    if (p && p.type === 'blog') {
-      return (p as BlogPost).reading_time;
-    }
-    return 0;
+    return p?.type === 'blog' ? ((p as BlogPost).reading_time ?? 0) : 0;
   }
 
   formatDate(dateStr: string): string {
@@ -7590,8 +7647,7 @@ export class ForumDetail implements OnInit {
     const post = this.post();
     if (!post) return;
 
-    // TODO:
-    // this.forumBlogService.addComment(post.id, user!.id, this.sessionToken, text).subscribe(...)
+    // TODO: this.forumBlogService.addComment(post.id, user!.id, this.sessionToken, text).subscribe(...)
 
     const comment: Comment = {
       id: 'c' + Date.now(),
@@ -7615,18 +7671,6 @@ export class ForumDetail implements OnInit {
     }, 400);
   }
 
-  likePost(): void {
-    const post = this.post();
-    if (!post || !this.isAuthenticated()) return;
-    // TODO: this.forumBlogService.likePost(post.id, this.currentUser()!.id, this.sessionToken).subscribe();
-  }
-
-  unlikePost(): void {
-    const post = this.post();
-    if (!post || !this.isAuthenticated()) return;
-    // TODO: this.forumBlogService.unlikePost(post.id, this.currentUser()!.id, this.sessionToken).subscribe();
-  }
-
   get sliderVisible(): Post[] {
     return this.relatedPosts().slice(this.sliderIndex(), this.sliderIndex() + 3);
   }
@@ -7642,7 +7686,6 @@ export class ForumDetail implements OnInit {
   get canSliderPrev(): boolean {
     return this.sliderIndex() > 0;
   }
-
   get canSliderNext(): boolean {
     return this.sliderIndex() + 3 < this.relatedPosts().length;
   }
@@ -20547,14 +20590,14 @@ FILE: src\app\shared\components\post-card\post-card.html
 >
   @if (post.is_pinned) {
     <div class="pinned-badge">
-      <span class="pin-icon">📌</span>
+      <img [src]="ICONS.badgePinned" alt="" class="badge-icon" aria-hidden="true" />
       <span>{{ 'forum.pinned' | translate }}</span>
     </div>
   }
 
   @if (post.is_featured && !post.is_pinned) {
     <div class="featured-badge">
-      <span class="star-icon">⭐</span>
+      <img [src]="ICONS.badgeFeatured" alt="" class="badge-icon" aria-hidden="true" />
       <span>{{ 'forum.featured' | translate }}</span>
     </div>
   }
@@ -20565,18 +20608,24 @@ FILE: src\app\shared\components\post-card\post-card.html
 
       @if (showCategory && categoryInfo) {
         <div class="category-badge-overlay" [class]="categoryInfo.colorClass">
-          <span class="category-icon">{{ categoryInfo.icon }}</span>
-          <span class="category-name">{{ categoryInfo.translationKey | translate }}</span>
+          <img [src]="categoryInfo.iconSrc" [alt]="categoryInfo.displayName" class="badge-icon" />
+          <span class="category-name">{{ categoryInfo.displayName }}</span>
         </div>
       }
 
       @if (post.type === 'forum') {
         <div class="forum-badges">
           @if (isQuestion) {
-            <div class="question-badge"><span>❓</span> {{ 'forum.question' | translate }}</div>
+            <div class="question-badge">
+              <img [src]="ICONS.badgeQuestion" alt="" class="badge-icon" aria-hidden="true" />
+              {{ 'forum.question' | translate }}
+            </div>
           }
           @if (hasAcceptedAnswer) {
-            <div class="answered-badge"><span>✓</span> {{ 'forum.answered' | translate }}</div>
+            <div class="answered-badge">
+              <img [src]="ICONS.badgeAnswered" alt="" class="badge-icon" aria-hidden="true" />
+              {{ 'forum.answered' | translate }}
+            </div>
           }
         </div>
       }
@@ -20587,8 +20636,8 @@ FILE: src\app\shared\components\post-card\post-card.html
     <div class="post-header">
       @if (showCategory && categoryInfo && !post.image_url) {
         <div class="category-badge-inline" [class]="categoryInfo.colorClass">
-          <span class="category-icon">{{ categoryInfo.icon }}</span>
-          <span class="category-name">{{ categoryInfo.translationKey | translate }}</span>
+          <img [src]="categoryInfo.iconSrc" [alt]="categoryInfo.displayName" class="badge-icon" />
+          <span class="category-name">{{ categoryInfo.displayName }}</span>
         </div>
       }
 
@@ -20596,7 +20645,7 @@ FILE: src\app\shared\components\post-card\post-card.html
         <span class="post-date">{{ getRelativeTime() }}</span>
         @if (readingTime) {
           <span class="reading-time">
-            <span class="icon">📖</span>
+            <img [src]="ICONS.forumReadingTime" alt="" class="meta-icon" aria-hidden="true" />
             {{ readingTime }} {{ 'common.minutes' | translate }}
           </span>
         }
@@ -20619,11 +20668,15 @@ FILE: src\app\shared\components\post-card\post-card.html
               {{ post.author.name.charAt(0).toUpperCase() }}
             </div>
           }
-
           <div class="author-details">
             <span class="author-name">{{ post.author.name }}</span>
             @if (post.author.verified) {
-              <span class="verified-icon" title="{{ 'forum.verified' | translate }}">✓</span>
+              <img
+                [src]="ICONS.badgeVerified"
+                [title]="'forum.verified' | translate"
+                [alt]="'forum.verified' | translate"
+                class="verified-icon"
+              />
             }
             <span class="author-role" [class]="authorBadgeClass">
               {{ 'forum.role.' + post.author.role | translate }}
@@ -20636,15 +20689,15 @@ FILE: src\app\shared\components\post-card\post-card.html
     @if (showStats) {
       <div class="post-stats">
         <div class="stat-item">
-          <span class="stat-icon">👁️</span>
+          <img [src]="ICONS.statViews" alt="" class="stat-icon-img" aria-hidden="true" />
           <span class="stat-value">{{ post.views }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-icon">❤️</span>
+          <img [src]="ICONS.statLikes" alt="" class="stat-icon-img" aria-hidden="true" />
           <span class="stat-value">{{ post.likes }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-icon">💬</span>
+          <img [src]="ICONS.statComments" alt="" class="stat-icon-img" aria-hidden="true" />
           <span class="stat-value">{{ post.comment_count }}</span>
         </div>
       </div>
@@ -20670,7 +20723,9 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Post, POST_CATEGORIES } from '../../../core/models/forum.model';
+import { Post } from '../../../core/models/forum.model';
+import { ForumService } from '../../../core/services/forum.service';
+import { ICONS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-post-card',
@@ -20690,10 +20745,13 @@ export class PostCardComponent {
 
   @Output() cardClick = new EventEmitter<Post>();
 
+  readonly ICONS = ICONS;
+
   private translateService = inject(TranslateService);
+  private forumService = inject(ForumService);
 
   get categoryInfo() {
-    return POST_CATEGORIES.find((cat) => cat.id === this.post.category);
+    return this.forumService.categories().find((cat) => cat.id === this.post.category);
   }
 
   get authorBadgeClass(): string {
@@ -20702,16 +20760,14 @@ export class PostCardComponent {
         return 'badge-admin';
       case 'pharmacist':
         return 'badge-pharmacist';
-      case 'user':
-        return 'badge-user';
       default:
-        return '';
+        return 'badge-user';
     }
   }
 
   getRelativeTime(): string {
     const now = new Date();
-    const postDate = new Date(this.post.created_at); // snake_case
+    const postDate = new Date(this.post.created_at);
     const diffMs = now.getTime() - postDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
@@ -20727,14 +20783,11 @@ export class PostCardComponent {
     } else if (diffDays < 7) {
       return this.translateService.instant('time.days_ago', { count: diffDays });
     } else if (diffDays < 30) {
-      const diffWeeks = Math.floor(diffDays / 7);
-      return this.translateService.instant('time.weeks_ago', { count: diffWeeks });
+      return this.translateService.instant('time.weeks_ago', { count: Math.floor(diffDays / 7) });
     } else if (diffDays < 365) {
-      const diffMonths = Math.floor(diffDays / 30);
-      return this.translateService.instant('time.months_ago', { count: diffMonths });
+      return this.translateService.instant('time.months_ago', { count: Math.floor(diffDays / 30) });
     } else {
-      const diffYears = Math.floor(diffDays / 365);
-      return this.translateService.instant('time.years_ago', { count: diffYears });
+      return this.translateService.instant('time.years_ago', { count: Math.floor(diffDays / 365) });
     }
   }
 
@@ -20742,9 +20795,8 @@ export class PostCardComponent {
     this.cardClick.emit(this.post);
   }
 
-  // Type narrowing — discriminated union `type`
   get readingTime(): number | null {
-    return this.post.type === 'blog' ? this.post.reading_time : null;
+    return this.post.type === 'blog' ? (this.post.reading_time ?? null) : null;
   }
 
   get isQuestion(): boolean {
@@ -25446,7 +25498,13 @@ FILE: src\assets\i18n\de.json
     "comments": "Kommentare",
     "back_to_forum": "Zurück zum Forum",
     "submit_comment": "Kommentar absenden",
-    "comment_edited": "bearbeitet"
+    "comment_edited": "bearbeitet",
+    "empty_title": "Noch keine Beiträge",
+    "empty_description": "Hier wurde noch nichts gepostet. Möchtest du der Erste sein?",
+    "error_title": "Beiträge konnten nicht geladen werden",
+    "error_description": "Beim Laden der Beiträge ist ein Fehler aufgetreten. Überprüfe deine Verbindung und versuche es erneut.",
+    "no_results_title": "Keine Ergebnisse",
+    "no_results_description": "Keine Beiträge zu deiner Suche gefunden. Versuche andere Stichwörter oder entferne die Filter."
   },
   "pagination": {
     "of": "von",
@@ -26118,7 +26176,13 @@ FILE: src\assets\i18n\en.json
     "comments": "Comments",
     "back_to_forum": "Back to Forum",
     "submit_comment": "Submit Comment",
-    "comment_edited": "edited"
+    "comment_edited": "edited",
+    "empty_title": "No posts yet",
+    "empty_description": "It looks like nobody has posted here yet. Will you be the first?",
+    "error_title": "Could not load posts",
+    "error_description": "Something went wrong while fetching posts. Check your connection and try again.",
+    "no_results_title": "No results found",
+    "no_results_description": "No posts matched your search. Try different keywords or clear your filters."
   },
   "pagination": {
     "of": "of",
@@ -26790,7 +26854,14 @@ FILE: src\assets\i18n\hu.json
     "comments": "Hozzászólások",
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
-    "comment_edited": "szerkesztve"
+    "comment_edited": "szerkesztve",
+
+    "empty_title": "Még nincsenek posztok",
+    "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
+    "error_title": "Nem sikerült betölteni",
+    "error_description": "Hiba történt a posztok lekérésekor. Ellenőrizd a kapcsolatot, majd próbáld újra.",
+    "no_results_title": "Nincs találat",
+    "no_results_description": "Ehhez a kereséshez nem található poszt. Próbálj más kulcsszót, vagy töröld a szűrőket."
   },
   "pagination": {
     "of": "/",

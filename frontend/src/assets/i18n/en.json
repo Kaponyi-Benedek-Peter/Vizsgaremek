@@ -444,7 +444,11 @@
     "comments": "Comments",
     "back_to_forum": "Back to Forum",
     "submit_comment": "Submit Comment",
-    "comment_edited": "edited"
+    "comment_edited": "edited",
+    "empty_title": "No posts yet",
+    "empty_description": "It looks like nobody has posted here yet. Will you be the first?",
+    "error_title": "Could not load posts",
+    "error_description": "Something went wrong while fetching posts. Check your connection and try again."
   },
   "pagination": {
     "of": "of",

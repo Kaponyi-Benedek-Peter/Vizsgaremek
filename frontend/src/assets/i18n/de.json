@@ -414,7 +414,11 @@
     "comments": "Kommentare",
     "back_to_forum": "Zurück zum Forum",
     "submit_comment": "Kommentar absenden",
-    "comment_edited": "bearbeitet"
+    "comment_edited": "bearbeitet",
+    "empty_title": "Noch keine Beiträge",
+    "empty_description": "Hier wurde noch nichts gepostet. Möchtest du der Erste sein?",
+    "error_title": "Beiträge konnten nicht geladen werden",
+    "error_description": "Beim Laden der Beiträge ist ein Fehler aufgetreten. Überprüfe deine Verbindung und versuche es erneut."
   },
   "pagination": {
     "of": "von",
