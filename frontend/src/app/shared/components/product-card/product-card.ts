@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
-import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
+import { getImageUrl, getCategoryIcon, ICONS } from '../../../core/constants/visuals';
 import { TranslationService } from '../../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -25,6 +25,9 @@ export class ProductCard {
 
   getImageUrl = getImageUrl;
   getCategoryIcon = getCategoryIcon;
+
+  // Expose ICONS to template
+  protected readonly icons = ICONS;
 
   quantity = signal(1);
 
@@ -59,6 +62,27 @@ export class ProductCard {
     return this.product.ratingNumber > 0;
   }
 
+  localizedName = computed(() => {
+    const lang = this.currentLang();
+    if (lang === 'hu') return this.product.name_hu || this.product.name;
+    if (lang === 'de') return this.product.name_de || this.product.name;
+    return this.product.name_en || this.product.name;
+  });
+
+  localizedDescription = computed(() => {
+    const lang = this.currentLang();
+    if (lang === 'hu') return this.product.description_hu || this.product.description;
+    if (lang === 'de') return this.product.description_de || this.product.description;
+    return this.product.description_en || this.product.description;
+  });
+
+  get categoryName(): string {
+    const cat = this.productService.getCategoryById(this.product.category);
+    const lang = this.currentLang();
+    if (!cat) return '';
+    return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
+  }
+
   getRatingStars(): string {
     const rating = this.product.ratingNumber;
     if (!rating) return '';
@@ -66,28 +90,6 @@ export class ProductCard {
     const half = rating % 1 >= 0.5;
     const empty = 5 - full - (half ? 1 : 0);
     return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
-  }
-
-  localizedName = computed(() => {
-    const lang = this.currentLang();
-    if (lang === 'hu') return this.product?.name_hu || this.product?.name || '';
-    if (lang === 'de') return this.product?.name_de || this.product?.name || '';
-    return this.product?.name_en || this.product?.name || '';
-  });
-
-  localizedDescription = computed(() => {
-    const lang = this.currentLang();
-    if (lang === 'hu') return this.product?.description_hu || '';
-    if (lang === 'de') return this.product?.description_de || '';
-    return this.product?.description_en || '';
-  });
-
-  get categoryName(): string {
-    const catId = this.product.category ?? this.product.category_id ?? '';
-    const cat = this.productService.getCategoryById(catId);
-    if (!cat) return '';
-    const lang = this.currentLang();
-    return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
   }
 
   increaseQuantity(): void {
@@ -105,10 +107,7 @@ export class ProductCard {
   }
 
   onAddToCart(): void {
-    if (this.canAddToCart) {
-      this.addToCart.emit({ product: this.product, quantity: this.quantity() });
-      this.quantity.set(1);
-    }
+    this.addToCart.emit({ product: this.product, quantity: this.quantity() });
   }
 
   onViewDetails(): void {

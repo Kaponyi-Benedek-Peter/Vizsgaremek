@@ -12,6 +12,7 @@ import { TranslationService } from '../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import { Subscription } from 'rxjs';
+import { ICONS } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-detail',
@@ -28,6 +29,9 @@ export class ProductDetail implements OnInit, OnDestroy {
   private cartService = inject(CartService);
   private currencyService = inject(CurrencyService);
   private translationService = inject(TranslationService);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   private currentLang = toSignal(this.translationService.currentLang$, {
     initialValue: this.translationService.getCurrentLanguage(),

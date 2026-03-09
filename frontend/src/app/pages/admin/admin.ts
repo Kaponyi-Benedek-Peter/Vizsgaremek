@@ -7,12 +7,13 @@ import { AuthService } from '../../core/services/auth.service';
 import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
 import { ProductService } from '../../services/product.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
+import { ICONS } from '../../core/constants/visuals';
 
 type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
 
 interface NavItem {
   id: AdminSection;
-  icon: string;
+  icon: string; // webp img url from ICONS
   label: string;
 }
 
@@ -28,6 +29,9 @@ export class Admin implements OnInit {
   private accountService = inject(AccountService);
   private productService = inject(ProductService);
   private router = inject(Router);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   activeSection = signal<AdminSection>('dashboard');
   sidebarCollapsed = signal(false);
@@ -70,10 +74,10 @@ export class Admin implements OnInit {
   });
 
   navItems: NavItem[] = [
-    { id: 'dashboard', icon: '📊', label: 'admin.nav.dashboard' },
-    { id: 'orders', icon: '📦', label: 'admin.nav.orders' },
-    { id: 'users', icon: '👥', label: 'admin.nav.users' },
-    { id: 'products', icon: '🏷️', label: 'admin.nav.products' },
+    { id: 'dashboard', icon: ICONS.reports, label: 'admin.nav.dashboard' },
+    { id: 'orders', icon: ICONS.order, label: 'admin.nav.orders' },
+    { id: 'users', icon: ICONS.customers, label: 'admin.nav.users' },
+    { id: 'products', icon: ICONS.sale, label: 'admin.nav.products' },
   ];
 
   filteredOrders = computed(() => {

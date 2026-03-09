@@ -5,8 +5,6 @@
  *
  * Everything stored here centrally
  *
- * Placeholder until we have our own
- *
  * Type-safe
  */
 
@@ -31,14 +29,14 @@ export interface SlideData {
 export interface LanguageOption {
   code: SupportedLanguage;
   name: string;
-  flag: string; // emoji or IMG url
-  flagImage?: string; // image url if there is
+  flag: string; // IMG url (webp)
+  flagImage?: string; // alias – same as flag
 }
 
 export interface CategoryVisual {
   id: string;
-  icon: string; // emoji
-  image: string; // emoji or IMG url
+  icon: string; // webp img url
+  image: string; // webp img url
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -129,10 +127,10 @@ export const ICONS = {
 
   // ── Forum / Blog ──────────────────────────────────────────────────────────
   forumSearch: `${ASSETS}/assets/icons/forum/search.webp`,
-  forumNewPost: `${ASSETS}/assets/icons/forum/new_post.webp`,
-  forumReadingTime: `${ASSETS}/assets/icons/forum/reading_time.webp`,
-  forumDate: `${ASSETS}/assets/icons/forum/calendar.webp`,
-  forumRetry: `${ASSETS}/assets/icons/forum/recurring_appointment.webp`,
+  forumNewPost: `${ASSETS}/assets/icons/forum/new-post.webp`,
+  forumReadingTime: `${ASSETS}/assets/icons/forum/reading-time.webp`,
+  forumDate: `${ASSETS}/assets/icons/forum/date.webp`,
+  forumRetry: `${ASSETS}/assets/icons/forum/retry.webp`,
 
   // ── Post stats ────────────────────────────────────────────────────────────
   statViews: `${ASSETS}/assets/icons/stats/views.webp`,
@@ -146,7 +144,7 @@ export const ICONS = {
   badgeAnswered: `${ASSETS}/assets/icons/badges/answered.webp`,
   badgeVerified: `${ASSETS}/assets/icons/badges/verified.webp`,
 
-  // ── Category icons (forum chips + post cards) ─────────────────────────────
+  // ── Category icons (forum chips + product cards) ──────────────────────────
   categoryDefault: `${ASSETS}/assets/icons/categories/default.webp`,
   categoryAll: `${ASSETS}/assets/icons/categories/all.webp`,
   categoryMedicines: `${ASSETS}/assets/icons/categories/medicines.webp`,
@@ -181,10 +179,10 @@ export const IMAGES = {
   hero3: `${ASSETS}/assets/images/hero3.webp`,
   hero4: `${ASSETS}/assets/images/hero4.webp`,
 
-  // Language flags
-  flagHungary: '🇭🇺',
-  flagEnglish: '🇬🇧',
-  flagGerman: '🇩🇪',
+  // Language flags – actual webp images instead of emoji
+  flagHungary: `${ASSETS}/assets/images/Hungary.webp`,
+  flagEnglish: `${ASSETS}/assets/images/English.webp`,
+  flagGerman: `${ASSETS}/assets/images/German.webp`,
 
   productDefault: PLACEHOLDERS.product(400, 400, 'Termék'),
 
@@ -234,13 +232,13 @@ export const HERO_SLIDES: SlideData[] = [
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const LANGUAGE_OPTIONS: LanguageOption[] = [
-  { code: 'hu', name: 'Magyar', flag: IMAGES.flagHungary },
-  { code: 'en', name: 'English', flag: IMAGES.flagEnglish },
-  { code: 'de', name: 'Deutsch', flag: IMAGES.flagGerman },
+  { code: 'hu', name: 'Magyar', flag: IMAGES.flagHungary, flagImage: IMAGES.flagHungary },
+  { code: 'en', name: 'English', flag: IMAGES.flagEnglish, flagImage: IMAGES.flagEnglish },
+  { code: 'de', name: 'Deutsch', flag: IMAGES.flagGerman, flagImage: IMAGES.flagGerman },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
-// NAVIGATION ICONS (Unicode — nem kép, ezek maradnak szövegként)
+// NAVIGATION ICONS (Unicode — these stay as text characters)
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const NAV_ICONS = {

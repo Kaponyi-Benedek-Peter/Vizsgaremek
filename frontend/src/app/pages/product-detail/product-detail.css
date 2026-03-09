@@ -3,6 +3,14 @@
   background: var(--color-background);
 }
 
+.state-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.5;
+}
+
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -626,6 +634,14 @@
   font-size: var(--text-xl);
 }
 
+.btn-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .prescription-notice {
   display: flex;
   align-items: center;
@@ -637,6 +653,14 @@
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
+}
+
+.notice-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
 .description-block,
@@ -803,6 +827,10 @@
 
 .reviews-empty-icon {
   font-size: 2.5rem;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
   opacity: 0.45;
 }
 

@@ -2,7 +2,8 @@
   <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed()">
     <div class="sidebar-header">
       <div class="sidebar-logo">
-        <span class="logo-icon">🏥</span>
+        <!-- Admin icon instead of 🏥 emoji -->
+        <img [src]="icons.admin" alt="Admin" class="logo-icon" aria-hidden="true" />
         @if (!sidebarCollapsed()) {
           <span class="logo-text">Roy's Admin</span>
         }
@@ -23,7 +24,13 @@
           (click)="setSection(item.id)"
           [attr.title]="item.label | translate"
         >
-          <span class="nav-icon">{{ item.icon }}</span>
+          <!-- webp icon instead of emoji string -->
+          <img
+            [src]="item.icon"
+            [attr.alt]="item.label | translate"
+            class="nav-icon"
+            aria-hidden="true"
+          />
           @if (!sidebarCollapsed()) {
             <span class="nav-label">{{ item.label | translate }}</span>
           }
@@ -34,7 +41,8 @@
     @if (!sidebarCollapsed()) {
       <div class="sidebar-footer">
         <button class="nav-item logout-btn" (click)="logout()">
-          <span class="nav-icon">🚪</span>
+          <!-- login icon repurposed as logout (same visual family) -->
+          <img [src]="icons.login" alt="" class="nav-icon" aria-hidden="true" />
           <span class="nav-label">{{ 'profile.logout' | translate }}</span>
         </button>
       </div>
@@ -66,8 +74,11 @@
         </div>
 
         <div class="stats-grid">
+          <!-- 📦 → orderwhite.webp -->
           <div class="stat-card primary">
-            <div class="stat-icon">📦</div>
+            <div class="stat-icon">
+              <img [src]="icons.order" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (ordersLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -77,8 +88,12 @@
               <span class="stat-label">{{ 'admin.stats.total_orders' | translate }}</span>
             </div>
           </div>
+
+          <!-- 💰 → paymentwhite.webp -->
           <div class="stat-card success">
-            <div class="stat-icon">💰</div>
+            <div class="stat-icon">
+              <img [src]="icons.payment" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (ordersLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -88,8 +103,12 @@
               <span class="stat-label">{{ 'admin.stats.revenue' | translate }}</span>
             </div>
           </div>
+
+          <!-- 👥 → customerswhite.webp -->
           <div class="stat-card info">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon">
+              <img [src]="icons.customers" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (usersLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -99,8 +118,12 @@
               <span class="stat-label">{{ 'admin.stats.total_users' | translate }}</span>
             </div>
           </div>
+
+          <!-- 🏷️ → salewhite.webp -->
           <div class="stat-card warning">
-            <div class="stat-icon">🏷️</div>
+            <div class="stat-icon">
+              <img [src]="icons.sale" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (productsLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -173,7 +196,8 @@
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <span class="search-icon-small">🔍</span>
+            <!-- 🔍 → searchwhite.webp -->
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
@@ -249,7 +273,8 @@
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <span class="search-icon-small">🔍</span>
+            <!-- 🔍 → searchwhite.webp -->
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
@@ -322,7 +347,8 @@
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <span class="search-icon-small">🔍</span>
+            <!-- 🔍 → searchwhite.webp -->
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
@@ -370,7 +396,15 @@
                       <tr>
                         <td>
                           <div class="product-cell">
-                            <div class="product-thumb">💊</div>
+                            <!-- 💊 → categories/medicines.webp -->
+                            <div class="product-thumb">
+                              <img
+                                [src]="icons.categoryMedicines"
+                                alt=""
+                                aria-hidden="true"
+                                class="product-thumb-img"
+                              />
+                            </div>
                             <div class="product-cell-info">
                               <span class="product-name">{{ product.name }}</span>
                               <span class="product-brand muted">{{ product.brand }}</span>
@@ -385,7 +419,8 @@
                             {{ product.stockNumber }} {{ 'common.items_unit' | translate }}
                           </span>
                         </td>
-                        <td class="muted">⭐ {{ product.ratingNumber.toFixed(1) }}</td>
+                        <!-- ⭐ → Unicode star character (no img needed, stays inline) -->
+                        <td class="muted">★ {{ product.ratingNumber.toFixed(1) }}</td>
                         <td>
                           <span
                             [class]="

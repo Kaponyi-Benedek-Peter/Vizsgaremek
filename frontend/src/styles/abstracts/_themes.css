@@ -1,3 +1,6 @@
+:root {
+  --icon-filter: brightness(0) saturate(100%);
+}
 [data-theme='dark'] {
   --color-background: var(--color-gray-very-dark);
   --color-surface: var(--color-dark-neutral);
@@ -25,6 +28,8 @@
   --shadow-primary-lg: 0 12px 32px rgba(6, 122, 69, 0.55);
 
   --gradient-image-bg: linear-gradient(135deg, #1a2e24 0%, #1e3829 100%);
+
+  --icon-filter: none;
 }
 
 * {

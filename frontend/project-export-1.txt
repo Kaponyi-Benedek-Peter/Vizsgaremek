@@ -780,8 +780,6 @@ FILE: src\app\core\constants\visuals.ts
  *
  * Everything stored here centrally
  *
- * Placeholder until we have our own
- *
  * Type-safe
  */
 
@@ -806,14 +804,14 @@ export interface SlideData {
 export interface LanguageOption {
   code: SupportedLanguage;
   name: string;
-  flag: string; // emoji or IMG url
-  flagImage?: string; // image url if there is
+  flag: string; // IMG url (webp)
+  flagImage?: string; // alias – same as flag
 }
 
 export interface CategoryVisual {
   id: string;
-  icon: string; // emoji
-  image: string; // emoji or IMG url
+  icon: string; // webp img url
+  image: string; // webp img url
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -921,7 +919,7 @@ export const ICONS = {
   badgeAnswered: `${ASSETS}/assets/icons/badges/answered.webp`,
   badgeVerified: `${ASSETS}/assets/icons/badges/verified.webp`,
 
-  // ── Category icons (forum chips + post cards) ─────────────────────────────
+  // ── Category icons (forum chips + product cards) ──────────────────────────
   categoryDefault: `${ASSETS}/assets/icons/categories/default.webp`,
   categoryAll: `${ASSETS}/assets/icons/categories/all.webp`,
   categoryMedicines: `${ASSETS}/assets/icons/categories/medicines.webp`,
@@ -956,10 +954,10 @@ export const IMAGES = {
   hero3: `${ASSETS}/assets/images/hero3.webp`,
   hero4: `${ASSETS}/assets/images/hero4.webp`,
 
-  // Language flags
-  flagHungary: '🇭🇺',
-  flagEnglish: '🇬🇧',
-  flagGerman: '🇩🇪',
+  // Language flags – actual webp images instead of emoji
+  flagHungary: `${ASSETS}/assets/images/Hungary.webp`,
+  flagEnglish: `${ASSETS}/assets/images/English.webp`,
+  flagGerman: `${ASSETS}/assets/images/German.webp`,
 
   productDefault: PLACEHOLDERS.product(400, 400, 'Termék'),
 
@@ -1009,13 +1007,13 @@ export const HERO_SLIDES: SlideData[] = [
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const LANGUAGE_OPTIONS: LanguageOption[] = [
-  { code: 'hu', name: 'Magyar', flag: IMAGES.flagHungary },
-  { code: 'en', name: 'English', flag: IMAGES.flagEnglish },
-  { code: 'de', name: 'Deutsch', flag: IMAGES.flagGerman },
+  { code: 'hu', name: 'Magyar', flag: IMAGES.flagHungary, flagImage: IMAGES.flagHungary },
+  { code: 'en', name: 'English', flag: IMAGES.flagEnglish, flagImage: IMAGES.flagEnglish },
+  { code: 'de', name: 'Deutsch', flag: IMAGES.flagGerman, flagImage: IMAGES.flagGerman },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
-// NAVIGATION ICONS (Unicode — nem kép, ezek maradnak szövegként)
+// NAVIGATION ICONS (Unicode — these stay as text characters)
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const NAV_ICONS = {
@@ -3543,9 +3541,13 @@ FILE: src\app\pages\admin\admin.css
   overflow: hidden;
 }
 
+/* Logo icon – webp img replaces emoji */
 .logo-icon {
-  font-size: 24px;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
 .logo-text {
@@ -3608,10 +3610,21 @@ FILE: src\app\pages\admin\admin.css
   color: white;
 }
 
+/* Nav icon – webp img replaces emoji text */
 .nav-icon {
-  font-size: 18px;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
   flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  transition: filter 0.15s;
 }
+
+/* Active nav item: icon should always be white regardless of theme */
+.nav-item.active .nav-icon {
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .nav-label {
   font-size: var(--text-sm, 0.9rem);
   font-weight: 500;
@@ -3627,6 +3640,10 @@ FILE: src\app\pages\admin\admin.css
 }
 .logout-btn:hover {
   background: rgba(220, 38, 38, 0.08) !important;
+}
+/* Logout icon tinted red */
+.logout-btn .nav-icon {
+  filter: brightness(0) saturate(100%) invert(20%) sepia(80%) saturate(6000%) hue-rotate(355deg);
 }
 
 .admin-main {
@@ -3735,8 +3752,32 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .stat-icon {
-  font-size: 36px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Stat icons – sized webp imgs */
+.stat-icon-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+}
+
+/* Color-tint stat icons to match card accent colors */
+.stat-card.primary .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(90%) saturate(700%) hue-rotate(120deg);
+}
+.stat-card.success .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(60%) sepia(50%) saturate(500%) hue-rotate(120deg);
+}
+.stat-card.info .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(40%) sepia(80%) saturate(500%) hue-rotate(200deg);
+}
+.stat-card.warning .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(75%) sepia(60%) saturate(800%) hue-rotate(10deg);
 }
 
 .stat-body {
@@ -3984,16 +4025,24 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .product-thumb {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-md, 0.5rem);
   background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
   flex-shrink: 0;
   border: 1px solid var(--border-color);
+  padding: 4px;
+}
+
+/* Product thumb icon – category medicines webp */
+.product-thumb-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
 .section-toolbar {
@@ -4009,13 +4058,18 @@ FILE: src\app\pages\admin\admin.css
   min-width: 200px;
 }
 
+/* Search icon – webp img absolutely positioned */
 .search-icon-small {
   position: absolute;
   left: var(--space-3);
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.6;
 }
 
 .admin-search {
@@ -4121,8 +4175,9 @@ FILE: src\app\pages\admin\admin.css
     gap: var(--space-3);
   }
 
-  .stat-icon {
-    font-size: 28px;
+  .stat-icon-img {
+    width: 32px;
+    height: 32px;
   }
 }
 
@@ -4179,7 +4234,8 @@ FILE: src\app\pages\admin\admin.html
   <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed()">
     <div class="sidebar-header">
       <div class="sidebar-logo">
-        <span class="logo-icon">🏥</span>
+        <!-- Admin icon instead of 🏥 emoji -->
+        <img [src]="icons.admin" alt="Admin" class="logo-icon" aria-hidden="true" />
         @if (!sidebarCollapsed()) {
           <span class="logo-text">Roy's Admin</span>
         }
@@ -4200,7 +4256,13 @@ FILE: src\app\pages\admin\admin.html
           (click)="setSection(item.id)"
           [attr.title]="item.label | translate"
         >
-          <span class="nav-icon">{{ item.icon }}</span>
+          <!-- webp icon instead of emoji string -->
+          <img
+            [src]="item.icon"
+            [attr.alt]="item.label | translate"
+            class="nav-icon"
+            aria-hidden="true"
+          />
           @if (!sidebarCollapsed()) {
             <span class="nav-label">{{ item.label | translate }}</span>
           }
@@ -4211,7 +4273,8 @@ FILE: src\app\pages\admin\admin.html
     @if (!sidebarCollapsed()) {
       <div class="sidebar-footer">
         <button class="nav-item logout-btn" (click)="logout()">
-          <span class="nav-icon">🚪</span>
+          <!-- login icon repurposed as logout (same visual family) -->
+          <img [src]="icons.login" alt="" class="nav-icon" aria-hidden="true" />
           <span class="nav-label">{{ 'profile.logout' | translate }}</span>
         </button>
       </div>
@@ -4243,8 +4306,11 @@ FILE: src\app\pages\admin\admin.html
         </div>
 
         <div class="stats-grid">
+          <!-- 📦 → orderwhite.webp -->
           <div class="stat-card primary">
-            <div class="stat-icon">📦</div>
+            <div class="stat-icon">
+              <img [src]="icons.order" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (ordersLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -4254,8 +4320,12 @@ FILE: src\app\pages\admin\admin.html
               <span class="stat-label">{{ 'admin.stats.total_orders' | translate }}</span>
             </div>
           </div>
+
+          <!-- 💰 → paymentwhite.webp -->
           <div class="stat-card success">
-            <div class="stat-icon">💰</div>
+            <div class="stat-icon">
+              <img [src]="icons.payment" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (ordersLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -4265,8 +4335,12 @@ FILE: src\app\pages\admin\admin.html
               <span class="stat-label">{{ 'admin.stats.revenue' | translate }}</span>
             </div>
           </div>
+
+          <!-- 👥 → customerswhite.webp -->
           <div class="stat-card info">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon">
+              <img [src]="icons.customers" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (usersLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -4276,8 +4350,12 @@ FILE: src\app\pages\admin\admin.html
               <span class="stat-label">{{ 'admin.stats.total_users' | translate }}</span>
             </div>
           </div>
+
+          <!-- 🏷️ → salewhite.webp -->
           <div class="stat-card warning">
-            <div class="stat-icon">🏷️</div>
+            <div class="stat-icon">
+              <img [src]="icons.sale" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (productsLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -4350,7 +4428,8 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <span class="search-icon-small">🔍</span>
+            <!-- 🔍 → searchwhite.webp -->
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
@@ -4426,7 +4505,8 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <span class="search-icon-small">🔍</span>
+            <!-- 🔍 → searchwhite.webp -->
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
@@ -4499,7 +4579,8 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <span class="search-icon-small">🔍</span>
+            <!-- 🔍 → searchwhite.webp -->
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
@@ -4547,7 +4628,15 @@ FILE: src\app\pages\admin\admin.html
                       <tr>
                         <td>
                           <div class="product-cell">
-                            <div class="product-thumb">💊</div>
+                            <!-- 💊 → categories/medicines.webp -->
+                            <div class="product-thumb">
+                              <img
+                                [src]="icons.categoryMedicines"
+                                alt=""
+                                aria-hidden="true"
+                                class="product-thumb-img"
+                              />
+                            </div>
                             <div class="product-cell-info">
                               <span class="product-name">{{ product.name }}</span>
                               <span class="product-brand muted">{{ product.brand }}</span>
@@ -4562,7 +4651,8 @@ FILE: src\app\pages\admin\admin.html
                             {{ product.stockNumber }} {{ 'common.items_unit' | translate }}
                           </span>
                         </td>
-                        <td class="muted">⭐ {{ product.ratingNumber.toFixed(1) }}</td>
+                        <!-- ⭐ → Unicode star character (no img needed, stays inline) -->
+                        <td class="muted">★ {{ product.ratingNumber.toFixed(1) }}</td>
                         <td>
                           <span
                             [class]="
@@ -4634,12 +4724,13 @@ import { AuthService } from '../../core/services/auth.service';
 import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
 import { ProductService } from '../../services/product.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
+import { ICONS } from '../../core/constants/visuals';
 
 type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
 
 interface NavItem {
   id: AdminSection;
-  icon: string;
+  icon: string; // webp img url from ICONS
   label: string;
 }
 
@@ -4655,6 +4746,9 @@ export class Admin implements OnInit {
   private accountService = inject(AccountService);
   private productService = inject(ProductService);
   private router = inject(Router);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   activeSection = signal<AdminSection>('dashboard');
   sidebarCollapsed = signal(false);
@@ -4697,10 +4791,10 @@ export class Admin implements OnInit {
   });
 
   navItems: NavItem[] = [
-    { id: 'dashboard', icon: '📊', label: 'admin.nav.dashboard' },
-    { id: 'orders', icon: '📦', label: 'admin.nav.orders' },
-    { id: 'users', icon: '👥', label: 'admin.nav.users' },
-    { id: 'products', icon: '🏷️', label: 'admin.nav.products' },
+    { id: 'dashboard', icon: ICONS.reports, label: 'admin.nav.dashboard' },
+    { id: 'orders', icon: ICONS.order, label: 'admin.nav.orders' },
+    { id: 'users', icon: ICONS.customers, label: 'admin.nav.users' },
+    { id: 'products', icon: ICONS.sale, label: 'admin.nav.products' },
   ];
 
   filteredOrders = computed(() => {
@@ -10789,6 +10883,14 @@ FILE: src\app\pages\product-detail\product-detail.css
   background: var(--color-background);
 }
 
+.state-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.5;
+}
+
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -11412,6 +11514,14 @@ FILE: src\app\pages\product-detail\product-detail.css
   font-size: var(--text-xl);
 }
 
+.btn-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .prescription-notice {
   display: flex;
   align-items: center;
@@ -11423,6 +11533,14 @@ FILE: src\app\pages\product-detail\product-detail.css
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
+}
+
+.notice-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
 .description-block,
@@ -11589,6 +11707,10 @@ FILE: src\app\pages\product-detail\product-detail.css
 
 .reviews-empty-icon {
   font-size: 2.5rem;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
   opacity: 0.45;
 }
 
@@ -11688,7 +11810,10 @@ FILE: src\app\pages\product-detail\product-detail.html
 
   @if (!isLoading() && notFound()) {
     <div class="not-found-state">
-      <div class="not-found-icon">🔍</div>
+      <!-- 🔍 → searchwhite.webp -->
+      <div class="not-found-icon">
+        <img [src]="icons.search" alt="" class="state-icon" aria-hidden="true" />
+      </div>
       <h2 class="not-found-title">{{ 'product.not_found' | translate }}</h2>
       <p class="not-found-desc">{{ 'product.not_found_desc' | translate }}</p>
       <button class="back-btn" (click)="goBack()">
@@ -11871,14 +11996,16 @@ FILE: src\app\pages\product-detail\product-detail.html
                 <span class="btn-icon">✓</span>
                 {{ 'common.added_to_cart' | translate }}
               } @else {
-                <span class="btn-icon">🛒</span>
+                <!-- 🛒 → basketwhite.webp -->
+                <img [src]="icons.basket" alt="" class="btn-icon-img" aria-hidden="true" />
                 {{ 'common.add_to_cart' | translate }}
               }
             </button>
 
             @if (product()!.requiresPrescription) {
               <div class="prescription-notice">
-                <span>ℹ️</span>
+                <!-- ℹ️ → infowhite.webp -->
+                <img [src]="icons.info" alt="" class="notice-icon-img" aria-hidden="true" />
                 <span>{{ 'product.prescription_required_notice' | translate }}</span>
               </div>
             }
@@ -11924,7 +12051,13 @@ FILE: src\app\pages\product-detail\product-detail.html
               </div>
             } @else if (reviews().length === 0) {
               <div class="reviews-empty">
-                <span class="reviews-empty-icon">💬</span>
+                <!-- 💬 → stats/comments.webp -->
+                <img
+                  [src]="icons.statComments"
+                  alt=""
+                  class="reviews-empty-icon"
+                  aria-hidden="true"
+                />
                 <p class="reviews-empty-text">{{ 'product.no_reviews' | translate }}</p>
               </div>
             } @else {
@@ -12000,6 +12133,7 @@ import { TranslationService } from '../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 import { Subscription } from 'rxjs';
+import { ICONS } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-detail',
@@ -12016,6 +12150,9 @@ export class ProductDetail implements OnInit, OnDestroy {
   private cartService = inject(CartService);
   private currencyService = inject(CurrencyService);
   private translationService = inject(TranslationService);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   private currentLang = toSignal(this.translationService.currentLang$, {
     initialValue: this.translationService.getCurrentLanguage(),
@@ -21327,6 +21464,14 @@ FILE: src\app\shared\components\product-card\product-card.css
   letter-spacing: 0.01em;
 }
 
+.add-to-cart-button .button-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .add-to-cart-button.compact {
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-sm);
@@ -21556,7 +21701,8 @@ FILE: src\app\shared\components\product-card\product-card.html
       (click)="onAddToCart()"
       [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName()"
     >
-      <span class="button-icon">🛒</span>
+      <!-- 🛒 → basketwhite.webp -->
+      <img [src]="icons.basket" alt="" class="button-icon" aria-hidden="true" />
       {{ 'common.add_to_cart' | translate }}
     </button>
 
@@ -21585,7 +21731,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
-import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
+import { getImageUrl, getCategoryIcon, ICONS } from '../../../core/constants/visuals';
 import { TranslationService } from '../../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -21605,6 +21751,9 @@ export class ProductCard {
 
   getImageUrl = getImageUrl;
   getCategoryIcon = getCategoryIcon;
+
+  // Expose ICONS to template
+  protected readonly icons = ICONS;
 
   quantity = signal(1);
 
@@ -21639,6 +21788,27 @@ export class ProductCard {
     return this.product.ratingNumber > 0;
   }
 
+  localizedName = computed(() => {
+    const lang = this.currentLang();
+    if (lang === 'hu') return this.product.name_hu || this.product.name;
+    if (lang === 'de') return this.product.name_de || this.product.name;
+    return this.product.name_en || this.product.name;
+  });
+
+  localizedDescription = computed(() => {
+    const lang = this.currentLang();
+    if (lang === 'hu') return this.product.description_hu || this.product.description;
+    if (lang === 'de') return this.product.description_de || this.product.description;
+    return this.product.description_en || this.product.description;
+  });
+
+  get categoryName(): string {
+    const cat = this.productService.getCategoryById(this.product.category);
+    const lang = this.currentLang();
+    if (!cat) return '';
+    return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
+  }
+
   getRatingStars(): string {
     const rating = this.product.ratingNumber;
     if (!rating) return '';
@@ -21646,28 +21816,6 @@ export class ProductCard {
     const half = rating % 1 >= 0.5;
     const empty = 5 - full - (half ? 1 : 0);
     return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
-  }
-
-  localizedName = computed(() => {
-    const lang = this.currentLang();
-    if (lang === 'hu') return this.product?.name_hu || this.product?.name || '';
-    if (lang === 'de') return this.product?.name_de || this.product?.name || '';
-    return this.product?.name_en || this.product?.name || '';
-  });
-
-  localizedDescription = computed(() => {
-    const lang = this.currentLang();
-    if (lang === 'hu') return this.product?.description_hu || '';
-    if (lang === 'de') return this.product?.description_de || '';
-    return this.product?.description_en || '';
-  });
-
-  get categoryName(): string {
-    const catId = this.product.category ?? this.product.category_id ?? '';
-    const cat = this.productService.getCategoryById(catId);
-    if (!cat) return '';
-    const lang = this.currentLang();
-    return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
   }
 
   increaseQuantity(): void {
@@ -21685,10 +21833,7 @@ export class ProductCard {
   }
 
   onAddToCart(): void {
-    if (this.canAddToCart) {
-      this.addToCart.emit({ product: this.product, quantity: this.quantity() });
-      this.quantity.set(1);
-    }
+    this.addToCart.emit({ product: this.product, quantity: this.quantity() });
   }
 
   onViewDetails(): void {
@@ -22209,6 +22354,14 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
   min-height: 52px;
 }
 
+.add-to-cart-button .button-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .add-to-cart-button:hover:not(:disabled) {
     background: var(--color-primary-hover);
@@ -22239,7 +22392,13 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
 
 .notice-icon {
   font-size: var(--text-lg, 18px);
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
+
 .notice-text {
   font-weight: var(--font-medium);
 }
@@ -22586,13 +22745,13 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.html
           </div>
 
           <button class="add-to-cart-button" [disabled]="!canAddToCart" (click)="handleAddToCart()">
-            <span class="button-icon">🛒</span>
+            <img [src]="icons.basket" alt="" class="button-icon" aria-hidden="true" />
             {{ 'common.add_to_cart' | translate }}
           </button>
 
           @if (product.requiresPrescription) {
             <div class="prescription-notice">
-              <span class="notice-icon">ℹ️</span>
+              <img [src]="icons.info" alt="" class="notice-icon" aria-hidden="true" />
               <span class="notice-text">{{
                 'product.prescription_required_notice' | translate
               }}</span>
@@ -22616,6 +22775,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
+import { ICONS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-detail-modal',
@@ -22632,6 +22792,9 @@ export class ProductDetailModal {
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
   private translateService = inject(TranslateService);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   quantity = signal(1);
   selectedImageIndex = signal(0);
@@ -22652,13 +22815,10 @@ export class ProductDetailModal {
   }
 
   get formattedPrice(): string {
-    // getBasePrice convert HUF → actual devisa (USD/EUR/HUF)
-    // product.priceNumber and product.price always HUF!
     return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
   }
 
   get formattedDiscountedPrice(): string {
-    // getDiscountedPrice = getBasePrice + sale_percentage levonása
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
   }
 
@@ -22684,10 +22844,19 @@ export class ProductDetailModal {
   }
 
   get categoryName(): string {
-    const cat = this.productService.getCategoryById(this.product.category ?? '');
-    const lang = this.translateService.currentLang || 'hu';
+    const cat = this.productService.getCategoryById(this.product.category);
+    const lang = this.translateService.currentLang;
     if (!cat) return '';
     return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
+  }
+
+  getRatingStars(): string {
+    const rating = this.product.ratingNumber;
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   selectImage(index: number): void {
@@ -22718,18 +22887,9 @@ export class ProductDetailModal {
     }
   }
 
-  getRatingStars(): string {
-    if (!this.product.ratingNumber) return '';
-    const fullStars = Math.floor(this.product.ratingNumber);
-    const hasHalfStar = this.product.ratingNumber % 1 >= 0.5;
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-    return '★'.repeat(fullStars) + (hasHalfStar ? '⯨' : '') + '☆'.repeat(emptyStars);
-  }
-
   handleAddToCart(): void {
     if (this.canAddToCart) {
       this.addToCart.emit({ product: this.product, quantity: this.quantity() });
-      this.handleClose();
     }
   }
 
@@ -22739,7 +22899,7 @@ export class ProductDetailModal {
 
   handleBackdropClick(event: MouseEvent): void {
     if (event.target === event.currentTarget) {
-      this.handleClose();
+      this.close.emit();
     }
   }
 }
@@ -23319,6 +23479,14 @@ FILE: src\app\shared\components\product-list\product-list.css
   text-align: center;
 }
 
+.empty-state-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.4;
+}
+
 .empty-icon {
   font-size: 4rem;
   margin-bottom: var(--space-4);
@@ -23491,13 +23659,19 @@ FILE: src\app\shared\components\product-list\product-list.html
       />
     } @else {
       @if (allProducts().length === 0) {
+        <!-- 📦 → orderwhite.webp (no products at all) -->
         <div class="empty-state">
-          <div class="empty-icon">📦</div>
+          <div class="empty-icon">
+            <img [src]="icons.order" alt="" aria-hidden="true" class="empty-state-img" />
+          </div>
           <h3 class="empty-title-no-products">{{ 'products.empty' | translate }}</h3>
         </div>
       } @else {
+        <!-- 🔍 → searchwhite.webp (no results for current filters) -->
         <div class="empty-state">
-          <div class="empty-icon">🔍</div>
+          <div class="empty-icon">
+            <img [src]="icons.search" alt="" aria-hidden="true" class="empty-state-img" />
+          </div>
           <h3 class="empty-title">{{ 'product.no_products_found' | translate }}</h3>
           <p class="empty-description">
             {{ 'product.try_different_filters' | translate }}
@@ -23536,6 +23710,7 @@ import { ProductCard } from '../product-card/product-card';
 import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
 import { ProductDetailModal } from '../product-detail-modal/product-detail-modal';
+import { ICONS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-list',
@@ -23554,6 +23729,9 @@ import { ProductDetailModal } from '../product-detail-modal/product-detail-modal
 export class ProductList {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   products = this.productService.paginatedProducts;
   pagination = this.productService.paginationState;
@@ -25502,9 +25680,7 @@ FILE: src\assets\i18n\de.json
     "empty_title": "Noch keine Beiträge",
     "empty_description": "Hier wurde noch nichts gepostet. Möchtest du der Erste sein?",
     "error_title": "Beiträge konnten nicht geladen werden",
-    "error_description": "Beim Laden der Beiträge ist ein Fehler aufgetreten. Überprüfe deine Verbindung und versuche es erneut.",
-    "no_results_title": "Keine Ergebnisse",
-    "no_results_description": "Keine Beiträge zu deiner Suche gefunden. Versuche andere Stichwörter oder entferne die Filter."
+    "error_description": "Beim Laden der Beiträge ist ein Fehler aufgetreten. Überprüfe deine Verbindung und versuche es erneut."
   },
   "pagination": {
     "of": "von",
@@ -26180,9 +26356,7 @@ FILE: src\assets\i18n\en.json
     "empty_title": "No posts yet",
     "empty_description": "It looks like nobody has posted here yet. Will you be the first?",
     "error_title": "Could not load posts",
-    "error_description": "Something went wrong while fetching posts. Check your connection and try again.",
-    "no_results_title": "No results found",
-    "no_results_description": "No posts matched your search. Try different keywords or clear your filters."
+    "error_description": "Something went wrong while fetching posts. Check your connection and try again."
   },
   "pagination": {
     "of": "of",
@@ -26859,9 +27033,7 @@ FILE: src\assets\i18n\hu.json
     "empty_title": "Még nincsenek posztok",
     "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
     "error_title": "Nem sikerült betölteni",
-    "error_description": "Hiba történt a posztok lekérésekor. Ellenőrizd a kapcsolatot, majd próbáld újra.",
-    "no_results_title": "Nincs találat",
-    "no_results_description": "Ehhez a kereséshez nem található poszt. Próbálj más kulcsszót, vagy töröld a szűrőket."
+    "error_description": "Hiba történt a posztok lekérésekor. Ellenőrizd a kapcsolatot, majd próbáld újra."
   },
   "pagination": {
     "of": "/",
@@ -27144,6 +27316,9 @@ bootstrapApplication(App, appConfig)
 FILE: src\styles\abstracts\_themes.css
 ================================================================================
 
+:root {
+  --icon-filter: brightness(0) saturate(100%);
+}
 [data-theme='dark'] {
   --color-background: var(--color-gray-very-dark);
   --color-surface: var(--color-dark-neutral);
@@ -27171,6 +27346,8 @@ FILE: src\styles\abstracts\_themes.css
   --shadow-primary-lg: 0 12px 32px rgba(6, 122, 69, 0.55);
 
   --gradient-image-bg: linear-gradient(135deg, #1a2e24 0%, #1e3829 100%);
+
+  --icon-filter: none;
 }
 
 * {

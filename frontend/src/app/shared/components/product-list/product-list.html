@@ -32,13 +32,19 @@
       />
     } @else {
       @if (allProducts().length === 0) {
+        <!-- 📦 → orderwhite.webp (no products at all) -->
         <div class="empty-state">
-          <div class="empty-icon">📦</div>
+          <div class="empty-icon">
+            <img [src]="icons.order" alt="" aria-hidden="true" class="empty-state-img" />
+          </div>
           <h3 class="empty-title-no-products">{{ 'products.empty' | translate }}</h3>
         </div>
       } @else {
+        <!-- 🔍 → searchwhite.webp (no results for current filters) -->
         <div class="empty-state">
-          <div class="empty-icon">🔍</div>
+          <div class="empty-icon">
+            <img [src]="icons.search" alt="" aria-hidden="true" class="empty-state-img" />
+          </div>
           <h3 class="empty-title">{{ 'product.no_products_found' | translate }}</h3>
           <p class="empty-description">
             {{ 'product.try_different_filters' | translate }}

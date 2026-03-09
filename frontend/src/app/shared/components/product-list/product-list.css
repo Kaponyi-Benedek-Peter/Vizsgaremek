@@ -31,6 +31,14 @@
   text-align: center;
 }
 
+.empty-state-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.4;
+}
+
 .empty-icon {
   font-size: 4rem;
   margin-bottom: var(--space-4);

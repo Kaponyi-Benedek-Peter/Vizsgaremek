@@ -112,7 +112,8 @@
       (click)="onAddToCart()"
       [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName()"
     >
-      <span class="button-icon">🛒</span>
+      <!-- 🛒 → basketwhite.webp -->
+      <img [src]="icons.basket" alt="" class="button-icon" aria-hidden="true" />
       {{ 'common.add_to_cart' | translate }}
     </button>
 

@@ -8,7 +8,10 @@
 
   @if (!isLoading() && notFound()) {
     <div class="not-found-state">
-      <div class="not-found-icon">🔍</div>
+      <!-- 🔍 → searchwhite.webp -->
+      <div class="not-found-icon">
+        <img [src]="icons.search" alt="" class="state-icon" aria-hidden="true" />
+      </div>
       <h2 class="not-found-title">{{ 'product.not_found' | translate }}</h2>
       <p class="not-found-desc">{{ 'product.not_found_desc' | translate }}</p>
       <button class="back-btn" (click)="goBack()">
@@ -191,14 +194,16 @@
                 <span class="btn-icon">✓</span>
                 {{ 'common.added_to_cart' | translate }}
               } @else {
-                <span class="btn-icon">🛒</span>
+                <!-- 🛒 → basketwhite.webp -->
+                <img [src]="icons.basket" alt="" class="btn-icon-img" aria-hidden="true" />
                 {{ 'common.add_to_cart' | translate }}
               }
             </button>
 
             @if (product()!.requiresPrescription) {
               <div class="prescription-notice">
-                <span>ℹ️</span>
+                <!-- ℹ️ → infowhite.webp -->
+                <img [src]="icons.info" alt="" class="notice-icon-img" aria-hidden="true" />
                 <span>{{ 'product.prescription_required_notice' | translate }}</span>
               </div>
             }
@@ -244,7 +249,13 @@
               </div>
             } @else if (reviews().length === 0) {
               <div class="reviews-empty">
-                <span class="reviews-empty-icon">💬</span>
+                <!-- 💬 → stats/comments.webp -->
+                <img
+                  [src]="icons.statComments"
+                  alt=""
+                  class="reviews-empty-icon"
+                  aria-hidden="true"
+                />
                 <p class="reviews-empty-text">{{ 'product.no_reviews' | translate }}</p>
               </div>
             } @else {
