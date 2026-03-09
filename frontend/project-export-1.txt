@@ -26,14 +26,16 @@ PROJECT STRUCTURE
 │   │   │   │   └── 📄 auth.interceptors.ts
 │   │   │   ├── 📁 models/
 │   │   │   │   ├── 📄 auth.model.ts
-│   │   │   │   ├── 📄 forum-blog.model.ts
-│   │   │   │   └── 📄 product.model.ts
+│   │   │   │   ├── 📄 forum.model.ts
+│   │   │   │   ├── 📄 product.model.ts
+│   │   │   │   └── 📄 review.model.ts
 │   │   │   └── 📁 services/
 │   │   │       ├── 📄 account.service.ts
 │   │   │       ├── 📄 auth.service.ts
 │   │   │       ├── 📄 cart.service.ts
 │   │   │       ├── 📄 currency.service.ts
-│   │   │       ├── 📄 forum-blog.service.ts
+│   │   │       ├── 📄 forum.service.ts
+│   │   │       ├── 📄 review.service.ts
 │   │   │       ├── 📄 theme.service.ts
 │   │   │       ├── 📄 toast.service.ts
 │   │   │       └── 📄 translation.service.ts
@@ -778,8 +780,6 @@ FILE: src\app\core\constants\visuals.ts
  *
  * Everything stored here centrally
  *
- * Placeholder until we have our own
- *
  * Type-safe
  */
 
@@ -804,14 +804,14 @@ export interface SlideData {
 export interface LanguageOption {
   code: SupportedLanguage;
   name: string;
-  flag: string; // emoji or IMG url
-  flagImage?: string; // image url if there is
+  flag: string; // IMG url (webp)
+  flagImage?: string; // alias – same as flag
 }
 
 export interface CategoryVisual {
   id: string;
-  icon: string; // emoji
-  image: string; // emoji or IMG url
+  icon: string; // webp img url
+  image: string; // webp img url
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -826,23 +826,14 @@ const SECONDARY_COLOR = '0b5f39'; // dark green
  * Placeholder generator functions
  */
 export const PLACEHOLDERS = {
-  /** Products pic placeholder */
   product: (width = 400, height = 400, text = 'Product') =>
     `${PLACEHOLDER_BASE}/${width}x${height}/${PRIMARY_COLOR}/ffffff?text=${encodeURIComponent(text)}`,
-
-  /** Hero/Slide pic placeholder */
   hero: (width = 1920, height = 600, text = 'Hero') =>
     `${PLACEHOLDER_BASE}/${width}x${height}/${PRIMARY_COLOR}/ffffff?text=${encodeURIComponent(text)}`,
-
-  /** Category pic placeholder */
   category: (width = 300, height = 300, text = 'Category') =>
     `${PLACEHOLDER_BASE}/${width}x${height}/${SECONDARY_COLOR}/ffffff?text=${encodeURIComponent(text)}`,
-
-  /** Avatar/profil pic placeholder */
   avatar: (width = 100, height = 100) =>
     `${PLACEHOLDER_BASE}/${width}x${height}/cccccc/666666?text=User`,
-
-  /** Logo placeholder */
   logo: (width = 200, height = 60) =>
     `${PLACEHOLDER_BASE}/${width}x${height}/${PRIMARY_COLOR}/ffffff?text=Roy's+Shack`,
 };
@@ -908,11 +899,47 @@ export const ICONS = {
   ship: `${ASSETS}/assets/icons/shipwhite.webp`,
   sort: `${ASSETS}/assets/icons/sortwhite.webp`,
   support247: `${ASSETS}/assets/icons/247white.webp`,
+
+  // ── Forum / Blog ──────────────────────────────────────────────────────────
+  forumSearch: `${ASSETS}/assets/icons/forum/search.webp`,
+  forumNewPost: `${ASSETS}/assets/icons/forum/new-post.webp`,
+  forumReadingTime: `${ASSETS}/assets/icons/forum/reading-time.webp`,
+  forumDate: `${ASSETS}/assets/icons/forum/date.webp`,
+  forumRetry: `${ASSETS}/assets/icons/forum/retry.webp`,
+
+  // ── Post stats ────────────────────────────────────────────────────────────
+  statViews: `${ASSETS}/assets/icons/stats/views.webp`,
+  statLikes: `${ASSETS}/assets/icons/stats/likes.webp`,
+  statComments: `${ASSETS}/assets/icons/stats/comments.webp`,
+
+  // ── Post badges ───────────────────────────────────────────────────────────
+  badgePinned: `${ASSETS}/assets/icons/badges/pinned.webp`,
+  badgeFeatured: `${ASSETS}/assets/icons/badges/featured.webp`,
+  badgeQuestion: `${ASSETS}/assets/icons/badges/question.webp`,
+  badgeAnswered: `${ASSETS}/assets/icons/badges/answered.webp`,
+  badgeVerified: `${ASSETS}/assets/icons/badges/verified.webp`,
+
+  // ── Category icons (forum chips + product cards) ──────────────────────────
+  categoryDefault: `${ASSETS}/assets/icons/categories/default.webp`,
+  categoryAll: `${ASSETS}/assets/icons/categories/all.webp`,
+  categoryMedicines: `${ASSETS}/assets/icons/categories/medicines.webp`,
+  categoryNaturalRemedies: `${ASSETS}/assets/icons/categories/natural-remedies.webp`,
+  categoryBabyMother: `${ASSETS}/assets/icons/categories/baby-mother.webp`,
+  categoryLifestyle: `${ASSETS}/assets/icons/categories/healthy-lifestyle.webp`,
+  categorySeasonalHealth: `${ASSETS}/assets/icons/categories/seasonal-health.webp`,
+  categoryQa: `${ASSETS}/assets/icons/categories/qa.webp`,
+  categoryGeneral: `${ASSETS}/assets/icons/categories/general.webp`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PICS (Current + Placeholders)
 // ═══════════════════════════════════════════════════════════════════════════
+
+export function getLogoSrc(theme: 'dark' | 'light'): string {
+  return theme === 'dark'
+    ? `${ASSETS}/assets/images/ROYS_SHACK_WHITE_NF.webp`
+    : `${ASSETS}/assets/images/ROYS_SHACK_BLACK_NF.webp`;
+}
 
 export const IMAGES = {
   // Logo
@@ -927,12 +954,17 @@ export const IMAGES = {
   hero3: `${ASSETS}/assets/images/hero3.webp`,
   hero4: `${ASSETS}/assets/images/hero4.webp`,
 
-  // Language flags - emoji version
-  flagHungary: '🇭🇺',
-  flagEnglish: '🇬🇧',
-  flagGerman: '🇩🇪',
+  // Language flags – actual webp images instead of emoji
+  flagHungary: `${ASSETS}/assets/images/Hungary.webp`,
+  flagEnglish: `${ASSETS}/assets/images/English.webp`,
+  flagGerman: `${ASSETS}/assets/images/German.webp`,
 
   productDefault: PLACEHOLDERS.product(400, 400, 'Termék'),
+
+  // ── Empty / error state illustrations ─────────────────────────────────────
+  stateError: `${ASSETS}/assets/images/states/error.webp`,
+  stateEmptyForum: `${ASSETS}/assets/images/states/empty-forum.webp`,
+  stateNoResults: `${ASSETS}/assets/images/states/no-results.webp`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -975,25 +1007,13 @@ export const HERO_SLIDES: SlideData[] = [
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const LANGUAGE_OPTIONS: LanguageOption[] = [
-  {
-    code: 'hu',
-    name: 'Magyar',
-    flag: IMAGES.flagHungary,
-  },
-  {
-    code: 'en',
-    name: 'English',
-    flag: IMAGES.flagEnglish,
-  },
-  {
-    code: 'de',
-    name: 'Deutsch',
-    flag: IMAGES.flagGerman,
-  },
+  { code: 'hu', name: 'Magyar', flag: IMAGES.flagHungary, flagImage: IMAGES.flagHungary },
+  { code: 'en', name: 'English', flag: IMAGES.flagEnglish, flagImage: IMAGES.flagEnglish },
+  { code: 'de', name: 'Deutsch', flag: IMAGES.flagGerman, flagImage: IMAGES.flagGerman },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
-// NAVIGATION ICONS (Unicode)
+// NAVIGATION ICONS (Unicode — these stay as text characters)
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const NAV_ICONS = {
@@ -1001,11 +1021,9 @@ export const NAV_ICONS = {
   arrowRight: '›',
   arrowUp: '▴',
   arrowDown: '▾',
-
   close: '✕',
   check: '✓',
   menu: '☰',
-
   star: '★',
   starEmpty: '☆',
   heart: '♥',
@@ -1013,21 +1031,10 @@ export const NAV_ICONS = {
 } as const;
 
 export const NAV_SVG = {
-  arrowLeft: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M15 18l-6-6 6-6"/>
-  </svg>`,
-
-  arrowRight: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M9 18l6-6-6-6"/>
-  </svg>`,
-
-  close: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M18 6L6 18M6 6l12 12"/>
-  </svg>`,
-
-  check: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M20 6L9 17l-5-5"/>
-  </svg>`,
+  arrowLeft: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>`,
+  arrowRight: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>`,
+  close: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>`,
+  check: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1037,70 +1044,69 @@ export const NAV_SVG = {
 export const CATEGORY_VISUALS: Record<string, CategoryVisual> = {
   medicine: {
     id: 'medicine',
-    icon: '💊',
+    icon: ICONS.categoryMedicines,
     image: PLACEHOLDERS.category(300, 300, 'Gyógyszerek'),
   },
   vitamins: {
     id: 'vitamins',
-    icon: '🍊',
+    icon: ICONS.categoryNaturalRemedies,
     image: PLACEHOLDERS.category(300, 300, 'Vitaminok'),
   },
   supplements: {
     id: 'supplements',
-    icon: '💪',
+    icon: ICONS.categoryNaturalRemedies,
     image: PLACEHOLDERS.category(300, 300, 'Táplálékkiegészítők'),
   },
   cosmetics: {
     id: 'cosmetics',
-    icon: '💄',
+    icon: ICONS.categoryGeneral,
     image: PLACEHOLDERS.category(300, 300, 'Kozmetikumok'),
   },
   'baby-care': {
     id: 'baby-care',
-    icon: '👶',
+    icon: ICONS.categoryBabyMother,
     image: PLACEHOLDERS.category(300, 300, 'Babaápolás'),
   },
   'medical-devices': {
     id: 'medical-devices',
-    icon: '🩺',
+    icon: ICONS.categoryMedicines,
     image: PLACEHOLDERS.category(300, 300, 'Orvosi eszközök'),
   },
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
-// CATEGORY NAMES (for conversion to full Category interface)
-// ═══════════════════════════════════════════════════════════════════════════
-
-const CATEGORY_NAMES: Record<string, { hu: string; en: string; de: string }> = {
-  medicine: {
-    hu: 'Gyógyszerek',
-    en: 'Medicines',
-    de: 'Medikamente',
+  // ── Forum categories ──
+  medicines: {
+    id: 'medicines',
+    icon: ICONS.categoryMedicines,
+    image: PLACEHOLDERS.category(300, 300, 'Gyógyszerek'),
   },
-  vitamins: {
-    hu: 'Vitaminok',
-    en: 'Vitamins',
-    de: 'Vitamine',
+  'natural-remedies': {
+    id: 'natural-remedies',
+    icon: ICONS.categoryNaturalRemedies,
+    image: PLACEHOLDERS.category(300, 300, 'Természetes gyógymódok'),
   },
-  supplements: {
-    hu: 'Táplálékkiegészítők',
-    en: 'Supplements',
-    de: 'Nahrungsergänzungsmittel',
+  'baby-mother': {
+    id: 'baby-mother',
+    icon: ICONS.categoryBabyMother,
+    image: PLACEHOLDERS.category(300, 300, 'Baba & Anya'),
   },
-  cosmetics: {
-    hu: 'Kozmetikumok',
-    en: 'Cosmetics',
-    de: 'Kosmetika',
+  'healthy-lifestyle': {
+    id: 'healthy-lifestyle',
+    icon: ICONS.categoryLifestyle,
+    image: PLACEHOLDERS.category(300, 300, 'Egészséges életmód'),
   },
-  'baby-care': {
-    hu: 'Babaápolás',
-    en: 'Baby Care',
-    de: 'Babypflege',
+  'seasonal-health': {
+    id: 'seasonal-health',
+    icon: ICONS.categorySeasonalHealth,
+    image: PLACEHOLDERS.category(300, 300, 'Szezonális egészség'),
   },
-  'medical-devices': {
-    hu: 'Orvosi eszközök',
-    en: 'Medical Devices',
-    de: 'Medizinische Geräte',
+  qa: {
+    id: 'qa',
+    icon: ICONS.categoryQa,
+    image: PLACEHOLDERS.category(300, 300, 'Kérdések & Válaszok'),
+  },
+  general: {
+    id: 'general',
+    icon: ICONS.categoryGeneral,
+    image: PLACEHOLDERS.category(300, 300, 'Általános'),
   },
 };
 
@@ -1116,7 +1122,7 @@ export function getImageUrl(path: string | undefined | null, fallback?: string):
 }
 
 export function getCategoryIcon(categoryId: string): string {
-  return CATEGORY_VISUALS[categoryId]?.icon || '📦';
+  return CATEGORY_VISUALS[categoryId]?.icon || ICONS.categoryDefault;
 }
 
 export function getCategoryImage(categoryId: string): string {
@@ -1436,9 +1442,10 @@ export interface PasswordChangeRequest {
   language: SupportedLanguage;
 }
 
-export interface PasswordChangePromiseRequest {
+export interface PasswordChangePromise {
   id: string;
   token: string;
+  user?: User;
 }
 
 export interface AccountDeletionRequest {
@@ -1485,17 +1492,10 @@ export interface JWTPayload {
 
 
 ================================================================================
-FILE: src\app\core\models\forum-blog.model.ts
+FILE: src\app\core\models\forum.model.ts
 ================================================================================
 
-export type PostCategory =
-  | 'medicines'
-  | 'natural-remedies'
-  | 'baby-mother'
-  | 'healthy-lifestyle'
-  | 'seasonal-health'
-  | 'qa'
-  | 'general';
+export type PostCategory = string;
 
 export type PostStatus = 'draft' | 'published' | 'archived' | 'pending';
 
@@ -1513,13 +1513,13 @@ export interface Author {
 
 export interface Comment {
   id: string;
-  postId: string;
+  post_id: string;
   author: Author;
   content: string;
-  createdAt: Date;
-  updatedAt?: Date;
+  created_at: string;
+  updated_at?: string;
   likes: number;
-  isEdited: boolean;
+  is_edited: boolean;
 }
 
 export interface BasePost {
@@ -1531,115 +1531,100 @@ export interface BasePost {
   author: Author;
   category: PostCategory;
   tags: string[];
-  imageUrl?: string;
+  image_url?: string;
   status: PostStatus;
-  createdAt: Date;
-  updatedAt?: Date;
-  publishedAt?: Date;
+  type: PostType;
   views: number;
   likes: number;
-  commentCount: number;
-  isFeatured: boolean;
-  isPinned: boolean;
+  comment_count: number;
+  is_featured: boolean;
+  is_pinned: boolean;
+  created_at: string;
+  updated_at: string;
+  published_at?: string;
 }
 
 export interface BlogPost extends BasePost {
   type: 'blog';
-  readingTime: number;
-  relatedProducts?: string[];
-  seoDescription?: string;
-  seoKeywords?: string[];
+  reading_time?: number;
+  related_products?: string[];
+  seo_title?: string;
+  seo_description?: string;
 }
 
 export interface ForumPost extends BasePost {
   type: 'forum';
-  isQuestion: boolean;
-  hasAcceptedAnswer: boolean;
-  acceptedAnswerId?: string;
-  lastActivityAt: Date;
+  is_question: boolean;
+  has_accepted_answer: boolean;
+  last_activity_at: string;
 }
 
 export type Post = BlogPost | ForumPost;
 
+// ---- Filter / Pagination ----
+
 export interface PostFilters {
   category?: PostCategory;
   tags?: string[];
-  authorRole?: AuthorRole;
-  searchQuery?: string;
+  author_role?: AuthorRole;
+  search_query?: string;
   status?: PostStatus;
   type?: PostType;
-  isFeatured?: boolean;
-  isPinned?: boolean;
+  is_featured?: boolean;
+  is_pinned?: boolean;
 }
 
 export type SortOption = 'newest' | 'oldest' | 'most-viewed' | 'most-liked' | 'trending';
 
 export interface PaginationOptions {
   page: number;
-  pageSize: number;
-  totalItems?: number;
-  totalPages?: number;
+  page_size: number;
+  total_items?: number;
+  total_pages?: number;
 }
 
-export interface PostListResponse {
-  posts: Post[];
-  pagination: PaginationOptions;
-  filters: PostFilters;
-  sortBy: SortOption;
+// ---- Backend API response shapes ----
+
+export interface BackendCategory {
+  id: string;
+  name_hu: string;
+  name_en: string;
+  name_de: string;
 }
+
+export interface BackendCategoryResponse {
+  status: string;
+  statuscode: number;
+  categories: BackendCategory[];
+}
+
+export interface BackendPostsResponse {
+  status: string;
+  statuscode: number;
+  posts: Post[];
+}
+
+// ---- CategoryInfo ----
 
 export interface CategoryInfo {
   id: PostCategory;
-  icon: string;
+  /** Image path from ICONS.category* in visuals.ts */
+  iconSrc: string;
   colorClass: string;
-  translationKey: string;
+  displayName: string;
 }
 
-//Mock
-export const POST_CATEGORIES: CategoryInfo[] = [
-  {
-    id: 'medicines',
-    icon: '💊',
-    colorClass: 'category-medicines',
-    translationKey: 'forum.category.medicines',
-  },
-  {
-    id: 'natural-remedies',
-    icon: '🌿',
-    colorClass: 'category-natural',
-    translationKey: 'forum.category.natural_remedies',
-  },
-  {
-    id: 'baby-mother',
-    icon: '👶',
-    colorClass: 'category-baby',
-    translationKey: 'forum.category.baby_mother',
-  },
-  {
-    id: 'healthy-lifestyle',
-    icon: '💪',
-    colorClass: 'category-lifestyle',
-    translationKey: 'forum.category.healthy_lifestyle',
-  },
-  {
-    id: 'seasonal-health',
-    icon: '🤧',
-    colorClass: 'category-seasonal',
-    translationKey: 'forum.category.seasonal_health',
-  },
-  {
-    id: 'qa',
-    icon: '❓',
-    colorClass: 'category-qa',
-    translationKey: 'forum.category.qa',
-  },
-  {
-    id: 'general',
-    icon: '📝',
-    colorClass: 'category-general',
-    translationKey: 'forum.category.general',
-  },
-];
+export const CATEGORY_COLOR_MAP: Record<string, string> = {
+  medicines: 'category-medicines',
+  'natural-remedies': 'category-natural',
+  'baby-mother': 'category-baby',
+  'healthy-lifestyle': 'category-lifestyle',
+  'seasonal-health': 'category-seasonal',
+  qa: 'category-qa',
+  general: 'category-general',
+};
+
+export const DEFAULT_CATEGORY_COLOR = 'category-default';
 
 
 
@@ -1828,10 +1813,10 @@ export function enrichProduct(
   currentLang: 'hu' | 'en' | 'de' = 'hu',
   galleryImages: ProductImage[] = [],
 ): ProductWithHelpers {
-  const priceNumber = parseFloat(product.price_huf) || 0;
+  const priceNumber = parseFloat(product.price_huf?.replace(',', '.')) || 0;
   const stockNumber = parseInt(product.stock) || 0;
-  const salePercentageNumber = parseFloat(product.sale_percentage) || 0;
-  const ratingNumber = parseFloat(product.rating) || 0;
+  const salePercentageNumber = parseFloat(product.sale_percentage?.replace(',', '.')) || 0;
+  const ratingNumber = parseFloat(product.rating?.replace(',', '.')) || 0;
 
   const inStock = stockNumber > 0;
   const hasDiscount = salePercentageNumber > 0;
@@ -1900,6 +1885,40 @@ export function enrichProduct(
     imageUrl,
     images,
     dosage: undefined,
+  };
+}
+
+
+
+================================================================================
+FILE: src\app\core\models\review.model.ts
+================================================================================
+
+export interface Review {
+  id: string;
+  product_id: string;
+  user_id: string;
+  title: string;
+  body: string;
+  rating: string;
+  created_at: string;
+}
+
+export interface ReviewsApiResponse {
+  statuscode: string;
+  status: string;
+  reviews: Review[];
+  total?: string;
+}
+
+export interface ReviewWithHelpers extends Review {
+  ratingNumber: number;
+}
+
+export function enrichReview(review: Review): ReviewWithHelpers {
+  return {
+    ...review,
+    ratingNumber: parseFloat(review.rating?.replace(',', '.')) || 0,
   };
 }
 
@@ -2148,7 +2167,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import {
   User,
   LoginRequest,
@@ -2159,10 +2178,10 @@ import {
   RegistrationPromiseRequest,
   RegistrationResponse,
   PasswordChangeRequest,
-  PasswordChangePromiseRequest,
   AuthState,
   ApiErrorResponse,
   UserState,
+  PasswordChangePromise,
 } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
@@ -2386,14 +2405,28 @@ export class AuthService {
   }
 
   completePasswordChange(id: string, token: string) {
-    const request: PasswordChangePromiseRequest = {
-      id, // b64 from url
-      token, // b64 from url
+    const request: PasswordChangePromise = {
+      id,
+      token,
     };
+    const stayLoggedIn = localStorage.getItem(this.STORAGE_TYPE_KEY) === 'local';
 
     return this.http
-      .post<void>(`${this.API_URL}/api/chpass_promise`, request)
-      .pipe(catchError(this.handleError.bind(this)));
+      .post(`${this.API_URL}/api/chpass_promise`, request, {
+        responseType: 'text' as 'json',
+      })
+      .pipe(
+        tap((body: any) => {
+          try {
+            const response = (typeof body === 'string' ? JSON.parse(body) : body) as LoginResponse;
+            if (response?.jwt_token) {
+              this.handleLoginSuccess(response, stayLoggedIn, undefined, true);
+            }
+          } catch {}
+        }),
+        map(() => undefined as unknown as void),
+        catchError(this.handleError.bind(this)),
+      );
   }
 
   logout(): void {
@@ -2965,34 +2998,58 @@ export class CurrencyService {
 
 
 ================================================================================
-FILE: src\app\core\services\forum-blog.service.ts
+FILE: src\app\core\services\forum.service.ts
 ================================================================================
 
-import { Injectable, signal, computed } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { TranslateService } from '@ngx-translate/core';
+import { catchError, map, timeout, forkJoin, of } from 'rxjs';
+
 import {
   Post,
   BlogPost,
-  ForumPost,
   PostFilters,
   SortOption,
-  Author,
-} from '../models/forum-blog.model';
+  CategoryInfo,
+  BackendCategory,
+  BackendCategoryResponse,
+  BackendPostsResponse,
+  CATEGORY_COLOR_MAP,
+  DEFAULT_CATEGORY_COLOR,
+} from '../models/forum.model';
+import { getCategoryIcon } from '../constants/visuals';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ForumBlogService {
+export class ForumService {
+  private http = inject(HttpClient);
+  private translate = inject(TranslateService);
+
+  private readonly API_URL = environment.baseURL;
+  private readonly REQUEST_TIMEOUT = 8000;
+
+  // ── Private state ──────────────────────────────────────────────────────────
+
   private postsSignal = signal<Post[]>([]);
+  private categoriesSignal = signal<CategoryInfo[]>([]);
   private filtersSignal = signal<PostFilters>({});
   private sortBySignal = signal<SortOption>('newest');
   private currentPageSignal = signal(1);
   private pageSizeSignal = signal(9);
+  private isLoadingSignal = signal(false);
+  private loadErrorSignal = signal(false);
+
+  // ── Public readonly signals ────────────────────────────────────────────────
 
   posts = this.postsSignal.asReadonly();
+  categories = this.categoriesSignal.asReadonly();
   filters = this.filtersSignal.asReadonly();
   sortBy = this.sortBySignal.asReadonly();
+  isLoading = this.isLoadingSignal.asReadonly();
+  loadError = this.loadErrorSignal.asReadonly();
 
   currentPage = computed(() => this.currentPageSignal());
 
@@ -3005,50 +3062,120 @@ export class ForumBlogService {
     const posts = this.filteredPosts();
     const page = this.currentPageSignal();
     const pageSize = this.pageSizeSignal();
-    const startIndex = (page - 1) * pageSize;
-    return posts.slice(startIndex, startIndex + pageSize);
+    const start = (page - 1) * pageSize;
+    return posts.slice(start, start + pageSize);
   });
 
-  totalPages = computed(() => {
-    return Math.ceil(this.filteredPosts().length / this.pageSizeSignal());
-  });
+  totalPages = computed(() => Math.ceil(this.filteredPosts().length / this.pageSizeSignal()));
 
-  getAllPosts(): Observable<Post[]> {
-    return of(this.postsSignal()).pipe(delay(300));
+  // ── Backend loading ────────────────────────────────────────────────────────
+
+  loadPosts(): void {
+    this.isLoadingSignal.set(true);
+    this.loadErrorSignal.set(false);
+
+    forkJoin({
+      categories: this.fetchCategories(),
+      posts: this.fetchPosts(),
+    }).subscribe({
+      next: ({ categories, posts }) => {
+        this.categoriesSignal.set(categories);
+        this.postsSignal.set(posts);
+        this.isLoadingSignal.set(false);
+      },
+      error: () => {
+        this.loadErrorSignal.set(true);
+        this.isLoadingSignal.set(false);
+      },
+    });
   }
 
-  getBlogPosts(): Observable<BlogPost[]> {
-    const blogPosts = this.postsSignal().filter((post): post is BlogPost => post.type === 'blog');
-    return of(blogPosts).pipe(delay(300));
-  }
-
-  getForumPosts(): Observable<ForumPost[]> {
-    const forumPosts = this.postsSignal().filter(
-      (post): post is ForumPost => post.type === 'forum',
+  private fetchCategories() {
+    return this.http.get<BackendCategoryResponse>(`${this.API_URL}/get_forum_categories`).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      map((res) => {
+        if (res?.status === 'success' && Array.isArray(res.categories)) {
+          return this.mapBackendCategories(res.categories);
+        }
+        return [] as CategoryInfo[];
+      }),
+      catchError(() => of([] as CategoryInfo[])),
     );
-    return of(forumPosts).pipe(delay(300));
   }
 
-  getPostById(idOrSlug: string): Observable<Post | null> {
-    const post = this.postsSignal().find((p) => p.id === idOrSlug || p.slug === idOrSlug) || null;
-    return of(post).pipe(delay(200));
+  private fetchPosts() {
+    return this.http
+      .post<BackendPostsResponse>(`${this.API_URL}/get_forum_posts`, { type: 'forum' })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => {
+          if (res?.status === 'success' && Array.isArray(res.posts)) {
+            return res.posts;
+          }
+          return [] as Post[];
+        }),
+        catchError(() => {
+          this.loadErrorSignal.set(true);
+          return of([] as Post[]);
+        }),
+      );
   }
 
-  getFeaturedBlogPosts(limit = 3): Observable<BlogPost[]> {
-    const featured = this.postsSignal()
-      .filter((post): post is BlogPost => post.type === 'blog' && post.isFeatured)
-      .slice(0, limit);
-    return of(featured).pipe(delay(200));
+  private mapBackendCategories(backendCategories: BackendCategory[]): CategoryInfo[] {
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return backendCategories.map(
+      (bc): CategoryInfo => ({
+        id: bc.id,
+        iconSrc: getCategoryIcon(bc.id), // ← existing helper from visuals.ts
+        colorClass: CATEGORY_COLOR_MAP[bc.id] ?? DEFAULT_CATEGORY_COLOR,
+        displayName: this.resolveName(bc, lang),
+      }),
+    );
   }
 
-  getRelatedPosts(postId: string, limit = 3): Observable<Post[]> {
-    const currentPost = this.postsSignal().find((p) => p.id === postId);
-    if (!currentPost) return of([]);
+  private resolveName(bc: BackendCategory, lang: string): string {
+    if (lang === 'hu' && bc.name_hu) return bc.name_hu;
+    if (lang === 'de' && bc.name_de) return bc.name_de;
+    return bc.name_en || bc.name_hu || bc.id;
+  }
+
+  // ── Observable helpers (used by forum-detail) ─────────────────────────────
+
+  getPostById(idOrSlug: string) {
+    return this.http
+      .post<{
+        status: string;
+        statuscode: number;
+        post: Post;
+      }>(`${this.API_URL}/get_forum_post`, { id: idOrSlug, slug: idOrSlug })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => (res?.status === 'success' ? res.post : null)),
+        catchError(() => {
+          const cached =
+            this.postsSignal().find((p) => p.id === idOrSlug || p.slug === idOrSlug) ?? null;
+          return of(cached);
+        }),
+      );
+  }
+
+  getRelatedPosts(postId: string, limit = 6) {
+    const current = this.postsSignal().find((p) => p.id === postId);
+    if (!current) return of([] as Post[]);
     const related = this.postsSignal()
-      .filter((p) => p.id !== postId && p.category === currentPost.category)
+      .filter((p) => p.id !== postId && p.category === current.category)
       .slice(0, limit);
-    return of(related).pipe(delay(200));
+    return of(related);
   }
+
+  getFeaturedBlogPosts(limit = 3) {
+    const featured = this.postsSignal()
+      .filter((p): p is BlogPost => p.type === 'blog' && p.is_featured)
+      .slice(0, limit);
+    return of(featured);
+  }
+
+  // ── Filter / sort / pagination ─────────────────────────────────────────────
 
   setFilters(filters: PostFilters): void {
     this.filtersSignal.set(filters);
@@ -3075,17 +3202,17 @@ export class ForumBlogService {
     return posts.filter((post) => {
       if (filters.category && post.category !== filters.category) return false;
       if (filters.type && post.type !== filters.type) return false;
-      if (filters.authorRole && post.author.role !== filters.authorRole) return false;
-      if (filters.isFeatured !== undefined && post.isFeatured !== filters.isFeatured) return false;
-      if (filters.isPinned !== undefined && post.isPinned !== filters.isPinned) return false;
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
+      if (filters.author_role && post.author.role !== filters.author_role) return false;
+      if (filters.is_featured !== undefined && post.is_featured !== filters.is_featured)
+        return false;
+      if (filters.is_pinned !== undefined && post.is_pinned !== filters.is_pinned) return false;
+      if (filters.search_query) {
+        const query = filters.search_query.toLowerCase();
         const searchable = `${post.title} ${post.excerpt} ${post.content}`.toLowerCase();
         if (!searchable.includes(query)) return false;
       }
       if (filters.tags && filters.tags.length > 0) {
-        const hasMatchingTag = filters.tags.some((tag) => post.tags.includes(tag));
-        if (!hasMatchingTag) return false;
+        if (!filters.tags.some((tag) => post.tags.includes(tag))) return false;
       }
       return true;
     });
@@ -3095,29 +3222,93 @@ export class ForumBlogService {
     const sorted = [...posts];
     switch (sortBy) {
       case 'newest':
-        return sorted.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        return sorted.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
       case 'oldest':
-        return sorted.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+        return sorted.sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+        );
       case 'most-viewed':
         return sorted.sort((a, b) => b.views - a.views);
       case 'most-liked':
         return sorted.sort((a, b) => b.likes - a.likes);
       case 'trending':
-        return sorted.sort(
-          (a, b) => this.calculateTrendingScore(b) - this.calculateTrendingScore(a),
-        );
+        return sorted.sort((a, b) => this.trendingScore(b) - this.trendingScore(a));
       default:
         return sorted;
     }
   }
 
-  private calculateTrendingScore(post: Post): number {
-    const daysSincePublished = post.publishedAt
-      ? (Date.now() - post.publishedAt.getTime()) / (1000 * 60 * 60 * 24)
-      : 999;
-    const recencyScore = Math.max(0, 7 - daysSincePublished);
-    const activityScore = post.views * 0.1 + post.likes * 2 + post.commentCount * 5;
-    return recencyScore * 10 + activityScore;
+  private trendingScore(post: Post): number {
+    const publishedMs = post.published_at ? new Date(post.published_at).getTime() : 0;
+    const daysSince = publishedMs ? (Date.now() - publishedMs) / (1000 * 60 * 60 * 24) : 999;
+    const recency = Math.max(0, 7 - daysSince);
+    const activity = post.views * 0.1 + post.likes * 2 + post.comment_count * 5;
+    return recency * 10 + activity;
+  }
+}
+
+
+
+================================================================================
+FILE: src\app\core\services\review.service.ts
+================================================================================
+
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map, timeout } from 'rxjs/operators';
+import {
+  Review,
+  ReviewsApiResponse,
+  ReviewWithHelpers,
+  enrichReview,
+} from '../../core/models/review.model';
+import { environment } from '../../../environments/environment';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ReviewService {
+  private readonly API_URL = environment.baseURL;
+  private http = inject(HttpClient);
+
+  getReviewsByProductId(productId: string, page = 1, amount = 50): Observable<ReviewWithHelpers[]> {
+    const body = {
+      product_id: btoa(productId),
+      page: btoa(String(page)),
+      amount: btoa(String(amount)),
+    };
+
+    return this.http
+      .post<ReviewsApiResponse>(`${this.API_URL}/api/get_all_reviews_by_product_id`, body)
+      .pipe(
+        timeout(5000),
+        map((r) => {
+          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+          if (!Array.isArray(r.reviews)) return [];
+          return r.reviews.map(enrichReview);
+        }),
+        catchError((err) => {
+          console.error('ReviewService: Failed to load reviews', err);
+          return of([]);
+        }),
+      );
+  }
+
+  getAverageRating(reviews: ReviewWithHelpers[]): number {
+    if (reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc, r) => acc + r.ratingNumber, 0);
+    return sum / reviews.length;
+  }
+
+  getRatingStars(ratingNumber: number): string {
+    if (!ratingNumber) return '';
+    const full = Math.floor(ratingNumber);
+    const half = ratingNumber % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 }
 
@@ -3350,9 +3541,13 @@ FILE: src\app\pages\admin\admin.css
   overflow: hidden;
 }
 
+/* Logo icon – webp img replaces emoji */
 .logo-icon {
-  font-size: 24px;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
 .logo-text {
@@ -3415,10 +3610,21 @@ FILE: src\app\pages\admin\admin.css
   color: white;
 }
 
+/* Nav icon – webp img replaces emoji text */
 .nav-icon {
-  font-size: 18px;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
   flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  transition: filter 0.15s;
 }
+
+/* Active nav item: icon should always be white regardless of theme */
+.nav-item.active .nav-icon {
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .nav-label {
   font-size: var(--text-sm, 0.9rem);
   font-weight: 500;
@@ -3434,6 +3640,10 @@ FILE: src\app\pages\admin\admin.css
 }
 .logout-btn:hover {
   background: rgba(220, 38, 38, 0.08) !important;
+}
+/* Logout icon tinted red */
+.logout-btn .nav-icon {
+  filter: brightness(0) saturate(100%) invert(20%) sepia(80%) saturate(6000%) hue-rotate(355deg);
 }
 
 .admin-main {
@@ -3542,8 +3752,32 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .stat-icon {
-  font-size: 36px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Stat icons – sized webp imgs */
+.stat-icon-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+}
+
+/* Color-tint stat icons to match card accent colors */
+.stat-card.primary .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(90%) saturate(700%) hue-rotate(120deg);
+}
+.stat-card.success .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(60%) sepia(50%) saturate(500%) hue-rotate(120deg);
+}
+.stat-card.info .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(40%) sepia(80%) saturate(500%) hue-rotate(200deg);
+}
+.stat-card.warning .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(75%) sepia(60%) saturate(800%) hue-rotate(10deg);
 }
 
 .stat-body {
@@ -3791,16 +4025,24 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .product-thumb {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-md, 0.5rem);
   background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
   flex-shrink: 0;
   border: 1px solid var(--border-color);
+  padding: 4px;
+}
+
+/* Product thumb icon – category medicines webp */
+.product-thumb-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
 .section-toolbar {
@@ -3816,13 +4058,18 @@ FILE: src\app\pages\admin\admin.css
   min-width: 200px;
 }
 
+/* Search icon – webp img absolutely positioned */
 .search-icon-small {
   position: absolute;
   left: var(--space-3);
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.6;
 }
 
 .admin-search {
@@ -3928,8 +4175,9 @@ FILE: src\app\pages\admin\admin.css
     gap: var(--space-3);
   }
 
-  .stat-icon {
-    font-size: 28px;
+  .stat-icon-img {
+    width: 32px;
+    height: 32px;
   }
 }
 
@@ -3986,7 +4234,8 @@ FILE: src\app\pages\admin\admin.html
   <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed()">
     <div class="sidebar-header">
       <div class="sidebar-logo">
-        <span class="logo-icon">🏥</span>
+        <!-- Admin icon instead of 🏥 emoji -->
+        <img [src]="icons.admin" alt="Admin" class="logo-icon" aria-hidden="true" />
         @if (!sidebarCollapsed()) {
           <span class="logo-text">Roy's Admin</span>
         }
@@ -4007,7 +4256,13 @@ FILE: src\app\pages\admin\admin.html
           (click)="setSection(item.id)"
           [attr.title]="item.label | translate"
         >
-          <span class="nav-icon">{{ item.icon }}</span>
+          <!-- webp icon instead of emoji string -->
+          <img
+            [src]="item.icon"
+            [attr.alt]="item.label | translate"
+            class="nav-icon"
+            aria-hidden="true"
+          />
           @if (!sidebarCollapsed()) {
             <span class="nav-label">{{ item.label | translate }}</span>
           }
@@ -4018,7 +4273,8 @@ FILE: src\app\pages\admin\admin.html
     @if (!sidebarCollapsed()) {
       <div class="sidebar-footer">
         <button class="nav-item logout-btn" (click)="logout()">
-          <span class="nav-icon">🚪</span>
+          <!-- login icon repurposed as logout (same visual family) -->
+          <img [src]="icons.login" alt="" class="nav-icon" aria-hidden="true" />
           <span class="nav-label">{{ 'profile.logout' | translate }}</span>
         </button>
       </div>
@@ -4050,8 +4306,11 @@ FILE: src\app\pages\admin\admin.html
         </div>
 
         <div class="stats-grid">
+          <!-- 📦 → orderwhite.webp -->
           <div class="stat-card primary">
-            <div class="stat-icon">📦</div>
+            <div class="stat-icon">
+              <img [src]="icons.order" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (ordersLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -4061,8 +4320,12 @@ FILE: src\app\pages\admin\admin.html
               <span class="stat-label">{{ 'admin.stats.total_orders' | translate }}</span>
             </div>
           </div>
+
+          <!-- 💰 → paymentwhite.webp -->
           <div class="stat-card success">
-            <div class="stat-icon">💰</div>
+            <div class="stat-icon">
+              <img [src]="icons.payment" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (ordersLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -4072,8 +4335,12 @@ FILE: src\app\pages\admin\admin.html
               <span class="stat-label">{{ 'admin.stats.revenue' | translate }}</span>
             </div>
           </div>
+
+          <!-- 👥 → customerswhite.webp -->
           <div class="stat-card info">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon">
+              <img [src]="icons.customers" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (usersLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -4083,8 +4350,12 @@ FILE: src\app\pages\admin\admin.html
               <span class="stat-label">{{ 'admin.stats.total_users' | translate }}</span>
             </div>
           </div>
+
+          <!-- 🏷️ → salewhite.webp -->
           <div class="stat-card warning">
-            <div class="stat-icon">🏷️</div>
+            <div class="stat-icon">
+              <img [src]="icons.sale" alt="" aria-hidden="true" class="stat-icon-img" />
+            </div>
             <div class="stat-body">
               @if (productsLoading()) {
                 <span class="stat-value loading-pulse">—</span>
@@ -4157,7 +4428,8 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <span class="search-icon-small">🔍</span>
+            <!-- 🔍 → searchwhite.webp -->
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
@@ -4233,7 +4505,8 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <span class="search-icon-small">🔍</span>
+            <!-- 🔍 → searchwhite.webp -->
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
@@ -4306,7 +4579,8 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <span class="search-icon-small">🔍</span>
+            <!-- 🔍 → searchwhite.webp -->
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
@@ -4354,7 +4628,15 @@ FILE: src\app\pages\admin\admin.html
                       <tr>
                         <td>
                           <div class="product-cell">
-                            <div class="product-thumb">💊</div>
+                            <!-- 💊 → categories/medicines.webp -->
+                            <div class="product-thumb">
+                              <img
+                                [src]="icons.categoryMedicines"
+                                alt=""
+                                aria-hidden="true"
+                                class="product-thumb-img"
+                              />
+                            </div>
                             <div class="product-cell-info">
                               <span class="product-name">{{ product.name }}</span>
                               <span class="product-brand muted">{{ product.brand }}</span>
@@ -4369,7 +4651,8 @@ FILE: src\app\pages\admin\admin.html
                             {{ product.stockNumber }} {{ 'common.items_unit' | translate }}
                           </span>
                         </td>
-                        <td class="muted">⭐ {{ product.ratingNumber.toFixed(1) }}</td>
+                        <!-- ⭐ → Unicode star character (no img needed, stays inline) -->
+                        <td class="muted">★ {{ product.ratingNumber.toFixed(1) }}</td>
                         <td>
                           <span
                             [class]="
@@ -4441,12 +4724,13 @@ import { AuthService } from '../../core/services/auth.service';
 import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
 import { ProductService } from '../../services/product.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
+import { ICONS } from '../../core/constants/visuals';
 
 type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
 
 interface NavItem {
   id: AdminSection;
-  icon: string;
+  icon: string; // webp img url from ICONS
   label: string;
 }
 
@@ -4462,6 +4746,9 @@ export class Admin implements OnInit {
   private accountService = inject(AccountService);
   private productService = inject(ProductService);
   private router = inject(Router);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   activeSection = signal<AdminSection>('dashboard');
   sidebarCollapsed = signal(false);
@@ -4504,10 +4791,10 @@ export class Admin implements OnInit {
   });
 
   navItems: NavItem[] = [
-    { id: 'dashboard', icon: '📊', label: 'admin.nav.dashboard' },
-    { id: 'orders', icon: '📦', label: 'admin.nav.orders' },
-    { id: 'users', icon: '👥', label: 'admin.nav.users' },
-    { id: 'products', icon: '🏷️', label: 'admin.nav.products' },
+    { id: 'dashboard', icon: ICONS.reports, label: 'admin.nav.dashboard' },
+    { id: 'orders', icon: ICONS.order, label: 'admin.nav.orders' },
+    { id: 'users', icon: ICONS.customers, label: 'admin.nav.users' },
+    { id: 'products', icon: ICONS.sale, label: 'admin.nav.products' },
   ];
 
   filteredOrders = computed(() => {
@@ -6033,10 +6320,11 @@ FILE: src\app\pages\forum\forum.html
   </section>
 
   <div class="forum-container">
+    <!-- ── Search + Sort ── -->
     <section class="search-filters">
       <div class="search-bar">
         <div class="search-input-wrapper">
-          <span class="search-icon">🔍</span>
+          <img [src]="ICONS.forumSearch" alt="" class="search-icon-img" aria-hidden="true" />
           <input
             type="search"
             [(ngModel)]="searchQuery"
@@ -6075,50 +6363,68 @@ FILE: src\app\pages\forum\forum.html
         </div>
 
         @if (isAuthenticated()) {
-          <button class="new-post-button">
-            <span class="icon">✏️</span>
+          <button class="new-post-button" routerLink="/forum/new">
+            <img [src]="ICONS.forumNewPost" alt="" class="btn-icon" aria-hidden="true" />
             {{ 'forum.new_post' | translate }}
           </button>
         }
       </div>
     </section>
 
-    <section
-      class="category-filters"
-      role="group"
-      [attr.aria-label]="'forum.filter_by_category' | translate"
-    >
-      <button
-        [class]="'category-chip' + (selectedCategory() === 'all' ? ' active' : '')"
-        (click)="selectCategory('all')"
+    <!-- ── Category chips ── -->
+    @if (categories().length > 0) {
+      <section
+        class="category-filters"
+        role="group"
+        [attr.aria-label]="'forum.filter_by_category' | translate"
       >
-        <span class="category-icon">🌍</span>
-        <span class="category-name">{{ 'forum.all_categories' | translate }}</span>
-      </button>
-
-      @for (category of categories; track category.id) {
         <button
-          [class]="
-            'category-chip ' +
-            category.colorClass +
-            (selectedCategory() === category.id ? ' active' : '')
-          "
-          (click)="selectCategory(category.id)"
+          [class]="'category-chip' + (selectedCategory() === 'all' ? ' active' : '')"
+          (click)="selectCategory('all')"
         >
-          <span class="category-icon">{{ category.icon }}</span>
-          <span class="category-name">{{ category.translationKey | translate }}</span>
+          <img [src]="ICONS.categoryAll" alt="" class="category-icon-img" aria-hidden="true" />
+          <span class="category-name">{{ 'forum.all_categories' | translate }}</span>
         </button>
-      }
-    </section>
 
-    @if (isLoading()) {
+        @for (category of categories(); track category.id) {
+          <button
+            [class]="
+              'category-chip ' +
+              category.colorClass +
+              (selectedCategory() === category.id ? ' active' : '')
+            "
+            (click)="selectCategory(category.id)"
+          >
+            <img [src]="category.iconSrc" [alt]="category.displayName" class="category-icon-img" />
+            <span class="category-name">{{ category.displayName }}</span>
+          </button>
+        }
+      </section>
+    }
+
+    <!-- ── Loading ── -->
+    @if (forumService.isLoading()) {
       <div class="loading-container" role="status" [attr.aria-label]="'common.loading' | translate">
         <div class="spinner"></div>
         <p>{{ 'common.loading' | translate }}</p>
       </div>
     }
 
-    @if (!isLoading()) {
+    <!-- ── Error state: backend unreachable ── -->
+    @if (!forumService.isLoading() && forumService.loadError()) {
+      <div class="empty-state">
+        <img [src]="IMAGES.stateError" alt="" class="empty-state-img" aria-hidden="true" />
+        <h3 class="empty-state-title">{{ 'forum.error_title' | translate }}</h3>
+        <p class="empty-state-description">{{ 'forum.error_description' | translate }}</p>
+        <button class="empty-state-action" (click)="forumService.loadPosts()">
+          <img [src]="ICONS.forumRetry" alt="" class="btn-icon" aria-hidden="true" />
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+    }
+
+    <!-- ── Content ── -->
+    @if (!forumService.isLoading() && !forumService.loadError()) {
       @if (posts().length > 0) {
         <section class="posts-grid">
           @for (post of posts(); track post.id) {
@@ -6173,14 +6479,26 @@ FILE: src\app\pages\forum\forum.html
             </button>
           </nav>
         }
+      } @else if (searchQuery() || selectedCategory() !== 'all') {
+        <!-- ── No results (active search/filter) ── -->
+        <div class="empty-state">
+          <img [src]="IMAGES.stateNoResults" alt="" class="empty-state-img" aria-hidden="true" />
+          <h3 class="empty-state-title">{{ 'forum.no_results_title' | translate }}</h3>
+          <p class="empty-state-description">{{ 'forum.no_results_description' | translate }}</p>
+          <button class="empty-state-action" (click)="resetFilters()">
+            {{ 'forum.reset_filters' | translate }}
+          </button>
+        </div>
       } @else {
-        <div class="no-results">
-          <div class="no-results-icon">🔍</div>
-          <h3 class="no-results-title">{{ 'forum.no_results_title' | translate }}</h3>
-          <p class="no-results-description">{{ 'forum.no_results_description' | translate }}</p>
-          @if (searchQuery() || selectedCategory() !== 'all') {
-            <button class="reset-filters-button" (click)="selectCategory('all'); clearSearch()">
-              {{ 'forum.reset_filters' | translate }}
+        <!-- ── Truly empty: no posts on the forum yet ── -->
+        <div class="empty-state">
+          <img [src]="IMAGES.stateEmptyForum" alt="" class="empty-state-img" aria-hidden="true" />
+          <h3 class="empty-state-title">{{ 'forum.empty_title' | translate }}</h3>
+          <p class="empty-state-description">{{ 'forum.empty_description' | translate }}</p>
+          @if (isAuthenticated()) {
+            <button class="empty-state-action" routerLink="/forum/new">
+              <img [src]="ICONS.forumNewPost" alt="" class="btn-icon" aria-hidden="true" />
+              {{ 'forum.new_post' | translate }}
             </button>
           }
         </div>
@@ -6231,18 +6549,11 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ForumBlogService } from '../../core/services/forum-blog.service';
+import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PostCardComponent } from '../../shared/components/post-card/post-card';
-import {
-  Post,
-  PostFilters,
-  SortOption,
-  PostCategory,
-  POST_CATEGORIES,
-} from '../../core/models/forum-blog.model';
-import { environment } from '../../../environments/environment';
-import { HttpClient } from '@angular/common/http';
+import { Post, PostFilters, SortOption, PostCategory } from '../../core/models/forum.model';
+import { ICONS, IMAGES } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-forum',
@@ -6252,23 +6563,23 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './forum.css',
 })
 export class Forum implements OnInit {
-  isLoading = signal(false);
   searchQuery = signal('');
   selectedCategory = signal<PostCategory | 'all'>('all');
   selectedSort = signal<SortOption>('newest');
 
+  readonly ICONS = ICONS;
+  readonly IMAGES = IMAGES;
+
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
-  private http = inject(HttpClient);
 
   isAuthenticated = computed(() => this.authService.isAuthenticated());
 
-  constructor(public forumService: ForumBlogService) {}
+  constructor(public forumService: ForumService) {}
 
   posts = computed(() => this.forumService.paginatedPosts());
   totalPages = computed(() => this.forumService.totalPages());
-
-  categories = POST_CATEGORIES;
+  categories = computed(() => this.forumService.categories());
 
   sortOptions: { value: SortOption; translateKey: string }[] = [
     { value: 'newest', translateKey: 'forum.sort.newest' },
@@ -6279,15 +6590,14 @@ export class Forum implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.isLoading.set(true);
     this.forumService.setFilters({ type: 'forum' });
-    setTimeout(() => this.isLoading.set(false), 300);
+    this.forumService.loadPosts();
   }
 
   applySearch(): void {
     const filters: PostFilters = {
       type: 'forum',
-      searchQuery: this.searchQuery() || undefined,
+      search_query: this.searchQuery() || undefined,
       category:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
@@ -6309,24 +6619,25 @@ export class Forum implements OnInit {
     this.applySearch();
   }
 
+  resetFilters(): void {
+    this.searchQuery.set('');
+    this.selectedCategory.set('all');
+    this.forumService.setFilters({ type: 'forum' });
+  }
+
   goToPage(page: number): void {
     this.forumService.setPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   previousPage(): void {
-    const currentPage = this.forumService.currentPage();
-    if (currentPage > 1) {
-      this.goToPage(currentPage - 1);
-    }
+    const current = this.forumService.currentPage();
+    if (current > 1) this.goToPage(current - 1);
   }
 
   nextPage(): void {
-    const currentPage = this.forumService.currentPage();
-    const totalPages = this.totalPages();
-    if (currentPage < totalPages) {
-      this.goToPage(currentPage + 1);
-    }
+    const current = this.forumService.currentPage();
+    if (current < this.totalPages()) this.goToPage(current + 1);
   }
 
   getPageNumbers(): number[] {
@@ -6335,18 +6646,11 @@ export class Forum implements OnInit {
     const pages: number[] = [];
 
     pages.push(1);
-
     const start = Math.max(2, current - 1);
     const end = Math.min(total - 1, current + 1);
-
     if (start > 2) pages.push(-1);
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
+    for (let i = start; i <= end; i++) pages.push(i);
     if (end < total - 1) pages.push(-1);
-
     if (total > 1) pages.push(total);
 
     return pages;
@@ -6357,11 +6661,7 @@ export class Forum implements OnInit {
   }
 
   onPostClick(post: Post): void {
-    console.log('Post clicked:', post.title);
-  }
-
-  getCategoryChipClass(colorClass: string): string {
-    return `category-chip ${colorClass}`;
+    void post;
   }
 }
 
@@ -7099,9 +7399,9 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 
   @if (!isLoading() && post()) {
     <article class="article">
-      @if (post()!.imageUrl) {
+      @if (post()!.image_url) {
         <div class="article-hero">
-          <img [src]="post()!.imageUrl" [alt]="post()!.title" class="hero-image" />
+          <img [src]="post()!.image_url" [alt]="post()!.title" class="hero-image" />
           <div class="hero-overlay"></div>
         </div>
       }
@@ -7110,8 +7410,8 @@ FILE: src\app\pages\forum-detail\forum-detail.html
         <header class="article-header">
           @if (getCategoryInfo(post()!.category); as cat) {
             <div class="article-category" [class]="cat.colorClass">
-              <span>{{ cat.icon }}</span>
-              <span>{{ cat.translationKey | translate }}</span>
+              <img [src]="cat.iconSrc" [alt]="cat.displayName" class="category-icon-img" />
+              <span>{{ cat.displayName }}</span>
             </div>
           }
 
@@ -7133,7 +7433,11 @@ FILE: src\app\pages\forum-detail\forum-detail.html
               <div class="author-info">
                 <span class="author-name">{{ post()!.author.name }}</span>
                 @if (post()!.author.verified) {
-                  <span class="verified-badge">✓</span>
+                  <img
+                    [src]="ICONS.badgeVerified"
+                    [alt]="'forum.verified' | translate"
+                    class="verified-badge"
+                  />
                 }
                 <span class="author-role">{{
                   'forum.role.' + post()!.author.role | translate
@@ -7142,11 +7446,15 @@ FILE: src\app\pages\forum-detail\forum-detail.html
             </div>
 
             <div class="meta-details">
-              <span class="meta-date">📅 {{ formatDate(post()!.createdAt) }}</span>
+              <span class="meta-date">
+                <img [src]="ICONS.forumDate" alt="" class="meta-icon" aria-hidden="true" />
+                {{ formatDate(post()!.created_at) }}
+              </span>
               @if (getReadingTime()) {
-                <span class="meta-reading"
-                  >📖 {{ getReadingTime() }} {{ 'common.minutes' | translate }}</span
-                >
+                <span class="meta-reading">
+                  <img [src]="ICONS.forumReadingTime" alt="" class="meta-icon" aria-hidden="true" />
+                  {{ getReadingTime() }} {{ 'common.minutes' | translate }}
+                </span>
               }
             </div>
           </div>
@@ -7170,15 +7478,15 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 
         <div class="article-stats">
           <div class="stat">
-            <span class="stat-icon">👁️</span>
+            <img [src]="ICONS.statViews" alt="" class="stat-icon-img" aria-hidden="true" />
             <span>{{ post()!.views }}</span>
           </div>
           <div class="stat">
-            <span class="stat-icon">❤️</span>
+            <img [src]="ICONS.statLikes" alt="" class="stat-icon-img" aria-hidden="true" />
             <span>{{ post()!.likes }}</span>
           </div>
           <div class="stat">
-            <span class="stat-icon">💬</span>
+            <img [src]="ICONS.statComments" alt="" class="stat-icon-img" aria-hidden="true" />
             <span>{{ comments().length }}</span>
           </div>
         </div>
@@ -7195,9 +7503,7 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 
     <section class="comments-section">
       <div class="comments-container">
-        <h2 class="comments-title">
-          💬 {{ 'forum.comments' | translate }} ({{ comments().length }})
-        </h2>
+        <h2 class="comments-title">{{ 'forum.comments' | translate }} ({{ comments().length }})</h2>
 
         @if (comments().length > 0) {
           <div class="comments-list">
@@ -7210,14 +7516,26 @@ FILE: src\app\pages\forum-detail\forum-detail.html
                   <div class="comment-header">
                     <span class="comment-author">{{ comment.author.name }}</span>
                     @if (comment.author.verified) {
-                      <span class="verified-badge">✓</span>
+                      <img
+                        [src]="ICONS.badgeVerified"
+                        [alt]="'forum.verified' | translate"
+                        class="verified-badge"
+                      />
                     }
-                    <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                    <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
                   </div>
                   <p class="comment-content">{{ comment.content }}</p>
                   <div class="comment-footer">
-                    <span class="comment-likes">❤️ {{ comment.likes }}</span>
-                    @if (comment.isEdited) {
+                    <span class="comment-likes">
+                      <img
+                        [src]="ICONS.statLikes"
+                        alt=""
+                        class="stat-icon-img"
+                        aria-hidden="true"
+                      />
+                      {{ comment.likes }}
+                    </span>
+                    @if (comment.is_edited) {
                       <span class="comment-edited">{{ 'forum.comment_edited' | translate }}</span>
                     }
                   </div>
@@ -7273,9 +7591,9 @@ FILE: src\app\pages\forum-detail\forum-detail.html
             <div class="slider-track">
               @for (related of sliderVisible; track related.id) {
                 <a class="related-card" [routerLink]="['/forum', related.slug]">
-                  @if (related.imageUrl) {
+                  @if (related.image_url) {
                     <div class="related-image">
-                      <img [src]="related.imageUrl" [alt]="related.title" loading="lazy" />
+                      <img [src]="related.image_url" [alt]="related.title" loading="lazy" />
                     </div>
                   }
                   <div class="related-info">
@@ -7283,7 +7601,7 @@ FILE: src\app\pages\forum-detail\forum-detail.html
                     <p class="related-excerpt">{{ related.excerpt }}</p>
                     <div class="related-meta">
                       <span>{{ related.author.name }}</span>
-                      <span>{{ formatDate(related.createdAt) }}</span>
+                      <span>{{ formatDate(related.created_at) }}</span>
                     </div>
                   </div>
                 </a>
@@ -7322,21 +7640,16 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 FILE: src\app\pages\forum-detail\forum-detail.ts
 ================================================================================
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ForumBlogService } from '../../core/services/forum-blog.service';
+import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
-import {
-  Post,
-  BlogPost,
-  Comment,
-  POST_CATEGORIES,
-  CategoryInfo,
-} from '../../core/models/forum-blog.model';
+import { Post, BlogPost, Comment, CategoryInfo } from '../../core/models/forum.model';
+import { ICONS, IMAGES } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-forum-detail',
@@ -7347,7 +7660,7 @@ import {
 })
 export class ForumDetail implements OnInit {
   private route = inject(ActivatedRoute);
-  private forumBlogService = inject(ForumBlogService);
+  private forumBlogService = inject(ForumService);
   private authService = inject(AuthService);
   private translate = inject(TranslateService);
 
@@ -7360,17 +7673,22 @@ export class ForumDetail implements OnInit {
   isSubmittingComment = signal(false);
   sliderIndex = signal(0);
 
+  readonly ICONS = ICONS;
+  readonly IMAGES = IMAGES;
+
   isAuthenticated = this.authService.isAuthenticated;
   currentUser = this.authService.currentUser;
 
-  categories = POST_CATEGORIES;
+  private get sessionToken(): string {
+    return this.authService.sessionToken() ?? '';
+  }
+
+  categories = computed(() => this.forumBlogService.categories());
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       const slug = params.get('slug');
-      if (slug) {
-        this.loadPost(slug);
-      }
+      if (slug) this.loadPost(slug);
     });
   }
 
@@ -7378,6 +7696,7 @@ export class ForumDetail implements OnInit {
     this.isLoading.set(true);
     this.contentExpanded.set(false);
     this.sliderIndex.set(0);
+    this.comments.set([]);
 
     this.forumBlogService.getPostById(slug).subscribe((post) => {
       this.post.set(post);
@@ -7387,54 +7706,26 @@ export class ForumDetail implements OnInit {
         this.forumBlogService.getRelatedPosts(post.id, 6).subscribe((related) => {
           this.relatedPosts.set(related);
         });
-        this.loadMockComments(post.id);
       }
     });
   }
 
-  private loadMockComments(postId: string): void {
-    const mock: Comment[] = [
-      {
-        id: 'c1',
-        postId,
-        author: { id: 'u1', name: 'Kovács Anna', role: 'user', verified: false },
-        content: 'Nagyon hasznos bejegyzés, köszönöm!',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3),
-        likes: 4,
-        isEdited: false,
-      },
-      {
-        id: 'c2',
-        postId,
-        author: { id: 'u2', name: 'Dr. Nagy Péter', role: 'pharmacist', verified: true },
-        content: 'Fontos kiegészítés: mindig konzultálj gyógyszerésszel, mielőtt bármilyen szert szednél.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 1),
-        likes: 11,
-        isEdited: false,
-      },
-    ];
-    this.comments.set(mock);
-  }
-
   getCategoryInfo(categoryId: string): CategoryInfo | undefined {
-    return this.categories.find((c) => c.id === categoryId);
+    return this.categories().find((c: CategoryInfo) => c.id === categoryId);
   }
 
   getReadingTime(): number {
     const p = this.post();
-    if (p && 'readingTime' in p) {
-      return (p as BlogPost).readingTime;
-    }
-    return 0;
+    return p?.type === 'blog' ? ((p as BlogPost).reading_time ?? 0) : 0;
   }
 
-  formatDate(date: Date): string {
-    if (!date) return '';
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
     return new Intl.DateTimeFormat(this.translate.currentLang || 'hu', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(new Date(date));
+    }).format(new Date(dateStr));
   }
 
   toggleContent(): void {
@@ -7447,10 +7738,14 @@ export class ForumDetail implements OnInit {
 
     this.isSubmittingComment.set(true);
     const user = this.currentUser();
+    const post = this.post();
+    if (!post) return;
+
+    // TODO: this.forumBlogService.addComment(post.id, user!.id, this.sessionToken, text).subscribe(...)
 
     const comment: Comment = {
       id: 'c' + Date.now(),
-      postId: this.post()?.id || '',
+      post_id: post.id,
       author: {
         id: user?.id || 'me',
         name: `${user?.firstname || ''} ${user?.lastname || ''}`.trim() || user?.email || 'Te',
@@ -7458,9 +7753,9 @@ export class ForumDetail implements OnInit {
         verified: false,
       },
       content: text,
-      createdAt: new Date(),
+      created_at: new Date().toISOString(),
       likes: 0,
-      isEdited: false,
+      is_edited: false,
     };
 
     setTimeout(() => {
@@ -7470,7 +7765,6 @@ export class ForumDetail implements OnInit {
     }, 400);
   }
 
-  // Slider
   get sliderVisible(): Post[] {
     return this.relatedPosts().slice(this.sliderIndex(), this.sliderIndex() + 3);
   }
@@ -7480,15 +7774,12 @@ export class ForumDetail implements OnInit {
   }
 
   sliderNext(): void {
-    this.sliderIndex.update((i) =>
-      Math.min(this.relatedPosts().length - 3, i + 1),
-    );
+    this.sliderIndex.update((i) => Math.min(this.relatedPosts().length - 3, i + 1));
   }
 
   get canSliderPrev(): boolean {
     return this.sliderIndex() > 0;
   }
-
   get canSliderNext(): boolean {
     return this.sliderIndex() + 3 < this.relatedPosts().length;
   }
@@ -9533,6 +9824,448 @@ export class LoginPromise implements OnInit {
 FILE: src\app\pages\not-found\not-found.css
 ================================================================================
 
+/* ═══════════════════════════════════════════════════════════════════════
+   404 Not Found Page
+   Roy's Shack Est. 1888
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+/* ─── Page layout ─────────────────────────────────────────────────────── */
+
+.nf-page {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--color-background);
+  padding: var(--space-8) var(--space-4);
+}
+
+/* Subtle radial glow behind content */
+.nf-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 40%,
+    rgba(6, 122, 69, 0.07) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ─── Floating particles ──────────────────────────────────────────────── */
+
+.nf-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--color-green-primary);
+  opacity: 0.08;
+  animation: particle-float linear infinite;
+}
+
+[data-theme='dark'] .particle {
+  opacity: 0.12;
+}
+
+.particle-1 {
+  width: 180px;
+  height: 180px;
+  top: -60px;
+  left: -40px;
+  animation-duration: 18s;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  width: 100px;
+  height: 100px;
+  top: 15%;
+  right: 8%;
+  animation-duration: 22s;
+  animation-delay: -4s;
+}
+
+.particle-3 {
+  width: 60px;
+  height: 60px;
+  top: 60%;
+  left: 6%;
+  animation-duration: 16s;
+  animation-delay: -8s;
+}
+
+.particle-4 {
+  width: 220px;
+  height: 220px;
+  bottom: -80px;
+  right: -60px;
+  animation-duration: 26s;
+  animation-delay: -12s;
+}
+
+.particle-5 {
+  width: 40px;
+  height: 40px;
+  top: 40%;
+  left: 20%;
+  animation-duration: 14s;
+  animation-delay: -6s;
+}
+
+.particle-6 {
+  width: 80px;
+  height: 80px;
+  bottom: 20%;
+  right: 20%;
+  animation-duration: 20s;
+  animation-delay: -2s;
+}
+
+@keyframes particle-float {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+  33% {
+    transform: translateY(-18px) scale(1.04);
+  }
+  66% {
+    transform: translateY(10px) scale(0.97);
+  }
+}
+
+/* ─── Content container ───────────────────────────────────────────────── */
+
+.nf-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-6);
+  max-width: 560px;
+  width: 100%;
+  animation: nf-entrance 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes nf-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── 404 number ──────────────────────────────────────────────────────── */
+
+.nf-code-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.05em;
+  line-height: 1;
+  user-select: none;
+}
+
+.nf-digit {
+  font-family: var(--font-mono, 'Inconsolata', monospace);
+  font-size: clamp(5rem, 18vw, 10rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+
+  /* Green gradient fill */
+  background: var(--gradient-primary, linear-gradient(135deg, #067a45, #0a9e5a));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  /* Subtle glow */
+  filter: drop-shadow(0 2px 16px rgba(6, 122, 69, 0.25));
+}
+
+/* The zero in the middle gets a special "glitch" wobble */
+.nf-digit--zero {
+  animation: digit-wobble 6s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes digit-wobble {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  20% {
+    transform: rotate(-3deg) scale(1.02);
+  }
+  40% {
+    transform: rotate(3deg) scale(0.98);
+  }
+  60% {
+    transform: rotate(-1.5deg) scale(1.01);
+  }
+  80% {
+    transform: rotate(1deg) scale(0.99);
+  }
+}
+
+/* ─── Logo ────────────────────────────────────────────────────────────── */
+
+.nf-logo-wrapper {
+  padding: var(--space-2) 0;
+}
+
+.nf-logo {
+  height: clamp(64px, 12vw, 96px);
+  width: auto;
+  object-fit: contain;
+
+  /* Smooth theme transition */
+  transition: opacity var(--transition-normal);
+  animation: logo-appear 0.5s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes logo-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ─── Divider ─────────────────────────────────────────────────────────── */
+
+.nf-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 320px;
+}
+
+.nf-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-border), transparent);
+}
+
+.nf-divider-icon {
+  font-size: 0.75rem;
+  color: var(--color-green-primary);
+  opacity: 0.6;
+}
+
+/* ─── Message ─────────────────────────────────────────────────────────── */
+
+.nf-message {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.nf-title {
+  font-family: var(--font-primary);
+  font-size: var(--text-2xl, clamp(1.4rem, 4vw, 1.9rem));
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.nf-subtitle {
+  font-size: var(--text-base, 1rem);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed, 1.75);
+  max-width: 420px;
+}
+
+/* ─── Action buttons ──────────────────────────────────────────────────── */
+
+.nf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+  width: 100%;
+}
+
+.nf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full, 999px);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--transition-normal),
+    box-shadow var(--transition-normal),
+    transform var(--transition-fast),
+    color var(--transition-normal);
+  white-space: nowrap;
+}
+
+.nf-btn:focus-visible {
+  outline: 2px solid var(--color-green-primary);
+  outline-offset: 3px;
+}
+
+/* Primary — filled green */
+.nf-btn--primary {
+  background: var(--gradient-primary, linear-gradient(135deg, #067a45, #0a9e5a));
+  color: #fff;
+  box-shadow: var(--shadow-primary, 0 6px 20px rgba(6, 122, 69, 0.35));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nf-btn--primary:hover {
+    background: var(--gradient-primary-hover, linear-gradient(135deg, #055c34, #067a45));
+    box-shadow: var(--shadow-primary-lg, 0 8px 28px rgba(6, 122, 69, 0.5));
+    transform: translateY(-2px);
+  }
+
+  .nf-btn--primary:active {
+    transform: translateY(0);
+  }
+}
+
+/* Secondary — outlined */
+.nf-btn--secondary {
+  background: transparent;
+  color: var(--color-green-primary);
+  border: 1.5px solid var(--color-green-primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nf-btn--secondary:hover {
+    background: rgba(6, 122, 69, 0.06);
+    box-shadow: 0 4px 12px rgba(6, 122, 69, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .nf-btn--secondary:active {
+    transform: translateY(0);
+  }
+}
+
+.nf-btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ─── Quick links ─────────────────────────────────────────────────────── */
+
+.nf-quick-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.nf-quick-links-label {
+  font-size: var(--text-xs, 0.78rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+.nf-quick-links-list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nf-quick-link {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nf-quick-link:hover {
+    color: var(--color-green-primary);
+  }
+}
+
+.nf-quick-link:focus-visible {
+  outline: 2px solid var(--color-green-primary);
+  border-radius: 2px;
+  outline-offset: 2px;
+}
+
+.nf-quick-link-sep {
+  color: var(--color-border);
+  font-size: var(--text-base, 1rem);
+  user-select: none;
+}
+
+/* ─── Est. badge ──────────────────────────────────────────────────────── */
+
+.nf-est-badge {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-6);
+
+  font-family: var(--font-mono, 'Inconsolata', monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--color-text-secondary);
+  opacity: 0.3;
+  user-select: none;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .nf-content {
+    gap: var(--space-5);
+  }
+
+  .nf-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nf-btn {
+    justify-content: center;
+  }
+
+  .nf-est-badge {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .nf-content {
+    gap: var(--space-8);
+  }
+}
 
 
 
@@ -9540,7 +10273,90 @@ FILE: src\app\pages\not-found\not-found.css
 FILE: src\app\pages\not-found\not-found.html
 ================================================================================
 
-<p>not-found works!</p>
+<div class="nf-page">
+  <div class="nf-particles" aria-hidden="true">
+    <span class="particle particle-1"></span>
+    <span class="particle particle-2"></span>
+    <span class="particle particle-3"></span>
+    <span class="particle particle-4"></span>
+    <span class="particle particle-5"></span>
+    <span class="particle particle-6"></span>
+  </div>
+
+  <div class="nf-content">
+    <div class="nf-code-wrapper" aria-hidden="true">
+      <span class="nf-digit">4</span>
+      <span class="nf-digit nf-digit--zero">0</span>
+      <span class="nf-digit">4</span>
+    </div>
+
+    <div class="nf-logo-wrapper">
+      <img [src]="logoSrc" alt="Roy's Shack Est. 1888" class="nf-logo" />
+    </div>
+
+    <div class="nf-divider" aria-hidden="true">
+      <span class="nf-divider-line"></span>
+      <span class="nf-divider-icon">✦</span>
+      <span class="nf-divider-line"></span>
+    </div>
+
+    <div class="nf-message">
+      <h1 class="nf-title">{{ 'not_found.title' | translate }}</h1>
+      <p class="nf-subtitle">{{ 'not_found.subtitle' | translate }}</p>
+    </div>
+
+    <div class="nf-actions">
+      <a routerLink="/home" class="nf-btn nf-btn--primary">
+        <svg
+          class="nf-btn-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"
+          />
+        </svg>
+        {{ 'not_found.go_home' | translate }}
+      </a>
+
+      <a routerLink="/products" class="nf-btn nf-btn--secondary">
+        <svg
+          class="nf-btn-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M20 7H4a1 1 0 00-1 1v10a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1zM16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"
+          />
+        </svg>
+        {{ 'not_found.browse_products' | translate }}
+      </a>
+    </div>
+
+    <nav class="nf-quick-links" aria-label="{{ 'not_found.quick_links_label' | translate }}">
+      <span class="nf-quick-links-label">{{ 'not_found.quick_links' | translate }}</span>
+      <div class="nf-quick-links-list">
+        <a routerLink="/forum" class="nf-quick-link">{{ 'header.forum' | translate }}</a>
+        <span class="nf-quick-link-sep" aria-hidden="true">·</span>
+        <a routerLink="/profile" class="nf-quick-link">{{ 'header.profile' | translate }}</a>
+        <span class="nf-quick-link-sep" aria-hidden="true">·</span>
+        <a routerLink="/legal" class="nf-quick-link">{{ 'footer.legal' | translate }}</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="nf-est-badge" aria-hidden="true">Est. 1888</div>
+</div>
 
 
 
@@ -9578,16 +10394,44 @@ describe('NotFound', () => {
 FILE: src\app\pages\not-found\not-found.ts
 ================================================================================
 
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
+
+import { ThemeService, Theme } from '../../core/services/theme.service';
+import { environment } from '../../../environments/environment';
+import { getLogoSrc } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-not-found',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, RouterModule, TranslateModule],
   templateUrl: './not-found.html',
   styleUrl: './not-found.css',
 })
-export class NotFound {}
+export class NotFound implements OnInit, OnDestroy {
+  private themeService = inject(ThemeService);
+  private themeSub!: Subscription;
+
+  currentTheme = signal<Theme>('light');
+
+  get logoSrc(): string {
+    return getLogoSrc(this.currentTheme() as 'dark' | 'light');
+  }
+
+  ngOnInit(): void {
+    this.currentTheme.set(this.themeService.getCurrentTheme());
+    this.themeSub = this.themeService.currentTheme$.subscribe((theme) => {
+      this.currentTheme.set(theme);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.themeSub?.unsubscribe();
+  }
+}
 
 
 
@@ -9622,9 +10466,6 @@ FILE: src\app\pages\password-reset\password-reset.html
         </div>
         <h1>{{ 'auth.password_change.success' | translate }}</h1>
         <p class="verification-text">{{ 'auth.password_change.success_message' | translate }}</p>
-        <div class="redirect-info">
-          <p>{{ 'auth.password_change.redirecting' | translate }}</p>
-        </div>
       </div>
     }
 
@@ -9681,16 +10522,13 @@ describe('PasswordReset', () => {
 FILE: src\app\pages\password-reset\password-reset.ts
 ================================================================================
 
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
-/*
- * Backend response note (bug in backend service):
- *   On success the service returns (200, "success") instead of the JSON body,
- *   so no JWT token is returned → the user must log in again after the reset.
- */
+import { ToastService } from '../../core/services/toast.service';
+
 @Component({
   selector: 'app-password-reset',
   standalone: true,
@@ -9701,6 +10539,8 @@ import { AuthService } from '../../core/services/auth.service';
 export class PasswordReset implements OnInit {
   private location = inject(Location);
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
+  private translateService = inject(TranslateService);
 
   isProcessing = signal(false);
   isSuccess = signal(false);
@@ -9709,7 +10549,6 @@ export class PasswordReset implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    // Read the ?chpass=B64(id);B64(token) param from the URL
     const raw = new URLSearchParams(window.location.search).get('chpass') || '';
     const parts = raw.split(';');
 
@@ -9732,7 +10571,6 @@ export class PasswordReset implements OnInit {
     this.completePasswordReset(encodedId, encodedToken);
   }
 
-  /** Calls chpass_promise endpoint with the B64 values from the email link */
   completePasswordReset(encodedId: string, encodedToken: string): void {
     this.isProcessing.set(true);
     this.errorMessage.set('');
@@ -9741,16 +10579,13 @@ export class PasswordReset implements OnInit {
       next: () => {
         this.isProcessing.set(false);
         this.isSuccess.set(true);
-        // Backend does not return a new JWT token (known backend bug),
-        // so we log the user out and redirect to login after success.
-        this.authService.logout();
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2500);
+        const message = this.translateService.instant('auth.success.password_changed');
+        this.toastService.success(message);
       },
       error: (error) => {
         this.isProcessing.set(false);
         this.errorMessage.set(error.message || 'auth.errors.password_reset_failed');
+        this.authService.logout();
       },
     });
   }
@@ -10046,6 +10881,14 @@ FILE: src\app\pages\product-detail\product-detail.css
 .product-detail-page {
   min-height: 100vh;
   background: var(--color-background);
+}
+
+.state-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.5;
 }
 
 .loading-state {
@@ -10388,7 +11231,7 @@ FILE: src\app\pages\product-detail\product-detail.css
   width: fit-content;
   padding: 5px 14px;
   background: var(--color-primary-light);
-  color: var(--color-text-on-primary);
+  color: var(--color-text-primary);
   border: 1px solid rgba(6, 122, 69, 0.2);
   border-radius: var(--radius-full);
   font-size: 0.7rem;
@@ -10622,7 +11465,7 @@ FILE: src\app\pages\product-detail\product-detail.css
 .total-value {
   font-size: var(--text-2xl);
   font-weight: 800;
-  color: var(--color-text-on-primary);
+  color: var(--color-text-primary);
 }
 
 .add-to-cart-btn {
@@ -10671,6 +11514,14 @@ FILE: src\app\pages\product-detail\product-detail.css
   font-size: var(--text-xl);
 }
 
+.btn-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .prescription-notice {
   display: flex;
   align-items: center;
@@ -10682,6 +11533,14 @@ FILE: src\app\pages\product-detail\product-detail.css
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
+}
+
+.notice-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
 .description-block,
@@ -10819,6 +11678,122 @@ FILE: src\app\pages\product-detail\product-detail.css
   }
 }
 
+.reviews-block {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.reviews-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) 0;
+}
+
+.spinner-sm {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+}
+
+.reviews-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-4);
+  text-align: center;
+}
+
+.reviews-empty-icon {
+  font-size: 2.5rem;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.45;
+}
+
+.reviews-empty-text {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.review-item {
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition-normal);
+}
+
+.review-item:hover {
+  border-color: var(--color-primary-mid);
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2);
+}
+
+.review-stars {
+  color: var(--color-warning);
+  letter-spacing: -1px;
+  font-size: var(--text-base);
+  flex-shrink: 0;
+}
+
+.review-title {
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--text-base);
+  flex: 1;
+  min-width: 0;
+}
+
+.review-date {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.review-body {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .review-item {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .review-header {
+    gap: var(--space-2);
+  }
+
+  .review-date {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-item {
+    transition: none;
+  }
+}
+
 
 
 ================================================================================
@@ -10835,7 +11810,10 @@ FILE: src\app\pages\product-detail\product-detail.html
 
   @if (!isLoading() && notFound()) {
     <div class="not-found-state">
-      <div class="not-found-icon">🔍</div>
+      <!-- 🔍 → searchwhite.webp -->
+      <div class="not-found-icon">
+        <img [src]="icons.search" alt="" class="state-icon" aria-hidden="true" />
+      </div>
       <h2 class="not-found-title">{{ 'product.not_found' | translate }}</h2>
       <p class="not-found-desc">{{ 'product.not_found_desc' | translate }}</p>
       <button class="back-btn" (click)="goBack()">
@@ -10920,13 +11898,15 @@ FILE: src\app\pages\product-detail\product-detail.html
 
             <h1 class="product-title">{{ product()!.name }}</h1>
 
-            @if (product()!.rating) {
+            @if (product()!.ratingNumber > 0) {
               <div class="rating-row">
                 <span class="rating-stars">{{ getRatingStars() }}</span>
-                <span class="rating-value">{{ product()!.rating }}</span>
-                <span class="rating-count"
-                  >({{ product()!.reviewCount }} {{ 'product.reviews' | translate }})</span
-                >
+                <span class="rating-value">{{ product()!.ratingNumber.toFixed(1) }}</span>
+                @if (reviewCount() > 0) {
+                  <span class="rating-count"
+                    >({{ reviewCount() }} {{ 'product.reviews' | translate }})</span
+                  >
+                }
               </div>
             }
           </div>
@@ -11016,14 +11996,16 @@ FILE: src\app\pages\product-detail\product-detail.html
                 <span class="btn-icon">✓</span>
                 {{ 'common.added_to_cart' | translate }}
               } @else {
-                <span class="btn-icon">🛒</span>
+                <!-- 🛒 → basketwhite.webp -->
+                <img [src]="icons.basket" alt="" class="btn-icon-img" aria-hidden="true" />
                 {{ 'common.add_to_cart' | translate }}
               }
             </button>
 
             @if (product()!.requiresPrescription) {
               <div class="prescription-notice">
-                <span>ℹ️</span>
+                <!-- ℹ️ → infowhite.webp -->
+                <img [src]="icons.info" alt="" class="notice-icon-img" aria-hidden="true" />
                 <span>{{ 'product.prescription_required_notice' | translate }}</span>
               </div>
             }
@@ -11058,6 +12040,43 @@ FILE: src\app\pages\product-detail\product-detail.html
               }
             </div>
           }
+
+          <!-- ─── Reviews section ──────────────────────────────────────────── -->
+          <div class="reviews-block">
+            <h2 class="section-heading">{{ 'product.reviews_title' | translate }}</h2>
+
+            @if (reviewsLoading()) {
+              <div class="reviews-loading">
+                <div class="spinner spinner-sm"></div>
+              </div>
+            } @else if (reviews().length === 0) {
+              <div class="reviews-empty">
+                <!-- 💬 → stats/comments.webp -->
+                <img
+                  [src]="icons.statComments"
+                  alt=""
+                  class="reviews-empty-icon"
+                  aria-hidden="true"
+                />
+                <p class="reviews-empty-text">{{ 'product.no_reviews' | translate }}</p>
+              </div>
+            } @else {
+              <div class="reviews-list">
+                @for (review of reviews(); track review.id) {
+                  <div class="review-item">
+                    <div class="review-header">
+                      <span class="review-stars">{{ getRatingStars(review.ratingNumber) }}</span>
+                      <span class="review-title">{{ review.title }}</span>
+                      <span class="review-date">{{
+                        review.created_at | date: 'yyyy. MM. dd.'
+                      }}</span>
+                    </div>
+                    <p class="review-body">{{ review.body }}</p>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>
@@ -11105,12 +12124,16 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers, enrichProduct } from '../../core/models/product.model';
+import { ReviewWithHelpers } from '../../core/models/review.model';
 import { ProductService } from '../../services/product.service';
+import { ReviewService } from '../../core/services/review.service';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
 import { Subscription } from 'rxjs';
+import { ICONS } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-detail',
@@ -11123,9 +12146,13 @@ export class ProductDetail implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private productService = inject(ProductService);
+  private reviewService = inject(ReviewService);
   private cartService = inject(CartService);
   private currencyService = inject(CurrencyService);
   private translationService = inject(TranslationService);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   private currentLang = toSignal(this.translationService.currentLang$, {
     initialValue: this.translationService.getCurrentLanguage(),
@@ -11133,7 +12160,9 @@ export class ProductDetail implements OnInit, OnDestroy {
   private langSub?: Subscription;
 
   product = signal<ProductWithHelpers | null>(null);
+  reviews = signal<ReviewWithHelpers[]>([]);
   isLoading = signal(true);
+  reviewsLoading = signal(false);
   notFound = signal(false);
   quantity = signal(1);
   selectedImageIndex = signal(0);
@@ -11143,6 +12172,8 @@ export class ProductDetail implements OnInit, OnDestroy {
   canGoNext = computed(
     () => this.product() !== null && this.selectedImageIndex() < this.product()!.images.length - 1,
   );
+
+  reviewCount = computed(() => this.reviews().length);
 
   get images(): string[] {
     return this.product()?.images ?? [];
@@ -11201,6 +12232,7 @@ export class ProductDetail implements OnInit, OnDestroy {
 
     if (found) {
       this.product.set(found);
+      this.loadReviews(id);
     } else {
       this.notFound.set(true);
     }
@@ -11218,6 +12250,25 @@ export class ProductDetail implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
     document.body.style.overflow = '';
+  }
+
+  private async loadReviews(productId: string): Promise<void> {
+    this.reviewsLoading.set(true);
+    try {
+      const reviews = await firstValueFrom(this.reviewService.getReviewsByProductId(productId));
+      this.reviews.set(reviews);
+    } finally {
+      this.reviewsLoading.set(false);
+    }
+  }
+
+  getRatingStars(ratingNumber?: number): string {
+    const rating = ratingNumber ?? this.product()?.ratingNumber ?? 0;
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   selectImage(index: number): void {
@@ -11256,15 +12307,6 @@ export class ProductDetail implements OnInit, OnDestroy {
       this.addedToCart.set(true);
       setTimeout(() => this.addedToCart.set(false), 2500);
     }
-  }
-
-  getRatingStars(): string {
-    const p = this.product();
-    if (!p?.ratingNumber) return '';
-    const full = Math.floor(p.ratingNumber);
-    const half = p.ratingNumber % 1 >= 0.5;
-    const empty = 5 - full - (half ? 1 : 0);
-    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   goBack(): void {
@@ -17842,20 +18884,46 @@ export class NewsletterForm {
 FILE: src\app\shared\components\header\header.css
 ================================================================================
 
+/* ══════════════════════════════════════════════════════════════
+   HEADER — Glass Morphism Sticky Navigation
+   ══════════════════════════════════════════════════════════════ */
+
 .header {
   position: sticky;
   top: 0;
+  left: 0;
+  width: 100%;
   z-index: 1000;
-  background-color: var(--color-primary);
+
+  background-color: rgba(6, 122, 69, 0.92);
+
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+
   color: var(--color-white);
-  border-bottom: none;
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  transition: all var(--transition-speed) var(--transition-ease);
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
+
+[data-theme='dark'] .header {
+  background-color: rgba(15, 30, 22, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LAYOUT SECTIONS
+   ══════════════════════════════════════════════════════════════ */
 
 .header-left {
   flex-shrink: 0;
@@ -17866,6 +18934,7 @@ FILE: src\app\shared\components\header\header.css
   width: auto;
   display: block;
   transition: transform 0.3s ease;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.25));
 }
 
 .logo:hover {
@@ -17944,6 +19013,8 @@ FILE: src\app\shared\components\header\header.css
   top: calc(100% + 10px);
   right: 0;
   background-color: var(--bg-primary);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
@@ -17991,12 +19062,18 @@ FILE: src\app\shared\components\header\header.css
   top: calc(100% + 10px);
   right: 0;
   background-color: var(--bg-primary);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
   min-width: 250px;
   z-index: 1001;
   animation: slideDown 0.2s ease;
+}
+
+[data-theme='dark'] .user-dropdown {
+  background-color: rgba(20, 35, 28, 0.95);
 }
 
 .user-dropdown-header {
@@ -18084,8 +19161,8 @@ FILE: src\app\shared\components\header\header.css
   position: absolute;
   top: -8px;
   right: -8px;
-  background-color: var(--color-primary);
-  color: white;
+  background-color: #ffffff;
+  color: var(--color-primary);
   border-radius: 50%;
   width: 20px;
   height: 20px;
@@ -18095,7 +19172,13 @@ FILE: src\app\shared\components\header\header.css
   font-size: 0.7rem;
   font-weight: 700;
   border: 2px solid var(--bg-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+[data-theme='dark'] .cart-badge {
+  background-color: var(--color-primary);
+  color: #ffffff;
 }
 
 @keyframes popIn {
@@ -18115,6 +19198,8 @@ FILE: src\app\shared\components\header\header.css
   top: calc(100% + 10px);
   right: 0;
   background-color: var(--bg-primary);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
@@ -19635,43 +20720,49 @@ FILE: src\app\shared\components\post-card\post-card.html
 <article
   class="post-card"
   [class.compact]="compactMode"
-  [class.pinned]="post.isPinned"
-  [class.featured]="post.isFeatured"
+  [class.pinned]="post.is_pinned"
+  [class.featured]="post.is_featured"
   [routerLink]="[post.type === 'blog' ? '/blog' : '/forum', post.slug]"
   (click)="handleCardClick()"
 >
-  @if (post.isPinned) {
+  @if (post.is_pinned) {
     <div class="pinned-badge">
-      <span class="pin-icon">📌</span>
+      <img [src]="ICONS.badgePinned" alt="" class="badge-icon" aria-hidden="true" />
       <span>{{ 'forum.pinned' | translate }}</span>
     </div>
   }
 
-  @if (post.isFeatured && !post.isPinned) {
+  @if (post.is_featured && !post.is_pinned) {
     <div class="featured-badge">
-      <span class="star-icon">⭐</span>
+      <img [src]="ICONS.badgeFeatured" alt="" class="badge-icon" aria-hidden="true" />
       <span>{{ 'forum.featured' | translate }}</span>
     </div>
   }
 
-  @if (showImage && post.imageUrl) {
+  @if (showImage && post.image_url) {
     <div class="post-image">
-      <img [src]="post.imageUrl" [alt]="post.title" loading="lazy" />
+      <img [src]="post.image_url" [alt]="post.title" loading="lazy" />
 
       @if (showCategory && categoryInfo) {
         <div class="category-badge-overlay" [class]="categoryInfo.colorClass">
-          <span class="category-icon">{{ categoryInfo.icon }}</span>
-          <span class="category-name">{{ categoryInfo.translationKey | translate }}</span>
+          <img [src]="categoryInfo.iconSrc" [alt]="categoryInfo.displayName" class="badge-icon" />
+          <span class="category-name">{{ categoryInfo.displayName }}</span>
         </div>
       }
 
       @if (post.type === 'forum') {
         <div class="forum-badges">
           @if (isQuestion) {
-            <div class="question-badge"><span>❓</span> {{ 'forum.question' | translate }}</div>
+            <div class="question-badge">
+              <img [src]="ICONS.badgeQuestion" alt="" class="badge-icon" aria-hidden="true" />
+              {{ 'forum.question' | translate }}
+            </div>
           }
           @if (hasAcceptedAnswer) {
-            <div class="answered-badge"><span>✓</span> {{ 'forum.answered' | translate }}</div>
+            <div class="answered-badge">
+              <img [src]="ICONS.badgeAnswered" alt="" class="badge-icon" aria-hidden="true" />
+              {{ 'forum.answered' | translate }}
+            </div>
           }
         </div>
       }
@@ -19680,10 +20771,10 @@ FILE: src\app\shared\components\post-card\post-card.html
 
   <div class="post-content">
     <div class="post-header">
-      @if (showCategory && categoryInfo && !post.imageUrl) {
+      @if (showCategory && categoryInfo && !post.image_url) {
         <div class="category-badge-inline" [class]="categoryInfo.colorClass">
-          <span class="category-icon">{{ categoryInfo.icon }}</span>
-          <span class="category-name">{{ categoryInfo.translationKey | translate }}</span>
+          <img [src]="categoryInfo.iconSrc" [alt]="categoryInfo.displayName" class="badge-icon" />
+          <span class="category-name">{{ categoryInfo.displayName }}</span>
         </div>
       }
 
@@ -19691,7 +20782,7 @@ FILE: src\app\shared\components\post-card\post-card.html
         <span class="post-date">{{ getRelativeTime() }}</span>
         @if (readingTime) {
           <span class="reading-time">
-            <span class="icon">📖</span>
+            <img [src]="ICONS.forumReadingTime" alt="" class="meta-icon" aria-hidden="true" />
             {{ readingTime }} {{ 'common.minutes' | translate }}
           </span>
         }
@@ -19714,11 +20805,15 @@ FILE: src\app\shared\components\post-card\post-card.html
               {{ post.author.name.charAt(0).toUpperCase() }}
             </div>
           }
-
           <div class="author-details">
             <span class="author-name">{{ post.author.name }}</span>
             @if (post.author.verified) {
-              <span class="verified-icon" title="{{ 'forum.verified' | translate }}">✓</span>
+              <img
+                [src]="ICONS.badgeVerified"
+                [title]="'forum.verified' | translate"
+                [alt]="'forum.verified' | translate"
+                class="verified-icon"
+              />
             }
             <span class="author-role" [class]="authorBadgeClass">
               {{ 'forum.role.' + post.author.role | translate }}
@@ -19731,16 +20826,16 @@ FILE: src\app\shared\components\post-card\post-card.html
     @if (showStats) {
       <div class="post-stats">
         <div class="stat-item">
-          <span class="stat-icon">👁️</span>
+          <img [src]="ICONS.statViews" alt="" class="stat-icon-img" aria-hidden="true" />
           <span class="stat-value">{{ post.views }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-icon">❤️</span>
+          <img [src]="ICONS.statLikes" alt="" class="stat-icon-img" aria-hidden="true" />
           <span class="stat-value">{{ post.likes }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-icon">💬</span>
-          <span class="stat-value">{{ post.commentCount }}</span>
+          <img [src]="ICONS.statComments" alt="" class="stat-icon-img" aria-hidden="true" />
+          <span class="stat-value">{{ post.comment_count }}</span>
         </div>
       </div>
     }
@@ -19765,7 +20860,9 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Post, POST_CATEGORIES } from '../../../core/models/forum-blog.model';
+import { Post } from '../../../core/models/forum.model';
+import { ForumService } from '../../../core/services/forum.service';
+import { ICONS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-post-card',
@@ -19785,10 +20882,13 @@ export class PostCardComponent {
 
   @Output() cardClick = new EventEmitter<Post>();
 
+  readonly ICONS = ICONS;
+
   private translateService = inject(TranslateService);
+  private forumService = inject(ForumService);
 
   get categoryInfo() {
-    return POST_CATEGORIES.find((cat) => cat.id === this.post.category);
+    return this.forumService.categories().find((cat) => cat.id === this.post.category);
   }
 
   get authorBadgeClass(): string {
@@ -19797,16 +20897,14 @@ export class PostCardComponent {
         return 'badge-admin';
       case 'pharmacist':
         return 'badge-pharmacist';
-      case 'user':
-        return 'badge-user';
       default:
-        return '';
+        return 'badge-user';
     }
   }
 
   getRelativeTime(): string {
     const now = new Date();
-    const postDate = this.post.createdAt;
+    const postDate = new Date(this.post.created_at);
     const diffMs = now.getTime() - postDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
@@ -19822,14 +20920,11 @@ export class PostCardComponent {
     } else if (diffDays < 7) {
       return this.translateService.instant('time.days_ago', { count: diffDays });
     } else if (diffDays < 30) {
-      const diffWeeks = Math.floor(diffDays / 7);
-      return this.translateService.instant('time.weeks_ago', { count: diffWeeks });
+      return this.translateService.instant('time.weeks_ago', { count: Math.floor(diffDays / 7) });
     } else if (diffDays < 365) {
-      const diffMonths = Math.floor(diffDays / 30);
-      return this.translateService.instant('time.months_ago', { count: diffMonths });
+      return this.translateService.instant('time.months_ago', { count: Math.floor(diffDays / 30) });
     } else {
-      const diffYears = Math.floor(diffDays / 365);
-      return this.translateService.instant('time.years_ago', { count: diffYears });
+      return this.translateService.instant('time.years_ago', { count: Math.floor(diffDays / 365) });
     }
   }
 
@@ -19838,15 +20933,15 @@ export class PostCardComponent {
   }
 
   get readingTime(): number | null {
-    return this.post.type === 'blog' ? this.post.readingTime : null;
+    return this.post.type === 'blog' ? (this.post.reading_time ?? null) : null;
   }
 
   get isQuestion(): boolean {
-    return this.post.type === 'forum' ? this.post.isQuestion : false;
+    return this.post.type === 'forum' ? this.post.is_question : false;
   }
 
   get hasAcceptedAnswer(): boolean {
-    return this.post.type === 'forum' ? this.post.hasAcceptedAnswer : false;
+    return this.post.type === 'forum' ? this.post.has_accepted_answer : false;
   }
 }
 
@@ -20369,6 +21464,14 @@ FILE: src\app\shared\components\product-card\product-card.css
   letter-spacing: 0.01em;
 }
 
+.add-to-cart-button .button-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .add-to-cart-button.compact {
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-sm);
@@ -20546,11 +21649,10 @@ FILE: src\app\shared\components\product-card\product-card.html
         </p>
       }
 
-      @if (product.rating && !compact) {
+      @if (hasRating && !compact) {
         <div class="product-rating">
-          <span class="rating-stars">★★★★☆</span>
-          <span class="rating-value">{{ product.rating }}</span>
-          <span class="rating-count">({{ product.reviewCount }})</span>
+          <span class="rating-stars">{{ getRatingStars() }}</span>
+          <span class="rating-value">{{ product.ratingNumber.toFixed(1) }}</span>
         </div>
       }
 
@@ -20597,9 +21699,10 @@ FILE: src\app\shared\components\product-card\product-card.html
       [class.compact]="compact"
       [disabled]="!canAddToCart"
       (click)="onAddToCart()"
-      [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName"
+      [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName()"
     >
-      <span class="button-icon">🛒</span>
+      <!-- 🛒 → basketwhite.webp -->
+      <img [src]="icons.basket" alt="" class="button-icon" aria-hidden="true" />
       {{ 'common.add_to_cart' | translate }}
     </button>
 
@@ -20607,7 +21710,7 @@ FILE: src\app\shared\components\product-card\product-card.html
       <button
         class="details-button"
         (click)="onViewDetails()"
-        [attr.aria-label]="('product.view_details' | translate) + ': ' + localizedName"
+        [attr.aria-label]="('product.view_details' | translate) + ': ' + localizedName()"
       >
         {{ 'product.view_details' | translate }}
       </button>
@@ -20624,11 +21727,11 @@ FILE: src\app\shared\components\product-card\product-card.ts
 import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
-import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
+import { getImageUrl, getCategoryIcon, ICONS } from '../../../core/constants/visuals';
 import { TranslationService } from '../../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -20649,6 +21752,9 @@ export class ProductCard {
   getImageUrl = getImageUrl;
   getCategoryIcon = getCategoryIcon;
 
+  // Expose ICONS to template
+  protected readonly icons = ICONS;
+
   quantity = signal(1);
 
   private currencyService = inject(CurrencyService);
@@ -20663,12 +21769,10 @@ export class ProductCard {
   }
 
   get formattedPrice(): string {
-    // getBasePrice reads the currentCurrency signal → converts HUF→USD/EUR as needed
     return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
   }
 
   get formattedDiscountedPrice(): string {
-    // getDiscountedPrice applies sale_percentage on top of the converted base price
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
   }
 
@@ -20680,26 +21784,38 @@ export class ProductCard {
     );
   }
 
+  get hasRating(): boolean {
+    return this.product.ratingNumber > 0;
+  }
+
   localizedName = computed(() => {
     const lang = this.currentLang();
-    if (lang === 'hu') return this.product?.name_hu || this.product?.name || '';
-    if (lang === 'de') return this.product?.name_de || this.product?.name || '';
-    return this.product?.name_en || this.product?.name || '';
+    if (lang === 'hu') return this.product.name_hu || this.product.name;
+    if (lang === 'de') return this.product.name_de || this.product.name;
+    return this.product.name_en || this.product.name;
   });
 
   localizedDescription = computed(() => {
     const lang = this.currentLang();
-    if (lang === 'hu') return this.product?.description_hu || '';
-    if (lang === 'de') return this.product?.description_de || '';
-    return this.product?.description_en || '';
+    if (lang === 'hu') return this.product.description_hu || this.product.description;
+    if (lang === 'de') return this.product.description_de || this.product.description;
+    return this.product.description_en || this.product.description;
   });
 
   get categoryName(): string {
-    const catId = this.product.category ?? this.product.category_id ?? '';
-    const cat = this.productService.getCategoryById(catId);
+    const cat = this.productService.getCategoryById(this.product.category);
+    const lang = this.currentLang();
     if (!cat) return '';
-    const lang = this.currentLang(); // ← reaktív
     return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
+  }
+
+  getRatingStars(): string {
+    const rating = this.product.ratingNumber;
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   increaseQuantity(): void {
@@ -20717,11 +21833,7 @@ export class ProductCard {
   }
 
   onAddToCart(): void {
-    if (this.canAddToCart) {
-      // only event emit — the parent (product-list) manages the addtocart.
-      this.addToCart.emit({ product: this.product, quantity: this.quantity() });
-      this.quantity.set(1);
-    }
+    this.addToCart.emit({ product: this.product, quantity: this.quantity() });
   }
 
   onViewDetails(): void {
@@ -21242,6 +22354,14 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
   min-height: 52px;
 }
 
+.add-to-cart-button .button-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .add-to-cart-button:hover:not(:disabled) {
     background: var(--color-primary-hover);
@@ -21272,7 +22392,13 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
 
 .notice-icon {
   font-size: var(--text-lg, 18px);
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
+
 .notice-text {
   font-weight: var(--font-medium);
 }
@@ -21619,13 +22745,13 @@ FILE: src\app\shared\components\product-detail-modal\product-detail-modal.html
           </div>
 
           <button class="add-to-cart-button" [disabled]="!canAddToCart" (click)="handleAddToCart()">
-            <span class="button-icon">🛒</span>
+            <img [src]="icons.basket" alt="" class="button-icon" aria-hidden="true" />
             {{ 'common.add_to_cart' | translate }}
           </button>
 
           @if (product.requiresPrescription) {
             <div class="prescription-notice">
-              <span class="notice-icon">ℹ️</span>
+              <img [src]="icons.info" alt="" class="notice-icon" aria-hidden="true" />
               <span class="notice-text">{{
                 'product.prescription_required_notice' | translate
               }}</span>
@@ -21649,6 +22775,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
+import { ICONS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-detail-modal',
@@ -21665,6 +22792,9 @@ export class ProductDetailModal {
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
   private translateService = inject(TranslateService);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   quantity = signal(1);
   selectedImageIndex = signal(0);
@@ -21685,13 +22815,10 @@ export class ProductDetailModal {
   }
 
   get formattedPrice(): string {
-    // getBasePrice convert HUF → actual devisa (USD/EUR/HUF)
-    // product.priceNumber and product.price always HUF!
     return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
   }
 
   get formattedDiscountedPrice(): string {
-    // getDiscountedPrice = getBasePrice + sale_percentage levonása
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
   }
 
@@ -21717,10 +22844,19 @@ export class ProductDetailModal {
   }
 
   get categoryName(): string {
-    const cat = this.productService.getCategoryById(this.product.category ?? '');
-    const lang = this.translateService.currentLang || 'hu';
+    const cat = this.productService.getCategoryById(this.product.category);
+    const lang = this.translateService.currentLang;
     if (!cat) return '';
     return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
+  }
+
+  getRatingStars(): string {
+    const rating = this.product.ratingNumber;
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   selectImage(index: number): void {
@@ -21751,18 +22887,9 @@ export class ProductDetailModal {
     }
   }
 
-  getRatingStars(): string {
-    if (!this.product.ratingNumber) return '';
-    const fullStars = Math.floor(this.product.ratingNumber);
-    const hasHalfStar = this.product.ratingNumber % 1 >= 0.5;
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-    return '★'.repeat(fullStars) + (hasHalfStar ? '⯨' : '') + '☆'.repeat(emptyStars);
-  }
-
   handleAddToCart(): void {
     if (this.canAddToCart) {
       this.addToCart.emit({ product: this.product, quantity: this.quantity() });
-      this.handleClose();
     }
   }
 
@@ -21772,7 +22899,7 @@ export class ProductDetailModal {
 
   handleBackdropClick(event: MouseEvent): void {
     if (event.target === event.currentTarget) {
-      this.handleClose();
+      this.close.emit();
     }
   }
 }
@@ -22352,6 +23479,14 @@ FILE: src\app\shared\components\product-list\product-list.css
   text-align: center;
 }
 
+.empty-state-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.4;
+}
+
 .empty-icon {
   font-size: 4rem;
   margin-bottom: var(--space-4);
@@ -22524,13 +23659,19 @@ FILE: src\app\shared\components\product-list\product-list.html
       />
     } @else {
       @if (allProducts().length === 0) {
+        <!-- 📦 → orderwhite.webp (no products at all) -->
         <div class="empty-state">
-          <div class="empty-icon">📦</div>
+          <div class="empty-icon">
+            <img [src]="icons.order" alt="" aria-hidden="true" class="empty-state-img" />
+          </div>
           <h3 class="empty-title-no-products">{{ 'products.empty' | translate }}</h3>
         </div>
       } @else {
+        <!-- 🔍 → searchwhite.webp (no results for current filters) -->
         <div class="empty-state">
-          <div class="empty-icon">🔍</div>
+          <div class="empty-icon">
+            <img [src]="icons.search" alt="" aria-hidden="true" class="empty-state-img" />
+          </div>
           <h3 class="empty-title">{{ 'product.no_products_found' | translate }}</h3>
           <p class="empty-description">
             {{ 'product.try_different_filters' | translate }}
@@ -22569,6 +23710,7 @@ import { ProductCard } from '../product-card/product-card';
 import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
 import { ProductDetailModal } from '../product-detail-modal/product-detail-modal';
+import { ICONS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-list',
@@ -22587,6 +23729,9 @@ import { ProductDetailModal } from '../product-detail-modal/product-detail-modal
 export class ProductList {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   products = this.productService.paginatedProducts;
   pagination = this.productService.paginationState;
@@ -24150,7 +25295,8 @@ FILE: src\assets\i18n\de.json
     "success": {
       "welcome_back": "Erfolgreich angemeldet! Willkommen zurück!",
       "registered": "Registrierung erfolgreich! Überprüfen Sie Ihre E-Mail.",
-      "logged_in": "Erfolgreich angemeldet"
+      "logged_in": "Erfolgreich angemeldet",
+      "password_changed": "Passwort erfolgreich geändert!"
     },
     "login": {
       "title": "Anmelden",
@@ -24446,6 +25592,8 @@ FILE: src\assets\i18n\de.json
     "previous_image": "Vorheriges Bild",
     "out_of_stock": "Nicht vorrätig",
     "reviews": "Bewertungen",
+    "reviews_title": "Bewertungen",
+    "no_reviews": "Für dieses Produkt gibt es noch keine Bewertungen.",
     "prescription_required_notice": "Dieses Produkt ist verschreibungspflichtig. Bitte laden Sie Ihr Rezept beim Bestellen hoch.",
     "packaging": "Verpackung",
     "dosage": "Dosierung",
@@ -24505,6 +25653,22 @@ FILE: src\assets\i18n\de.json
     "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
     "verified": "Verifiziert",
     "all_categories": "Alle Kategorien",
+    "category": {
+      "medicines": "Arzneimittel",
+      "natural_remedies": "Natürliche Behandlungen",
+      "baby_mother": "Babys und Mütter",
+      "healthy_lifestyle": "Gesunder Lebensstil",
+      "seasonal_health": "Saisonale Gesundheit",
+      "qa": "F&A",
+      "general": "Generisch"
+    },
+    "sort": {
+      "newest": "neuestes",
+      "oldest": "älteste",
+      "most_viewed": "meistgesehene",
+      "most_liked": "beliebteste",
+      "trending": "trending"
+    },
     "description": "Teilen Sie Fragen, Antworten und Erfahrungen mit unserer Community",
     "reset_filters": "Filter zurücksetzen",
     "answered": "Beantwortet",
@@ -24512,7 +25676,11 @@ FILE: src\assets\i18n\de.json
     "comments": "Kommentare",
     "back_to_forum": "Zurück zum Forum",
     "submit_comment": "Kommentar absenden",
-    "comment_edited": "bearbeitet"
+    "comment_edited": "bearbeitet",
+    "empty_title": "Noch keine Beiträge",
+    "empty_description": "Hier wurde noch nichts gepostet. Möchtest du der Erste sein?",
+    "error_title": "Beiträge konnten nicht geladen werden",
+    "error_description": "Beim Laden der Beiträge ist ein Fehler aufgetreten. Überprüfe deine Verbindung und versuche es erneut."
   },
   "pagination": {
     "of": "von",
@@ -24721,6 +25889,14 @@ FILE: src\assets\i18n\de.json
       "subtitle": "Blutdruckmessgeräte, Wundpflege und Diagnosemittel – Profiqualität zum Heimpreis."
     },
     "cta": "Produkte ansehen"
+  },
+  "not_found": {
+    "title": "Seite nicht gefunden",
+    "subtitle": "Diese Seite scheint sich in den Apothekenregalen verirrt zu haben. Wir helfen dir zurück.",
+    "go_home": "Zur Startseite",
+    "browse_products": "Produkte entdecken",
+    "quick_links": "Oder springe zu",
+    "quick_links_label": "Schnellnavigation"
   }
 }
 
@@ -24765,7 +25941,8 @@ FILE: src\assets\i18n\en.json
     "success": {
       "welcome_back": "Successfully logged in! Welcome back!",
       "registered": "Registration successful! Check your email.",
-      "logged_in": "Successfully logged in"
+      "logged_in": "Successfully logged in",
+      "password_changed": "Password changed successfully!"
     },
     "login": {
       "title": "Sign In",
@@ -25091,6 +26268,8 @@ FILE: src\assets\i18n\en.json
     "previous_image": "Previous image",
     "out_of_stock": "Out of Stock",
     "reviews": "reviews",
+    "reviews_title": "Reviews",
+    "no_reviews": "No reviews yet for this product.",
     "prescription_required_notice": "This product requires a prescription. Please upload your prescription when ordering.",
     "packaging": "Packaging",
     "dosage": "Dosage",
@@ -25150,6 +26329,22 @@ FILE: src\assets\i18n\en.json
     "no_results_description": "Try different search terms or select another category.",
     "verified": "Verified",
     "all_categories": "All Categories",
+    "category": {
+      "medicines": "Medicines",
+      "natural_remedies": "Natural Remedies",
+      "baby_mother": "Babies and Mothers",
+      "healthy_lifestyle": "Healthy Lifestyle",
+      "seasonal_health": "Seasonal Health",
+      "qa": "Q&A",
+      "general": "General"
+    },
+    "sort": {
+      "newest": "newest",
+      "oldest": "oldest",
+      "most_viewed": "most viewed",
+      "most_liked": "most liked",
+      "trending": "trending"
+    },
     "description": "Share questions, answers, and experiences with our community",
     "reset_filters": "Reset Filters",
     "answered": "Answered",
@@ -25157,7 +26352,11 @@ FILE: src\assets\i18n\en.json
     "comments": "Comments",
     "back_to_forum": "Back to Forum",
     "submit_comment": "Submit Comment",
-    "comment_edited": "edited"
+    "comment_edited": "edited",
+    "empty_title": "No posts yet",
+    "empty_description": "It looks like nobody has posted here yet. Will you be the first?",
+    "error_title": "Could not load posts",
+    "error_description": "Something went wrong while fetching posts. Check your connection and try again."
   },
   "pagination": {
     "of": "of",
@@ -25366,6 +26565,14 @@ FILE: src\assets\i18n\en.json
       "subtitle": "Blood pressure monitors, wound care and diagnostic tools — professional quality, home prices."
     },
     "cta": "Browse Products"
+  },
+  "not_found": {
+    "title": "Page not found",
+    "subtitle": "Looks like this page got lost somewhere in the pharmacy aisles. Let us help you find your way back.",
+    "go_home": "Back to Home",
+    "browse_products": "Browse Products",
+    "quick_links": "Or jump to",
+    "quick_links_label": "Quick navigation"
   }
 }
 
@@ -25410,7 +26617,8 @@ FILE: src\assets\i18n\hu.json
     "success": {
       "welcome_back": "Sikeres bejelentkezés! Üdvözöljük!",
       "registered": "Sikeres regisztráció! Ellenőrizze e-mail fiókját.",
-      "logged_in": "Sikeresen bejelentkezett"
+      "logged_in": "Sikeresen bejelentkezett",
+      "password_changed": "Jelszó sikeresen megváltoztatva!"
     },
     "login": {
       "title": "Bejelentkezés",
@@ -25736,6 +26944,8 @@ FILE: src\assets\i18n\hu.json
     "previous_image": "Előző kép",
     "out_of_stock": "Nincs raktáron",
     "reviews": "értékelés",
+    "reviews_title": "Értékelések",
+    "no_reviews": "Erre a termékre nincsenek még értékelések.",
     "prescription_required_notice": "Ez a termék vényköteles. Rendeléshez recept feltöltése szükséges.",
     "packaging": "Kiszerelés",
     "dosage": "Adagolás",
@@ -25795,6 +27005,22 @@ FILE: src\assets\i18n\hu.json
     "no_results_description": "Próbálj meg más keresési kifejezést vagy kategóriát választani.",
     "verified": "Hitelesített",
     "all_categories": "Minden kategória",
+    "category": {
+      "medicines": "Gyógyszerek",
+      "natural_remedies": "Természetes Gyógymódok",
+      "baby_mother": "Babák és Anyák",
+      "healthy_lifestyle": "Egészséges Életmód",
+      "seasonal_health": "Szezonális Egészség",
+      "qa": "Q&A",
+      "general": "Általános"
+    },
+    "sort": {
+      "newest": "legújabb",
+      "oldest": "legrégibb",
+      "most_viewed": "legnézettebb",
+      "most_liked": "legkedveltebb",
+      "trending": "trending"
+    },
     "description": "Kérdések, válaszok és tapasztalatok megosztása közösségünkkel",
     "reset_filters": "Szűrők visszaállítása",
     "answered": "Megválaszolva",
@@ -25802,7 +27028,12 @@ FILE: src\assets\i18n\hu.json
     "comments": "Hozzászólások",
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
-    "comment_edited": "szerkesztve"
+    "comment_edited": "szerkesztve",
+
+    "empty_title": "Még nincsenek posztok",
+    "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
+    "error_title": "Nem sikerült betölteni",
+    "error_description": "Hiba történt a posztok lekérésekor. Ellenőrizd a kapcsolatot, majd próbáld újra."
   },
   "pagination": {
     "of": "/",
@@ -26011,6 +27242,14 @@ FILE: src\assets\i18n\hu.json
       "subtitle": "Vérnyomásmérők, sebkezelési termékek, diagnosztikai eszközök – professzionális minőség, otthoni áron."
     },
     "cta": "Termékek megtekintése"
+  },
+  "not_found": {
+    "title": "Az oldal nem található",
+    "subtitle": "Úgy tűnik, ez az oldal eltévedt a patika folyosóin. Talán visszatalálsz onnan, ahonnan jöttél?",
+    "go_home": "Vissza a főoldalra",
+    "browse_products": "Termékek böngészése",
+    "quick_links": "Vagy ugorj ide",
+    "quick_links_label": "Gyors navigáció"
   }
 }
 
@@ -26077,6 +27316,9 @@ bootstrapApplication(App, appConfig)
 FILE: src\styles\abstracts\_themes.css
 ================================================================================
 
+:root {
+  --icon-filter: brightness(0) saturate(100%);
+}
 [data-theme='dark'] {
   --color-background: var(--color-gray-very-dark);
   --color-surface: var(--color-dark-neutral);
@@ -26104,6 +27346,8 @@ FILE: src\styles\abstracts\_themes.css
   --shadow-primary-lg: 0 12px 32px rgba(6, 122, 69, 0.55);
 
   --gradient-image-bg: linear-gradient(135deg, #1a2e24 0%, #1e3829 100%);
+
+  --icon-filter: none;
 }
 
 * {

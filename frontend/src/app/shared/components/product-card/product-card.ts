@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
-import { getImageUrl, getCategoryIcon } from '../../../core/constants/visuals';
+import { getImageUrl, getCategoryIcon, ICONS } from '../../../core/constants/visuals';
 import { TranslationService } from '../../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -26,6 +26,9 @@ export class ProductCard {
   getImageUrl = getImageUrl;
   getCategoryIcon = getCategoryIcon;
 
+  // Expose ICONS to template
+  protected readonly icons = ICONS;
+
   quantity = signal(1);
 
   private currencyService = inject(CurrencyService);
@@ -40,12 +43,10 @@ export class ProductCard {
   }
 
   get formattedPrice(): string {
-    // getBasePrice reads the currentCurrency signal → converts HUF→USD/EUR as needed
     return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
   }
 
   get formattedDiscountedPrice(): string {
-    // getDiscountedPrice applies sale_percentage on top of the converted base price
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
   }
 
@@ -57,26 +58,38 @@ export class ProductCard {
     );
   }
 
+  get hasRating(): boolean {
+    return this.product.ratingNumber > 0;
+  }
+
   localizedName = computed(() => {
     const lang = this.currentLang();
-    if (lang === 'hu') return this.product?.name_hu || this.product?.name || '';
-    if (lang === 'de') return this.product?.name_de || this.product?.name || '';
-    return this.product?.name_en || this.product?.name || '';
+    if (lang === 'hu') return this.product.name_hu || this.product.name;
+    if (lang === 'de') return this.product.name_de || this.product.name;
+    return this.product.name_en || this.product.name;
   });
 
   localizedDescription = computed(() => {
     const lang = this.currentLang();
-    if (lang === 'hu') return this.product?.description_hu || '';
-    if (lang === 'de') return this.product?.description_de || '';
-    return this.product?.description_en || '';
+    if (lang === 'hu') return this.product.description_hu || this.product.description;
+    if (lang === 'de') return this.product.description_de || this.product.description;
+    return this.product.description_en || this.product.description;
   });
 
   get categoryName(): string {
-    const catId = this.product.category ?? this.product.category_id ?? '';
-    const cat = this.productService.getCategoryById(catId);
+    const cat = this.productService.getCategoryById(this.product.category);
+    const lang = this.currentLang();
     if (!cat) return '';
-    const lang = this.currentLang(); // ← reaktív
     return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
+  }
+
+  getRatingStars(): string {
+    const rating = this.product.ratingNumber;
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   increaseQuantity(): void {
@@ -94,11 +107,7 @@ export class ProductCard {
   }
 
   onAddToCart(): void {
-    if (this.canAddToCart) {
-      // only event emit — the parent (product-list) manages the addtocart.
-      this.addToCart.emit({ product: this.product, quantity: this.quantity() });
-      this.quantity.set(1);
-    }
+    this.addToCart.emit({ product: this.product, quantity: this.quantity() });
   }
 
   onViewDetails(): void {

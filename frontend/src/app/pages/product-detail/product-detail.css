@@ -3,6 +3,14 @@
   background: var(--color-background);
 }
 
+.state-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.5;
+}
+
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -343,7 +351,7 @@
   width: fit-content;
   padding: 5px 14px;
   background: var(--color-primary-light);
-  color: var(--color-text-on-primary);
+  color: var(--color-text-primary);
   border: 1px solid rgba(6, 122, 69, 0.2);
   border-radius: var(--radius-full);
   font-size: 0.7rem;
@@ -577,7 +585,7 @@
 .total-value {
   font-size: var(--text-2xl);
   font-weight: 800;
-  color: var(--color-text-on-primary);
+  color: var(--color-text-primary);
 }
 
 .add-to-cart-btn {
@@ -626,6 +634,14 @@
   font-size: var(--text-xl);
 }
 
+.btn-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .prescription-notice {
   display: flex;
   align-items: center;
@@ -637,6 +653,14 @@
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
+}
+
+.notice-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
 .description-block,
@@ -770,6 +794,122 @@
   .thumb,
   .image-nav,
   .pharma-item {
+    transition: none;
+  }
+}
+
+.reviews-block {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.reviews-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) 0;
+}
+
+.spinner-sm {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+}
+
+.reviews-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-4);
+  text-align: center;
+}
+
+.reviews-empty-icon {
+  font-size: 2.5rem;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.45;
+}
+
+.reviews-empty-text {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.review-item {
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition-normal);
+}
+
+.review-item:hover {
+  border-color: var(--color-primary-mid);
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2);
+}
+
+.review-stars {
+  color: var(--color-warning);
+  letter-spacing: -1px;
+  font-size: var(--text-base);
+  flex-shrink: 0;
+}
+
+.review-title {
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--text-base);
+  flex: 1;
+  min-width: 0;
+}
+
+.review-date {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.review-body {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .review-item {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .review-header {
+    gap: var(--space-2);
+  }
+
+  .review-date {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-item {
     transition: none;
   }
 }

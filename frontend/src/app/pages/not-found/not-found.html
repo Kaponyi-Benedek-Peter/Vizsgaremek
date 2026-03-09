@@ -1,1 +1,84 @@
-<p>not-found works!</p>
+<div class="nf-page">
+  <div class="nf-particles" aria-hidden="true">
+    <span class="particle particle-1"></span>
+    <span class="particle particle-2"></span>
+    <span class="particle particle-3"></span>
+    <span class="particle particle-4"></span>
+    <span class="particle particle-5"></span>
+    <span class="particle particle-6"></span>
+  </div>
+
+  <div class="nf-content">
+    <div class="nf-code-wrapper" aria-hidden="true">
+      <span class="nf-digit">4</span>
+      <span class="nf-digit nf-digit--zero">0</span>
+      <span class="nf-digit">4</span>
+    </div>
+
+    <div class="nf-logo-wrapper">
+      <img [src]="logoSrc" alt="Roy's Shack Est. 1888" class="nf-logo" />
+    </div>
+
+    <div class="nf-divider" aria-hidden="true">
+      <span class="nf-divider-line"></span>
+      <span class="nf-divider-icon">✦</span>
+      <span class="nf-divider-line"></span>
+    </div>
+
+    <div class="nf-message">
+      <h1 class="nf-title">{{ 'not_found.title' | translate }}</h1>
+      <p class="nf-subtitle">{{ 'not_found.subtitle' | translate }}</p>
+    </div>
+
+    <div class="nf-actions">
+      <a routerLink="/home" class="nf-btn nf-btn--primary">
+        <svg
+          class="nf-btn-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"
+          />
+        </svg>
+        {{ 'not_found.go_home' | translate }}
+      </a>
+
+      <a routerLink="/products" class="nf-btn nf-btn--secondary">
+        <svg
+          class="nf-btn-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M20 7H4a1 1 0 00-1 1v10a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1zM16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"
+          />
+        </svg>
+        {{ 'not_found.browse_products' | translate }}
+      </a>
+    </div>
+
+    <nav class="nf-quick-links" aria-label="{{ 'not_found.quick_links_label' | translate }}">
+      <span class="nf-quick-links-label">{{ 'not_found.quick_links' | translate }}</span>
+      <div class="nf-quick-links-list">
+        <a routerLink="/forum" class="nf-quick-link">{{ 'header.forum' | translate }}</a>
+        <span class="nf-quick-link-sep" aria-hidden="true">·</span>
+        <a routerLink="/profile" class="nf-quick-link">{{ 'header.profile' | translate }}</a>
+        <span class="nf-quick-link-sep" aria-hidden="true">·</span>
+        <a routerLink="/legal" class="nf-quick-link">{{ 'footer.legal' | translate }}</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="nf-est-badge" aria-hidden="true">Est. 1888</div>
+</div>

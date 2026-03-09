@@ -8,7 +8,10 @@
 
   @if (!isLoading() && notFound()) {
     <div class="not-found-state">
-      <div class="not-found-icon">🔍</div>
+      <!-- 🔍 → searchwhite.webp -->
+      <div class="not-found-icon">
+        <img [src]="icons.search" alt="" class="state-icon" aria-hidden="true" />
+      </div>
       <h2 class="not-found-title">{{ 'product.not_found' | translate }}</h2>
       <p class="not-found-desc">{{ 'product.not_found_desc' | translate }}</p>
       <button class="back-btn" (click)="goBack()">
@@ -93,13 +96,15 @@
 
             <h1 class="product-title">{{ product()!.name }}</h1>
 
-            @if (product()!.rating) {
+            @if (product()!.ratingNumber > 0) {
               <div class="rating-row">
                 <span class="rating-stars">{{ getRatingStars() }}</span>
-                <span class="rating-value">{{ product()!.rating }}</span>
-                <span class="rating-count"
-                  >({{ product()!.reviewCount }} {{ 'product.reviews' | translate }})</span
-                >
+                <span class="rating-value">{{ product()!.ratingNumber.toFixed(1) }}</span>
+                @if (reviewCount() > 0) {
+                  <span class="rating-count"
+                    >({{ reviewCount() }} {{ 'product.reviews' | translate }})</span
+                  >
+                }
               </div>
             }
           </div>
@@ -189,14 +194,16 @@
                 <span class="btn-icon">✓</span>
                 {{ 'common.added_to_cart' | translate }}
               } @else {
-                <span class="btn-icon">🛒</span>
+                <!-- 🛒 → basketwhite.webp -->
+                <img [src]="icons.basket" alt="" class="btn-icon-img" aria-hidden="true" />
                 {{ 'common.add_to_cart' | translate }}
               }
             </button>
 
             @if (product()!.requiresPrescription) {
               <div class="prescription-notice">
-                <span>ℹ️</span>
+                <!-- ℹ️ → infowhite.webp -->
+                <img [src]="icons.info" alt="" class="notice-icon-img" aria-hidden="true" />
                 <span>{{ 'product.prescription_required_notice' | translate }}</span>
               </div>
             }
@@ -231,6 +238,43 @@
               }
             </div>
           }
+
+          <!-- ─── Reviews section ──────────────────────────────────────────── -->
+          <div class="reviews-block">
+            <h2 class="section-heading">{{ 'product.reviews_title' | translate }}</h2>
+
+            @if (reviewsLoading()) {
+              <div class="reviews-loading">
+                <div class="spinner spinner-sm"></div>
+              </div>
+            } @else if (reviews().length === 0) {
+              <div class="reviews-empty">
+                <!-- 💬 → stats/comments.webp -->
+                <img
+                  [src]="icons.statComments"
+                  alt=""
+                  class="reviews-empty-icon"
+                  aria-hidden="true"
+                />
+                <p class="reviews-empty-text">{{ 'product.no_reviews' | translate }}</p>
+              </div>
+            } @else {
+              <div class="reviews-list">
+                @for (review of reviews(); track review.id) {
+                  <div class="review-item">
+                    <div class="review-header">
+                      <span class="review-stars">{{ getRatingStars(review.ratingNumber) }}</span>
+                      <span class="review-title">{{ review.title }}</span>
+                      <span class="review-date">{{
+                        review.created_at | date: 'yyyy. MM. dd.'
+                      }}</span>
+                    </div>
+                    <p class="review-body">{{ review.body }}</p>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>

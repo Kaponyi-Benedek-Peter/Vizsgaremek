@@ -9,6 +9,7 @@ import { ProductCard } from '../product-card/product-card';
 import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
 import { ProductDetailModal } from '../product-detail-modal/product-detail-modal';
+import { ICONS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-list',
@@ -27,6 +28,9 @@ import { ProductDetailModal } from '../product-detail-modal/product-detail-modal
 export class ProductList {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   products = this.productService.paginatedProducts;
   pagination = this.productService.paginationState;

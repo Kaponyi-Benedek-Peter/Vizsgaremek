@@ -33,7 +33,8 @@
     "success": {
       "welcome_back": "Erfolgreich angemeldet! Willkommen zurück!",
       "registered": "Registrierung erfolgreich! Überprüfen Sie Ihre E-Mail.",
-      "logged_in": "Erfolgreich angemeldet"
+      "logged_in": "Erfolgreich angemeldet",
+      "password_changed": "Passwort erfolgreich geändert!"
     },
     "login": {
       "title": "Anmelden",
@@ -329,6 +330,8 @@
     "previous_image": "Vorheriges Bild",
     "out_of_stock": "Nicht vorrätig",
     "reviews": "Bewertungen",
+    "reviews_title": "Bewertungen",
+    "no_reviews": "Für dieses Produkt gibt es noch keine Bewertungen.",
     "prescription_required_notice": "Dieses Produkt ist verschreibungspflichtig. Bitte laden Sie Ihr Rezept beim Bestellen hoch.",
     "packaging": "Verpackung",
     "dosage": "Dosierung",
@@ -388,6 +391,22 @@
     "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
     "verified": "Verifiziert",
     "all_categories": "Alle Kategorien",
+    "category": {
+      "medicines": "Arzneimittel",
+      "natural_remedies": "Natürliche Behandlungen",
+      "baby_mother": "Babys und Mütter",
+      "healthy_lifestyle": "Gesunder Lebensstil",
+      "seasonal_health": "Saisonale Gesundheit",
+      "qa": "F&A",
+      "general": "Generisch"
+    },
+    "sort": {
+      "newest": "neuestes",
+      "oldest": "älteste",
+      "most_viewed": "meistgesehene",
+      "most_liked": "beliebteste",
+      "trending": "trending"
+    },
     "description": "Teilen Sie Fragen, Antworten und Erfahrungen mit unserer Community",
     "reset_filters": "Filter zurücksetzen",
     "answered": "Beantwortet",
@@ -395,7 +414,11 @@
     "comments": "Kommentare",
     "back_to_forum": "Zurück zum Forum",
     "submit_comment": "Kommentar absenden",
-    "comment_edited": "bearbeitet"
+    "comment_edited": "bearbeitet",
+    "empty_title": "Noch keine Beiträge",
+    "empty_description": "Hier wurde noch nichts gepostet. Möchtest du der Erste sein?",
+    "error_title": "Beiträge konnten nicht geladen werden",
+    "error_description": "Beim Laden der Beiträge ist ein Fehler aufgetreten. Überprüfe deine Verbindung und versuche es erneut."
   },
   "pagination": {
     "of": "von",
@@ -604,5 +627,13 @@
       "subtitle": "Blutdruckmessgeräte, Wundpflege und Diagnosemittel – Profiqualität zum Heimpreis."
     },
     "cta": "Produkte ansehen"
+  },
+  "not_found": {
+    "title": "Seite nicht gefunden",
+    "subtitle": "Diese Seite scheint sich in den Apothekenregalen verirrt zu haben. Wir helfen dir zurück.",
+    "go_home": "Zur Startseite",
+    "browse_products": "Produkte entdecken",
+    "quick_links": "Oder springe zu",
+    "quick_links_label": "Schnellnavigation"
   }
 }

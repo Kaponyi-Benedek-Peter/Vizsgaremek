@@ -1,18 +1,13 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { ForumBlogService } from '../../core/services/forum-blog.service';
+import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
-import {
-  Post,
-  BlogPost,
-  Comment,
-  POST_CATEGORIES,
-  CategoryInfo,
-} from '../../core/models/forum-blog.model';
+import { Post, BlogPost, Comment, CategoryInfo } from '../../core/models/forum.model';
+import { ICONS, IMAGES } from '../../core/constants/visuals';
 
 @Component({
   selector: 'app-forum-detail',
@@ -23,7 +18,7 @@ import {
 })
 export class ForumDetail implements OnInit {
   private route = inject(ActivatedRoute);
-  private forumBlogService = inject(ForumBlogService);
+  private forumBlogService = inject(ForumService);
   private authService = inject(AuthService);
   private translate = inject(TranslateService);
 
@@ -36,17 +31,22 @@ export class ForumDetail implements OnInit {
   isSubmittingComment = signal(false);
   sliderIndex = signal(0);
 
+  readonly ICONS = ICONS;
+  readonly IMAGES = IMAGES;
+
   isAuthenticated = this.authService.isAuthenticated;
   currentUser = this.authService.currentUser;
 
-  categories = POST_CATEGORIES;
+  private get sessionToken(): string {
+    return this.authService.sessionToken() ?? '';
+  }
+
+  categories = computed(() => this.forumBlogService.categories());
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       const slug = params.get('slug');
-      if (slug) {
-        this.loadPost(slug);
-      }
+      if (slug) this.loadPost(slug);
     });
   }
 
@@ -54,6 +54,7 @@ export class ForumDetail implements OnInit {
     this.isLoading.set(true);
     this.contentExpanded.set(false);
     this.sliderIndex.set(0);
+    this.comments.set([]);
 
     this.forumBlogService.getPostById(slug).subscribe((post) => {
       this.post.set(post);
@@ -63,54 +64,26 @@ export class ForumDetail implements OnInit {
         this.forumBlogService.getRelatedPosts(post.id, 6).subscribe((related) => {
           this.relatedPosts.set(related);
         });
-        this.loadMockComments(post.id);
       }
     });
   }
 
-  private loadMockComments(postId: string): void {
-    const mock: Comment[] = [
-      {
-        id: 'c1',
-        postId,
-        author: { id: 'u1', name: 'Kovács Anna', role: 'user', verified: false },
-        content: 'Nagyon hasznos bejegyzés, köszönöm!',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3),
-        likes: 4,
-        isEdited: false,
-      },
-      {
-        id: 'c2',
-        postId,
-        author: { id: 'u2', name: 'Dr. Nagy Péter', role: 'pharmacist', verified: true },
-        content: 'Fontos kiegészítés: mindig konzultálj gyógyszerésszel, mielőtt bármilyen szert szednél.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 1),
-        likes: 11,
-        isEdited: false,
-      },
-    ];
-    this.comments.set(mock);
-  }
-
   getCategoryInfo(categoryId: string): CategoryInfo | undefined {
-    return this.categories.find((c) => c.id === categoryId);
+    return this.categories().find((c: CategoryInfo) => c.id === categoryId);
   }
 
   getReadingTime(): number {
     const p = this.post();
-    if (p && 'readingTime' in p) {
-      return (p as BlogPost).readingTime;
-    }
-    return 0;
+    return p?.type === 'blog' ? ((p as BlogPost).reading_time ?? 0) : 0;
   }
 
-  formatDate(date: Date): string {
-    if (!date) return '';
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
     return new Intl.DateTimeFormat(this.translate.currentLang || 'hu', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(new Date(date));
+    }).format(new Date(dateStr));
   }
 
   toggleContent(): void {
@@ -123,10 +96,14 @@ export class ForumDetail implements OnInit {
 
     this.isSubmittingComment.set(true);
     const user = this.currentUser();
+    const post = this.post();
+    if (!post) return;
+
+    // TODO: this.forumBlogService.addComment(post.id, user!.id, this.sessionToken, text).subscribe(...)
 
     const comment: Comment = {
       id: 'c' + Date.now(),
-      postId: this.post()?.id || '',
+      post_id: post.id,
       author: {
         id: user?.id || 'me',
         name: `${user?.firstname || ''} ${user?.lastname || ''}`.trim() || user?.email || 'Te',
@@ -134,9 +111,9 @@ export class ForumDetail implements OnInit {
         verified: false,
       },
       content: text,
-      createdAt: new Date(),
+      created_at: new Date().toISOString(),
       likes: 0,
-      isEdited: false,
+      is_edited: false,
     };
 
     setTimeout(() => {
@@ -146,7 +123,6 @@ export class ForumDetail implements OnInit {
     }, 400);
   }
 
-  // Slider
   get sliderVisible(): Post[] {
     return this.relatedPosts().slice(this.sliderIndex(), this.sliderIndex() + 3);
   }
@@ -156,15 +132,12 @@ export class ForumDetail implements OnInit {
   }
 
   sliderNext(): void {
-    this.sliderIndex.update((i) =>
-      Math.min(this.relatedPosts().length - 3, i + 1),
-    );
+    this.sliderIndex.update((i) => Math.min(this.relatedPosts().length - 3, i + 1));
   }
 
   get canSliderPrev(): boolean {
     return this.sliderIndex() > 0;
   }
-
   get canSliderNext(): boolean {
     return this.sliderIndex() + 3 < this.relatedPosts().length;
   }
