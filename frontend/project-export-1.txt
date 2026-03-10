@@ -653,7 +653,7 @@ export const routes: Routes = [
   { path: 'bracket', component: Bracket },
   { path: 'admin', component: Admin, canActivate: [adminGuard] },
   {
-    path: 'forum/:slug',
+    path: 'forum/:id',
     loadComponent: () => import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
   },
   {
@@ -667,6 +667,10 @@ export const routes: Routes = [
     canActivate: [guestGuard],
   },
   { path: 'email', loadComponent: () => import('./pages/email/email').then((m) => m.Email) },
+  {
+    path: 'login-promise',
+    loadComponent: () => import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
+  },
   {
     path: 'registration-promise',
     loadComponent: () =>
@@ -685,10 +689,6 @@ export const routes: Routes = [
     path: 'password-reset',
     loadComponent: () =>
       import('./pages/password-reset/password-reset').then((m) => m.PasswordReset),
-  },
-  {
-    path: 'login-promise',
-    loadComponent: () => import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
   },
   {
     path: 'delacc-promise',
@@ -1320,6 +1320,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/get_all_featured_products',
     '/newsletter_subscription',
     '/get_all_product_categories',
+    // Forum — publikus endpointok
+    '/get_all_posts',
+    '/get_post_by_id',
+    '/get_post_by_slug',
+    '/get_all_post_categories',
+    '/increment_post_view_by_id',
+    '/get_post_comments_by_post_id',
   ];
 
   const isPublicEndpoint = publicEndpoints.some((endpoint) => req.url.includes(endpoint));
@@ -1497,84 +1504,51 @@ FILE: src\app\core\models\forum.model.ts
 
 export type PostCategory = string;
 
-export type PostStatus = 'draft' | 'published' | 'archived' | 'pending';
+// 'hidden' hozzáadva, 'pending' eltávolítva — DB ENUM: draft|published|archived|hidden
+export type PostStatus = 'draft' | 'published' | 'archived' | 'hidden';
 
-export type PostType = 'blog' | 'forum';
-
-export type AuthorRole = 'admin' | 'pharmacist' | 'user';
-
-export interface Author {
-  id: string;
-  name: string;
-  role: AuthorRole;
-  avatar?: string;
-  verified: boolean;
-}
+export type SortOption = 'newest' | 'oldest' | 'most-viewed' | 'most-liked' | 'trending';
 
 export interface Comment {
   id: string;
   post_id: string;
-  author: Author;
+  user_id: string; // author_id/author_name/author_role helyett — csak user_id van a DB-ben
   content: string;
-  created_at: string;
-  updated_at?: string;
   likes: number;
   is_edited: boolean;
+  created_at: string;
+  updated_at?: string;
 }
 
-export interface BasePost {
+export interface Post {
   id: string;
   title: string;
-  slug: string;
+  slug: string; // posts táblában van
   excerpt: string;
   content: string;
-  author: Author;
-  category: PostCategory;
-  tags: string[];
+  user_id: string; // author_id/author_name/author_role nincs a DB-ben, csak user_id
+  category_id: string; // FK a post_categories táblára (INT, de stringként jön a backendtől)
+  tags: string;
   image_url?: string;
   status: PostStatus;
-  type: PostType;
   views: number;
   likes: number;
   comment_count: number;
-  is_featured: boolean;
-  is_pinned: boolean;
+  is_featured: number;
+  // is_pinned és type mezők NEM léteznek a posts táblában
   created_at: string;
   updated_at: string;
   published_at?: string;
+  last_activity_at?: string;
 }
-
-export interface BlogPost extends BasePost {
-  type: 'blog';
-  reading_time?: number;
-  related_products?: string[];
-  seo_title?: string;
-  seo_description?: string;
-}
-
-export interface ForumPost extends BasePost {
-  type: 'forum';
-  is_question: boolean;
-  has_accepted_answer: boolean;
-  last_activity_at: string;
-}
-
-export type Post = BlogPost | ForumPost;
-
-// ---- Filter / Pagination ----
 
 export interface PostFilters {
-  category?: PostCategory;
+  category_id?: string;
   tags?: string[];
-  author_role?: AuthorRole;
   search_query?: string;
   status?: PostStatus;
-  type?: PostType;
-  is_featured?: boolean;
-  is_pinned?: boolean;
+  is_featured?: number;
 }
-
-export type SortOption = 'newest' | 'oldest' | 'most-viewed' | 'most-liked' | 'trending';
 
 export interface PaginationOptions {
   page: number;
@@ -1583,13 +1557,13 @@ export interface PaginationOptions {
   total_pages?: number;
 }
 
-// ---- Backend API response shapes ----
-
 export interface BackendCategory {
   id: string;
   name_hu: string;
   name_en: string;
   name_de: string;
+  color: string;
+  emoji: string;
 }
 
 export interface BackendCategoryResponse {
@@ -1604,18 +1578,15 @@ export interface BackendPostsResponse {
   posts: Post[];
 }
 
-// ---- CategoryInfo ----
-
 export interface CategoryInfo {
   id: PostCategory;
-  /** Image path from ICONS.category* in visuals.ts */
   iconSrc: string;
   colorClass: string;
   displayName: string;
 }
 
 export const CATEGORY_COLOR_MAP: Record<string, string> = {
-  medicines: 'category-medicines',
+  medicine: 'category-medicines',
   'natural-remedies': 'category-natural',
   'baby-mother': 'category-baby',
   'healthy-lifestyle': 'category-lifestyle',
@@ -3008,7 +2979,6 @@ import { catchError, map, timeout, forkJoin, of } from 'rxjs';
 
 import {
   Post,
-  BlogPost,
   PostFilters,
   SortOption,
   CategoryInfo,
@@ -3031,8 +3001,6 @@ export class ForumService {
   private readonly API_URL = environment.baseURL;
   private readonly REQUEST_TIMEOUT = 8000;
 
-  // ── Private state ──────────────────────────────────────────────────────────
-
   private postsSignal = signal<Post[]>([]);
   private categoriesSignal = signal<CategoryInfo[]>([]);
   private filtersSignal = signal<PostFilters>({});
@@ -3041,8 +3009,6 @@ export class ForumService {
   private pageSizeSignal = signal(9);
   private isLoadingSignal = signal(false);
   private loadErrorSignal = signal(false);
-
-  // ── Public readonly signals ────────────────────────────────────────────────
 
   posts = this.postsSignal.asReadonly();
   categories = this.categoriesSignal.asReadonly();
@@ -3068,8 +3034,6 @@ export class ForumService {
 
   totalPages = computed(() => Math.ceil(this.filteredPosts().length / this.pageSizeSignal()));
 
-  // ── Backend loading ────────────────────────────────────────────────────────
-
   loadPosts(): void {
     this.isLoadingSignal.set(true);
     this.loadErrorSignal.set(false);
@@ -3091,7 +3055,8 @@ export class ForumService {
   }
 
   private fetchCategories() {
-    return this.http.get<BackendCategoryResponse>(`${this.API_URL}/get_forum_categories`).pipe(
+    // Helyes endpoint: get_all_post_categories (GET, public)
+    return this.http.get<BackendCategoryResponse>(`${this.API_URL}/get_all_post_categories`).pipe(
       timeout(this.REQUEST_TIMEOUT),
       map((res) => {
         if (res?.status === 'success' && Array.isArray(res.categories)) {
@@ -3104,8 +3069,11 @@ export class ForumService {
   }
 
   private fetchPosts() {
+    // Helyes endpoint: get_all_posts — üres category = minden kategória
     return this.http
-      .post<BackendPostsResponse>(`${this.API_URL}/get_forum_posts`, { type: 'forum' })
+      .post<BackendPostsResponse>(`${this.API_URL}/get_all_posts`, {
+        category: btoa(''),
+      })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => {
@@ -3126,7 +3094,7 @@ export class ForumService {
     return backendCategories.map(
       (bc): CategoryInfo => ({
         id: bc.id,
-        iconSrc: getCategoryIcon(bc.id), // ← existing helper from visuals.ts
+        iconSrc: getCategoryIcon(bc.id),
         colorClass: CATEGORY_COLOR_MAP[bc.id] ?? DEFAULT_CATEGORY_COLOR,
         displayName: this.resolveName(bc, lang),
       }),
@@ -3139,43 +3107,75 @@ export class ForumService {
     return bc.name_en || bc.name_hu || bc.id;
   }
 
-  // ── Observable helpers (used by forum-detail) ─────────────────────────────
-
-  getPostById(idOrSlug: string) {
+  getPostById(id: string) {
+    // Helyes endpoint: get_post_by_id
     return this.http
       .post<{
         status: string;
         statuscode: number;
         post: Post;
-      }>(`${this.API_URL}/get_forum_post`, { id: idOrSlug, slug: idOrSlug })
+      }>(`${this.API_URL}/get_post_by_id`, { id: btoa(id) })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' ? res.post : null)),
         catchError(() => {
-          const cached =
-            this.postsSignal().find((p) => p.id === idOrSlug || p.slug === idOrSlug) ?? null;
+          const cached = this.postsSignal().find((p) => p.id === id) ?? null;
           return of(cached);
         }),
       );
   }
 
+  incrementViews(postId: string) {
+    // Helyes endpoint: increment_post_view_by_id
+    return this.http
+      .post<{
+        status: string;
+        statuscode: number;
+      }>(`${this.API_URL}/increment_post_view_by_id`, { id: btoa(postId) })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of(null)),
+      );
+  }
+
+  getComments(postId: string) {
+    // Endpoint: get_post_comments_by_post_id
+    return this.http
+      .post<{
+        status: string;
+        statuscode: number;
+        comments: any[];
+      }>(`${this.API_URL}/get_post_comments_by_post_id`, { post_id: btoa(postId) })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => (res?.status === 'success' ? (res.comments ?? []) : [])),
+        catchError(() => of([])),
+      );
+  }
+
+  addComment(postId: string, sesstoken: string, content: string) {
+    // Helyes endpoint: create_post_comment_by_post_id
+    return this.http
+      .post<{ status: string; statuscode: number; new_comment_id?: number }>(
+        `${this.API_URL}/create_post_comment_by_post_id`,
+        {
+          post_id: btoa(postId),
+          sesstoken: btoa(sesstoken),
+          content: btoa(content),
+        },
+      )
+      .pipe(timeout(this.REQUEST_TIMEOUT));
+  }
+
   getRelatedPosts(postId: string, limit = 6) {
     const current = this.postsSignal().find((p) => p.id === postId);
     if (!current) return of([] as Post[]);
+    // category_id alapján szűr (nem category)
     const related = this.postsSignal()
-      .filter((p) => p.id !== postId && p.category === current.category)
+      .filter((p) => p.id !== postId && p.category_id === current.category_id)
       .slice(0, limit);
     return of(related);
   }
-
-  getFeaturedBlogPosts(limit = 3) {
-    const featured = this.postsSignal()
-      .filter((p): p is BlogPost => p.type === 'blog' && p.is_featured)
-      .slice(0, limit);
-    return of(featured);
-  }
-
-  // ── Filter / sort / pagination ─────────────────────────────────────────────
 
   setFilters(filters: PostFilters): void {
     this.filtersSignal.set(filters);
@@ -3200,12 +3200,10 @@ export class ForumService {
 
   private applyFilters(posts: Post[], filters: PostFilters): Post[] {
     return posts.filter((post) => {
-      if (filters.category && post.category !== filters.category) return false;
-      if (filters.type && post.type !== filters.type) return false;
-      if (filters.author_role && post.author.role !== filters.author_role) return false;
+      // category_id alapján szűr (nem category, nem type, nem is_pinned — ezek nem léteznek)
+      if (filters.category_id && post.category_id !== filters.category_id) return false;
       if (filters.is_featured !== undefined && post.is_featured !== filters.is_featured)
         return false;
-      if (filters.is_pinned !== undefined && post.is_pinned !== filters.is_pinned) return false;
       if (filters.search_query) {
         const query = filters.search_query.toLowerCase();
         const searchable = `${post.title} ${post.excerpt} ${post.content}`.toLowerCase();
@@ -6590,15 +6588,14 @@ export class Forum implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.forumService.setFilters({ type: 'forum' });
     this.forumService.loadPosts();
   }
 
   applySearch(): void {
     const filters: PostFilters = {
-      type: 'forum',
       search_query: this.searchQuery() || undefined,
-      category:
+      // category_id alapján szűr (nem category — az nem létezik a Post modellben)
+      category_id:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
     this.forumService.setFilters(filters);
@@ -6622,7 +6619,7 @@ export class Forum implements OnInit {
   resetFilters(): void {
     this.searchQuery.set('');
     this.selectedCategory.set('all');
-    this.forumService.setFilters({ type: 'forum' });
+    this.forumService.setFilters({});
   }
 
   goToPage(page: number): void {
@@ -7408,7 +7405,8 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 
       <div class="article-container">
         <header class="article-header">
-          @if (getCategoryInfo(post()!.category); as cat) {
+          <!-- category → category_id -->
+          @if (getCategoryInfo(post()!.category_id); as cat) {
             <div class="article-category" [class]="cat.colorClass">
               <img [src]="cat.iconSrc" [alt]="cat.displayName" class="category-icon-img" />
               <span>{{ cat.displayName }}</span>
@@ -7419,29 +7417,12 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 
           <div class="article-meta">
             <div class="meta-author">
-              @if (post()!.author.avatar) {
-                <img
-                  [src]="post()!.author.avatar"
-                  [alt]="post()!.author.name"
-                  class="author-avatar"
-                />
-              } @else {
-                <div class="author-avatar-placeholder">
-                  {{ post()!.author.name.charAt(0).toUpperCase() }}
-                </div>
-              }
+              <!-- author_name/author_role nincs a DB-ben — user_id alapján -->
+              <div class="author-avatar-placeholder">
+                {{ post()!.user_id.charAt(0).toUpperCase() }}
+              </div>
               <div class="author-info">
-                <span class="author-name">{{ post()!.author.name }}</span>
-                @if (post()!.author.verified) {
-                  <img
-                    [src]="ICONS.badgeVerified"
-                    [alt]="'forum.verified' | translate"
-                    class="verified-badge"
-                  />
-                }
-                <span class="author-role">{{
-                  'forum.role.' + post()!.author.role | translate
-                }}</span>
+                <span class="author-name">#{{ post()!.user_id }}</span>
               </div>
             </div>
 
@@ -7450,12 +7431,6 @@ FILE: src\app\pages\forum-detail\forum-detail.html
                 <img [src]="ICONS.forumDate" alt="" class="meta-icon" aria-hidden="true" />
                 {{ formatDate(post()!.created_at) }}
               </span>
-              @if (getReadingTime()) {
-                <span class="meta-reading">
-                  <img [src]="ICONS.forumReadingTime" alt="" class="meta-icon" aria-hidden="true" />
-                  {{ getReadingTime() }} {{ 'common.minutes' | translate }}
-                </span>
-              }
             </div>
           </div>
         </header>
@@ -7491,10 +7466,10 @@ FILE: src\app\pages\forum-detail\forum-detail.html
           </div>
         </div>
 
-        @if (post()!.tags.length > 0) {
+        @if (post()!.tags) {
           <div class="article-tags">
-            @for (tag of post()!.tags; track tag) {
-              <span class="tag">#{{ tag }}</span>
+            @for (tag of post()!.tags.split(','); track tag) {
+              <span class="tag">#{{ tag.trim() }}</span>
             }
           </div>
         }
@@ -7509,19 +7484,13 @@ FILE: src\app\pages\forum-detail\forum-detail.html
           <div class="comments-list">
             @for (comment of comments(); track comment.id) {
               <div class="comment">
+                <!-- author_name nincs a DB-ben — user_id alapján -->
                 <div class="comment-avatar-placeholder">
-                  {{ comment.author.name.charAt(0).toUpperCase() }}
+                  {{ comment.user_id.charAt(0).toUpperCase() }}
                 </div>
                 <div class="comment-body">
                   <div class="comment-header">
-                    <span class="comment-author">{{ comment.author.name }}</span>
-                    @if (comment.author.verified) {
-                      <img
-                        [src]="ICONS.badgeVerified"
-                        [alt]="'forum.verified' | translate"
-                        class="verified-badge"
-                      />
-                    }
+                    <span class="comment-author">#{{ comment.user_id }}</span>
                     <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
                   </div>
                   <p class="comment-content">{{ comment.content }}</p>
@@ -7590,7 +7559,7 @@ FILE: src\app\pages\forum-detail\forum-detail.html
 
             <div class="slider-track">
               @for (related of sliderVisible; track related.id) {
-                <a class="related-card" [routerLink]="['/forum', related.slug]">
+                <a class="related-card" [routerLink]="['/forum', related.id]">
                   @if (related.image_url) {
                     <div class="related-image">
                       <img [src]="related.image_url" [alt]="related.title" loading="lazy" />
@@ -7599,8 +7568,9 @@ FILE: src\app\pages\forum-detail\forum-detail.html
                   <div class="related-info">
                     <h3 class="related-post-title">{{ related.title }}</h3>
                     <p class="related-excerpt">{{ related.excerpt }}</p>
+                    <!-- author_name nincs a DB-ben — user_id alapján -->
                     <div class="related-meta">
-                      <span>{{ related.author.name }}</span>
+                      <span>#{{ related.user_id }}</span>
                       <span>{{ formatDate(related.created_at) }}</span>
                     </div>
                   </div>
@@ -7648,7 +7618,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Post, BlogPost, Comment, CategoryInfo } from '../../core/models/forum.model';
+import { Post, Comment, CategoryInfo } from '../../core/models/forum.model';
 import { ICONS, IMAGES } from '../../core/constants/visuals';
 
 @Component({
@@ -7660,7 +7630,7 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 })
 export class ForumDetail implements OnInit {
   private route = inject(ActivatedRoute);
-  private forumBlogService = inject(ForumService);
+  private forumService = inject(ForumService);
   private authService = inject(AuthService);
   private translate = inject(TranslateService);
 
@@ -7677,33 +7647,38 @@ export class ForumDetail implements OnInit {
   readonly IMAGES = IMAGES;
 
   isAuthenticated = this.authService.isAuthenticated;
-  currentUser = this.authService.currentUser;
 
   private get sessionToken(): string {
     return this.authService.sessionToken() ?? '';
   }
 
-  categories = computed(() => this.forumBlogService.categories());
+  categories = computed(() => this.forumService.categories());
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
-      const slug = params.get('slug');
-      if (slug) this.loadPost(slug);
+      const id = params.get('id');
+      if (id) this.loadPost(id);
     });
   }
 
-  private loadPost(slug: string): void {
+  private loadPost(id: string): void {
     this.isLoading.set(true);
     this.contentExpanded.set(false);
     this.sliderIndex.set(0);
     this.comments.set([]);
 
-    this.forumBlogService.getPostById(slug).subscribe((post) => {
+    this.forumService.getPostById(id).subscribe((post) => {
       this.post.set(post);
       this.isLoading.set(false);
 
       if (post) {
-        this.forumBlogService.getRelatedPosts(post.id, 6).subscribe((related) => {
+        this.forumService.incrementViews(post.id).subscribe();
+
+        this.forumService.getComments(post.id).subscribe((comments) => {
+          this.comments.set(comments);
+        });
+
+        this.forumService.getRelatedPosts(post.id, 6).subscribe((related) => {
           this.relatedPosts.set(related);
         });
       }
@@ -7712,11 +7687,6 @@ export class ForumDetail implements OnInit {
 
   getCategoryInfo(categoryId: string): CategoryInfo | undefined {
     return this.categories().find((c: CategoryInfo) => c.id === categoryId);
-  }
-
-  getReadingTime(): number {
-    const p = this.post();
-    return p?.type === 'blog' ? ((p as BlogPost).reading_time ?? 0) : 0;
   }
 
   formatDate(dateStr: string): string {
@@ -7734,32 +7704,26 @@ export class ForumDetail implements OnInit {
 
   submitComment(): void {
     const text = this.newComment().trim();
-    if (!text || !this.isAuthenticated()) return;
+    const post = this.post();
+    if (!text || !this.isAuthenticated() || !post || !this.sessionToken) return;
 
     this.isSubmittingComment.set(true);
-    const user = this.currentUser();
-    const post = this.post();
-    if (!post) return;
 
-    // TODO: this.forumBlogService.addComment(post.id, user!.id, this.sessionToken, text).subscribe(...)
-
-    const comment: Comment = {
-      id: 'c' + Date.now(),
-      post_id: post.id,
-      author: {
-        id: user?.id || 'me',
-        name: `${user?.firstname || ''} ${user?.lastname || ''}`.trim() || user?.email || 'Te',
-        role: 'user',
-        verified: false,
-      },
-      content: text,
-      created_at: new Date().toISOString(),
-      likes: 0,
-      is_edited: false,
-    };
+    // TODO: bekötni amikor Áron kész a backend oldallal
+    // this.forumService.addComment(post.id, this.sessionToken, text).subscribe({
+    //   next: (res) => {
+    //     this.forumService.getComments(post.id).subscribe((comments) => {
+    //       this.comments.set(comments);
+    //     });
+    //     this.newComment.set('');
+    //     this.isSubmittingComment.set(false);
+    //   },
+    //   error: () => {
+    //     this.isSubmittingComment.set(false);
+    //   },
+    // });
 
     setTimeout(() => {
-      this.comments.update((c) => [...c, comment]);
       this.newComment.set('');
       this.isSubmittingComment.set(false);
     }, 400);
@@ -7780,6 +7744,7 @@ export class ForumDetail implements OnInit {
   get canSliderPrev(): boolean {
     return this.sliderIndex() > 0;
   }
+
   get canSliderNext(): boolean {
     return this.sliderIndex() + 3 < this.relatedPosts().length;
   }
@@ -20720,19 +20685,13 @@ FILE: src\app\shared\components\post-card\post-card.html
 <article
   class="post-card"
   [class.compact]="compactMode"
-  [class.pinned]="post.is_pinned"
-  [class.featured]="post.is_featured"
-  [routerLink]="[post.type === 'blog' ? '/blog' : '/forum', post.slug]"
+  [class.featured]="post.is_featured === 1"
+  [routerLink]="['/forum', post.id]"
   (click)="handleCardClick()"
 >
-  @if (post.is_pinned) {
-    <div class="pinned-badge">
-      <img [src]="ICONS.badgePinned" alt="" class="badge-icon" aria-hidden="true" />
-      <span>{{ 'forum.pinned' | translate }}</span>
-    </div>
-  }
+  <!-- is_pinned mező nem létezik a posts táblában — eltávolítva -->
 
-  @if (post.is_featured && !post.is_pinned) {
+  @if (post.is_featured === 1) {
     <div class="featured-badge">
       <img [src]="ICONS.badgeFeatured" alt="" class="badge-icon" aria-hidden="true" />
       <span>{{ 'forum.featured' | translate }}</span>
@@ -20749,23 +20708,6 @@ FILE: src\app\shared\components\post-card\post-card.html
           <span class="category-name">{{ categoryInfo.displayName }}</span>
         </div>
       }
-
-      @if (post.type === 'forum') {
-        <div class="forum-badges">
-          @if (isQuestion) {
-            <div class="question-badge">
-              <img [src]="ICONS.badgeQuestion" alt="" class="badge-icon" aria-hidden="true" />
-              {{ 'forum.question' | translate }}
-            </div>
-          }
-          @if (hasAcceptedAnswer) {
-            <div class="answered-badge">
-              <img [src]="ICONS.badgeAnswered" alt="" class="badge-icon" aria-hidden="true" />
-              {{ 'forum.answered' | translate }}
-            </div>
-          }
-        </div>
-      }
     </div>
   }
 
@@ -20780,12 +20722,6 @@ FILE: src\app\shared\components\post-card\post-card.html
 
       <div class="post-meta">
         <span class="post-date">{{ getRelativeTime() }}</span>
-        @if (readingTime) {
-          <span class="reading-time">
-            <img [src]="ICONS.forumReadingTime" alt="" class="meta-icon" aria-hidden="true" />
-            {{ readingTime }} {{ 'common.minutes' | translate }}
-          </span>
-        }
       </div>
     </div>
 
@@ -20798,26 +20734,13 @@ FILE: src\app\shared\components\post-card\post-card.html
     @if (showAuthor) {
       <div class="post-author">
         <div class="author-info">
-          @if (post.author.avatar) {
-            <img class="author-avatar" [src]="post.author.avatar" [alt]="post.author.name" />
-          } @else {
-            <div class="author-avatar-placeholder">
-              {{ post.author.name.charAt(0).toUpperCase() }}
-            </div>
-          }
+          <!-- author_name nincs a DB-ben — user_id első karakterét mutatjuk -->
+          <div class="author-avatar-placeholder">
+            {{ post.user_id.charAt(0).toUpperCase() }}
+          </div>
           <div class="author-details">
-            <span class="author-name">{{ post.author.name }}</span>
-            @if (post.author.verified) {
-              <img
-                [src]="ICONS.badgeVerified"
-                [title]="'forum.verified' | translate"
-                [alt]="'forum.verified' | translate"
-                class="verified-icon"
-              />
-            }
-            <span class="author-role" [class]="authorBadgeClass">
-              {{ 'forum.role.' + post.author.role | translate }}
-            </span>
+            <span class="author-name">#{{ post.user_id }}</span>
+            <!-- author_role nincs a DB-ben — badge eltávolítva -->
           </div>
         </div>
       </div>
@@ -20840,10 +20763,10 @@ FILE: src\app\shared\components\post-card\post-card.html
       </div>
     }
 
-    @if (post.tags.length > 0) {
+    @if (post.tags) {
       <div class="post-tags">
-        @for (tag of post.tags.slice(0, 3); track tag) {
-          <span class="tag">#{{ tag }}</span>
+        @for (tag of post.tags.split(',').slice(0, 3); track tag) {
+          <span class="tag">#{{ tag.trim() }}</span>
         }
       </div>
     }
@@ -20888,18 +20811,14 @@ export class PostCardComponent {
   private forumService = inject(ForumService);
 
   get categoryInfo() {
-    return this.forumService.categories().find((cat) => cat.id === this.post.category);
+    // category_id alapján keres (nem category — az nem létezik a Post modellben)
+    return this.forumService.categories().find((cat) => cat.id === this.post.category_id);
   }
 
+  // author_role nincs a DB-ben — user_id alapján nem tudunk szerepet meghatározni,
+  // a badge-et a backend oldal bővítésekor lehet majd visszahozni
   get authorBadgeClass(): string {
-    switch (this.post.author.role) {
-      case 'admin':
-        return 'badge-admin';
-      case 'pharmacist':
-        return 'badge-pharmacist';
-      default:
-        return 'badge-user';
-    }
+    return 'badge-user';
   }
 
   getRelativeTime(): string {
@@ -20930,18 +20849,6 @@ export class PostCardComponent {
 
   handleCardClick(): void {
     this.cardClick.emit(this.post);
-  }
-
-  get readingTime(): number | null {
-    return this.post.type === 'blog' ? (this.post.reading_time ?? null) : null;
-  }
-
-  get isQuestion(): boolean {
-    return this.post.type === 'forum' ? this.post.is_question : false;
-  }
-
-  get hasAcceptedAnswer(): boolean {
-    return this.post.type === 'forum' ? this.post.has_accepted_answer : false;
   }
 }
 

@@ -5,7 +5,6 @@ import { catchError, map, timeout, forkJoin, of } from 'rxjs';
 
 import {
   Post,
-  BlogPost,
   PostFilters,
   SortOption,
   CategoryInfo,
@@ -28,8 +27,6 @@ export class ForumService {
   private readonly API_URL = environment.baseURL;
   private readonly REQUEST_TIMEOUT = 8000;
 
-  // ── Private state ──────────────────────────────────────────────────────────
-
   private postsSignal = signal<Post[]>([]);
   private categoriesSignal = signal<CategoryInfo[]>([]);
   private filtersSignal = signal<PostFilters>({});
@@ -38,8 +35,6 @@ export class ForumService {
   private pageSizeSignal = signal(9);
   private isLoadingSignal = signal(false);
   private loadErrorSignal = signal(false);
-
-  // ── Public readonly signals ────────────────────────────────────────────────
 
   posts = this.postsSignal.asReadonly();
   categories = this.categoriesSignal.asReadonly();
@@ -65,8 +60,6 @@ export class ForumService {
 
   totalPages = computed(() => Math.ceil(this.filteredPosts().length / this.pageSizeSignal()));
 
-  // ── Backend loading ────────────────────────────────────────────────────────
-
   loadPosts(): void {
     this.isLoadingSignal.set(true);
     this.loadErrorSignal.set(false);
@@ -88,7 +81,8 @@ export class ForumService {
   }
 
   private fetchCategories() {
-    return this.http.get<BackendCategoryResponse>(`${this.API_URL}/get_forum_categories`).pipe(
+    // Helyes endpoint: get_all_post_categories (GET, public)
+    return this.http.get<BackendCategoryResponse>(`${this.API_URL}/get_all_post_categories`).pipe(
       timeout(this.REQUEST_TIMEOUT),
       map((res) => {
         if (res?.status === 'success' && Array.isArray(res.categories)) {
@@ -101,8 +95,11 @@ export class ForumService {
   }
 
   private fetchPosts() {
+    // Helyes endpoint: get_all_posts — üres category = minden kategória
     return this.http
-      .post<BackendPostsResponse>(`${this.API_URL}/get_forum_posts`, { type: 'forum' })
+      .post<BackendPostsResponse>(`${this.API_URL}/get_all_posts`, {
+        category: btoa(''),
+      })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => {
@@ -123,7 +120,7 @@ export class ForumService {
     return backendCategories.map(
       (bc): CategoryInfo => ({
         id: bc.id,
-        iconSrc: getCategoryIcon(bc.id), // ← existing helper from visuals.ts
+        iconSrc: getCategoryIcon(bc.id),
         colorClass: CATEGORY_COLOR_MAP[bc.id] ?? DEFAULT_CATEGORY_COLOR,
         displayName: this.resolveName(bc, lang),
       }),
@@ -136,43 +133,75 @@ export class ForumService {
     return bc.name_en || bc.name_hu || bc.id;
   }
 
-  // ── Observable helpers (used by forum-detail) ─────────────────────────────
-
-  getPostById(idOrSlug: string) {
+  getPostById(id: string) {
+    // Helyes endpoint: get_post_by_id
     return this.http
       .post<{
         status: string;
         statuscode: number;
         post: Post;
-      }>(`${this.API_URL}/get_forum_post`, { id: idOrSlug, slug: idOrSlug })
+      }>(`${this.API_URL}/get_post_by_id`, { id: btoa(id) })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' ? res.post : null)),
         catchError(() => {
-          const cached =
-            this.postsSignal().find((p) => p.id === idOrSlug || p.slug === idOrSlug) ?? null;
+          const cached = this.postsSignal().find((p) => p.id === id) ?? null;
           return of(cached);
         }),
       );
   }
 
+  incrementViews(postId: string) {
+    // Helyes endpoint: increment_post_view_by_id
+    return this.http
+      .post<{
+        status: string;
+        statuscode: number;
+      }>(`${this.API_URL}/increment_post_view_by_id`, { id: btoa(postId) })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of(null)),
+      );
+  }
+
+  getComments(postId: string) {
+    // Endpoint: get_post_comments_by_post_id
+    return this.http
+      .post<{
+        status: string;
+        statuscode: number;
+        comments: any[];
+      }>(`${this.API_URL}/get_post_comments_by_post_id`, { post_id: btoa(postId) })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => (res?.status === 'success' ? (res.comments ?? []) : [])),
+        catchError(() => of([])),
+      );
+  }
+
+  addComment(postId: string, sesstoken: string, content: string) {
+    // Helyes endpoint: create_post_comment_by_post_id
+    return this.http
+      .post<{ status: string; statuscode: number; new_comment_id?: number }>(
+        `${this.API_URL}/create_post_comment_by_post_id`,
+        {
+          post_id: btoa(postId),
+          sesstoken: btoa(sesstoken),
+          content: btoa(content),
+        },
+      )
+      .pipe(timeout(this.REQUEST_TIMEOUT));
+  }
+
   getRelatedPosts(postId: string, limit = 6) {
     const current = this.postsSignal().find((p) => p.id === postId);
     if (!current) return of([] as Post[]);
+    // category_id alapján szűr (nem category)
     const related = this.postsSignal()
-      .filter((p) => p.id !== postId && p.category === current.category)
+      .filter((p) => p.id !== postId && p.category_id === current.category_id)
       .slice(0, limit);
     return of(related);
   }
-
-  getFeaturedBlogPosts(limit = 3) {
-    const featured = this.postsSignal()
-      .filter((p): p is BlogPost => p.type === 'blog' && p.is_featured)
-      .slice(0, limit);
-    return of(featured);
-  }
-
-  // ── Filter / sort / pagination ─────────────────────────────────────────────
 
   setFilters(filters: PostFilters): void {
     this.filtersSignal.set(filters);
@@ -197,12 +226,10 @@ export class ForumService {
 
   private applyFilters(posts: Post[], filters: PostFilters): Post[] {
     return posts.filter((post) => {
-      if (filters.category && post.category !== filters.category) return false;
-      if (filters.type && post.type !== filters.type) return false;
-      if (filters.author_role && post.author.role !== filters.author_role) return false;
+      // category_id alapján szűr (nem category, nem type, nem is_pinned — ezek nem léteznek)
+      if (filters.category_id && post.category_id !== filters.category_id) return false;
       if (filters.is_featured !== undefined && post.is_featured !== filters.is_featured)
         return false;
-      if (filters.is_pinned !== undefined && post.is_pinned !== filters.is_pinned) return false;
       if (filters.search_query) {
         const query = filters.search_query.toLowerCase();
         const searchable = `${post.title} ${post.excerpt} ${post.content}`.toLowerCase();

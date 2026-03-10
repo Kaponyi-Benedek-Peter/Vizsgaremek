@@ -29,7 +29,7 @@ export const routes: Routes = [
   { path: 'bracket', component: Bracket },
   { path: 'admin', component: Admin, canActivate: [adminGuard] },
   {
-    path: 'forum/:slug',
+    path: 'forum/:id',
     loadComponent: () => import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
   },
   {
@@ -43,6 +43,10 @@ export const routes: Routes = [
     canActivate: [guestGuard],
   },
   { path: 'email', loadComponent: () => import('./pages/email/email').then((m) => m.Email) },
+  {
+    path: 'login-promise',
+    loadComponent: () => import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
+  },
   {
     path: 'registration-promise',
     loadComponent: () =>
@@ -61,10 +65,6 @@ export const routes: Routes = [
     path: 'password-reset',
     loadComponent: () =>
       import('./pages/password-reset/password-reset').then((m) => m.PasswordReset),
-  },
-  {
-    path: 'login-promise',
-    loadComponent: () => import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
   },
   {
     path: 'delacc-promise',

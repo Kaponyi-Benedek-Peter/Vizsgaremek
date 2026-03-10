@@ -45,15 +45,14 @@ export class Forum implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.forumService.setFilters({ type: 'forum' });
     this.forumService.loadPosts();
   }
 
   applySearch(): void {
     const filters: PostFilters = {
-      type: 'forum',
       search_query: this.searchQuery() || undefined,
-      category:
+      // category_id alapján szűr (nem category — az nem létezik a Post modellben)
+      category_id:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
     this.forumService.setFilters(filters);
@@ -77,7 +76,7 @@ export class Forum implements OnInit {
   resetFilters(): void {
     this.searchQuery.set('');
     this.selectedCategory.set('all');
-    this.forumService.setFilters({ type: 'forum' });
+    this.forumService.setFilters({});
   }
 
   goToPage(page: number): void {

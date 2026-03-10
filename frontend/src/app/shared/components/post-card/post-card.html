@@ -1,19 +1,13 @@
 <article
   class="post-card"
   [class.compact]="compactMode"
-  [class.pinned]="post.is_pinned"
-  [class.featured]="post.is_featured"
-  [routerLink]="[post.type === 'blog' ? '/blog' : '/forum', post.slug]"
+  [class.featured]="post.is_featured === 1"
+  [routerLink]="['/forum', post.id]"
   (click)="handleCardClick()"
 >
-  @if (post.is_pinned) {
-    <div class="pinned-badge">
-      <img [src]="ICONS.badgePinned" alt="" class="badge-icon" aria-hidden="true" />
-      <span>{{ 'forum.pinned' | translate }}</span>
-    </div>
-  }
+  <!-- is_pinned mező nem létezik a posts táblában — eltávolítva -->
 
-  @if (post.is_featured && !post.is_pinned) {
+  @if (post.is_featured === 1) {
     <div class="featured-badge">
       <img [src]="ICONS.badgeFeatured" alt="" class="badge-icon" aria-hidden="true" />
       <span>{{ 'forum.featured' | translate }}</span>
@@ -30,23 +24,6 @@
           <span class="category-name">{{ categoryInfo.displayName }}</span>
         </div>
       }
-
-      @if (post.type === 'forum') {
-        <div class="forum-badges">
-          @if (isQuestion) {
-            <div class="question-badge">
-              <img [src]="ICONS.badgeQuestion" alt="" class="badge-icon" aria-hidden="true" />
-              {{ 'forum.question' | translate }}
-            </div>
-          }
-          @if (hasAcceptedAnswer) {
-            <div class="answered-badge">
-              <img [src]="ICONS.badgeAnswered" alt="" class="badge-icon" aria-hidden="true" />
-              {{ 'forum.answered' | translate }}
-            </div>
-          }
-        </div>
-      }
     </div>
   }
 
@@ -61,12 +38,6 @@
 
       <div class="post-meta">
         <span class="post-date">{{ getRelativeTime() }}</span>
-        @if (readingTime) {
-          <span class="reading-time">
-            <img [src]="ICONS.forumReadingTime" alt="" class="meta-icon" aria-hidden="true" />
-            {{ readingTime }} {{ 'common.minutes' | translate }}
-          </span>
-        }
       </div>
     </div>
 
@@ -79,26 +50,13 @@
     @if (showAuthor) {
       <div class="post-author">
         <div class="author-info">
-          @if (post.author.avatar) {
-            <img class="author-avatar" [src]="post.author.avatar" [alt]="post.author.name" />
-          } @else {
-            <div class="author-avatar-placeholder">
-              {{ post.author.name.charAt(0).toUpperCase() }}
-            </div>
-          }
+          <!-- author_name nincs a DB-ben — user_id első karakterét mutatjuk -->
+          <div class="author-avatar-placeholder">
+            {{ post.user_id.charAt(0).toUpperCase() }}
+          </div>
           <div class="author-details">
-            <span class="author-name">{{ post.author.name }}</span>
-            @if (post.author.verified) {
-              <img
-                [src]="ICONS.badgeVerified"
-                [title]="'forum.verified' | translate"
-                [alt]="'forum.verified' | translate"
-                class="verified-icon"
-              />
-            }
-            <span class="author-role" [class]="authorBadgeClass">
-              {{ 'forum.role.' + post.author.role | translate }}
-            </span>
+            <span class="author-name">#{{ post.user_id }}</span>
+            <!-- author_role nincs a DB-ben — badge eltávolítva -->
           </div>
         </div>
       </div>
@@ -121,10 +79,10 @@
       </div>
     }
 
-    @if (post.tags.length > 0) {
+    @if (post.tags) {
       <div class="post-tags">
-        @for (tag of post.tags.slice(0, 3); track tag) {
-          <span class="tag">#{{ tag }}</span>
+        @for (tag of post.tags.split(',').slice(0, 3); track tag) {
+          <span class="tag">#{{ tag.trim() }}</span>
         }
       </div>
     }

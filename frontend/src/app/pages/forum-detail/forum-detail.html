@@ -17,7 +17,8 @@
 
       <div class="article-container">
         <header class="article-header">
-          @if (getCategoryInfo(post()!.category); as cat) {
+          <!-- category → category_id -->
+          @if (getCategoryInfo(post()!.category_id); as cat) {
             <div class="article-category" [class]="cat.colorClass">
               <img [src]="cat.iconSrc" [alt]="cat.displayName" class="category-icon-img" />
               <span>{{ cat.displayName }}</span>
@@ -28,29 +29,12 @@
 
           <div class="article-meta">
             <div class="meta-author">
-              @if (post()!.author.avatar) {
-                <img
-                  [src]="post()!.author.avatar"
-                  [alt]="post()!.author.name"
-                  class="author-avatar"
-                />
-              } @else {
-                <div class="author-avatar-placeholder">
-                  {{ post()!.author.name.charAt(0).toUpperCase() }}
-                </div>
-              }
+              <!-- author_name/author_role nincs a DB-ben — user_id alapján -->
+              <div class="author-avatar-placeholder">
+                {{ post()!.user_id.charAt(0).toUpperCase() }}
+              </div>
               <div class="author-info">
-                <span class="author-name">{{ post()!.author.name }}</span>
-                @if (post()!.author.verified) {
-                  <img
-                    [src]="ICONS.badgeVerified"
-                    [alt]="'forum.verified' | translate"
-                    class="verified-badge"
-                  />
-                }
-                <span class="author-role">{{
-                  'forum.role.' + post()!.author.role | translate
-                }}</span>
+                <span class="author-name">#{{ post()!.user_id }}</span>
               </div>
             </div>
 
@@ -59,12 +43,6 @@
                 <img [src]="ICONS.forumDate" alt="" class="meta-icon" aria-hidden="true" />
                 {{ formatDate(post()!.created_at) }}
               </span>
-              @if (getReadingTime()) {
-                <span class="meta-reading">
-                  <img [src]="ICONS.forumReadingTime" alt="" class="meta-icon" aria-hidden="true" />
-                  {{ getReadingTime() }} {{ 'common.minutes' | translate }}
-                </span>
-              }
             </div>
           </div>
         </header>
@@ -100,10 +78,10 @@
           </div>
         </div>
 
-        @if (post()!.tags.length > 0) {
+        @if (post()!.tags) {
           <div class="article-tags">
-            @for (tag of post()!.tags; track tag) {
-              <span class="tag">#{{ tag }}</span>
+            @for (tag of post()!.tags.split(','); track tag) {
+              <span class="tag">#{{ tag.trim() }}</span>
             }
           </div>
         }
@@ -118,19 +96,13 @@
           <div class="comments-list">
             @for (comment of comments(); track comment.id) {
               <div class="comment">
+                <!-- author_name nincs a DB-ben — user_id alapján -->
                 <div class="comment-avatar-placeholder">
-                  {{ comment.author.name.charAt(0).toUpperCase() }}
+                  {{ comment.user_id.charAt(0).toUpperCase() }}
                 </div>
                 <div class="comment-body">
                   <div class="comment-header">
-                    <span class="comment-author">{{ comment.author.name }}</span>
-                    @if (comment.author.verified) {
-                      <img
-                        [src]="ICONS.badgeVerified"
-                        [alt]="'forum.verified' | translate"
-                        class="verified-badge"
-                      />
-                    }
+                    <span class="comment-author">#{{ comment.user_id }}</span>
                     <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
                   </div>
                   <p class="comment-content">{{ comment.content }}</p>
@@ -199,7 +171,7 @@
 
             <div class="slider-track">
               @for (related of sliderVisible; track related.id) {
-                <a class="related-card" [routerLink]="['/forum', related.slug]">
+                <a class="related-card" [routerLink]="['/forum', related.id]">
                   @if (related.image_url) {
                     <div class="related-image">
                       <img [src]="related.image_url" [alt]="related.title" loading="lazy" />
@@ -208,8 +180,9 @@
                   <div class="related-info">
                     <h3 class="related-post-title">{{ related.title }}</h3>
                     <p class="related-excerpt">{{ related.excerpt }}</p>
+                    <!-- author_name nincs a DB-ben — user_id alapján -->
                     <div class="related-meta">
-                      <span>{{ related.author.name }}</span>
+                      <span>#{{ related.user_id }}</span>
                       <span>{{ formatDate(related.created_at) }}</span>
                     </div>
                   </div>
