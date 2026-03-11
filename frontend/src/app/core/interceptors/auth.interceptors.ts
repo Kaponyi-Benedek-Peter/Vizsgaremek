@@ -19,7 +19,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/get_all_featured_products',
     '/newsletter_subscription',
     '/get_all_product_categories',
-    // Forum — publikus endpointok
+    // Forum — public endpoints
     '/get_all_posts',
     '/get_post_by_id',
     '/get_post_by_slug',
@@ -48,7 +48,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         const errorType = error.error?.error;
         if (errorType === 'hianyzo_auth_header' && !isPublicEndpoint) {
-          localStorage.removeItem('auth_token'); // storage listener kivált
+          localStorage.removeItem('auth_token'); // storage listener
           router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
         } else if (errorType === 'hibas_token') {
           [

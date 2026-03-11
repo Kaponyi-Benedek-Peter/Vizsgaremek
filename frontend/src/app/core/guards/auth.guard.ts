@@ -3,9 +3,9 @@ import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 /**
- * Auth Guard - Védett route-ok kezelése
+ * Auth Guard - Managing guarded routes
  *
- * Használat:
+ * USE:
  * {
  *   path: 'profile',
  *   component: ProfileComponent,
@@ -28,9 +28,9 @@ export const authGuard: CanActivateFn = (route, state) => {
 };
 
 /**
- * Admin Guard - Admin jogosultság ellenőrzése
+ * Admin Guard - Admin privilege check
  *
- * Használat:
+ * USE:
  * {
  *   path: 'admin',
  *   component: AdminComponent,
@@ -57,22 +57,12 @@ export const adminGuard: CanActivateFn = (route, state) => {
 };
 
 /**
- * Guest Guard - Csak nem bejelentkezett usereknek
- * Például login/register oldalaknál
- *
- * Használat:
- * {
- *   path: 'login',
- *   component: LoginComponent,
- *   canActivate: [guestGuard]
- * }
+ * Guest Guard - Only unauthenticated (login, register oldalak).
  */
-export const guestGuard: CanActivateFn = (route, state) => {
+export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
-  const router = inject(Router);
 
   if (authService.isUserAuthenticated()) {
-    router.navigate(['/home']);
     return false;
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -17,12 +17,15 @@ export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | '
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
-export class Profile implements OnInit {
+export class Profile implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private accountService = inject(AccountService);
   private toastService = inject(ToastService);
   private router = inject(Router);
   private translationService = inject(TranslationService);
+
+  private roleRefreshInterval: ReturnType<typeof setInterval> | null = null;
+  private readonly ROLE_REFRESH_INTERVAL_MS = 30_000;
 
   user = this.authService.currentUser;
   isAuthenticated = this.authService.isAuthenticated;
@@ -71,6 +74,25 @@ export class Profile implements OnInit {
 
   ngOnInit(): void {
     this.loadPersonalInfoIntoForm();
+    this.startRolePolling();
+  }
+
+  ngOnDestroy(): void {
+    this.stopRolePolling();
+  }
+
+  private startRolePolling(): void {
+    this.authService.refreshUserState();
+    this.roleRefreshInterval = setInterval(() => {
+      this.authService.refreshUserState();
+    }, this.ROLE_REFRESH_INTERVAL_MS);
+  }
+
+  private stopRolePolling(): void {
+    if (this.roleRefreshInterval !== null) {
+      clearInterval(this.roleRefreshInterval);
+      this.roleRefreshInterval = null;
+    }
   }
 
   setSection(section: ProfileSection): void {

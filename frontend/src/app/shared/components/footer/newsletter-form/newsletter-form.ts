@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -12,7 +12,6 @@ import {
 } from '../../../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-// Backend által várt language értékek
 const LANG_TO_BACKEND: Record<SupportedLanguage, string> = {
   hu: 'hungarian',
   en: 'english',
@@ -58,7 +57,7 @@ export class NewsletterForm {
   });
 
   // writeable signal for the newsletter language
-  newsletterLang: SupportedLanguage = this.translationService.getCurrentLanguage();
+  newsletterLang = signal<SupportedLanguage>(this.translationService.getCurrentLanguage());
 
   // languages from visuals.ts
   readonly languages = LANGUAGE_OPTIONS;
@@ -69,16 +68,22 @@ export class NewsletterForm {
     { name: 'X (Twitter)', icon: ICONS.x, url: null },
   ];
 
-  get currentLangOption() {
-    return this.languages.find((l) => l.code === this.newsletterLang) ?? this.languages[0];
+  constructor() {
+    effect(() => {
+      this.newsletterLang.set(this.selectedLang() as SupportedLanguage);
+    });
   }
+
+  readonly currentLangOption = computed(
+    () => this.languages.find((l) => l.code === this.newsletterLang()) ?? this.languages[0],
+  );
 
   toggleLangDropdown(): void {
     this.isLangDropdownOpen = !this.isLangDropdownOpen;
   }
 
   selectNewsletterLang(code: SupportedLanguage): void {
-    this.newsletterLang = code;
+    this.newsletterLang.set(code);
     this.isLangDropdownOpen = false;
   }
 
@@ -109,7 +114,7 @@ export class NewsletterForm {
     const payload = {
       email: this.toBase64(this.email),
       news_level: btoa('1'),
-      language: LANG_TO_BACKEND[this.newsletterLang],
+      language: LANG_TO_BACKEND[this.newsletterLang()],
     };
 
     this.http

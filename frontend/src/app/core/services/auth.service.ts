@@ -302,6 +302,43 @@ export class AuthService {
     this.initAuth();
   }
 
+  refreshUserState(): void {
+    if (!this.isUserAuthenticated()) return;
+
+    this.http
+      .get<User>(`${this.API_URL}/api/profile`)
+      .pipe(catchError(() => []))
+      .subscribe((freshUser) => {
+        if (!freshUser || !('account_state' in freshUser)) return;
+
+        const current = this.authStateSignal();
+        const freshRole = freshUser.account_state as UserState;
+
+        const roleChanged = current.role !== freshRole;
+        const userChanged =
+          current.user?.account_state !== freshUser.account_state ||
+          current.user?.firstname !== freshUser.firstname ||
+          current.user?.lastname !== freshUser.lastname ||
+          current.user?.email !== freshUser.email;
+
+        if (!roleChanged && !userChanged) return;
+
+        const stayLoggedIn = localStorage.getItem(this.TOKEN_KEY) !== null;
+        const storage = stayLoggedIn ? localStorage : sessionStorage;
+
+        if (roleChanged) {
+          storage.setItem('auth_role', freshRole);
+        }
+        storage.setItem(this.USER_KEY, JSON.stringify(freshUser));
+
+        this.updateAuthState({
+          ...current,
+          user: freshUser,
+          role: freshRole,
+        });
+      });
+  }
+
   hasStoredSession(): boolean {
     return this.getStoredToken() !== null;
   }

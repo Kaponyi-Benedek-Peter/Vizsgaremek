@@ -44,6 +44,13 @@ Thumbs.db
 
 .claude/
 
+# Testing
+export-project.js
+mock-server.js
+project-export-1.txt
+project-export-2.txt
+project-export-3.txt
+
 # Cypress
 cypress/videos/
 cypress/screenshots/

@@ -81,23 +81,23 @@ export class ForumService {
   }
 
   private fetchCategories() {
-    // Helyes endpoint: get_all_post_categories (GET, public)
-    return this.http.get<BackendCategoryResponse>(`${this.API_URL}/get_all_post_categories`).pipe(
-      timeout(this.REQUEST_TIMEOUT),
-      map((res) => {
-        if (res?.status === 'success' && Array.isArray(res.categories)) {
-          return this.mapBackendCategories(res.categories);
-        }
-        return [] as CategoryInfo[];
-      }),
-      catchError(() => of([] as CategoryInfo[])),
-    );
+    return this.http
+      .get<BackendCategoryResponse>(`${this.API_URL}/api/get_all_post_categories`)
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => {
+          if (res?.status === 'success' && Array.isArray(res.categories)) {
+            return this.mapBackendCategories(res.categories);
+          }
+          return [] as CategoryInfo[];
+        }),
+        catchError(() => of([] as CategoryInfo[])),
+      );
   }
 
   private fetchPosts() {
-    // Helyes endpoint: get_all_posts — üres category = minden kategória
     return this.http
-      .post<BackendPostsResponse>(`${this.API_URL}/get_all_posts`, {
+      .post<BackendPostsResponse>(`${this.API_URL}/api/get_all_posts`, {
         category: btoa(''),
       })
       .pipe(
@@ -134,13 +134,12 @@ export class ForumService {
   }
 
   getPostById(id: string) {
-    // Helyes endpoint: get_post_by_id
     return this.http
       .post<{
         status: string;
         statuscode: number;
         post: Post;
-      }>(`${this.API_URL}/get_post_by_id`, { id: btoa(id) })
+      }>(`${this.API_URL}/api/get_post_by_id`, { id: btoa(id) })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' ? res.post : null)),
@@ -152,12 +151,11 @@ export class ForumService {
   }
 
   incrementViews(postId: string) {
-    // Helyes endpoint: increment_post_view_by_id
     return this.http
       .post<{
         status: string;
         statuscode: number;
-      }>(`${this.API_URL}/increment_post_view_by_id`, { id: btoa(postId) })
+      }>(`${this.API_URL}/api/increment_post_view_by_id`, { id: btoa(postId) })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         catchError(() => of(null)),
@@ -165,13 +163,12 @@ export class ForumService {
   }
 
   getComments(postId: string) {
-    // Endpoint: get_post_comments_by_post_id
     return this.http
       .post<{
         status: string;
         statuscode: number;
         comments: any[];
-      }>(`${this.API_URL}/get_post_comments_by_post_id`, { post_id: btoa(postId) })
+      }>(`${this.API_URL}/api/get_post_comments_by_post_id`, { post_id: btoa(postId) })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' ? (res.comments ?? []) : [])),
@@ -180,10 +177,9 @@ export class ForumService {
   }
 
   addComment(postId: string, sesstoken: string, content: string) {
-    // Helyes endpoint: create_post_comment_by_post_id
     return this.http
       .post<{ status: string; statuscode: number; new_comment_id?: number }>(
-        `${this.API_URL}/create_post_comment_by_post_id`,
+        `${this.API_URL}/api/create_post_comment_by_post_id`,
         {
           post_id: btoa(postId),
           sesstoken: btoa(sesstoken),
@@ -196,7 +192,6 @@ export class ForumService {
   getRelatedPosts(postId: string, limit = 6) {
     const current = this.postsSignal().find((p) => p.id === postId);
     if (!current) return of([] as Post[]);
-    // category_id alapján szűr (nem category)
     const related = this.postsSignal()
       .filter((p) => p.id !== postId && p.category_id === current.category_id)
       .slice(0, limit);
@@ -226,7 +221,6 @@ export class ForumService {
 
   private applyFilters(posts: Post[], filters: PostFilters): Post[] {
     return posts.filter((post) => {
-      // category_id alapján szűr (nem category, nem type, nem is_pinned — ezek nem léteznek)
       if (filters.category_id && post.category_id !== filters.category_id) return false;
       if (filters.is_featured !== undefined && post.is_featured !== filters.is_featured)
         return false;
