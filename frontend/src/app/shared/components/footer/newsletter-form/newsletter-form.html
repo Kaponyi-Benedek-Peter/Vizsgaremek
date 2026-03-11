@@ -24,9 +24,13 @@
   <p>{{ 'footer.newsletter' | translate }}</p>
 
   <div class="newsletter-lang-selector">
-    <button class="newsletter-lang-btn">
-      <img [src]="currentLangOption.flag" [alt]="currentLangOption.name" class="newsletter-flag" />
-      <span class="newsletter-lang-name">{{ currentLangOption.name }}</span>
+    <button class="newsletter-lang-btn" type="button" (click)="toggleLangDropdown()">
+      <img
+        [src]="currentLangOption().flag"
+        [alt]="currentLangOption().name"
+        class="newsletter-flag"
+      />
+      <span class="newsletter-lang-name">{{ currentLangOption().name }}</span>
       <span class="newsletter-lang-arrow" [class.open]="isLangDropdownOpen">▾</span>
     </button>
 
@@ -35,7 +39,7 @@
         class="newsletter-lang-item"
         type="button"
         *ngFor="let lang of languages; trackBy: trackByLangCode"
-        [class.active]="newsletterLang === lang.code"
+        [class.active]="newsletterLang() === lang.code"
         (click)="selectNewsletterLang(lang.code)"
       >
         <img [src]="lang.flag" [alt]="lang.name" class="newsletter-flag" />

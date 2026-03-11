@@ -1217,9 +1217,9 @@ import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 /**
- * Auth Guard - Védett route-ok kezelése
+ * Auth Guard - Managing guarded routes
  *
- * Használat:
+ * USE:
  * {
  *   path: 'profile',
  *   component: ProfileComponent,
@@ -1242,9 +1242,9 @@ export const authGuard: CanActivateFn = (route, state) => {
 };
 
 /**
- * Admin Guard - Admin jogosultság ellenőrzése
+ * Admin Guard - Admin privilege check
  *
- * Használat:
+ * USE:
  * {
  *   path: 'admin',
  *   component: AdminComponent,
@@ -1271,22 +1271,12 @@ export const adminGuard: CanActivateFn = (route, state) => {
 };
 
 /**
- * Guest Guard - Csak nem bejelentkezett usereknek
- * Például login/register oldalaknál
- *
- * Használat:
- * {
- *   path: 'login',
- *   component: LoginComponent,
- *   canActivate: [guestGuard]
- * }
+ * Guest Guard - Only unauthenticated (login, register oldalak).
  */
-export const guestGuard: CanActivateFn = (route, state) => {
+export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
-  const router = inject(Router);
 
   if (authService.isUserAuthenticated()) {
-    router.navigate(['/home']);
     return false;
   }
 
@@ -1320,7 +1310,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/get_all_featured_products',
     '/newsletter_subscription',
     '/get_all_product_categories',
-    // Forum — publikus endpointok
+    // Forum — public endpoints
     '/get_all_posts',
     '/get_post_by_id',
     '/get_post_by_slug',
@@ -1349,7 +1339,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         const errorType = error.error?.error;
         if (errorType === 'hianyzo_auth_header' && !isPublicEndpoint) {
-          localStorage.removeItem('auth_token'); // storage listener kivált
+          localStorage.removeItem('auth_token'); // storage listener
           router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
         } else if (errorType === 'hibas_token') {
           [
@@ -2438,6 +2428,43 @@ export class AuthService {
     this.initAuth();
   }
 
+  refreshUserState(): void {
+    if (!this.isUserAuthenticated()) return;
+
+    this.http
+      .get<User>(`${this.API_URL}/api/profile`)
+      .pipe(catchError(() => []))
+      .subscribe((freshUser) => {
+        if (!freshUser || !('account_state' in freshUser)) return;
+
+        const current = this.authStateSignal();
+        const freshRole = freshUser.account_state as UserState;
+
+        const roleChanged = current.role !== freshRole;
+        const userChanged =
+          current.user?.account_state !== freshUser.account_state ||
+          current.user?.firstname !== freshUser.firstname ||
+          current.user?.lastname !== freshUser.lastname ||
+          current.user?.email !== freshUser.email;
+
+        if (!roleChanged && !userChanged) return;
+
+        const stayLoggedIn = localStorage.getItem(this.TOKEN_KEY) !== null;
+        const storage = stayLoggedIn ? localStorage : sessionStorage;
+
+        if (roleChanged) {
+          storage.setItem('auth_role', freshRole);
+        }
+        storage.setItem(this.USER_KEY, JSON.stringify(freshUser));
+
+        this.updateAuthState({
+          ...current,
+          user: freshUser,
+          role: freshRole,
+        });
+      });
+  }
+
   hasStoredSession(): boolean {
     return this.getStoredToken() !== null;
   }
@@ -3055,23 +3082,23 @@ export class ForumService {
   }
 
   private fetchCategories() {
-    // Helyes endpoint: get_all_post_categories (GET, public)
-    return this.http.get<BackendCategoryResponse>(`${this.API_URL}/get_all_post_categories`).pipe(
-      timeout(this.REQUEST_TIMEOUT),
-      map((res) => {
-        if (res?.status === 'success' && Array.isArray(res.categories)) {
-          return this.mapBackendCategories(res.categories);
-        }
-        return [] as CategoryInfo[];
-      }),
-      catchError(() => of([] as CategoryInfo[])),
-    );
+    return this.http
+      .get<BackendCategoryResponse>(`${this.API_URL}/api/get_all_post_categories`)
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => {
+          if (res?.status === 'success' && Array.isArray(res.categories)) {
+            return this.mapBackendCategories(res.categories);
+          }
+          return [] as CategoryInfo[];
+        }),
+        catchError(() => of([] as CategoryInfo[])),
+      );
   }
 
   private fetchPosts() {
-    // Helyes endpoint: get_all_posts — üres category = minden kategória
     return this.http
-      .post<BackendPostsResponse>(`${this.API_URL}/get_all_posts`, {
+      .post<BackendPostsResponse>(`${this.API_URL}/api/get_all_posts`, {
         category: btoa(''),
       })
       .pipe(
@@ -3108,13 +3135,12 @@ export class ForumService {
   }
 
   getPostById(id: string) {
-    // Helyes endpoint: get_post_by_id
     return this.http
       .post<{
         status: string;
         statuscode: number;
         post: Post;
-      }>(`${this.API_URL}/get_post_by_id`, { id: btoa(id) })
+      }>(`${this.API_URL}/api/get_post_by_id`, { id: btoa(id) })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' ? res.post : null)),
@@ -3126,12 +3152,11 @@ export class ForumService {
   }
 
   incrementViews(postId: string) {
-    // Helyes endpoint: increment_post_view_by_id
     return this.http
       .post<{
         status: string;
         statuscode: number;
-      }>(`${this.API_URL}/increment_post_view_by_id`, { id: btoa(postId) })
+      }>(`${this.API_URL}/api/increment_post_view_by_id`, { id: btoa(postId) })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         catchError(() => of(null)),
@@ -3139,13 +3164,12 @@ export class ForumService {
   }
 
   getComments(postId: string) {
-    // Endpoint: get_post_comments_by_post_id
     return this.http
       .post<{
         status: string;
         statuscode: number;
         comments: any[];
-      }>(`${this.API_URL}/get_post_comments_by_post_id`, { post_id: btoa(postId) })
+      }>(`${this.API_URL}/api/get_post_comments_by_post_id`, { post_id: btoa(postId) })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' ? (res.comments ?? []) : [])),
@@ -3154,10 +3178,9 @@ export class ForumService {
   }
 
   addComment(postId: string, sesstoken: string, content: string) {
-    // Helyes endpoint: create_post_comment_by_post_id
     return this.http
       .post<{ status: string; statuscode: number; new_comment_id?: number }>(
-        `${this.API_URL}/create_post_comment_by_post_id`,
+        `${this.API_URL}/api/create_post_comment_by_post_id`,
         {
           post_id: btoa(postId),
           sesstoken: btoa(sesstoken),
@@ -3170,7 +3193,6 @@ export class ForumService {
   getRelatedPosts(postId: string, limit = 6) {
     const current = this.postsSignal().find((p) => p.id === postId);
     if (!current) return of([] as Post[]);
-    // category_id alapján szűr (nem category)
     const related = this.postsSignal()
       .filter((p) => p.id !== postId && p.category_id === current.category_id)
       .slice(0, limit);
@@ -3200,7 +3222,6 @@ export class ForumService {
 
   private applyFilters(posts: Post[], filters: PostFilters): Post[] {
     return posts.filter((post) => {
-      // category_id alapján szűr (nem category, nem type, nem is_pinned — ezek nem léteznek)
       if (filters.category_id && post.category_id !== filters.category_id) return false;
       if (filters.is_featured !== undefined && post.is_featured !== filters.is_featured)
         return false;
@@ -14522,7 +14543,7 @@ describe('Profile', () => {
 FILE: src\app\pages\profile\profile.ts
 ================================================================================
 
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14541,12 +14562,15 @@ export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | '
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
-export class Profile implements OnInit {
+export class Profile implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private accountService = inject(AccountService);
   private toastService = inject(ToastService);
   private router = inject(Router);
   private translationService = inject(TranslationService);
+
+  private roleRefreshInterval: ReturnType<typeof setInterval> | null = null;
+  private readonly ROLE_REFRESH_INTERVAL_MS = 30_000;
 
   user = this.authService.currentUser;
   isAuthenticated = this.authService.isAuthenticated;
@@ -14595,6 +14619,25 @@ export class Profile implements OnInit {
 
   ngOnInit(): void {
     this.loadPersonalInfoIntoForm();
+    this.startRolePolling();
+  }
+
+  ngOnDestroy(): void {
+    this.stopRolePolling();
+  }
+
+  private startRolePolling(): void {
+    this.authService.refreshUserState();
+    this.roleRefreshInterval = setInterval(() => {
+      this.authService.refreshUserState();
+    }, this.ROLE_REFRESH_INTERVAL_MS);
+  }
+
+  private stopRolePolling(): void {
+    if (this.roleRefreshInterval !== null) {
+      clearInterval(this.roleRefreshInterval);
+      this.roleRefreshInterval = null;
+    }
   }
 
   setSection(section: ProfileSection): void {
@@ -18666,9 +18709,13 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.html
   <p>{{ 'footer.newsletter' | translate }}</p>
 
   <div class="newsletter-lang-selector">
-    <button class="newsletter-lang-btn">
-      <img [src]="currentLangOption.flag" [alt]="currentLangOption.name" class="newsletter-flag" />
-      <span class="newsletter-lang-name">{{ currentLangOption.name }}</span>
+    <button class="newsletter-lang-btn" type="button" (click)="toggleLangDropdown()">
+      <img
+        [src]="currentLangOption().flag"
+        [alt]="currentLangOption().name"
+        class="newsletter-flag"
+      />
+      <span class="newsletter-lang-name">{{ currentLangOption().name }}</span>
       <span class="newsletter-lang-arrow" [class.open]="isLangDropdownOpen">▾</span>
     </button>
 
@@ -18677,7 +18724,7 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.html
         class="newsletter-lang-item"
         type="button"
         *ngFor="let lang of languages; trackBy: trackByLangCode"
-        [class.active]="newsletterLang === lang.code"
+        [class.active]="newsletterLang() === lang.code"
         (click)="selectNewsletterLang(lang.code)"
       >
         <img [src]="lang.flag" [alt]="lang.name" class="newsletter-flag" />
@@ -18706,7 +18753,7 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.html
 FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.ts
 ================================================================================
 
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -18720,7 +18767,6 @@ import {
 } from '../../../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-// Backend által várt language értékek
 const LANG_TO_BACKEND: Record<SupportedLanguage, string> = {
   hu: 'hungarian',
   en: 'english',
@@ -18766,7 +18812,7 @@ export class NewsletterForm {
   });
 
   // writeable signal for the newsletter language
-  newsletterLang: SupportedLanguage = this.translationService.getCurrentLanguage();
+  newsletterLang = signal<SupportedLanguage>(this.translationService.getCurrentLanguage());
 
   // languages from visuals.ts
   readonly languages = LANGUAGE_OPTIONS;
@@ -18777,16 +18823,22 @@ export class NewsletterForm {
     { name: 'X (Twitter)', icon: ICONS.x, url: null },
   ];
 
-  get currentLangOption() {
-    return this.languages.find((l) => l.code === this.newsletterLang) ?? this.languages[0];
+  constructor() {
+    effect(() => {
+      this.newsletterLang.set(this.selectedLang() as SupportedLanguage);
+    });
   }
+
+  readonly currentLangOption = computed(
+    () => this.languages.find((l) => l.code === this.newsletterLang()) ?? this.languages[0],
+  );
 
   toggleLangDropdown(): void {
     this.isLangDropdownOpen = !this.isLangDropdownOpen;
   }
 
   selectNewsletterLang(code: SupportedLanguage): void {
-    this.newsletterLang = code;
+    this.newsletterLang.set(code);
     this.isLangDropdownOpen = false;
   }
 
@@ -18817,7 +18869,7 @@ export class NewsletterForm {
     const payload = {
       email: this.toBase64(this.email),
       news_level: btoa('1'),
-      language: LANG_TO_BACKEND[this.newsletterLang],
+      language: LANG_TO_BACKEND[this.newsletterLang()],
     };
 
     this.http

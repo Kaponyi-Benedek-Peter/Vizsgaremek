@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { ProductWithHelpers, enrichProduct } from '../../core/models/product.model';
+import { ProductWithHelpers, ProductImage, enrichProduct } from '../../core/models/product.model';
 import { ReviewWithHelpers } from '../../core/models/review.model';
 import { ProductService } from '../../services/product.service';
 import { ReviewService } from '../../core/services/review.service';
@@ -30,7 +30,6 @@ export class ProductDetail implements OnInit, OnDestroy {
   private currencyService = inject(CurrencyService);
   private translationService = inject(TranslationService);
 
-  // Expose ICONS to the template
   protected readonly icons = ICONS;
 
   private currentLang = toSignal(this.translationService.currentLang$, {
@@ -46,6 +45,8 @@ export class ProductDetail implements OnInit, OnDestroy {
   quantity = signal(1);
   selectedImageIndex = signal(0);
   addedToCart = signal(false);
+
+  private galleryImages = signal<ProductImage[]>([]);
 
   canGoPrevious = computed(() => this.selectedImageIndex() > 0);
   canGoNext = computed(
@@ -112,6 +113,7 @@ export class ProductDetail implements OnInit, OnDestroy {
     if (found) {
       this.product.set(found);
       this.loadReviews(id);
+      this.loadProductImages(id, found);
     } else {
       this.notFound.set(true);
     }
@@ -121,7 +123,7 @@ export class ProductDetail implements OnInit, OnDestroy {
     this.langSub = this.translationService.currentLang$.subscribe((lang) => {
       const current = this.product();
       if (current) {
-        this.product.set(enrichProduct(current, lang));
+        this.product.set(enrichProduct(current, lang, this.galleryImages()));
       }
     });
   }
@@ -129,6 +131,24 @@ export class ProductDetail implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
     document.body.style.overflow = '';
+  }
+
+  private async loadProductImages(
+    productId: string,
+    rawProduct: ProductWithHelpers,
+  ): Promise<void> {
+    try {
+      const images = await firstValueFrom(this.productService.getProductImages(productId));
+      this.galleryImages.set(images);
+
+      const lang = this.currentLang();
+      this.product.set(enrichProduct(rawProduct, lang, images));
+      this.selectedImageIndex.set(0);
+
+      console.log(`Loaded ${images.length} gallery images for product ${productId}`);
+    } catch (err) {
+      console.warn('Could not load gallery images, thumbnail will be used', err);
+    }
   }
 
   private async loadReviews(productId: string): Promise<void> {
