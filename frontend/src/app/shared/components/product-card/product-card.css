@@ -418,6 +418,14 @@
   letter-spacing: 0.01em;
 }
 
+.add-to-cart-button .button-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .add-to-cart-button.compact {
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-sm);

@@ -65,9 +65,10 @@ export interface PasswordChangeRequest {
   language: SupportedLanguage;
 }
 
-export interface PasswordChangePromiseRequest {
+export interface PasswordChangePromise {
   id: string;
   token: string;
+  user?: User;
 }
 
 export interface AccountDeletionRequest {

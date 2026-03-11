@@ -200,13 +200,13 @@
           </div>
 
           <button class="add-to-cart-button" [disabled]="!canAddToCart" (click)="handleAddToCart()">
-            <span class="button-icon">🛒</span>
+            <img [src]="icons.basket" alt="" class="button-icon" aria-hidden="true" />
             {{ 'common.add_to_cart' | translate }}
           </button>
 
           @if (product.requiresPrescription) {
             <div class="prescription-notice">
-              <span class="notice-icon">ℹ️</span>
+              <img [src]="icons.info" alt="" class="notice-icon" aria-hidden="true" />
               <span class="notice-text">{{
                 'product.prescription_required_notice' | translate
               }}</span>

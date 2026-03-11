@@ -1,13 +1,10 @@
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
-/*
- * Backend response note (bug in backend service):
- *   On success the service returns (200, "success") instead of the JSON body,
- *   so no JWT token is returned → the user must log in again after the reset.
- */
+import { ToastService } from '../../core/services/toast.service';
+
 @Component({
   selector: 'app-password-reset',
   standalone: true,
@@ -18,6 +15,8 @@ import { AuthService } from '../../core/services/auth.service';
 export class PasswordReset implements OnInit {
   private location = inject(Location);
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
+  private translateService = inject(TranslateService);
 
   isProcessing = signal(false);
   isSuccess = signal(false);
@@ -26,7 +25,6 @@ export class PasswordReset implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    // Read the ?chpass=B64(id);B64(token) param from the URL
     const raw = new URLSearchParams(window.location.search).get('chpass') || '';
     const parts = raw.split(';');
 
@@ -49,7 +47,6 @@ export class PasswordReset implements OnInit {
     this.completePasswordReset(encodedId, encodedToken);
   }
 
-  /** Calls chpass_promise endpoint with the B64 values from the email link */
   completePasswordReset(encodedId: string, encodedToken: string): void {
     this.isProcessing.set(true);
     this.errorMessage.set('');
@@ -58,16 +55,13 @@ export class PasswordReset implements OnInit {
       next: () => {
         this.isProcessing.set(false);
         this.isSuccess.set(true);
-        // Backend does not return a new JWT token (known backend bug),
-        // so we log the user out and redirect to login after success.
-        this.authService.logout();
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2500);
+        const message = this.translateService.instant('auth.success.password_changed');
+        this.toastService.success(message);
       },
       error: (error) => {
         this.isProcessing.set(false);
         this.errorMessage.set(error.message || 'auth.errors.password_reset_failed');
+        this.authService.logout();
       },
     });
   }

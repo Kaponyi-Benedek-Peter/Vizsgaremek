@@ -179,10 +179,10 @@ export function enrichProduct(
   currentLang: 'hu' | 'en' | 'de' = 'hu',
   galleryImages: ProductImage[] = [],
 ): ProductWithHelpers {
-  const priceNumber = parseFloat(product.price_huf) || 0;
+  const priceNumber = parseFloat(product.price_huf?.replace(',', '.')) || 0;
   const stockNumber = parseInt(product.stock) || 0;
-  const salePercentageNumber = parseFloat(product.sale_percentage) || 0;
-  const ratingNumber = parseFloat(product.rating) || 0;
+  const salePercentageNumber = parseFloat(product.sale_percentage?.replace(',', '.')) || 0;
+  const ratingNumber = parseFloat(product.rating?.replace(',', '.')) || 0;
 
   const inStock = stockNumber > 0;
   const hasDiscount = salePercentageNumber > 0;

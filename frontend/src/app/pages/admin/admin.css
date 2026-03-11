@@ -39,9 +39,13 @@
   overflow: hidden;
 }
 
+/* Logo icon – webp img replaces emoji */
 .logo-icon {
-  font-size: 24px;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
 .logo-text {
@@ -104,10 +108,21 @@
   color: white;
 }
 
+/* Nav icon – webp img replaces emoji text */
 .nav-icon {
-  font-size: 18px;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
   flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  transition: filter 0.15s;
 }
+
+/* Active nav item: icon should always be white regardless of theme */
+.nav-item.active .nav-icon {
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 .nav-label {
   font-size: var(--text-sm, 0.9rem);
   font-weight: 500;
@@ -123,6 +138,10 @@
 }
 .logout-btn:hover {
   background: rgba(220, 38, 38, 0.08) !important;
+}
+/* Logout icon tinted red */
+.logout-btn .nav-icon {
+  filter: brightness(0) saturate(100%) invert(20%) sepia(80%) saturate(6000%) hue-rotate(355deg);
 }
 
 .admin-main {
@@ -231,8 +250,32 @@
 }
 
 .stat-icon {
-  font-size: 36px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Stat icons – sized webp imgs */
+.stat-icon-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+}
+
+/* Color-tint stat icons to match card accent colors */
+.stat-card.primary .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(90%) saturate(700%) hue-rotate(120deg);
+}
+.stat-card.success .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(60%) sepia(50%) saturate(500%) hue-rotate(120deg);
+}
+.stat-card.info .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(40%) sepia(80%) saturate(500%) hue-rotate(200deg);
+}
+.stat-card.warning .stat-icon-img {
+  filter: brightness(0) saturate(100%) invert(75%) sepia(60%) saturate(800%) hue-rotate(10deg);
 }
 
 .stat-body {
@@ -480,16 +523,24 @@
 }
 
 .product-thumb {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-md, 0.5rem);
   background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
   flex-shrink: 0;
   border: 1px solid var(--border-color);
+  padding: 4px;
+}
+
+/* Product thumb icon – category medicines webp */
+.product-thumb-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
 .section-toolbar {
@@ -505,13 +556,18 @@
   min-width: 200px;
 }
 
+/* Search icon – webp img absolutely positioned */
 .search-icon-small {
   position: absolute;
   left: var(--space-3);
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.6;
 }
 
 .admin-search {
@@ -617,8 +673,9 @@
     gap: var(--space-3);
   }
 
-  .stat-icon {
-    font-size: 28px;
+  .stat-icon-img {
+    width: 32px;
+    height: 32px;
   }
 }
 

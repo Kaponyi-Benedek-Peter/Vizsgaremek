@@ -4,6 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../services/product.service';
+import { ICONS } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-product-detail-modal',
@@ -20,6 +21,9 @@ export class ProductDetailModal {
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
   private translateService = inject(TranslateService);
+
+  // Expose ICONS to the template
+  protected readonly icons = ICONS;
 
   quantity = signal(1);
   selectedImageIndex = signal(0);
@@ -40,13 +44,10 @@ export class ProductDetailModal {
   }
 
   get formattedPrice(): string {
-    // getBasePrice convert HUF → actual devisa (USD/EUR/HUF)
-    // product.priceNumber and product.price always HUF!
     return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
   }
 
   get formattedDiscountedPrice(): string {
-    // getDiscountedPrice = getBasePrice + sale_percentage levonása
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
   }
 
@@ -72,10 +73,19 @@ export class ProductDetailModal {
   }
 
   get categoryName(): string {
-    const cat = this.productService.getCategoryById(this.product.category ?? '');
-    const lang = this.translateService.currentLang || 'hu';
+    const cat = this.productService.getCategoryById(this.product.category);
+    const lang = this.translateService.currentLang;
     if (!cat) return '';
     return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
+  }
+
+  getRatingStars(): string {
+    const rating = this.product.ratingNumber;
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }
 
   selectImage(index: number): void {
@@ -106,18 +116,9 @@ export class ProductDetailModal {
     }
   }
 
-  getRatingStars(): string {
-    if (!this.product.ratingNumber) return '';
-    const fullStars = Math.floor(this.product.ratingNumber);
-    const hasHalfStar = this.product.ratingNumber % 1 >= 0.5;
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-    return '★'.repeat(fullStars) + (hasHalfStar ? '⯨' : '') + '☆'.repeat(emptyStars);
-  }
-
   handleAddToCart(): void {
     if (this.canAddToCart) {
       this.addToCart.emit({ product: this.product, quantity: this.quantity() });
-      this.handleClose();
     }
   }
 
@@ -127,7 +128,7 @@ export class ProductDetailModal {
 
   handleBackdropClick(event: MouseEvent): void {
     if (event.target === event.currentTarget) {
-      this.handleClose();
+      this.close.emit();
     }
   }
 }

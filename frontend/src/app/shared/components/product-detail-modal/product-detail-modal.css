@@ -505,6 +505,14 @@
   min-height: 52px;
 }
 
+.add-to-cart-button .button-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .add-to-cart-button:hover:not(:disabled) {
     background: var(--color-primary-hover);
@@ -535,7 +543,13 @@
 
 .notice-icon {
   font-size: var(--text-lg, 18px);
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
 }
+
 .notice-text {
   font-weight: var(--font-medium);
 }

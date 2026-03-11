@@ -33,7 +33,8 @@
     "success": {
       "welcome_back": "Erfolgreich angemeldet! Willkommen zurück!",
       "registered": "Registrierung erfolgreich! Überprüfen Sie Ihre E-Mail.",
-      "logged_in": "Erfolgreich angemeldet"
+      "logged_in": "Erfolgreich angemeldet",
+      "password_changed": "Passwort erfolgreich geändert!"
     },
     "login": {
       "title": "Anmelden",
@@ -283,34 +284,33 @@
       "alternative_flow": "Alternative"
     },
     "orders": {
-      "subtitle": "Bestellverlauf und Sendungsverfolgung",
+      "subtitle": "Bestellverlauf und Verfolgung",
       "empty_title": "Noch keine Bestellungen",
-      "empty_desc": "Sie haben noch keine Bestellungen aufgegeben. Stöbern Sie in unserem Produktkatalog!",
+      "empty_desc": "Sobald Sie eine Bestellung aufgeben, erscheint der Verlauf hier.",
       "browse_products": "Produkte durchsuchen"
     },
     "danger": {
-      "subtitle": "Irreversible Kontoaktionen",
-      "warning_banner": "Die Aktionen auf dieser Seite sind dauerhaft und können nicht rückgängig gemacht werden. Bitte gehen Sie mit Vorsicht vor.",
+      "subtitle": "Unwiderrufliche Kontoaktionen verwalten",
+      "warning_banner": "Achtung! Die folgenden Aktionen können nicht rückgängig gemacht werden.",
       "delete_account": "Konto löschen",
-      "delete_desc": "Ihr Konto und alle zugehörigen Daten – einschließlich Bestellverlauf, Bewertungen und persönliche Informationen – werden dauerhaft gelöscht. Eine Bestätigungs-E-Mail wird zur Verifizierung der Anfrage gesendet.",
-      "confirm_password": "Mit Passwort bestätigen",
-      "password_placeholder": "Aktuelles Passwort eingeben",
-      "password_hint": "Zur Bestätigung wird ein Link an Ihre E-Mail-Adresse gesendet. Das Konto wird erst nach dem Klicken auf den Link gelöscht.",
+      "delete_desc": "Durch das Löschen Ihres Kontos werden alle Ihre Daten und der Bestellverlauf dauerhaft entfernt. Zur Bestätigung wird eine E-Mail an Ihre registrierte Adresse gesendet.",
+      "confirm_password": "Passwort bestätigen",
+      "password_placeholder": "Passwort zur Bestätigung eingeben",
+      "password_hint": "Ein Löschlink wird an Ihre E-Mail-Adresse gesendet.",
       "delete_btn": "Kontolöschung beantragen",
       "email_sent_title": "Bestätigungs-E-Mail gesendet",
-      "email_sent_desc": "Prüfen Sie Ihren Posteingang und klicken Sie auf den Link, um die Kontolöschung zu bestätigen. Der Link ist 7 Tage gültig."
+      "email_sent_desc": "Wir haben eine Bestätigungs-E-Mail an Ihre registrierte Adresse gesendet. Klicken Sie auf den Link in der E-Mail, um die Löschung abzuschließen."
     },
     "errors": {
       "name_required": "Vor- und Nachname sind erforderlich.",
       "update_failed": "Profil konnte nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
-      "current_password_required": "Bitte geben Sie Ihr aktuelles Passwort ein.",
       "new_password_too_short": "Das neue Passwort muss mindestens 6 Zeichen lang sein.",
-      "passwords_do_not_match": "Die neuen Passwörter stimmen nicht überein.",
-      "password_change_failed": "Passwortänderung fehlgeschlagen. Überprüfen Sie Ihr aktuelles Passwort und versuchen Sie es erneut.",
-      "delete_failed": "Löschanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+      "passwords_do_not_match": "Die beiden Passwörter stimmen nicht überein.",
+      "password_change_failed": "Anfrage zur Passwortänderung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "delete_failed": "Anfrage zur Kontolöschung fehlgeschlagen. Bitte überprüfen Sie Ihr Passwort."
     },
     "success": {
-      "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
+      "profile_updated": "Profil erfolgreich aktualisiert."
     }
   },
   "product": {
@@ -330,6 +330,8 @@
     "previous_image": "Vorheriges Bild",
     "out_of_stock": "Nicht vorrätig",
     "reviews": "Bewertungen",
+    "reviews_title": "Bewertungen",
+    "no_reviews": "Für dieses Produkt gibt es noch keine Bewertungen.",
     "prescription_required_notice": "Dieses Produkt ist verschreibungspflichtig. Bitte laden Sie Ihr Rezept beim Bestellen hoch.",
     "packaging": "Verpackung",
     "dosage": "Dosierung",
@@ -389,6 +391,22 @@
     "no_results_description": "Versuchen Sie andere Suchbegriffe oder wählen Sie eine andere Kategorie.",
     "verified": "Verifiziert",
     "all_categories": "Alle Kategorien",
+    "category": {
+      "medicines": "Arzneimittel",
+      "natural_remedies": "Natürliche Behandlungen",
+      "baby_mother": "Babys und Mütter",
+      "healthy_lifestyle": "Gesunder Lebensstil",
+      "seasonal_health": "Saisonale Gesundheit",
+      "qa": "F&A",
+      "general": "Generisch"
+    },
+    "sort": {
+      "newest": "neuestes",
+      "oldest": "älteste",
+      "most_viewed": "meistgesehene",
+      "most_liked": "beliebteste",
+      "trending": "trending"
+    },
     "description": "Teilen Sie Fragen, Antworten und Erfahrungen mit unserer Community",
     "reset_filters": "Filter zurücksetzen",
     "answered": "Beantwortet",
@@ -396,7 +414,11 @@
     "comments": "Kommentare",
     "back_to_forum": "Zurück zum Forum",
     "submit_comment": "Kommentar absenden",
-    "comment_edited": "bearbeitet"
+    "comment_edited": "bearbeitet",
+    "empty_title": "Noch keine Beiträge",
+    "empty_description": "Hier wurde noch nichts gepostet. Möchtest du der Erste sein?",
+    "error_title": "Beiträge konnten nicht geladen werden",
+    "error_description": "Beim Laden der Beiträge ist ein Fehler aufgetreten. Überprüfe deine Verbindung und versuche es erneut."
   },
   "pagination": {
     "of": "von",
@@ -605,5 +627,13 @@
       "subtitle": "Blutdruckmessgeräte, Wundpflege und Diagnosemittel – Profiqualität zum Heimpreis."
     },
     "cta": "Produkte ansehen"
+  },
+  "not_found": {
+    "title": "Seite nicht gefunden",
+    "subtitle": "Diese Seite scheint sich in den Apothekenregalen verirrt zu haben. Wir helfen dir zurück.",
+    "go_home": "Zur Startseite",
+    "browse_products": "Produkte entdecken",
+    "quick_links": "Oder springe zu",
+    "quick_links_label": "Schnellnavigation"
   }
 }

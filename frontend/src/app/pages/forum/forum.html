@@ -7,10 +7,11 @@
   </section>
 
   <div class="forum-container">
+    <!-- ── Search + Sort ── -->
     <section class="search-filters">
       <div class="search-bar">
         <div class="search-input-wrapper">
-          <span class="search-icon">🔍</span>
+          <img [src]="ICONS.forumSearch" alt="" class="search-icon-img" aria-hidden="true" />
           <input
             type="search"
             [(ngModel)]="searchQuery"
@@ -49,50 +50,68 @@
         </div>
 
         @if (isAuthenticated()) {
-          <button class="new-post-button">
-            <span class="icon">✏️</span>
+          <button class="new-post-button" routerLink="/forum/new">
+            <img [src]="ICONS.forumNewPost" alt="" class="btn-icon" aria-hidden="true" />
             {{ 'forum.new_post' | translate }}
           </button>
         }
       </div>
     </section>
 
-    <section
-      class="category-filters"
-      role="group"
-      [attr.aria-label]="'forum.filter_by_category' | translate"
-    >
-      <button
-        [class]="'category-chip' + (selectedCategory() === 'all' ? ' active' : '')"
-        (click)="selectCategory('all')"
+    <!-- ── Category chips ── -->
+    @if (categories().length > 0) {
+      <section
+        class="category-filters"
+        role="group"
+        [attr.aria-label]="'forum.filter_by_category' | translate"
       >
-        <span class="category-icon">🌍</span>
-        <span class="category-name">{{ 'forum.all_categories' | translate }}</span>
-      </button>
-
-      @for (category of categories; track category.id) {
         <button
-          [class]="
-            'category-chip ' +
-            category.colorClass +
-            (selectedCategory() === category.id ? ' active' : '')
-          "
-          (click)="selectCategory(category.id)"
+          [class]="'category-chip' + (selectedCategory() === 'all' ? ' active' : '')"
+          (click)="selectCategory('all')"
         >
-          <span class="category-icon">{{ category.icon }}</span>
-          <span class="category-name">{{ category.translationKey | translate }}</span>
+          <img [src]="ICONS.categoryAll" alt="" class="category-icon-img" aria-hidden="true" />
+          <span class="category-name">{{ 'forum.all_categories' | translate }}</span>
         </button>
-      }
-    </section>
 
-    @if (isLoading()) {
+        @for (category of categories(); track category.id) {
+          <button
+            [class]="
+              'category-chip ' +
+              category.colorClass +
+              (selectedCategory() === category.id ? ' active' : '')
+            "
+            (click)="selectCategory(category.id)"
+          >
+            <img [src]="category.iconSrc" [alt]="category.displayName" class="category-icon-img" />
+            <span class="category-name">{{ category.displayName }}</span>
+          </button>
+        }
+      </section>
+    }
+
+    <!-- ── Loading ── -->
+    @if (forumService.isLoading()) {
       <div class="loading-container" role="status" [attr.aria-label]="'common.loading' | translate">
         <div class="spinner"></div>
         <p>{{ 'common.loading' | translate }}</p>
       </div>
     }
 
-    @if (!isLoading()) {
+    <!-- ── Error state: backend unreachable ── -->
+    @if (!forumService.isLoading() && forumService.loadError()) {
+      <div class="empty-state">
+        <img [src]="IMAGES.stateError" alt="" class="empty-state-img" aria-hidden="true" />
+        <h3 class="empty-state-title">{{ 'forum.error_title' | translate }}</h3>
+        <p class="empty-state-description">{{ 'forum.error_description' | translate }}</p>
+        <button class="empty-state-action" (click)="forumService.loadPosts()">
+          <img [src]="ICONS.forumRetry" alt="" class="btn-icon" aria-hidden="true" />
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+    }
+
+    <!-- ── Content ── -->
+    @if (!forumService.isLoading() && !forumService.loadError()) {
       @if (posts().length > 0) {
         <section class="posts-grid">
           @for (post of posts(); track post.id) {
@@ -147,14 +166,26 @@
             </button>
           </nav>
         }
+      } @else if (searchQuery() || selectedCategory() !== 'all') {
+        <!-- ── No results (active search/filter) ── -->
+        <div class="empty-state">
+          <img [src]="IMAGES.stateNoResults" alt="" class="empty-state-img" aria-hidden="true" />
+          <h3 class="empty-state-title">{{ 'forum.no_results_title' | translate }}</h3>
+          <p class="empty-state-description">{{ 'forum.no_results_description' | translate }}</p>
+          <button class="empty-state-action" (click)="resetFilters()">
+            {{ 'forum.reset_filters' | translate }}
+          </button>
+        </div>
       } @else {
-        <div class="no-results">
-          <div class="no-results-icon">🔍</div>
-          <h3 class="no-results-title">{{ 'forum.no_results_title' | translate }}</h3>
-          <p class="no-results-description">{{ 'forum.no_results_description' | translate }}</p>
-          @if (searchQuery() || selectedCategory() !== 'all') {
-            <button class="reset-filters-button" (click)="selectCategory('all'); clearSearch()">
-              {{ 'forum.reset_filters' | translate }}
+        <!-- ── Truly empty: no posts on the forum yet ── -->
+        <div class="empty-state">
+          <img [src]="IMAGES.stateEmptyForum" alt="" class="empty-state-img" aria-hidden="true" />
+          <h3 class="empty-state-title">{{ 'forum.empty_title' | translate }}</h3>
+          <p class="empty-state-description">{{ 'forum.empty_description' | translate }}</p>
+          @if (isAuthenticated()) {
+            <button class="empty-state-action" routerLink="/forum/new">
+              <img [src]="ICONS.forumNewPost" alt="" class="btn-icon" aria-hidden="true" />
+              {{ 'forum.new_post' | translate }}
             </button>
           }
         </div>
