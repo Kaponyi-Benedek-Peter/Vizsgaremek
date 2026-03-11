@@ -38,6 +38,8 @@ namespace Servo.model
 
                         while (reader.Read())
                         {
+
+
                             var product = new Dictionary<string, string>();
 
                             

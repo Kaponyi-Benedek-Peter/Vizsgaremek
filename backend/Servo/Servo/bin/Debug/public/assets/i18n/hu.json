@@ -33,7 +33,8 @@
     "success": {
       "welcome_back": "Sikeres bejelentkezés! Üdvözöljük!",
       "registered": "Sikeres regisztráció! Ellenőrizze e-mail fiókját.",
-      "logged_in": "Sikeresen bejelentkezett"
+      "logged_in": "Sikeresen bejelentkezett",
+      "password_changed": "Jelszó sikeresen megváltoztatva!"
     },
     "login": {
       "title": "Bejelentkezés",
@@ -359,6 +360,8 @@
     "previous_image": "Előző kép",
     "out_of_stock": "Nincs raktáron",
     "reviews": "értékelés",
+    "reviews_title": "Értékelések",
+    "no_reviews": "Erre a termékre nincsenek még értékelések.",
     "prescription_required_notice": "Ez a termék vényköteles. Rendeléshez recept feltöltése szükséges.",
     "packaging": "Kiszerelés",
     "dosage": "Adagolás",
@@ -418,6 +421,22 @@
     "no_results_description": "Próbálj meg más keresési kifejezést vagy kategóriát választani.",
     "verified": "Hitelesített",
     "all_categories": "Minden kategória",
+    "category": {
+      "medicines": "Gyógyszerek",
+      "natural_remedies": "Természetes Gyógymódok",
+      "baby_mother": "Babák és Anyák",
+      "healthy_lifestyle": "Egészséges Életmód",
+      "seasonal_health": "Szezonális Egészség",
+      "qa": "Q&A",
+      "general": "Általános"
+    },
+    "sort": {
+      "newest": "legújabb",
+      "oldest": "legrégibb",
+      "most_viewed": "legnézettebb",
+      "most_liked": "legkedveltebb",
+      "trending": "trending"
+    },
     "description": "Kérdések, válaszok és tapasztalatok megosztása közösségünkkel",
     "reset_filters": "Szűrők visszaállítása",
     "answered": "Megválaszolva",
@@ -425,7 +444,12 @@
     "comments": "Hozzászólások",
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
-    "comment_edited": "szerkesztve"
+    "comment_edited": "szerkesztve",
+
+    "empty_title": "Még nincsenek posztok",
+    "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
+    "error_title": "Nem sikerült betölteni",
+    "error_description": "Hiba történt a posztok lekérésekor. Ellenőrizd a kapcsolatot, majd próbáld újra."
   },
   "pagination": {
     "of": "/",
@@ -634,5 +658,13 @@
       "subtitle": "Vérnyomásmérők, sebkezelési termékek, diagnosztikai eszközök – professzionális minőség, otthoni áron."
     },
     "cta": "Termékek megtekintése"
+  },
+  "not_found": {
+    "title": "Az oldal nem található",
+    "subtitle": "Úgy tűnik, ez az oldal eltévedt a patika folyosóin. Talán visszatalálsz onnan, ahonnan jöttél?",
+    "go_home": "Vissza a főoldalra",
+    "browse_products": "Termékek böngészése",
+    "quick_links": "Vagy ugorj ide",
+    "quick_links_label": "Gyors navigáció"
   }
 }

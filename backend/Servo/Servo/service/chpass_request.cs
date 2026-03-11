@@ -44,7 +44,7 @@ namespace Servo.service
 
                 string emailhtml = File.ReadAllText($"templates/password_reset_{language.ToUpper()}.html" ).Replace("{FIRST_NAME}", name.firstname)
                     .Replace("{LAST_NAME}", name.lastname)
-                    .Replace("{RESET_URL}", $"{service.shared.current_url}?chpass=" + service.shared.b64enc(id) + ";" + service.shared.b64enc(confirmation_token));
+                    .Replace("{RESET_URL}", $"{service.shared.current_url}/password-reset?chpass=" + service.shared.b64enc(id) + ";" + service.shared.b64enc(confirmation_token));
 
 
                 service.shared.send_mail(email, "Password Change", emailhtml , "chpass");
