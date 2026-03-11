@@ -183,14 +183,19 @@
     <Compile Include="controller\chpass_request.cs" />
     <Compile Include="controller\delacc_promise.cs" />
     <Compile Include="controller\delacc_request.cs" />
+    <Compile Include="controller\delete_all_posts.cs" />
+    <Compile Include="controller\delete_post_by_id.cs" />
     <Compile Include="controller\get_all_featured_products.cs" />
     <Compile Include="controller\get_all_orders.cs" />
+    <Compile Include="controller\get_all_orders_user.cs" />
     <Compile Include="controller\get_all_posts.cs" />
     <Compile Include="controller\get_all_posts_admin.cs" />
     <Compile Include="controller\get_all_products.cs" />
     <Compile Include="controller\get_all_product_categories.cs" />
     <Compile Include="controller\get_all_reviews_page_by_product_id.cs" />
     <Compile Include="controller\get_all_users.cs" />
+    <Compile Include="controller\get_post.cs" />
+    <Compile Include="controller\get_product_by_id.cs" />
     <Compile Include="controller\login_promise.cs" />
     <Compile Include="controller\newsletter_subscription.cs" />
     <Compile Include="controller\router.cs" />
@@ -208,16 +213,22 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="lib.cs" />
+    <Compile Include="model\create_post.cs" />
     <Compile Include="model\delacc_promise.cs" />
     <Compile Include="model\delacc_request.cs" />
+    <Compile Include="model\delete_all_posts.cs" />
+    <Compile Include="model\delete_post_by_id.cs" />
     <Compile Include="model\get_all_featured_products.cs" />
     <Compile Include="model\get_all_orders.cs" />
+    <Compile Include="model\get_all_orders_user.cs" />
     <Compile Include="model\get_all_posts.cs" />
     <Compile Include="model\get_all_posts_admin.cs" />
     <Compile Include="model\get_all_products.cs" />
     <Compile Include="model\get_all_product_categories.cs" />
     <Compile Include="model\get_all_reviews_page_by_product_id.cs" />
     <Compile Include="model\get_all_users.cs" />
+    <Compile Include="model\get_post.cs" />
+    <Compile Include="model\get_product_by_id.cs" />
     <Compile Include="model\registration_request.cs" />
     <Compile Include="model\chpass_promise.cs" />
     <Compile Include="model\chpass_request.cs" />
@@ -229,8 +240,11 @@
     <Compile Include="service\ban_user.cs" />
     <Compile Include="service\chpass_promise.cs" />
     <Compile Include="service\chpass_request.cs" />
+    <Compile Include="service\delete_all_posts.cs" />
+    <Compile Include="service\delete_post_by_id.cs" />
     <Compile Include="service\get_all_featured_products.cs" />
     <Compile Include="service\get_all_orders.cs" />
+    <Compile Include="service\get_all_orders_user.cs" />
     <Compile Include="service\get_all_posts.cs" />
     <Compile Include="service\get_all_posts_admin.cs" />
     <Compile Include="service\get_all_product_categories.cs" />
@@ -239,6 +253,8 @@
     <Compile Include="service\delacc_promise.cs" />
     <Compile Include="service\delacc_request.cs" />
     <Compile Include="service\get_all_products.cs" />
+    <Compile Include="service\get_post.cs" />
+    <Compile Include="service\get_product_by_id.cs" />
     <Compile Include="service\jwt_handler.cs" />
     <Compile Include="service\login_request.cs" />
     <Compile Include="service\login_promise.cs" />

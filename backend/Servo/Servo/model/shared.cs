@@ -26,6 +26,34 @@ namespace Servo.model
         }
 
 
+
+        public class post
+        {
+
+
+            public int id { get; set; } = 0;
+            public string title { get; set; } = "";
+            public string content { get; set; } = "";
+            public int user_id { get; set; } = 0;
+            public string created_at { get; set; } = "";
+            public string image_url { get; set; } = "";
+            public string category_id { get; set; } = "";
+            public string updated_at { get; set; } = "";
+            public string slug { get; set; } = "";
+            public string excerpt { get; set; } = "";
+            public string status { get; set; } = "";
+            public int views { get; set; } = 0;
+            public int likes { get; set; } = 0;
+            public int comment_count { get; set; } = 0;
+            public int is_featured { get; set; } = 0;
+            public int published_at { get; set; } = 0;
+            public string last_activity_at { get; set; } = "";
+            public string tags { get; set; } = "";
+
+        }
+
+
+
         public class category
         {
 

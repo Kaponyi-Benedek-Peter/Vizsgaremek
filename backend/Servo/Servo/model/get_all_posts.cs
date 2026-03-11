@@ -71,7 +71,7 @@ namespace Servo.model
             {
                 service.shared.log($"Error 1: {ex.Message} --model.get_all_products.communicate_get_all_posts");
                 result["statuscode"] = "500";
-                result["status"] = "unknown error";
+                result["status"] = "internal_error";
 
             }
 

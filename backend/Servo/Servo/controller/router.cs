@@ -21,7 +21,7 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_all_orders_user","delete_post_by_id","delete_all_posts"
         };
 
 
@@ -257,7 +257,16 @@ namespace Servo.controller
 
 
                 }
-                else if (lenyeg.Contains("get_all_orders"))
+                else if (lenyeg.Contains("get_all_orders_user"))
+                {
+
+                    controller.get_all_orders_user.main(data, lenyeg);
+
+
+
+
+                }
+                else if (lenyeg.Contains("get_all_orders_admin"))
                 {
 
                     controller.get_all_orders.main(data, lenyeg);
@@ -348,9 +357,31 @@ namespace Servo.controller
 
 
                 }
-               
+                else if (lenyeg.Contains("get_post_by_id"))
+                {
 
+                    controller.get_post.main(data, lenyeg);
 
+                }
+                else if (lenyeg.Contains("get_product_by_id"))
+                {
+
+                    controller.get_product_by_id.main(data, lenyeg);
+
+                }
+
+                else if (lenyeg.Contains("delete_post_by_id"))
+                {
+
+                    controller.delete_post_by_id.main(data, lenyeg);
+
+                }
+                else if (lenyeg.Contains("delete_all_posts"))
+                {
+
+                    controller.delete_all_posts.main(data, lenyeg);
+
+                }
 
             }
             // =========== NEMAPI =========== 

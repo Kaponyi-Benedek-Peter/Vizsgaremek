@@ -88,7 +88,7 @@ namespace Servo.controller
 
                     var respon = new
                     {
-                        status = "unknown_error",
+                        status = "internal_error",
                         statuscode = "500"
                     };
 
