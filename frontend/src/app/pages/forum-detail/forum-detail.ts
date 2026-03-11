@@ -6,7 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Post, BlogPost, Comment, CategoryInfo } from '../../core/models/forum.model';
+import { Post, Comment, CategoryInfo } from '../../core/models/forum.model';
 import { ICONS, IMAGES } from '../../core/constants/visuals';
 
 @Component({
@@ -18,7 +18,7 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 })
 export class ForumDetail implements OnInit {
   private route = inject(ActivatedRoute);
-  private forumBlogService = inject(ForumService);
+  private forumService = inject(ForumService);
   private authService = inject(AuthService);
   private translate = inject(TranslateService);
 
@@ -35,33 +35,38 @@ export class ForumDetail implements OnInit {
   readonly IMAGES = IMAGES;
 
   isAuthenticated = this.authService.isAuthenticated;
-  currentUser = this.authService.currentUser;
 
   private get sessionToken(): string {
     return this.authService.sessionToken() ?? '';
   }
 
-  categories = computed(() => this.forumBlogService.categories());
+  categories = computed(() => this.forumService.categories());
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
-      const slug = params.get('slug');
-      if (slug) this.loadPost(slug);
+      const id = params.get('id');
+      if (id) this.loadPost(id);
     });
   }
 
-  private loadPost(slug: string): void {
+  private loadPost(id: string): void {
     this.isLoading.set(true);
     this.contentExpanded.set(false);
     this.sliderIndex.set(0);
     this.comments.set([]);
 
-    this.forumBlogService.getPostById(slug).subscribe((post) => {
+    this.forumService.getPostById(id).subscribe((post) => {
       this.post.set(post);
       this.isLoading.set(false);
 
       if (post) {
-        this.forumBlogService.getRelatedPosts(post.id, 6).subscribe((related) => {
+        this.forumService.incrementViews(post.id).subscribe();
+
+        this.forumService.getComments(post.id).subscribe((comments) => {
+          this.comments.set(comments);
+        });
+
+        this.forumService.getRelatedPosts(post.id, 6).subscribe((related) => {
           this.relatedPosts.set(related);
         });
       }
@@ -70,11 +75,6 @@ export class ForumDetail implements OnInit {
 
   getCategoryInfo(categoryId: string): CategoryInfo | undefined {
     return this.categories().find((c: CategoryInfo) => c.id === categoryId);
-  }
-
-  getReadingTime(): number {
-    const p = this.post();
-    return p?.type === 'blog' ? ((p as BlogPost).reading_time ?? 0) : 0;
   }
 
   formatDate(dateStr: string): string {
@@ -92,32 +92,26 @@ export class ForumDetail implements OnInit {
 
   submitComment(): void {
     const text = this.newComment().trim();
-    if (!text || !this.isAuthenticated()) return;
+    const post = this.post();
+    if (!text || !this.isAuthenticated() || !post || !this.sessionToken) return;
 
     this.isSubmittingComment.set(true);
-    const user = this.currentUser();
-    const post = this.post();
-    if (!post) return;
 
-    // TODO: this.forumBlogService.addComment(post.id, user!.id, this.sessionToken, text).subscribe(...)
-
-    const comment: Comment = {
-      id: 'c' + Date.now(),
-      post_id: post.id,
-      author: {
-        id: user?.id || 'me',
-        name: `${user?.firstname || ''} ${user?.lastname || ''}`.trim() || user?.email || 'Te',
-        role: 'user',
-        verified: false,
-      },
-      content: text,
-      created_at: new Date().toISOString(),
-      likes: 0,
-      is_edited: false,
-    };
+    // TODO: bekötni amikor Áron kész a backend oldallal
+    // this.forumService.addComment(post.id, this.sessionToken, text).subscribe({
+    //   next: (res) => {
+    //     this.forumService.getComments(post.id).subscribe((comments) => {
+    //       this.comments.set(comments);
+    //     });
+    //     this.newComment.set('');
+    //     this.isSubmittingComment.set(false);
+    //   },
+    //   error: () => {
+    //     this.isSubmittingComment.set(false);
+    //   },
+    // });
 
     setTimeout(() => {
-      this.comments.update((c) => [...c, comment]);
       this.newComment.set('');
       this.isSubmittingComment.set(false);
     }, 400);
@@ -138,6 +132,7 @@ export class ForumDetail implements OnInit {
   get canSliderPrev(): boolean {
     return this.sliderIndex() > 0;
   }
+
   get canSliderNext(): boolean {
     return this.sliderIndex() + 3 < this.relatedPosts().length;
   }

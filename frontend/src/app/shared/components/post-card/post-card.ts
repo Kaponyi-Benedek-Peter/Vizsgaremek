@@ -30,18 +30,14 @@ export class PostCardComponent {
   private forumService = inject(ForumService);
 
   get categoryInfo() {
-    return this.forumService.categories().find((cat) => cat.id === this.post.category);
+    // category_id alapján keres (nem category — az nem létezik a Post modellben)
+    return this.forumService.categories().find((cat) => cat.id === this.post.category_id);
   }
 
+  // author_role nincs a DB-ben — user_id alapján nem tudunk szerepet meghatározni,
+  // a badge-et a backend oldal bővítésekor lehet majd visszahozni
   get authorBadgeClass(): string {
-    switch (this.post.author.role) {
-      case 'admin':
-        return 'badge-admin';
-      case 'pharmacist':
-        return 'badge-pharmacist';
-      default:
-        return 'badge-user';
-    }
+    return 'badge-user';
   }
 
   getRelativeTime(): string {
@@ -72,17 +68,5 @@ export class PostCardComponent {
 
   handleCardClick(): void {
     this.cardClick.emit(this.post);
-  }
-
-  get readingTime(): number | null {
-    return this.post.type === 'blog' ? (this.post.reading_time ?? null) : null;
-  }
-
-  get isQuestion(): boolean {
-    return this.post.type === 'forum' ? this.post.is_question : false;
-  }
-
-  get hasAcceptedAnswer(): boolean {
-    return this.post.type === 'forum' ? this.post.has_accepted_answer : false;
   }
 }

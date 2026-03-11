@@ -19,6 +19,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/get_all_featured_products',
     '/newsletter_subscription',
     '/get_all_product_categories',
+    // Forum — publikus endpointok
+    '/get_all_posts',
+    '/get_post_by_id',
+    '/get_post_by_slug',
+    '/get_all_post_categories',
+    '/increment_post_view_by_id',
+    '/get_post_comments_by_post_id',
   ];
 
   const isPublicEndpoint = publicEndpoints.some((endpoint) => req.url.includes(endpoint));
