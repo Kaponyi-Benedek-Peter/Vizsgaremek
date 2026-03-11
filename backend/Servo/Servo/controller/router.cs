@@ -21,7 +21,7 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts"
         };
 
 
@@ -320,6 +320,35 @@ namespace Servo.controller
 
 
                 }
+
+                else if (lenyeg.Contains("get_all_reviews_page_by_product_id"))
+                {
+
+                    controller.get_all_reviews_page_by_product_id.main(data, lenyeg);
+
+
+
+
+                }
+                else if (lenyeg.Contains("get_all_posts_admin"))
+                {
+
+                    controller.get_all_posts_admin.main(data, lenyeg);
+
+
+                    service.shared.log("1");
+
+                }
+                else if (lenyeg.Contains("get_all_posts"))
+                {
+
+                    controller.get_all_posts.main(data, lenyeg);
+
+
+
+
+                }
+               
 
 
 

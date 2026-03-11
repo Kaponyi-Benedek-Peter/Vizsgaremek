@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
@@ -76,16 +77,19 @@ namespace Servo.service
 
 
                         string new_sesstoken = service.shared.gen_code(false);
-
-                        string model_session_token = model.shared.refresh_token(controller_id,new_sesstoken);
+                        model.shared.refresh_token(controller_id, new_sesstoken);
+                        Thread.Sleep(50);
                         string expiration = model.shared.get_sesstoken_expiration_by_id(controller_id);
 
-                        
+                        string model_session_token = model.shared.get_token_by_id(controller_id);
 
 
+                        service.shared.log("aaaa");
 
                         if (model_session_token != "404")
                         {
+                            service.shared.log("bbbb");
+
                             var respon = new
                             {
                                 jwt_token = jwt_handler.generate_token(model_email),
@@ -103,7 +107,7 @@ namespace Servo.service
                             string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                            return (200, "success");
+                            return (200, jsonrespon);
                         }
                         else
                         {

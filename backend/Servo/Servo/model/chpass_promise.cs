@@ -44,7 +44,7 @@ namespace Servo.model
 
             try
             {
-                using (MySqlCommand cmd = new MySqlCommand("delete_confirmation_by_user_id", conn))
+                using (MySqlCommand cmd = new MySqlCommand("delete_confirmations_by_user_id", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 

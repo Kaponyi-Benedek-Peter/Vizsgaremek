@@ -33,7 +33,8 @@
     "success": {
       "welcome_back": "Sikeres bejelentkezés! Üdvözöljük!",
       "registered": "Sikeres regisztráció! Ellenőrizze e-mail fiókját.",
-      "logged_in": "Sikeresen bejelentkezett"
+      "logged_in": "Sikeresen bejelentkezett",
+      "password_changed": "Jelszó sikeresen megváltoztatva!"
     },
     "login": {
       "title": "Bejelentkezés",
@@ -281,6 +282,35 @@
       "email_sent_check": "Email elküldve! Ellenőrizd a postaládádat, és kattints a megerősítő linkre.",
       "forgot_password_desc_alt": "Ha nincs hozzáférésed a fiókodhoz, a jelszót az email-cím megadásával is visszaállíthatod.",
       "alternative_flow": "Alternatív megoldás"
+    },
+    "danger": {
+      "subtitle": "Visszafordíthatatlan műveletek kezelése",
+      "warning_banner": "Figyelem! Az alábbi műveletek nem vonhatók vissza.",
+      "delete_account": "Fiók törlése",
+      "delete_desc": "A fiók törlésével minden adatod és rendelési előzményed véglegesen eltörlésre kerül. A törlés megerősítéséhez egy emailt küldünk a regisztrált email-címedre.",
+      "confirm_password": "Jelszó megerősítése",
+      "password_placeholder": "Adja meg jelszavát a megerősítéshez",
+      "password_hint": "A törlési link az email-fiókodba kerül kiküldésre.",
+      "delete_btn": "Fiók törlésének kérése",
+      "email_sent_title": "Megerősítő email elküldve",
+      "email_sent_desc": "Küldtünk egy megerősítő emailt a fiókodhoz tartozó email-címre. Kattints a levélben lévő linkre a törlés véglegesítéséhez."
+    },
+    "orders": {
+      "subtitle": "Rendelési előzmények és nyomon követés",
+      "empty_title": "Még nincs rendelésed",
+      "empty_desc": "Ha leadtál rendelést, itt fogod látni az előzményeidet.",
+      "browse_products": "Termékek böngészése"
+    },
+    "success": {
+      "profile_updated": "Profil sikeresen frissítve."
+    },
+    "errors": {
+      "name_required": "A keresztnév és a vezetéknév megadása kötelező.",
+      "update_failed": "A profil frissítése nem sikerült. Kérjük, próbálja újra.",
+      "new_password_too_short": "Az új jelszónak legalább 6 karakter hosszúnak kell lennie.",
+      "passwords_do_not_match": "A két jelszó nem egyezik meg.",
+      "password_change_failed": "A jelszóváltoztatási kérés sikertelen. Kérjük, próbálja újra.",
+      "delete_failed": "A fiók törlési kérés sikertelen. Kérjük, ellenőrizze jelszavát."
     }
   },
   "orders": {
@@ -313,7 +343,6 @@
   "success": {
     "profile_updated": "Profilja sikeresen frissítve."
   },
-
   "product": {
     "in_stock": "Raktáron",
     "sku": "Cikkszám",
@@ -331,6 +360,8 @@
     "previous_image": "Előző kép",
     "out_of_stock": "Nincs raktáron",
     "reviews": "értékelés",
+    "reviews_title": "Értékelések",
+    "no_reviews": "Erre a termékre nincsenek még értékelések.",
     "prescription_required_notice": "Ez a termék vényköteles. Rendeléshez recept feltöltése szükséges.",
     "packaging": "Kiszerelés",
     "dosage": "Adagolás",
@@ -390,6 +421,22 @@
     "no_results_description": "Próbálj meg más keresési kifejezést vagy kategóriát választani.",
     "verified": "Hitelesített",
     "all_categories": "Minden kategória",
+    "category": {
+      "medicines": "Gyógyszerek",
+      "natural_remedies": "Természetes Gyógymódok",
+      "baby_mother": "Babák és Anyák",
+      "healthy_lifestyle": "Egészséges Életmód",
+      "seasonal_health": "Szezonális Egészség",
+      "qa": "Q&A",
+      "general": "Általános"
+    },
+    "sort": {
+      "newest": "legújabb",
+      "oldest": "legrégibb",
+      "most_viewed": "legnézettebb",
+      "most_liked": "legkedveltebb",
+      "trending": "trending"
+    },
     "description": "Kérdések, válaszok és tapasztalatok megosztása közösségünkkel",
     "reset_filters": "Szűrők visszaállítása",
     "answered": "Megválaszolva",
@@ -397,7 +444,12 @@
     "comments": "Hozzászólások",
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
-    "comment_edited": "szerkesztve"
+    "comment_edited": "szerkesztve",
+
+    "empty_title": "Még nincsenek posztok",
+    "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
+    "error_title": "Nem sikerült betölteni",
+    "error_description": "Hiba történt a posztok lekérésekor. Ellenőrizd a kapcsolatot, majd próbáld újra."
   },
   "pagination": {
     "of": "/",
@@ -606,5 +658,13 @@
       "subtitle": "Vérnyomásmérők, sebkezelési termékek, diagnosztikai eszközök – professzionális minőség, otthoni áron."
     },
     "cta": "Termékek megtekintése"
+  },
+  "not_found": {
+    "title": "Az oldal nem található",
+    "subtitle": "Úgy tűnik, ez az oldal eltévedt a patika folyosóin. Talán visszatalálsz onnan, ahonnan jöttél?",
+    "go_home": "Vissza a főoldalra",
+    "browse_products": "Termékek böngészése",
+    "quick_links": "Vagy ugorj ide",
+    "quick_links_label": "Gyors navigáció"
   }
 }

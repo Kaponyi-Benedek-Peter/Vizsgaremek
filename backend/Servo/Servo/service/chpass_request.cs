@@ -42,11 +42,9 @@ namespace Servo.service
 
 
 
-                string emailhtml = File.ReadAllText($"templates/password_reset_{language.ToUpper()}.html"
-                    .Replace("{FIRST_NAME}", name.firstname)
+                string emailhtml = File.ReadAllText($"templates/password_reset_{language.ToUpper()}.html" ).Replace("{FIRST_NAME}", name.firstname)
                     .Replace("{LAST_NAME}", name.lastname)
-                    .Replace("{RESET_URL}", $"{service.shared.current_url}?chpass=" + service.shared.b64enc(id) + ";" + service.shared.b64enc(confirmation_token))
-                );
+                    .Replace("{RESET_URL}", $"{service.shared.current_url}/password-reset?chpass=" + service.shared.b64enc(id) + ";" + service.shared.b64enc(confirmation_token));
 
 
                 service.shared.send_mail(email, "Password Change", emailhtml , "chpass");
@@ -92,7 +90,7 @@ namespace Servo.service
                 string model_password = model.shared.get_passhash_by_id(controller_id);
                 string accstate = model.shared.get_account_state_by_id(controller_id);
                 service.shared.log($"Debug 1: {accstate} --service.chpass_request.process_chpas_request ");
-                if (accstate == "verified")
+                if (accstate == "verified" || accstate == "admin" || accstate == "superadmin")
                 {
 
                     int result1 = model.shared.delete_confirmations_by_user_id_and_type(controller_id, "password_change");

@@ -69,8 +69,8 @@ namespace Servo.service
 
            //     .Replace("{FIRST_NAME}", first_name)
 
-                .Replace("{UNSUBSCRIBE_URL}", $"{service.shared.current_url}?unsubscribe=" + service.shared.b64enc(hova))
-            );
+            )    .Replace("{UNSUBSCRIBE_URL}", $"{service.shared.current_url}?unsubscribe=" + service.shared.b64enc(hova))
+            ;
 
 
 
