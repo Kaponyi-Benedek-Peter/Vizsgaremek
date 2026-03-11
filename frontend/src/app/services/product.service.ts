@@ -8,6 +8,8 @@ import {
   ProductCategoriesApiResponse,
   ProductsApiResponse,
   ProductWithHelpers,
+  ProductImage,
+  ProductImagesApiResponse,
   Category,
   enrichProduct,
   mapProductCategory,
@@ -125,7 +127,6 @@ export class ProductService {
       this.featuredSignal.set(enriched);
       console.log(`Loaded ${products.length} featured products from backend`);
     } catch (err) {
-      // Fallback: derive featured from already-loaded products
       const fallback = this.allProductsSignal().filter((p) => p.isFeatured);
       this.featuredSignal.set(fallback);
       console.warn(
@@ -215,6 +216,33 @@ export class ProductService {
     );
   }
 
+  getProductImages(productId: string): Observable<ProductImage[]> {
+    const body = {
+      product_id: btoa(productId),
+    };
+
+    return this.http
+      .post<ProductImagesApiResponse>(
+        `${this.API_URL}/api/get_all_product_images_by_product_id`,
+        body,
+      )
+      .pipe(
+        timeout(5000),
+        map((r) => {
+          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+          if (!Array.isArray(r.images)) return [];
+          return r.images;
+        }),
+        catchError((err) => {
+          console.warn(
+            'ProductService: Failed to load product images, falling back to thumbnail',
+            err,
+          );
+          return of([]);
+        }),
+      );
+  }
+
   getProductById(id: string): Observable<Product | undefined> {
     return this.getAllProducts().pipe(
       map((products) => products.find((p) => p.id === id)),
@@ -260,10 +288,6 @@ export class ProductService {
 
   // --- Private helpers ---
 
-  /**
-   * Builds a map from category numeric ID → id string.
-   * Used to normalize product.category / product.category_id fields.
-   */
   private buildCategoryIdMap(): Map<string, string> {
     const map = new Map<string, string>();
     this.categoriesSignal().forEach((cat) => {
@@ -272,10 +296,6 @@ export class ProductService {
     return map;
   }
 
-  /**
-   * Counts how many products belong to each category and updates
-   * the categories signal with the real counts.
-   */
   private updateCategoryCounts(): void {
     const products = this.allProductsSignal();
     const categories = this.categoriesSignal();
@@ -296,19 +316,10 @@ export class ProductService {
     this.categoriesSignal.set(updated);
   }
 
-  /**
-   * Returns the Category object for a given category ID.
-   * Used by product detail components to display the category name
-   * instead of using the raw ID as a translation key.
-   */
   getCategoryById(id: string): import('../core/models/product.model').Category | undefined {
     return this.categoriesSignal().find((cat) => cat.id === id);
   }
 
-  /**
-   * Ensures product.category is set to a consistent category ID string.
-   * Handles backends that return `category_id` separately from `category`.
-   */
   private normalizeCategoryId(product: Product, _idMap: Map<string, string>): Product {
     const resolved = product.category ?? product.category_id ?? '';
     return { ...product, category: resolved };
