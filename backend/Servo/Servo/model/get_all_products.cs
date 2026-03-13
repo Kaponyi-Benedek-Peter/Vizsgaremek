@@ -47,7 +47,7 @@ namespace Servo.model
                                       "stock", "sale_percentage", 
                                        
                                       "category_id", "manufacturer", "brand",
-                                      "rating", "sku", "active_ingredients", "packaging", "created_at",
+                                      "rating", "sku", "active_ingredients", "packaging_de",  "packaging_en", "packaging_hu","created_at",
                                       "updated_at" };
 
                             foreach (string field in fields)

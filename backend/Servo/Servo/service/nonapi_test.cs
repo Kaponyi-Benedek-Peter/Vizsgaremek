@@ -131,8 +131,11 @@ namespace Servo.service
                   rating     = 0.0,
                   sku     = (i*1000).ToString(),
                   active_ingredient     = "active_ingredient",
-                  packaging     = "valami",
-                  thumbnail_url = $"http://192.168.11.213:90/assets/products/{i}/thumbnail.webp",
+                  packaging_de     = "valami",
+                    packaging_en = "something",
+                    packaging_hu = "schwarpfenpanzer",
+
+                    thumbnail_url = $"http://192.168.11.213:90/assets/products/{i}/thumbnail.webp",
 
                     featured = $"0"
                 };

@@ -42,7 +42,7 @@ namespace Servo.controller
                 {
                     JObject jsonObj = JObject.Parse(lenyeg);
                     admin_id = service.shared.b64dec(jsonObj["admin_user_id"].ToString());
-                    sesstoken = service.shared.b64dec(jsonObj["sesstoken"].ToString());
+                    sesstoken = service.shared.b64dec(jsonObj["session_token"].ToString());
                     product_id = service.shared.b64dec(jsonObj["product_id"].ToString());
                     new_stock_count = service.shared.b64dec(jsonObj["new_stock_count"].ToString());
 

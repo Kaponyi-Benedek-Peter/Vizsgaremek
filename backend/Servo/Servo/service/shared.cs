@@ -33,7 +33,7 @@ namespace Servo.service
             return System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(str));
         }
 
-
+        static string thumbnail_template(int id) {return $"{service.shared.current_url}assets/products/{id}/thumbnail.webp"; }
         public static void log(string abc)
         {
             var f = Form1.Instance;

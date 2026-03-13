@@ -30,7 +30,27 @@ namespace Servo.model
         public class post
         {
 
-
+            /*
+Teljes szövegek
+id
+title
+content
+user_id
+created_at
+image_url
+category_id
+updated_at
+slug
+excerpt
+status
+views
+likes
+comment_count
+is_featured
+published_at
+last_activity_at
+tags
+*/
             public int id { get; set; } = 0;
             public string title { get; set; } = "";
             public string content { get; set; } = "";
@@ -142,10 +162,12 @@ namespace Servo.model
             public string active_ingredient { get; set; } = "";
             public string created_at { get; set; } = "";
             public string updated_at { get; set; } = "";
-            public string packaging { get; set; } = "";
             public string thumbnail_url { get; set; } = "";
 
             public string featured { get; set; } = "";
+            public string packaging_en { get; set; } = "";
+            public string packaging_de { get; set; } = "";
+            public string packaging_hu { get; set; } = "";
 
 
         }
@@ -734,7 +756,14 @@ namespace Servo.model
                     cmd.Parameters.AddWithValue("@p_rating", prod.rating);
                     cmd.Parameters.AddWithValue("@p_sku", prod.sku);
                     cmd.Parameters.AddWithValue("@p_active_ingredients", prod.active_ingredient);
-                    cmd.Parameters.AddWithValue("@p_packaging", prod.packaging);
+
+
+
+                    cmd.Parameters.AddWithValue("@p_packaging_de", prod.packaging_de);
+                    cmd.Parameters.AddWithValue("@p_packaging_en", prod.packaging_de);
+                    cmd.Parameters.AddWithValue("@p_packaging_hu", prod.packaging_de);
+
+
                     cmd.Parameters.AddWithValue("@p_created_at", prod.created_at);
                     cmd.Parameters.AddWithValue("@p_updated_at", prod.updated_at);
                     cmd.Parameters.AddWithValue("@p_thumbnail_url", prod.thumbnail_url);
@@ -751,6 +780,78 @@ namespace Servo.model
             catch (Exception ex)
             {
                 service.shared.log($"Error 1: {ex.Message} --model.shared.add_product");
+                return 500;
+            }
+        }
+
+
+
+
+        public static int update_product(product prod,int id)
+        {
+
+            try
+            {//id name_de description_en price_huf times_ordered stock sale_percentage description_preview_en name_hu
+             //name_en description_hu description_de description_preview_hu description_preview_de
+             //category manufacturer brand rating sku active_ingredients packaging created_at updated_at name
+                using (MySqlCommand cmd = new MySqlCommand("update_product_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_id", prod.price);
+
+
+
+                    cmd.Parameters.AddWithValue("@p_price_huf", prod.price);
+                    cmd.Parameters.AddWithValue("@p_times_ordered", prod.times_ordered);
+                    cmd.Parameters.AddWithValue("@p_stock", prod.stock);
+                    cmd.Parameters.AddWithValue("@p_sale_percentage", prod.sale_percentage);
+
+
+                    cmd.Parameters.AddWithValue("@p_description_preview_hu", prod.description_preview_hu);
+                    cmd.Parameters.AddWithValue("@p_description_preview_en", prod.description_preview_en);
+                    cmd.Parameters.AddWithValue("@p_description_preview_de", prod.description_preview_en);
+
+
+                    cmd.Parameters.AddWithValue("@p_category_id", prod.category_id);
+
+                    cmd.Parameters.AddWithValue("@p_name_hu", prod.name_hu);
+                    cmd.Parameters.AddWithValue("@p_name_en", prod.name_en);
+                    cmd.Parameters.AddWithValue("@p_name_de", prod.name_de);
+
+                    cmd.Parameters.AddWithValue("@p_description_hu", prod.description_hu);
+                    cmd.Parameters.AddWithValue("@p_description_en", prod.description_en);
+                    cmd.Parameters.AddWithValue("@p_description_de", prod.description_de);
+
+                    cmd.Parameters.AddWithValue("@p_manufacturer", prod.manufacturer);
+                    cmd.Parameters.AddWithValue("@p_brand", prod.brand);
+                    cmd.Parameters.AddWithValue("@p_rating", prod.rating);
+                    cmd.Parameters.AddWithValue("@p_sku", prod.sku);
+                    cmd.Parameters.AddWithValue("@p_active_ingredients", prod.active_ingredient);
+
+
+
+                    cmd.Parameters.AddWithValue("@p_packaging_de", prod.packaging_de);
+                    cmd.Parameters.AddWithValue("@p_packaging_en", prod.packaging_de);
+                    cmd.Parameters.AddWithValue("@p_packaging_hu", prod.packaging_de);
+
+
+                    cmd.Parameters.AddWithValue("@p_created_at", prod.created_at);
+                    cmd.Parameters.AddWithValue("@p_updated_at", prod.updated_at);
+                    cmd.Parameters.AddWithValue("@p_thumbnail_url", prod.thumbnail_url);
+
+                    cmd.Parameters.AddWithValue("@p_featured", prod.featured);
+
+
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.update_product_by_id");
                 return 500;
             }
         }
@@ -1153,8 +1254,35 @@ namespace Servo.model
 
 
 
+        //increment_post_views_by_id
+        public static int increment_post_views_by_id(string id)
+        {
 
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("increment_post_view_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
 
+                   
+                    cmd.Parameters.AddWithValue("@p_id", id);
+                  
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_newsletter_recipient");
+                if (ex.Message.Contains("Duplicate"))
+                {
+                    service.shared.log("Duplicate entry detected");
+                    return 409;
+                }
+                return 500;
+            }
+        }
 
 
 
@@ -1302,6 +1430,233 @@ namespace Servo.model
 
 
         }
+
+
+
+
+
+
+
+
+        
+
+        public static int add_post(post pos)
+        {
+
+            try
+            {//id name_de description_en price_huf times_ordered stock sale_percentage description_preview_en name_hu
+             //name_en description_hu description_de description_preview_hu description_preview_de
+             //category manufacturer brand rating sku active_ingredients packaging created_at updated_at name
+                using (MySqlCommand cmd = new MySqlCommand("create_post", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                    cmd.Parameters.AddWithValue("@p_title", pos.title);
+                    cmd.Parameters.AddWithValue("@p_content", pos.content);
+                    cmd.Parameters.AddWithValue("@p_user_id", pos.user_id);
+                    cmd.Parameters.AddWithValue("@p_image_url", pos.image_url);
+                    cmd.Parameters.AddWithValue("@p_category_id", pos.category_id);
+ cmd.Parameters.AddWithValue("@p_slug", pos.slug);
+cmd.Parameters.AddWithValue("@p_excerpt", pos.excerpt);
+                    cmd.Parameters.AddWithValue("@p_status", pos.status);
+                    cmd.Parameters.AddWithValue("@p_views", pos.views);
+                    cmd.Parameters.AddWithValue("@p_likes", pos.likes);
+cmd.Parameters.AddWithValue("@p_comment_count", pos.comment_count);
+                    cmd.Parameters.AddWithValue("@p_is_featured", pos.is_featured);
+                    cmd.Parameters.AddWithValue("@p_tags", pos.tags);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_post");
+                return 500;
+            }
+        }
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

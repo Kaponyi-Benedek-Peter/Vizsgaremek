@@ -21,7 +21,7 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_all_orders_user","delete_post_by_id","delete_all_posts"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product"
         };
 
 
@@ -293,7 +293,7 @@ namespace Servo.controller
 
 
                 }
-                else if (lenyeg.Contains("update_name"))
+                else if (lenyeg.Contains("update_name_by_id"))
                 {
 
                     controller.update_name_by_id.main(data, lenyeg);
@@ -382,6 +382,37 @@ namespace Servo.controller
                     controller.delete_all_posts.main(data, lenyeg);
 
                 }
+                else if (lenyeg.Contains("get_user_state"))
+                {
+
+                    controller.get_user_state.main(data, lenyeg);
+
+                }
+
+                else if (lenyeg.Contains("get_all_product_images_by_id"))
+                {
+
+                    controller.get_all_product_images_by_id.main(data, lenyeg);
+
+                }
+                //
+
+                else if (lenyeg.Contains("increment_post_views_by_id"))
+                {
+
+                    controller.increment_post_views_by_id.main(data, lenyeg);
+
+                }
+
+
+                else if (lenyeg.Contains("create_product"))
+                {
+
+                    controller.create_product.main(data, lenyeg);
+
+                }
+
+
 
             }
             // =========== NEMAPI =========== 
