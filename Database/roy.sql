@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:8889
--- Létrehozás ideje: 2026. Már 16. 11:33
+-- Létrehozás ideje: 2026. Már 16. 12:12
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -860,7 +860,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, 
     WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_comment_by_comment_id` (IN `p_comment_id` INT, IN `p_content` INT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_comment_by_comment_id` (IN `p_comment_id` INT, IN `p_content` VARCHAR(255))   BEGIN
     UPDATE roy.post_comments
     SET
         content = p_content,
