@@ -2220,6 +2220,10 @@ export class AuthService {
   getUserState(): Observable<{ account_state: string; statuscode: string; status: string }> {
     const id = localStorage.getItem('user_id') ?? sessionStorage.getItem('user_id') ?? '';
     const sessionToken = this.getSessionToken() ?? '';
+    if (!id || id === 'undefined') {
+      return of({ account_state: '', statuscode: '401', status: 'no_id' });
+    }
+
     return this.http.post<any>(`${this.API_URL}/api/get_user_state`, {
       id: btoa(id),
       session_token: btoa(sessionToken),
@@ -2554,8 +2558,6 @@ export class AuthService {
     user?: User,
     skipNavigation = false,
   ): void {
-    const id = response.user_id;
-    const role = response.user_state;
     const jwtToken = response.jwt_token;
     const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
@@ -2576,6 +2578,9 @@ export class AuthService {
         };
       }
     }
+
+    const id = response.user_id ?? userData?.id ?? '';
+    const role = response.user_state;
 
     this.clearStorage();
     this.storeRole(role, stayLoggedIn);
