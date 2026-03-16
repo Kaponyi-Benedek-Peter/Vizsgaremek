@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:8889
--- Létrehozás ideje: 2026. Már 16. 09:50
+-- Létrehozás ideje: 2026. Már 16. 11:33
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -156,7 +156,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_title` VARCHAR(
     );
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post_comment_by_comment_id` (IN `p_post_id` INT, IN `p_user_id` INT, IN `p_content` TEXT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post_comment_by_post_id` (IN `p_post_id` INT, IN `p_user_id` INT, IN `p_content` TEXT)   BEGIN
     INSERT INTO roy.post_comments (post_id, user_id, content, created_at)
     VALUES (p_post_id, p_user_id, p_content, NOW());
 
@@ -377,7 +377,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_post_comment_by_comment_id` 
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_post_comment_by_post_id` (IN `p_post_id` INT)   BEGIN
-    DELETE FROM roy.posts WHERE post_id = p_post_id;
+    DELETE FROM roy.post_comments WHERE post_id = p_post_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_product_by_id` (IN `p_id` INT)   BEGIN
@@ -753,6 +753,10 @@ SELECT * from roy.users
 where users.id = p_id;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_id_by_post_comment_id` (IN `p_post_comment_id` INT)   BEGIN
+SELECT user_id FROM post_comments WHERE p_post_comment_id = id;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `increment_post_view_by_id` (IN `p_id` INT)   BEGIN
     UPDATE roy.posts
     SET views = views + 1
@@ -854,6 +858,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, 
             ELSE published_at
         END
     WHERE id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_comment_by_comment_id` (IN `p_comment_id` INT, IN `p_content` INT)   BEGIN
+    UPDATE roy.post_comments
+    SET
+        content = p_content,
+        is_edited = 1
+    WHERE id = p_comment_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_comment_by_post_id` (IN `p_id` INT, IN `p_content` TEXT)   BEGIN
