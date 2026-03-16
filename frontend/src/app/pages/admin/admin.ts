@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +13,7 @@ type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
 
 interface NavItem {
   id: AdminSection;
-  icon: string; // webp img url from ICONS
+  icon: string;
   label: string;
 }
 
@@ -30,11 +30,23 @@ export class Admin implements OnInit {
   private productService = inject(ProductService);
   private router = inject(Router);
 
-  // Expose ICONS to the template
   protected readonly icons = ICONS;
 
   activeSection = signal<AdminSection>('dashboard');
   sidebarCollapsed = signal(false);
+
+  isMobileView = signal(typeof window !== 'undefined' && window.innerWidth <= 768);
+
+  showNavLabels = computed(() =>
+    this.isMobileView() ? this.sidebarCollapsed() : !this.sidebarCollapsed(),
+  );
+
+  mobileOverlayActive = computed(() => this.isMobileView() && this.sidebarCollapsed());
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.isMobileView.set(window.innerWidth <= 768);
+  }
 
   orderSearch = '';
   orderStatusFilter = 'all';
@@ -197,10 +209,17 @@ export class Admin implements OnInit {
 
   setSection(section: AdminSection): void {
     this.activeSection.set(section);
+    this.closeMobileSidebar();
   }
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update((v) => !v);
+  }
+
+  closeMobileSidebar(): void {
+    if (this.isMobileView()) {
+      this.sidebarCollapsed.set(false);
+    }
   }
 
   logout(): void {
@@ -251,8 +270,25 @@ export class Admin implements OnInit {
   }
 
   getOrderAddressSummary(order: AdminOrder): string {
-    const parts = [order.city, order.house_number].filter(Boolean);
-    return parts.join(', ') || '—';
+    const parts = [
+      order.city,
+      order.zipcode ? `(${order.zipcode})` : null,
+      order.address,
+      order.house_number,
+      order.apartment_number ? `/${order.apartment_number}` : null,
+    ].filter(Boolean);
+    return parts.join(' ') || '—';
+  }
+
+  getOrderStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      pending: 'status-pending',
+      processing: 'status-processing',
+      shipped: 'status-shipped',
+      delivered: 'status-delivered',
+      cancelled: 'status-cancelled',
+    };
+    return 'status-badge ' + (map[status] ?? 'status-pending');
   }
 
   trackById(_index: number, item: { id: string }): string {

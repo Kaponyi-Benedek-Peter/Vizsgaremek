@@ -1,10 +1,17 @@
 <div class="admin-page">
+  <!-- Mobile overlay: tap to close the drawer -->
+  <div
+    class="sidebar-overlay"
+    [class.active]="mobileOverlayActive()"
+    (click)="closeMobileSidebar()"
+    aria-hidden="true"
+  ></div>
+
   <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed()">
     <div class="sidebar-header">
       <div class="sidebar-logo">
-        <!-- Admin icon instead of 🏥 emoji -->
         <img [src]="icons.admin" alt="Admin" class="logo-icon" aria-hidden="true" />
-        @if (!sidebarCollapsed()) {
+        @if (showNavLabels()) {
           <span class="logo-text">Roy's Admin</span>
         }
       </div>
@@ -24,24 +31,22 @@
           (click)="setSection(item.id)"
           [attr.title]="item.label | translate"
         >
-          <!-- webp icon instead of emoji string -->
           <img
             [src]="item.icon"
             [attr.alt]="item.label | translate"
             class="nav-icon"
             aria-hidden="true"
           />
-          @if (!sidebarCollapsed()) {
+          @if (showNavLabels()) {
             <span class="nav-label">{{ item.label | translate }}</span>
           }
         </button>
       }
     </nav>
 
-    @if (!sidebarCollapsed()) {
+    @if (showNavLabels()) {
       <div class="sidebar-footer">
         <button class="nav-item logout-btn" (click)="logout()">
-          <!-- login icon repurposed as logout (same visual family) -->
           <img [src]="icons.login" alt="" class="nav-icon" aria-hidden="true" />
           <span class="nav-label">{{ 'profile.logout' | translate }}</span>
         </button>
@@ -74,7 +79,6 @@
         </div>
 
         <div class="stats-grid">
-          <!-- 📦 → orderwhite.webp -->
           <div class="stat-card primary">
             <div class="stat-icon">
               <img [src]="icons.order" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -89,7 +93,6 @@
             </div>
           </div>
 
-          <!-- 💰 → paymentwhite.webp -->
           <div class="stat-card success">
             <div class="stat-icon">
               <img [src]="icons.payment" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -104,7 +107,6 @@
             </div>
           </div>
 
-          <!-- 👥 → customerswhite.webp -->
           <div class="stat-card info">
             <div class="stat-icon">
               <img [src]="icons.customers" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -119,7 +121,6 @@
             </div>
           </div>
 
-          <!-- 🏷️ → salewhite.webp -->
           <div class="stat-card warning">
             <div class="stat-icon">
               <img [src]="icons.sale" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -168,20 +169,26 @@
                 <thead>
                   <tr>
                     <th>{{ 'admin.table.order_id' | translate }}</th>
-                    <th>{{ 'admin.table.user_id' | translate }}</th>
+                    <th>{{ 'admin.table.email' | translate }}</th>
                     <th>{{ 'admin.table.date' | translate }}</th>
                     <th>{{ 'admin.table.address' | translate }}</th>
                     <th>{{ 'admin.table.total' | translate }}</th>
+                    <th>{{ 'admin.table.status' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (order of recentOrders(); track order.id) {
                     <tr>
                       <td class="order-id">#{{ order.id }}</td>
-                      <td class="muted">{{ order.user_id }}</td>
+                      <td class="muted">{{ order.email || order.user_id }}</td>
                       <td class="muted">{{ formatDate(order.created_at) }}</td>
                       <td>{{ getOrderAddressSummary(order) }}</td>
                       <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                      <td>
+                        <span [class]="getOrderStatusClass(order.order_status)">
+                          {{ order.order_status }}
+                        </span>
+                      </td>
                     </tr>
                   }
                 </tbody>
@@ -196,7 +203,6 @@
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <!-- 🔍 → searchwhite.webp -->
             <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
@@ -232,11 +238,13 @@
                   <thead>
                     <tr>
                       <th>{{ 'admin.table.order_id' | translate }}</th>
-                      <th>{{ 'admin.table.user_id' | translate }}</th>
+                      <th>{{ 'admin.table.email' | translate }}</th>
+                      <th>{{ 'admin.table.billing_name' | translate }}</th>
                       <th>{{ 'admin.table.date' | translate }}</th>
                       <th>{{ 'admin.table.address' | translate }}</th>
                       <th>{{ 'admin.table.phone' | translate }}</th>
                       <th>{{ 'admin.table.total' | translate }}</th>
+                      <th>{{ 'admin.table.status' | translate }}</th>
                       <th>{{ 'admin.table.note' | translate }}</th>
                     </tr>
                   </thead>
@@ -244,19 +252,17 @@
                     @for (order of filteredOrders(); track order.id) {
                       <tr>
                         <td class="order-id">#{{ order.id }}</td>
-                        <td class="muted">{{ order.user_id }}</td>
+                        <td class="muted">{{ order.email || '—' }}</td>
+                        <td>{{ order.billing_name || '—' }}</td>
                         <td class="muted">{{ formatDate(order.created_at) }}</td>
-                        <td>
-                          {{ order.city }}
-                          @if (order.house_number) {
-                            <span class="muted">, {{ order.house_number }}</span>
-                          }
-                          @if (order.apartment_number) {
-                            <span class="muted">/{{ order.apartment_number }}</span>
-                          }
-                        </td>
+                        <td>{{ getOrderAddressSummary(order) }}</td>
                         <td class="muted">{{ order.phone_number || '—' }}</td>
                         <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                        <td>
+                          <span [class]="getOrderStatusClass(order.order_status)">
+                            {{ order.order_status }}
+                          </span>
+                        </td>
                         <td class="muted note-cell">{{ order.note || '—' }}</td>
                       </tr>
                     }
@@ -273,7 +279,6 @@
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <!-- 🔍 → searchwhite.webp -->
             <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
@@ -347,7 +352,6 @@
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <!-- 🔍 → searchwhite.webp -->
             <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
@@ -392,11 +396,10 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (product of filteredProducts(); track product.id; let i = $index) {
+                    @for (product of filteredProducts(); track product.id) {
                       <tr>
                         <td>
                           <div class="product-cell">
-                            <!-- 💊 → categories/medicines.webp -->
                             <div class="product-thumb">
                               <img
                                 [src]="icons.categoryMedicines"
@@ -419,7 +422,6 @@
                             {{ product.stockNumber }} {{ 'common.items_unit' | translate }}
                           </span>
                         </td>
-                        <!-- ⭐ → Unicode star character (no img needed, stays inline) -->
                         <td class="muted">★ {{ product.ratingNumber.toFixed(1) }}</td>
                         <td>
                           <span

@@ -39,7 +39,6 @@
   overflow: hidden;
 }
 
-/* Logo icon – webp img replaces emoji */
 .logo-icon {
   width: 26px;
   height: 26px;
@@ -108,7 +107,6 @@
   color: white;
 }
 
-/* Nav icon – webp img replaces emoji text */
 .nav-icon {
   width: 20px;
   height: 20px;
@@ -118,7 +116,6 @@
   transition: filter 0.15s;
 }
 
-/* Active nav item: icon should always be white regardless of theme */
 .nav-item.active .nav-icon {
   filter: brightness(0) saturate(100%) invert(1);
 }
@@ -139,7 +136,7 @@
 .logout-btn:hover {
   background: rgba(220, 38, 38, 0.08) !important;
 }
-/* Logout icon tinted red */
+
 .logout-btn .nav-icon {
   filter: brightness(0) saturate(100%) invert(20%) sepia(80%) saturate(6000%) hue-rotate(355deg);
 }
@@ -256,7 +253,6 @@
   justify-content: center;
 }
 
-/* Stat icons – sized webp imgs */
 .stat-icon-img {
   width: 40px;
   height: 40px;
@@ -264,7 +260,6 @@
   filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
-/* Color-tint stat icons to match card accent colors */
 .stat-card.primary .stat-icon-img {
   filter: brightness(0) saturate(100%) invert(28%) sepia(90%) saturate(700%) hue-rotate(120deg);
 }
@@ -535,7 +530,6 @@
   padding: 4px;
 }
 
-/* Product thumb icon – category medicines webp */
 .product-thumb-img {
   width: 22px;
   height: 22px;
@@ -556,7 +550,6 @@
   min-width: 200px;
 }
 
-/* Search icon – webp img absolutely positioned */
 .search-icon-small {
   position: absolute;
   left: var(--space-3);
@@ -602,7 +595,101 @@
 }
 
 .retry-btn {
-  background-color: var(--bg-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 0.75rem);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.1s;
+}
+
+.retry-btn:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color-hover);
+}
+
+.retry-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.retry-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  cursor: pointer;
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-6);
+  color: var(--text-secondary);
+  font-size: var(--text-sm, 0.9rem);
+  text-align: center;
+}
+
+.loading-state .spinner {
+  font-size: 1.5rem;
+  animation: spinEmoji 1s linear infinite;
+}
+
+@keyframes spinEmoji {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-state {
+  color: #dc2626;
+}
+
+.error-state span {
+  font-weight: 500;
+}
+
+.loading-pulse {
+  opacity: 0.4;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.warning-text {
+  color: #d97706;
 }
 
 .add-btn {
@@ -633,6 +720,10 @@
 }
 
 @media (max-width: 768px) {
+  .sidebar-overlay.active {
+    display: block;
+  }
+
   .admin-sidebar {
     position: fixed;
     left: 0;

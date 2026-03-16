@@ -59,13 +59,18 @@ export interface AdminUsersResponse {
 export interface AdminOrder {
   id: string;
   user_id: string;
+  email: string;
+  billing_name: string;
+  order_status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   created_at: string;
   price: string;
   city: string;
-  apartment_number: string;
-  note: string;
+  zipcode: string;
+  address: string;
   house_number: string;
+  apartment_number: string;
   phone_number: string;
+  note: string;
 }
 
 export interface AdminOrdersResponse {

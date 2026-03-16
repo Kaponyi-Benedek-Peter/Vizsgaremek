@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
+import { interval } from 'rxjs';
 import { Category, ProductWithHelpers } from '../../../core/models/product.model';
 import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../core/services/cart.service';
@@ -10,6 +12,8 @@ import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
 import { ProductDetailModal } from '../product-detail-modal/product-detail-modal';
 import { ICONS } from '../../../core/constants/visuals';
+
+const POLL_INTERVAL_MS = 60_000;
 
 @Component({
   selector: 'app-product-list',
@@ -28,8 +32,8 @@ import { ICONS } from '../../../core/constants/visuals';
 export class ProductList {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+  private destroyRef = inject(DestroyRef);
 
-  // Expose ICONS to the template
   protected readonly icons = ICONS;
 
   products = this.productService.paginatedProducts;
@@ -44,6 +48,15 @@ export class ProductList {
 
   async ngOnInit(): Promise<void> {
     await Promise.all([this.productService.loadProducts(), this.productService.loadCategories()]);
+    this.startPolling();
+  }
+
+  private startPolling(): void {
+    interval(POLL_INTERVAL_MS)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.productService.loadProducts();
+      });
   }
 
   handleCategorySelected(categoryId: string): void {

@@ -1942,13 +1942,18 @@ export interface AdminUsersResponse {
 export interface AdminOrder {
   id: string;
   user_id: string;
+  email: string;
+  billing_name: string;
+  order_status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   created_at: string;
   price: string;
   city: string;
-  apartment_number: string;
-  note: string;
+  zipcode: string;
+  address: string;
   house_number: string;
+  apartment_number: string;
   phone_number: string;
+  note: string;
 }
 
 export interface AdminOrdersResponse {
@@ -3625,7 +3630,6 @@ FILE: src\app\pages\admin\admin.css
   overflow: hidden;
 }
 
-/* Logo icon – webp img replaces emoji */
 .logo-icon {
   width: 26px;
   height: 26px;
@@ -3694,7 +3698,6 @@ FILE: src\app\pages\admin\admin.css
   color: white;
 }
 
-/* Nav icon – webp img replaces emoji text */
 .nav-icon {
   width: 20px;
   height: 20px;
@@ -3704,7 +3707,6 @@ FILE: src\app\pages\admin\admin.css
   transition: filter 0.15s;
 }
 
-/* Active nav item: icon should always be white regardless of theme */
 .nav-item.active .nav-icon {
   filter: brightness(0) saturate(100%) invert(1);
 }
@@ -3725,7 +3727,7 @@ FILE: src\app\pages\admin\admin.css
 .logout-btn:hover {
   background: rgba(220, 38, 38, 0.08) !important;
 }
-/* Logout icon tinted red */
+
 .logout-btn .nav-icon {
   filter: brightness(0) saturate(100%) invert(20%) sepia(80%) saturate(6000%) hue-rotate(355deg);
 }
@@ -3842,7 +3844,6 @@ FILE: src\app\pages\admin\admin.css
   justify-content: center;
 }
 
-/* Stat icons – sized webp imgs */
 .stat-icon-img {
   width: 40px;
   height: 40px;
@@ -3850,7 +3851,6 @@ FILE: src\app\pages\admin\admin.css
   filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
-/* Color-tint stat icons to match card accent colors */
 .stat-card.primary .stat-icon-img {
   filter: brightness(0) saturate(100%) invert(28%) sepia(90%) saturate(700%) hue-rotate(120deg);
 }
@@ -4121,7 +4121,6 @@ FILE: src\app\pages\admin\admin.css
   padding: 4px;
 }
 
-/* Product thumb icon – category medicines webp */
 .product-thumb-img {
   width: 22px;
   height: 22px;
@@ -4142,7 +4141,6 @@ FILE: src\app\pages\admin\admin.css
   min-width: 200px;
 }
 
-/* Search icon – webp img absolutely positioned */
 .search-icon-small {
   position: absolute;
   left: var(--space-3);
@@ -4188,7 +4186,101 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .retry-btn {
-  background-color: var(--bg-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 0.75rem);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.1s;
+}
+
+.retry-btn:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color-hover);
+}
+
+.retry-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.retry-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  cursor: pointer;
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-6);
+  color: var(--text-secondary);
+  font-size: var(--text-sm, 0.9rem);
+  text-align: center;
+}
+
+.loading-state .spinner {
+  font-size: 1.5rem;
+  animation: spinEmoji 1s linear infinite;
+}
+
+@keyframes spinEmoji {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-state {
+  color: #dc2626;
+}
+
+.error-state span {
+  font-weight: 500;
+}
+
+.loading-pulse {
+  opacity: 0.4;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.warning-text {
+  color: #d97706;
 }
 
 .add-btn {
@@ -4219,6 +4311,10 @@ FILE: src\app\pages\admin\admin.css
 }
 
 @media (max-width: 768px) {
+  .sidebar-overlay.active {
+    display: block;
+  }
+
   .admin-sidebar {
     position: fixed;
     left: 0;
@@ -4315,12 +4411,19 @@ FILE: src\app\pages\admin\admin.html
 ================================================================================
 
 <div class="admin-page">
+  <!-- Mobile overlay: tap to close the drawer -->
+  <div
+    class="sidebar-overlay"
+    [class.active]="mobileOverlayActive()"
+    (click)="closeMobileSidebar()"
+    aria-hidden="true"
+  ></div>
+
   <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed()">
     <div class="sidebar-header">
       <div class="sidebar-logo">
-        <!-- Admin icon instead of 🏥 emoji -->
         <img [src]="icons.admin" alt="Admin" class="logo-icon" aria-hidden="true" />
-        @if (!sidebarCollapsed()) {
+        @if (showNavLabels()) {
           <span class="logo-text">Roy's Admin</span>
         }
       </div>
@@ -4340,24 +4443,22 @@ FILE: src\app\pages\admin\admin.html
           (click)="setSection(item.id)"
           [attr.title]="item.label | translate"
         >
-          <!-- webp icon instead of emoji string -->
           <img
             [src]="item.icon"
             [attr.alt]="item.label | translate"
             class="nav-icon"
             aria-hidden="true"
           />
-          @if (!sidebarCollapsed()) {
+          @if (showNavLabels()) {
             <span class="nav-label">{{ item.label | translate }}</span>
           }
         </button>
       }
     </nav>
 
-    @if (!sidebarCollapsed()) {
+    @if (showNavLabels()) {
       <div class="sidebar-footer">
         <button class="nav-item logout-btn" (click)="logout()">
-          <!-- login icon repurposed as logout (same visual family) -->
           <img [src]="icons.login" alt="" class="nav-icon" aria-hidden="true" />
           <span class="nav-label">{{ 'profile.logout' | translate }}</span>
         </button>
@@ -4390,7 +4491,6 @@ FILE: src\app\pages\admin\admin.html
         </div>
 
         <div class="stats-grid">
-          <!-- 📦 → orderwhite.webp -->
           <div class="stat-card primary">
             <div class="stat-icon">
               <img [src]="icons.order" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -4405,7 +4505,6 @@ FILE: src\app\pages\admin\admin.html
             </div>
           </div>
 
-          <!-- 💰 → paymentwhite.webp -->
           <div class="stat-card success">
             <div class="stat-icon">
               <img [src]="icons.payment" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -4420,7 +4519,6 @@ FILE: src\app\pages\admin\admin.html
             </div>
           </div>
 
-          <!-- 👥 → customerswhite.webp -->
           <div class="stat-card info">
             <div class="stat-icon">
               <img [src]="icons.customers" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -4435,7 +4533,6 @@ FILE: src\app\pages\admin\admin.html
             </div>
           </div>
 
-          <!-- 🏷️ → salewhite.webp -->
           <div class="stat-card warning">
             <div class="stat-icon">
               <img [src]="icons.sale" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -4484,20 +4581,26 @@ FILE: src\app\pages\admin\admin.html
                 <thead>
                   <tr>
                     <th>{{ 'admin.table.order_id' | translate }}</th>
-                    <th>{{ 'admin.table.user_id' | translate }}</th>
+                    <th>{{ 'admin.table.email' | translate }}</th>
                     <th>{{ 'admin.table.date' | translate }}</th>
                     <th>{{ 'admin.table.address' | translate }}</th>
                     <th>{{ 'admin.table.total' | translate }}</th>
+                    <th>{{ 'admin.table.status' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (order of recentOrders(); track order.id) {
                     <tr>
                       <td class="order-id">#{{ order.id }}</td>
-                      <td class="muted">{{ order.user_id }}</td>
+                      <td class="muted">{{ order.email || order.user_id }}</td>
                       <td class="muted">{{ formatDate(order.created_at) }}</td>
                       <td>{{ getOrderAddressSummary(order) }}</td>
                       <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                      <td>
+                        <span [class]="getOrderStatusClass(order.order_status)">
+                          {{ order.order_status }}
+                        </span>
+                      </td>
                     </tr>
                   }
                 </tbody>
@@ -4512,7 +4615,6 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <!-- 🔍 → searchwhite.webp -->
             <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
@@ -4548,11 +4650,13 @@ FILE: src\app\pages\admin\admin.html
                   <thead>
                     <tr>
                       <th>{{ 'admin.table.order_id' | translate }}</th>
-                      <th>{{ 'admin.table.user_id' | translate }}</th>
+                      <th>{{ 'admin.table.email' | translate }}</th>
+                      <th>{{ 'admin.table.billing_name' | translate }}</th>
                       <th>{{ 'admin.table.date' | translate }}</th>
                       <th>{{ 'admin.table.address' | translate }}</th>
                       <th>{{ 'admin.table.phone' | translate }}</th>
                       <th>{{ 'admin.table.total' | translate }}</th>
+                      <th>{{ 'admin.table.status' | translate }}</th>
                       <th>{{ 'admin.table.note' | translate }}</th>
                     </tr>
                   </thead>
@@ -4560,19 +4664,17 @@ FILE: src\app\pages\admin\admin.html
                     @for (order of filteredOrders(); track order.id) {
                       <tr>
                         <td class="order-id">#{{ order.id }}</td>
-                        <td class="muted">{{ order.user_id }}</td>
+                        <td class="muted">{{ order.email || '—' }}</td>
+                        <td>{{ order.billing_name || '—' }}</td>
                         <td class="muted">{{ formatDate(order.created_at) }}</td>
-                        <td>
-                          {{ order.city }}
-                          @if (order.house_number) {
-                            <span class="muted">, {{ order.house_number }}</span>
-                          }
-                          @if (order.apartment_number) {
-                            <span class="muted">/{{ order.apartment_number }}</span>
-                          }
-                        </td>
+                        <td>{{ getOrderAddressSummary(order) }}</td>
                         <td class="muted">{{ order.phone_number || '—' }}</td>
                         <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                        <td>
+                          <span [class]="getOrderStatusClass(order.order_status)">
+                            {{ order.order_status }}
+                          </span>
+                        </td>
                         <td class="muted note-cell">{{ order.note || '—' }}</td>
                       </tr>
                     }
@@ -4589,7 +4691,6 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <!-- 🔍 → searchwhite.webp -->
             <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
@@ -4663,7 +4764,6 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <!-- 🔍 → searchwhite.webp -->
             <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
@@ -4708,11 +4808,10 @@ FILE: src\app\pages\admin\admin.html
                     </tr>
                   </thead>
                   <tbody>
-                    @for (product of filteredProducts(); track product.id; let i = $index) {
+                    @for (product of filteredProducts(); track product.id) {
                       <tr>
                         <td>
                           <div class="product-cell">
-                            <!-- 💊 → categories/medicines.webp -->
                             <div class="product-thumb">
                               <img
                                 [src]="icons.categoryMedicines"
@@ -4735,7 +4834,6 @@ FILE: src\app\pages\admin\admin.html
                             {{ product.stockNumber }} {{ 'common.items_unit' | translate }}
                           </span>
                         </td>
-                        <!-- ⭐ → Unicode star character (no img needed, stays inline) -->
                         <td class="muted">★ {{ product.ratingNumber.toFixed(1) }}</td>
                         <td>
                           <span
@@ -4799,7 +4897,7 @@ describe('Admin', () => {
 FILE: src\app\pages\admin\admin.ts
 ================================================================================
 
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -4814,7 +4912,7 @@ type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
 
 interface NavItem {
   id: AdminSection;
-  icon: string; // webp img url from ICONS
+  icon: string;
   label: string;
 }
 
@@ -4831,11 +4929,23 @@ export class Admin implements OnInit {
   private productService = inject(ProductService);
   private router = inject(Router);
 
-  // Expose ICONS to the template
   protected readonly icons = ICONS;
 
   activeSection = signal<AdminSection>('dashboard');
   sidebarCollapsed = signal(false);
+
+  isMobileView = signal(typeof window !== 'undefined' && window.innerWidth <= 768);
+
+  showNavLabels = computed(() =>
+    this.isMobileView() ? this.sidebarCollapsed() : !this.sidebarCollapsed(),
+  );
+
+  mobileOverlayActive = computed(() => this.isMobileView() && this.sidebarCollapsed());
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.isMobileView.set(window.innerWidth <= 768);
+  }
 
   orderSearch = '';
   orderStatusFilter = 'all';
@@ -4998,10 +5108,17 @@ export class Admin implements OnInit {
 
   setSection(section: AdminSection): void {
     this.activeSection.set(section);
+    this.closeMobileSidebar();
   }
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update((v) => !v);
+  }
+
+  closeMobileSidebar(): void {
+    if (this.isMobileView()) {
+      this.sidebarCollapsed.set(false);
+    }
   }
 
   logout(): void {
@@ -5052,8 +5169,25 @@ export class Admin implements OnInit {
   }
 
   getOrderAddressSummary(order: AdminOrder): string {
-    const parts = [order.city, order.house_number].filter(Boolean);
-    return parts.join(', ') || '—';
+    const parts = [
+      order.city,
+      order.zipcode ? `(${order.zipcode})` : null,
+      order.address,
+      order.house_number,
+      order.apartment_number ? `/${order.apartment_number}` : null,
+    ].filter(Boolean);
+    return parts.join(' ') || '—';
+  }
+
+  getOrderStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      pending: 'status-pending',
+      processing: 'status-processing',
+      shipped: 'status-shipped',
+      delivered: 'status-delivered',
+      cancelled: 'status-cancelled',
+    };
+    return 'status-badge ' + (map[status] ?? 'status-pending');
   }
 
   trackById(_index: number, item: { id: string }): string {
@@ -18979,10 +19113,6 @@ export class NewsletterForm {
 FILE: src\app\shared\components\header\header.css
 ================================================================================
 
-/* ══════════════════════════════════════════════════════════════
-   HEADER — Glass Morphism Sticky Navigation
-   ══════════════════════════════════════════════════════════════ */
-
 .header {
   position: sticky;
   top: 0;
@@ -19016,10 +19146,6 @@ FILE: src\app\shared\components\header\header.css
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   LAYOUT SECTIONS
-   ══════════════════════════════════════════════════════════════ */
-
 .header-left {
   flex-shrink: 0;
 }
@@ -19050,10 +19176,6 @@ FILE: src\app\shared\components\header\header.css
   align-items: center;
   flex-shrink: 0;
 }
-
-/* ══════════════════════════════════════════════════════════════
-   HAMBURGER MENU (hidden on desktop, visible on mobile)
-   ══════════════════════════════════════════════════════════════ */
 
 .mobile-menu-wrapper {
   display: none;
@@ -19139,10 +19261,6 @@ FILE: src\app\shared\components\header\header.css
   background-color: var(--border-color);
   margin: 0.25rem 0;
 }
-
-/* ══════════════════════════════════════════════════════════════
-   USER MENU
-   ══════════════════════════════════════════════════════════════ */
 
 .user-menu-wrapper {
   position: relative;
@@ -19232,10 +19350,6 @@ FILE: src\app\shared\components\header\header.css
 .logout-btn .dropdown-icon {
   color: #dc2626;
 }
-
-/* ══════════════════════════════════════════════════════════════
-   CART
-   ══════════════════════════════════════════════════════════════ */
 
 .cart-menu-wrapper {
   position: relative;
@@ -19554,10 +19668,6 @@ FILE: src\app\shared\components\header\header.css
   border-color: #dc2626;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   ANIMATIONS
-   ══════════════════════════════════════════════════════════════ */
-
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -19568,10 +19678,6 @@ FILE: src\app\shared\components\header\header.css
     transform: translateY(0);
   }
 }
-
-/* ══════════════════════════════════════════════════════════════
-   RESPONSIVE
-   ══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 1024px) {
   .header-center {
@@ -19622,8 +19728,12 @@ FILE: src\app\shared\components\header\header.css
   }
 
   .user-dropdown {
-    width: 240px;
-    right: -10px;
+    position: fixed;
+    top: 70px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    min-width: unset;
   }
 
   .mobile-dropdown {
@@ -23737,8 +23847,10 @@ FILE: src\app\shared\components\product-list\product-list.ts
 ================================================================================
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
+import { interval } from 'rxjs';
 import { Category, ProductWithHelpers } from '../../../core/models/product.model';
 import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../core/services/cart.service';
@@ -23748,6 +23860,8 @@ import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
 import { ProductDetailModal } from '../product-detail-modal/product-detail-modal';
 import { ICONS } from '../../../core/constants/visuals';
+
+const POLL_INTERVAL_MS = 60_000;
 
 @Component({
   selector: 'app-product-list',
@@ -23766,8 +23880,8 @@ import { ICONS } from '../../../core/constants/visuals';
 export class ProductList {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+  private destroyRef = inject(DestroyRef);
 
-  // Expose ICONS to the template
   protected readonly icons = ICONS;
 
   products = this.productService.paginatedProducts;
@@ -23782,6 +23896,15 @@ export class ProductList {
 
   async ngOnInit(): Promise<void> {
     await Promise.all([this.productService.loadProducts(), this.productService.loadCategories()]);
+    this.startPolling();
+  }
+
+  private startPolling(): void {
+    interval(POLL_INTERVAL_MS)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.productService.loadProducts();
+      });
   }
 
   handleCategorySelected(categoryId: string): void {
