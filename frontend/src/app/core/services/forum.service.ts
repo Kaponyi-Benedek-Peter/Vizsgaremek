@@ -150,12 +150,16 @@ export class ForumService {
       );
   }
 
-  incrementViews(postId: string) {
+  incrementViews(postId: string, userId: string, sessionToken: string) {
     return this.http
       .post<{
         status: string;
         statuscode: number;
-      }>(`${this.API_URL}/api/increment_post_view_by_id`, { id: btoa(postId) })
+      }>(`${this.API_URL}/api/increment_post_views_by_id`, {
+        user_id: btoa(userId),
+        session_token: btoa(sessionToken),
+        post_id: btoa(postId),
+      })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         catchError(() => of(null)),

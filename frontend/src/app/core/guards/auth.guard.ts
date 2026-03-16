@@ -1,70 +1,62 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
+import { map, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-/**
- * Auth Guard - Managing guarded routes
- *
- * USE:
- * {
- *   path: 'profile',
- *   component: ProfileComponent,
- *   canActivate: [authGuard]
- * }
- */
 export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isUserAuthenticated()) {
-    return true;
+  if (!authService.isUserAuthenticated()) {
+    router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+    return false;
   }
 
-  router.navigate(['/login'], {
-    queryParams: { returnUrl: state.url },
-  });
-
-  return false;
+  return authService.checkUserStateGuard().pipe(
+    map((allowed) => {
+      if (!allowed) {
+        router.navigate(['/login']);
+        return false;
+      }
+      return true;
+    }),
+    catchError(() => of(true)),
+  );
 };
 
-/**
- * Admin Guard - Admin privilege check
- *
- * USE:
- * {
- *   path: 'admin',
- *   component: AdminComponent,
- *   canActivate: [adminGuard]
- * }
- */
 export const adminGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
   if (!authService.isUserAuthenticated()) {
-    router.navigate(['/login'], {
-      queryParams: { returnUrl: state.url },
-    });
+    router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
     return false;
   }
 
-  if (authService.isAdmin()) {
-    return true;
-  }
-
-  router.navigate(['/home']);
-  return false;
+  return authService.checkUserStateGuard().pipe(
+    map((allowed) => {
+      if (!allowed) {
+        router.navigate(['/login']);
+        return false;
+      }
+      if (!authService.isAdmin()) {
+        router.navigate(['/home']);
+        return false;
+      }
+      return true;
+    }),
+    catchError(() => {
+      if (!authService.isAdmin()) {
+        router.navigate(['/home']);
+        return of(false);
+      }
+      return of(true);
+    }),
+  );
 };
 
-/**
- * Guest Guard - Only unauthenticated (login, register oldalak).
- */
 export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
-
-  if (authService.isUserAuthenticated()) {
-    return false;
-  }
-
-  return true;
+  return !authService.isUserAuthenticated();
 };
