@@ -3207,12 +3207,16 @@ export class ForumService {
       );
   }
 
-  incrementViews(postId: string) {
+  incrementViews(postId: string, userId: string, sessionToken: string) {
     return this.http
       .post<{
         status: string;
         statuscode: number;
-      }>(`${this.API_URL}/api/increment_post_view_by_id`, { id: btoa(postId) })
+      }>(`${this.API_URL}/api/increment_post_views_by_id`, {
+        user_id: btoa(userId),
+        session_token: btoa(sessionToken),
+        post_id: btoa(postId),
+      })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         catchError(() => of(null)),
@@ -7743,13 +7747,17 @@ export class ForumDetail implements OnInit {
     this.contentExpanded.set(false);
     this.sliderIndex.set(0);
     this.comments.set([]);
+    const userId = this.authService.currentUser()?.id ?? '';
+    const sessToken = this.sessionToken;
 
     this.forumService.getPostById(id).subscribe((post) => {
       this.post.set(post);
       this.isLoading.set(false);
 
       if (post) {
-        this.forumService.incrementViews(post.id).subscribe();
+        if (this.authService.isAuthenticated()) {
+          this.forumService.incrementViews(post.id, userId, sessToken).subscribe();
+        }
 
         this.forumService.getComments(post.id).subscribe((comments) => {
           this.comments.set(comments);
