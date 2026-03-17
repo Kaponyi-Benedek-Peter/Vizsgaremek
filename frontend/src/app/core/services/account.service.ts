@@ -27,20 +27,12 @@ export interface ApiResponse<T = any> {
 export interface OrderItem {
   product_id: string;
   quantity: string;
-  price: string;
-  unit_price: string;
-  product_name_hu: string;
-  product_name_en: string;
-  product_name_de: string;
-  thumbnail_url: string;
-  sku: string;
 }
 
 export interface CreateOrderRequest {
   order: {
-    controller_user_id: string;
-    controller_session_token: string;
-    created_at: string;
+    user_id: string;
+    session_token: string;
     email: string;
     billing_name: string;
     shipping_name: string;
@@ -55,7 +47,7 @@ export interface CreateOrderRequest {
     house_number: string;
     phone_number: string;
   };
-  items: { item: OrderItem }[];
+  items: OrderItem[];
 }
 
 export interface AdminUser {

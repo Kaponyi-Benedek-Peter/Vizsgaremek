@@ -98,9 +98,8 @@ export class Purchase implements OnInit {
       const user = this.authService.currentUser();
       const orderData: CreateOrderRequest = {
         order: {
-          controller_user_id: btoa(user?.id ?? ''),
-          controller_session_token: btoa(this.authService.getSessionToken() ?? ''),
-          created_at: btoa(new Date().toISOString()),
+          user_id: btoa(user?.id ?? ''),
+          session_token: btoa(this.authService.getSessionToken() ?? ''),
           email: btoa(user?.email ?? ''),
           billing_name: btoa(`${user?.firstname} ${user?.lastname}`),
           shipping_name: btoa(`${user?.firstname} ${user?.lastname}`),
@@ -116,17 +115,8 @@ export class Purchase implements OnInit {
           phone_number: btoa(this.form.phoneNumber),
         },
         items: this.cartItems().map((i) => ({
-          item: {
-            product_id: btoa(String(i.product.id)),
-            quantity: btoa(String(i.quantity)),
-            price: btoa(String(this.cartService.getItemTotal(i.product, i.quantity))),
-            unit_price: btoa(String(this.currencyService.getDiscountedPrice(i.product))),
-            product_name_hu: btoa(i.product.name_hu ?? ''),
-            product_name_en: btoa(i.product.name_en ?? ''),
-            product_name_de: btoa(i.product.name_de ?? ''),
-            thumbnail_url: btoa(i.product.thumbnail_url ?? ''),
-            sku: btoa(i.product.sku ?? ''),
-          },
+          product_id: btoa(String(i.product.id)),
+          quantity: btoa(String(i.quantity)),
         })),
       };
 
