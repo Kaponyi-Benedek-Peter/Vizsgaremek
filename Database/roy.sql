@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:8889
--- Létrehozás ideje: 2026. Már 17. 12:26
+-- Létrehozás ideje: 2026. Már 17. 13:15
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -1270,21 +1270,21 @@ CREATE TABLE `product_images` (
 --
 
 INSERT INTO `product_images` (`id`, `alt_text_de`, `alt_text_hu`, `alt_text_en`, `image_url`, `product_id`, `sort_id`) VALUES
-(1, 'Aspirin 500mg Filmtabletten Packung', 'Aspirin 500mg filmtabletta doboz', 'Aspirin 500mg film-coated tablets box', '/assets/products/aspirin-500-main.jpg', 1, 1),
-(2, 'Aspirin 500mg Tabletten Nahaufnahme', 'Aspirin 500mg tabletták közelképe', 'Aspirin 500mg tablets close-up', '/assets/products/aspirin-500-tablets.jpg', 1, 2),
-(3, 'Aspirin 500mg Packungsrückseite, Dosierung', 'Aspirin 500mg doboz hátoldala, adagolás', 'Aspirin 500mg box back, dosage information', '/assets/products/aspirin-500-back.jpg', 1, 3),
-(4, 'Omega-3 Fischöl 1000mg Kapselflasche', 'Omega-3 halolaj 1000mg kapszula doboz', 'Omega-3 fish oil 1000mg capsule bottle', '/assets/products/omega3-1000-main.jpg', 2, 1),
-(5, 'Omega-3 Kapseln Nahaufnahme', 'Omega-3 kapszulák közelképe', 'Omega-3 capsules close-up', '/assets/products/omega3-1000-capsules.jpg', 2, 2),
-(6, 'Omega-3 Inhaltsstoffe und Nährwertinfo', 'Omega-3 összetevők és táplálkozási info', 'Omega-3 ingredients and nutritional info', '/assets/products/omega3-1000-info.jpg', 2, 3),
-(7, 'Magnesium B6 Tabletten Packung', 'Magnézium B6 tabletta doboz', 'Magnesium B6 tablet box', '/assets/products/magnesium-b6-main.jpg', 3, 1),
-(8, 'Magnesium B6 Packung offen mit Tabletten', 'Magnézium B6 doboz nyitva tabletták', 'Magnesium B6 box open with tablets', '/assets/products/magnesium-b6-open.jpg', 3, 2),
-(9, 'Magnesium B6 Produktetikett Nahaufnahme', 'Magnézium B6 termék címke közelkép', 'Magnesium B6 product label close-up', '/assets/products/magnesium-b6-label.jpg', 3, 3),
-(10, 'Cetirizin 10mg Allergie Tabletten Packung', 'Cetirizin 10mg allergia tabletta doboz', 'Cetirizine 10mg allergy tablet box', '/assets/products/cetirizin-10-main.jpg', 4, 1),
-(11, 'Cetirizin 10mg Blisterpackung', 'Cetirizin 10mg buborékcsomagolás', 'Cetirizine 10mg blister pack', '/assets/products/cetirizin-10-blister.jpg', 4, 2),
-(12, 'Cetirizin 10mg Dosierungsanleitung', 'Cetirizin 10mg adagolási útmutató', 'Cetirizine 10mg dosage guide', '/assets/products/cetirizin-10-dose.jpg', 4, 3),
-(13, 'Probiotika 10 Milliarden KBE Kapselflasche', 'Probiotikum 10 milliárd CFU kapszula doboz', 'Probiotic 10 billion CFU capsule bottle', '/assets/products/probiotikum-10b-main.jpg', 5, 1),
-(14, 'Probiotika Kapseln Nahaufnahme', 'Probiotikum kapszulák közelkép', 'Probiotic capsules close-up', '/assets/products/probiotikum-10b-caps.jpg', 5, 2),
-(15, 'Probiotika Stämme und Inhaltsstoffe', 'Probiotikum törzsek és összetevők', 'Probiotic strains and ingredients', '/assets/products/probiotikum-10b-info.jpg', 5, 3);
+(1, 'Aspirin 500mg Filmtabletten Packung', 'Aspirin 500mg filmtabletta doboz', 'Aspirin 500mg film-coated tablets box', '/assets/products/1/1.webp', 1, 1),
+(2, 'Aspirin 500mg Tabletten Nahaufnahme', 'Aspirin 500mg tabletták közelképe', 'Aspirin 500mg tablets close-up', '/assets/products/1/2.webp', 1, 2),
+(3, 'Aspirin 500mg Packungsrückseite, Dosierung', 'Aspirin 500mg doboz hátoldala, adagolás', 'Aspirin 500mg box back, dosage information', '/assets/products/1/3.webp', 1, 3),
+(4, 'Omega-3 Fischöl 1000mg Kapselflasche', 'Omega-3 halolaj 1000mg kapszula doboz', 'Omega-3 fish oil 1000mg capsule bottle', '/assets/products/2/1.webp', 2, 1),
+(5, 'Omega-3 Kapseln Nahaufnahme', 'Omega-3 kapszulák közelképe', 'Omega-3 capsules close-up', '/assets/products/2/2.webp', 2, 2),
+(6, 'Omega-3 Inhaltsstoffe und Nährwertinfo', 'Omega-3 összetevők és táplálkozási info', 'Omega-3 ingredients and nutritional info', '/assets/products/2/3.webp', 2, 3),
+(7, 'Magnesium B6 Tabletten Packung', 'Magnézium B6 tabletta doboz', 'Magnesium B6 tablet box', '/assets/products/3/1.webp', 3, 1),
+(8, 'Magnesium B6 Packung offen mit Tabletten', 'Magnézium B6 doboz nyitva tabletták', 'Magnesium B6 box open with tablets', '/assets/products/3/2.webp', 3, 2),
+(9, 'Magnesium B6 Produktetikett Nahaufnahme', 'Magnézium B6 termék címke közelkép', 'Magnesium B6 product label close-up', '/assets/products/3/3.webp', 3, 3),
+(10, 'Cetirizin 10mg Allergie Tabletten Packung', 'Cetirizin 10mg allergia tabletta doboz', 'Cetirizine 10mg allergy tablet box', '/assets/products/4/1.webp', 4, 1),
+(11, 'Cetirizin 10mg Blisterpackung', 'Cetirizin 10mg buborékcsomagolás', 'Cetirizine 10mg blister pack', '/assets/products/4/2.webp', 4, 2),
+(12, 'Cetirizin 10mg Dosierungsanleitung', 'Cetirizin 10mg adagolási útmutató', 'Cetirizine 10mg dosage guide', '/assets/products/4/3.webp', 4, 3),
+(13, 'Probiotika 10 Milliarden KBE Kapselflasche', 'Probiotikum 10 milliárd CFU kapszula doboz', 'Probiotic 10 billion CFU capsule bottle', '/assets/products/5/1.webp', 5, 1),
+(14, 'Probiotika Kapseln Nahaufnahme', 'Probiotikum kapszulák közelkép', 'Probiotic capsules close-up', '/assets/products/5/2.webp', 5, 2),
+(15, 'Probiotika Stämme und Inhaltsstoffe', 'Probiotikum törzsek és összetevők', 'Probiotic strains and ingredients', '/assets/products/5/3.webp', 5, 3);
 
 -- --------------------------------------------------------
 
