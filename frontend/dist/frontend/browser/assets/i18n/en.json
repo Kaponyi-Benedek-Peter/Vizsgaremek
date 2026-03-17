@@ -520,7 +520,8 @@
     "search_orders": "Search orders...",
     "recent_orders": "Recent Orders",
     "no_orders": "No orders found.",
-    "greeting": "Welcome, {{name}}!"
+    "greeting": "Welcome, {{name}}!",
+    "errors": { "orders_load_failed": "There was an error loading the products!" }
   },
   "footer": {
     "contactInfo": "Contact information",

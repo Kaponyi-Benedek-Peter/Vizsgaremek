@@ -521,7 +521,8 @@
     "search_orders": "Rendelések keresése...",
     "recent_orders": "Legutóbbi rendelések",
     "no_orders": "Nem találhatók rendelések.",
-    "greeting": "Üdvözöljük, {{name}}!"
+    "greeting": "Üdvözöljük, {{name}}!",
+    "errors": { "orders_load_failed": "Hiba történt a termékek betöltésekor!" }
   },
   "footer": {
     "contactInfo": "Kapcsolati információk",

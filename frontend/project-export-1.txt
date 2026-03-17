@@ -25945,7 +25945,8 @@ FILE: src\assets\i18n\de.json
     "search_orders": "Bestellungen suchen...",
     "recent_orders": "Neueste Bestellungen",
     "no_orders": "Keine Bestellungen gefunden.",
-    "greeting": "Willkommen, {{name}}!"
+    "greeting": "Willkommen, {{name}}!",
+    "errors": { "orders_load_failed": "Fehler beim Laden der Produkte!" }
   },
   "footer": {
     "contactInfo": "Kontaktinformationen",
@@ -26621,7 +26622,8 @@ FILE: src\assets\i18n\en.json
     "search_orders": "Search orders...",
     "recent_orders": "Recent Orders",
     "no_orders": "No orders found.",
-    "greeting": "Welcome, {{name}}!"
+    "greeting": "Welcome, {{name}}!",
+    "errors": { "orders_load_failed": "There was an error loading the products!" }
   },
   "footer": {
     "contactInfo": "Contact information",
@@ -27298,7 +27300,8 @@ FILE: src\assets\i18n\hu.json
     "search_orders": "Rendelések keresése...",
     "recent_orders": "Legutóbbi rendelések",
     "no_orders": "Nem találhatók rendelések.",
-    "greeting": "Üdvözöljük, {{name}}!"
+    "greeting": "Üdvözöljük, {{name}}!",
+    "errors": { "orders_load_failed": "Hiba történt a termékek betöltésekor!" }
   },
   "footer": {
     "contactInfo": "Kapcsolati információk",
