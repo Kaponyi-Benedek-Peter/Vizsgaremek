@@ -522,7 +522,10 @@
     "recent_orders": "Legutóbbi rendelések",
     "no_orders": "Nem találhatók rendelések.",
     "greeting": "Üdvözöljük, {{name}}!",
-    "errors": { "orders_load_failed": "Hiba történt a termékek betöltésekor!" }
+    "errors": {
+      "orders_load_failed": "Hiba történt a termékek betöltésekor!",
+      "users_load_failed": "Hiba történt a felhasználók betöltésekor!"
+    }
   },
   "footer": {
     "contactInfo": "Kapcsolati információk",
