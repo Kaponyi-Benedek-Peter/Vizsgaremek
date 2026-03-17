@@ -183,7 +183,7 @@ export class ForumService {
   addComment(postId: string, sesstoken: string, content: string) {
     return this.http
       .post<{ status: string; statuscode: number; new_comment_id?: number }>(
-        `${this.API_URL}/api/create_post_comment_by_post_id`,
+        `${this.API_URL}/api/create_post_comment`,
         {
           post_id: btoa(postId),
           sesstoken: btoa(sesstoken),

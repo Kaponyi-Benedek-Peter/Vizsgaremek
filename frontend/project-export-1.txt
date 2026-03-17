@@ -1908,19 +1908,37 @@ export interface ApiResponse<T = any> {
 }
 
 export interface OrderItem {
-  productId: string;
-  quantity: number;
+  product_id: string;
+  quantity: string;
+  price: string;
+  unit_price: string;
+  product_name_hu: string;
+  product_name_en: string;
+  product_name_de: string;
+  thumbnail_url: string;
+  sku: string;
 }
 
 export interface CreateOrderRequest {
-  city: string;
-  zipcode: string;
-  address: string;
-  houseNumber: number;
-  apartmentNumber: number;
-  phoneNumber: string;
-  note: string;
-  items: OrderItem[];
+  order: {
+    controller_user_id: string;
+    controller_session_token: string;
+    created_at: string;
+    email: string;
+    billing_name: string;
+    shipping_name: string;
+    shipping_company: string;
+    price: string;
+    city: string;
+    guest: string;
+    zipcode: string;
+    address: string;
+    apartment_number: string;
+    note: string;
+    house_number: string;
+    phone_number: string;
+  };
+  items: { item: OrderItem }[];
 }
 
 export interface AdminUser {
@@ -1976,7 +1994,7 @@ export class AccountService {
   private authService = inject(AuthService);
 
   getProfile(): Observable<User> {
-    return this.http.get<User>(`${this.API_URL}/api/profile`).pipe(catchError(this.handleError));
+    return this.http.get<User>(`${this.API_URL}/api/getUser`).pipe(catchError(this.handleError));
   }
 
   updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
@@ -1987,7 +2005,7 @@ export class AccountService {
     if (updates.email) encodedUpdates.email = this.encodeBase64(updates.email);
 
     return this.http
-      .put<ApiResponse<User>>(`${this.API_URL}/api/profile`, encodedUpdates)
+      .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, encodedUpdates)
       .pipe(catchError(this.handleError));
   }
 
@@ -2031,9 +2049,9 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  createOrder(order: CreateOrderRequest): Observable<ApiResponse> {
+  createOrder(order: CreateOrderRequest): Observable<ApiResponse & { tracking_token?: string }> {
     return this.http
-      .post<ApiResponse>(`${this.API_URL}/api/create_order`, order)
+      .post<ApiResponse & { tracking_token?: string }>(`${this.API_URL}/api/create_order`, order)
       .pipe(catchError(this.handleError));
   }
 
@@ -2052,14 +2070,14 @@ export class AccountService {
   getAllUsersAdmin(): Observable<AdminUsersResponse> {
     const body = this.buildAdminAuthBody();
     return this.http
-      .post<AdminUsersResponse>(`${this.API_URL}/api/get_all_users`, body)
+      .post<AdminUsersResponse>(`${this.API_URL}/api/get_all_users_admin`, body)
       .pipe(catchError(this.handleError));
   }
 
   getAllOrdersAdmin(): Observable<AdminOrdersResponse> {
     const body = this.buildAdminAuthBody();
     return this.http
-      .post<AdminOrdersResponse>(`${this.API_URL}/api/get_all_orders`, body)
+      .post<AdminOrdersResponse>(`${this.API_URL}/api/get_all_orders_admin`, body)
       .pipe(catchError(this.handleError));
   }
 
@@ -3250,7 +3268,7 @@ export class ForumService {
   addComment(postId: string, sesstoken: string, content: string) {
     return this.http
       .post<{ status: string; statuscode: number; new_comment_id?: number }>(
-        `${this.API_URL}/api/create_post_comment_by_post_id`,
+        `${this.API_URL}/api/create_post_comment`,
         {
           post_id: btoa(postId),
           sesstoken: btoa(sesstoken),
@@ -3371,7 +3389,7 @@ export class ReviewService {
     };
 
     return this.http
-      .post<ReviewsApiResponse>(`${this.API_URL}/api/get_all_reviews_by_product_id`, body)
+      .post<ReviewsApiResponse>(`${this.API_URL}/api/get_all_reviews_page_by_product_id`, body)
       .pipe(
         timeout(5000),
         map((r) => {
@@ -15716,7 +15734,7 @@ import { firstValueFrom } from 'rxjs';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
 import { AuthService } from '../../core/services/auth.service';
-import { AccountService } from '../../core/services/account.service';
+import { AccountService, CreateOrderRequest } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Product } from '../../core/models/product.model';
 
@@ -15789,15 +15807,11 @@ export class Purchase implements OnInit {
   }
 
   getFormattedUnitPrice(product: Product): string {
-    return this.currencyService.formatPrice(
-      this.currencyService.getDiscountedPrice(product),
-    );
+    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(product));
   }
 
   getFormattedItemTotal(product: Product, quantity: number): string {
-    return this.currencyService.formatPrice(
-      this.cartService.getItemTotal(product, quantity),
-    );
+    return this.currencyService.formatPrice(this.cartService.getItemTotal(product, quantity));
   }
 
   async submitOrder(): Promise<void> {
@@ -15807,17 +15821,38 @@ export class Purchase implements OnInit {
     this.errorMessage.set(null);
 
     try {
-      const orderData = {
-        city: this.form.city,
-        zipcode: this.form.zipcode,
-        address: this.form.address,
-        houseNumber: parseInt(this.form.houseNumber),
-        apartmentNumber: this.form.apartmentNumber ? parseInt(this.form.apartmentNumber) : 0,
-        phoneNumber: this.form.phoneNumber,
-        note: this.form.note,
-        items: this.cartItems().map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
+      const user = this.authService.currentUser();
+      const orderData: CreateOrderRequest = {
+        order: {
+          controller_user_id: btoa(user?.id ?? ''),
+          controller_session_token: btoa(this.authService.getSessionToken() ?? ''),
+          created_at: btoa(new Date().toISOString()),
+          email: btoa(user?.email ?? ''),
+          billing_name: btoa(`${user?.firstname} ${user?.lastname}`),
+          shipping_name: btoa(`${user?.firstname} ${user?.lastname}`),
+          shipping_company: btoa(''),
+          price: btoa(String(this.cartTotal())),
+          city: btoa(this.form.city),
+          guest: btoa('0'),
+          zipcode: btoa(this.form.zipcode),
+          address: btoa(this.form.address),
+          apartment_number: btoa(this.form.apartmentNumber ?? '0'),
+          note: btoa(this.form.note ?? ''),
+          house_number: btoa(this.form.houseNumber),
+          phone_number: btoa(this.form.phoneNumber),
+        },
+        items: this.cartItems().map((i) => ({
+          item: {
+            product_id: btoa(String(i.product.id)),
+            quantity: btoa(String(i.quantity)),
+            price: btoa(String(this.cartService.getItemTotal(i.product, i.quantity))),
+            unit_price: btoa(String(this.currencyService.getDiscountedPrice(i.product))),
+            product_name_hu: btoa(i.product.name_hu ?? ''),
+            product_name_en: btoa(i.product.name_en ?? ''),
+            product_name_de: btoa(i.product.name_de ?? ''),
+            thumbnail_url: btoa(i.product.thumbnail_url ?? ''),
+            sku: btoa(i.product.sku ?? ''),
+          },
         })),
       };
 
@@ -15873,6 +15908,7 @@ export class Purchase implements OnInit {
     this.router.navigate(['/products']);
   }
 }
+
 
 
 ================================================================================
@@ -17060,10 +17096,7 @@ export class ProductService {
     };
 
     return this.http
-      .post<ProductImagesApiResponse>(
-        `${this.API_URL}/api/get_all_product_images_by_product_id`,
-        body,
-      )
+      .post<ProductImagesApiResponse>(`${this.API_URL}/api/get_all_product_images_by_id`, body)
       .pipe(
         timeout(5000),
         map((r) => {

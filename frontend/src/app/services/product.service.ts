@@ -222,10 +222,7 @@ export class ProductService {
     };
 
     return this.http
-      .post<ProductImagesApiResponse>(
-        `${this.API_URL}/api/get_all_product_images_by_product_id`,
-        body,
-      )
+      .post<ProductImagesApiResponse>(`${this.API_URL}/api/get_all_product_images_by_id`, body)
       .pipe(
         timeout(5000),
         map((r) => {

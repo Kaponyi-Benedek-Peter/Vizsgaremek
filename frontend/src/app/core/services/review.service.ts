@@ -25,7 +25,7 @@ export class ReviewService {
     };
 
     return this.http
-      .post<ReviewsApiResponse>(`${this.API_URL}/api/get_all_reviews_by_product_id`, body)
+      .post<ReviewsApiResponse>(`${this.API_URL}/api/get_all_reviews_page_by_product_id`, body)
       .pipe(
         timeout(5000),
         map((r) => {
