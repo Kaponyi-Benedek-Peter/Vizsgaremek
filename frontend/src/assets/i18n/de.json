@@ -490,7 +490,8 @@
     "search_orders": "Bestellungen suchen...",
     "recent_orders": "Neueste Bestellungen",
     "no_orders": "Keine Bestellungen gefunden.",
-    "greeting": "Willkommen, {{name}}!"
+    "greeting": "Willkommen, {{name}}!",
+    "errors": { "orders_load_failed": "Fehler beim Laden der Produkte!" }
   },
   "footer": {
     "contactInfo": "Kontaktinformationen",
