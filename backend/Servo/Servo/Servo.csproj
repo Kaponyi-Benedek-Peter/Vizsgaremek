@@ -181,11 +181,16 @@
   <ItemGroup>
     <Compile Include="controller\chpass_promise.cs" />
     <Compile Include="controller\chpass_request.cs" />
+    <Compile Include="controller\create_post.cs" />
+    <Compile Include="controller\create_post_comment_by_post_id.cs" />
     <Compile Include="controller\create_product.cs" />
     <Compile Include="controller\delacc_promise.cs" />
     <Compile Include="controller\delacc_request.cs" />
     <Compile Include="controller\delete_all_posts.cs" />
+    <Compile Include="controller\delete_all_post_comments.cs" />
     <Compile Include="controller\delete_post_by_id.cs" />
+    <Compile Include="controller\delete_post_comment_by_comment_id.cs" />
+    <Compile Include="controller\delete_all_post_comments_by_post_id.cs" />
     <Compile Include="controller\get_all_featured_products.cs" />
     <Compile Include="controller\get_all_orders.cs" />
     <Compile Include="controller\get_all_orders_user.cs" />
@@ -209,6 +214,8 @@
     <Compile Include="controller\registration_request.cs" />
     <Compile Include="controller\unban_user.cs" />
     <Compile Include="controller\update_name_by_id.cs" />
+    <Compile Include="controller\update_post_by_id.cs" />
+    <Compile Include="controller\update_post_comment_by_comment_id.cs" />
     <Compile Include="controller\update_stock.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -246,9 +253,14 @@
     <Compile Include="service\chpass_promise.cs" />
     <Compile Include="service\chpass_request.cs" />
     <Compile Include="service\create_post.cs" />
+    <Compile Include="service\create_post_comment_by_post_id.cs" />
     <Compile Include="service\create_product.cs" />
     <Compile Include="service\delete_all_posts.cs" />
+    <Compile Include="service\delete_all_post_comments.cs" />
+    <Compile Include="service\delete_all_post_comments_by_post_id.cs" />
     <Compile Include="service\delete_post_by_id.cs" />
+    <Compile Include="service\delete_post_comments_by_post_id.cs" />
+    <Compile Include="service\delete_post_comment_by_comment_id.cs" />
     <Compile Include="service\get_all_featured_products.cs" />
     <Compile Include="service\get_all_orders.cs" />
     <Compile Include="service\get_all_orders_user.cs" />
@@ -275,6 +287,8 @@
     <Compile Include="service\shared.cs" />
     <Compile Include="service\unban_user.cs" />
     <Compile Include="service\update_name_by_id.cs" />
+    <Compile Include="service\update_post_by_id.cs" />
+    <Compile Include="service\update_post_comment_by_comment_id.cs" />
     <Compile Include="service\update_stock.cs" />
     <Compile Include="testpanel.cs">
       <SubType>Form</SubType>

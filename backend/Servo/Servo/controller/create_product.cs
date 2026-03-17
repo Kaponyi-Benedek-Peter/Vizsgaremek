@@ -37,7 +37,6 @@ namespace Servo.controller
             string packaging_hu = "";
             string packaging_de = "";
             string created_at = "";
-            string updated_at = "";
             string thumbnail_url = "";
             string featured = "";
 

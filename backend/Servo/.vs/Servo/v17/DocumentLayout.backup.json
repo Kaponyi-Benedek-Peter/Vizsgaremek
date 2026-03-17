@@ -3,8 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\model\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\servo\\model\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\model\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\gith\\vizsgaremek\\backend\\servo\\servo\\model\\get_all_featured_products.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\model\\get_all_featured_products.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\servo\\service\\get_all_featured_products.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\get_all_featured_products.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\servo\\service\\update_post_comment_by_comment_id.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\update_post_comment_by_comment_id.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,7 +26,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -26,16 +38,53 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "get_all_featured_products.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\model\\get_all_featured_products.cs",
+              "RelativeDocumentMoniker": "Servo\\model\\get_all_featured_products.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\model\\get_all_featured_products.cs",
+              "RelativeToolTip": "Servo\\model\\get_all_featured_products.cs",
+              "ViewState": "AgIAACAAAAAAAAAAAAAcwC4AAABdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-16T12:38:31.563Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "get_all_featured_products.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\get_all_featured_products.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\get_all_featured_products.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\get_all_featured_products.cs",
+              "RelativeToolTip": "Servo\\service\\get_all_featured_products.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAIwBcAAABcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-16T12:38:22.868Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 0,
               "Title": "shared.cs",
               "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\model\\shared.cs",
               "RelativeDocumentMoniker": "Servo\\model\\shared.cs",
               "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\model\\shared.cs",
               "RelativeToolTip": "Servo\\model\\shared.cs",
-              "ViewState": "AgIAAOAFAAAAAAAAAAAYwOsFAAAKAAAAAAAAAA==",
+              "ViewState": "AgIAAL0AAAAAAAAAAAAxwM0AAABdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-13T11:28:51.468Z",
+              "WhenOpened": "2026-03-16T11:42:06.294Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "update_post_comment_by_comment_id.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\update_post_comment_by_comment_id.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\update_post_comment_by_comment_id.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\gith\\Vizsgaremek\\backend\\Servo\\Servo\\service\\update_post_comment_by_comment_id.cs",
+              "RelativeToolTip": "Servo\\service\\update_post_comment_by_comment_id.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAIwCYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-16T11:40:27.322Z"
             }
           ]
         }

@@ -1,16 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-
-
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
 using System.Text.Json;
 
 
@@ -21,14 +13,30 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id"
         };
+
+
+        public static string safe_close(HttpListenerContext data)
+        {
+            try
+            {
+                data.Response.OutputStream.Close();
+                return "ok";
+            }
+            catch (Exception ex)
+            {
+                service.shared.log("ERROR 1: can not close connection: " + ex.Message + " --controller.router");
+                return "error";
+            }
+
+        }
 
 
         private static HttpListenerContext endconnection(HttpListenerContext data)
         {
             try { 
-            data.Response.OutputStream.Close();
+            controller.router.safe_close(data);
             data.Response.Close();
             }
             catch (Exception ex)
@@ -148,7 +156,20 @@ namespace Servo.controller
                 service.shared.log(">api kérés: " +lenyeg+"");
                 // =========== GETTOKen =========== 
 
-                if (lenyeg.Contains("login_request"))
+
+                 if (lenyeg.Contains("delete_post_comment_by_post_id"))
+                {
+
+                    controller.delete_all_post_comments_by_post_id.main(data, lenyeg);
+
+                }
+                else if (lenyeg.Contains("update_post_comment_by_comment_id"))
+                {
+
+                    controller.update_post_comment_by_comment_id.main(data, lenyeg);
+
+                }
+                else if (lenyeg.Contains("login_request"))
                 {
                     controller.login_request.main(data, lenyeg);
                 }
@@ -411,6 +432,49 @@ namespace Servo.controller
                     controller.create_product.main(data, lenyeg);
 
                 }
+                else if (lenyeg.Contains("create_post_comment"))
+                {
+
+                    controller.create_post_comment_by_post_id.main(data, lenyeg);
+
+                }
+                else if (lenyeg.Contains("create_post"))
+                {
+
+                    controller.create_post.main(data, lenyeg);
+
+                }
+                else if (lenyeg.Contains("update_post_by_id"))
+                {
+
+                    controller.update_post_by_id.main(data, lenyeg);
+
+                }
+
+
+
+                else if (lenyeg.Contains("delete_all_post_comments_by_post_id"))
+                {
+
+                    controller.delete_all_post_comments_by_post_id.main(data, lenyeg);
+
+                }
+                else if (lenyeg.Contains("delete_post_comment_by_comment_id"))
+                {
+
+                    controller.delete_post_comment_by_comment_id.main(data, lenyeg);
+
+                }
+                
+
+
+                //
+
+
+
+
+
+
 
 
 

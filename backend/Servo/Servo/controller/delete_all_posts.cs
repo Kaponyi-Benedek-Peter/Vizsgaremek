@@ -197,7 +197,7 @@ namespace Servo.controller
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error 1: {ex.Message} --controller.delete_post_by_id.main");
+                service.shared.log($"Error 1: {ex.Message} --controller.delete_all_post.main");
 
 
 
@@ -217,7 +217,7 @@ namespace Servo.controller
             }
             finally
             {
-                data.Response.OutputStream.Close();
+                controller.router.safe_close(data);
             }
         }
 

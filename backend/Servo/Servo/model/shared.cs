@@ -66,7 +66,7 @@ tags
             public int likes { get; set; } = 0;
             public int comment_count { get; set; } = 0;
             public int is_featured { get; set; } = 0;
-            public int published_at { get; set; } = 0;
+            public string published_at { get; set; } = "";
             public string last_activity_at { get; set; } = "";
             public string tags { get; set; } = "";
 
@@ -200,7 +200,10 @@ tags
         {
             connStr = $"server={service.shared.conf("r", "sql_conn_server")};port={service.shared.conf("r", "sql_conn_port")};user={service.shared.conf("r", "sql_conn_user")};password={service.shared.conf("r", "sql_conn_password")};database={databasename};";
             conn = new MySqlConnection(connStr);
+            try { 
             conn.Open();
+            }
+            catch(Exception ex) { service.shared.log("Start the MySql server! || "+ex.Message ); }
             service.shared.log("[mysql connection open]");
 
         }
@@ -1483,7 +1486,245 @@ cmd.Parameters.AddWithValue("@p_comment_count", pos.comment_count);
 
 
 
-        
+
+
+
+
+
+
+
+
+
+        public static int update_post_by_id(post pos, string id)
+        {
+
+            try
+            {//id name_de description_en price_huf times_ordered stock sale_percentage description_preview_en name_hu
+             //name_en description_hu description_de description_preview_hu description_preview_de
+             //category manufacturer brand rating sku active_ingredients packaging created_at updated_at name
+                using (MySqlCommand cmd = new MySqlCommand("update_post_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                    cmd.Parameters.AddWithValue("@p_id", id);
+                    cmd.Parameters.AddWithValue("@p_title", pos.title);
+                    cmd.Parameters.AddWithValue("@p_content", pos.content);
+                    cmd.Parameters.AddWithValue("@p_user_id", pos.user_id);
+                    cmd.Parameters.AddWithValue("@p_image_url", pos.image_url);
+                    cmd.Parameters.AddWithValue("@p_category_id", pos.category_id);
+                    cmd.Parameters.AddWithValue("@p_slug", pos.slug);
+                    cmd.Parameters.AddWithValue("@p_excerpt", pos.excerpt);
+                    cmd.Parameters.AddWithValue("@p_status", pos.status);
+                    cmd.Parameters.AddWithValue("@p_views", pos.views);
+                    cmd.Parameters.AddWithValue("@p_likes", pos.likes);
+                    cmd.Parameters.AddWithValue("@p_comment_count", pos.comment_count);
+                    cmd.Parameters.AddWithValue("@p_is_featured", pos.is_featured);
+                    cmd.Parameters.AddWithValue("@p_tags", pos.tags);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.update_post_by_id");
+                return 500;
+            }
+        }
+
+
+        public static int create_post_comment_by_post_id(string post_id, string user_id, string content)
+        {
+
+            try
+            {//id name_de description_en price_huf times_ordered stock sale_percentage description_preview_en name_hu
+             //name_en description_hu description_de description_preview_hu description_preview_de
+             //category manufacturer brand rating sku active_ingredients packaging created_at updated_at name
+                using (MySqlCommand cmd = new MySqlCommand("create_post_comment_by_post_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                    cmd.Parameters.AddWithValue("@p_post_id", post_id);
+                    cmd.Parameters.AddWithValue("@p_user_id", user_id);
+                    cmd.Parameters.AddWithValue("@p_content", content);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.create_post_comment_by_post_id");
+                return 500;
+            }
+        }
+
+
+
+        public static int update_post_comment_by_comment_id(string comment_id, string content)
+        {
+
+            try
+            {
+             
+                using (MySqlCommand cmd = new MySqlCommand("update_post_comment_by_comment_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    service.shared.log($"Updating comment_id: {comment_id} with new content: {content}");
+
+                    cmd.Parameters.AddWithValue("@p_comment_id", comment_id);
+                    cmd.Parameters.AddWithValue("@p_content", content);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.update_post_comment_by_comment_id");
+                return 500;
+            }
+        }
+
+
+        public static int delete_post_comments_by_id(string post_id)
+        {
+
+            try
+            {//id name_de description_en price_huf times_ordered stock sale_percentage description_preview_en name_hu
+             //name_en description_hu description_de description_preview_hu description_preview_de
+             //category manufacturer brand rating sku active_ingredients packaging created_at updated_at name
+                using (MySqlCommand cmd = new MySqlCommand("delete_post_comment_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                    cmd.Parameters.AddWithValue("@p_post_id", post_id);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_post_comment_by_id");
+                return 500;
+            }
+        }
+
+
+        public static int delete_post_comments_by_post_id(string post_id)
+        {
+
+            try
+            {//id name_de description_en price_huf times_ordered stock sale_percentage description_preview_en name_hu
+             //name_en description_hu description_de description_preview_hu description_preview_de
+             //category manufacturer brand rating sku active_ingredients packaging created_at updated_at name
+                
+                service.shared.log($"Deleting comments for post_id: {post_id}");
+
+                using (MySqlCommand cmd = new MySqlCommand("delete_post_comment_by_post_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                    cmd.Parameters.AddWithValue("@p_post_id", post_id);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_post_comments_by_id");
+                return 500;
+            }
+        }
+
+
+
+        public static int delete_post_comment_by_comment_id(string comment_id)
+        {
+
+            try
+            {//id name_de description_en price_huf times_ordered stock sale_percentage description_preview_en name_hu
+             //name_en description_hu description_de description_preview_hu description_preview_de
+             //category manufacturer brand rating sku active_ingredients packaging created_at updated_at name
+                using (MySqlCommand cmd = new MySqlCommand("delete_post_comment_by_comment_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+                    cmd.Parameters.AddWithValue("@p_id", comment_id);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_post_comment_by_comment_id");
+                return 500;
+            }
+        }
+
+
+        // 
+
+        //get_user_id_by_post_comment_id;
+
+
+
+        public static string get_user_id_by_post_comment_id(string id)
+        {
+            try
+            {
+
+
+                string toreturn = null;
+
+                using (MySqlCommand cmd = new MySqlCommand("get_user_id_by_post_comment_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_post_comment_id", id);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+
+                            toreturn = reader["user_id"]?.ToString();
+                        }
+                    }
+                }
+
+                if (toreturn != null)
+                    return toreturn;
+                else
+                    return "404";
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_email_by_id");
+                return "500";
+            }
+
+        }
 
 
 
@@ -1495,37 +1736,26 @@ cmd.Parameters.AddWithValue("@p_comment_count", pos.comment_count);
 
 
 
+        public static int delete_all_post_comments()
+        {
 
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("delete_all_post_comments", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
 
+                    cmd.ExecuteNonQuery();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.delete_all_post_comments");
+                return 500;
+            }
+        }
 
 
 
