@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:8889
--- Létrehozás ideje: 2026. Már 17. 11:22
+-- Létrehozás ideje: 2026. Már 17. 12:26
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -80,22 +80,31 @@ INSERT INTO roy.newsletter_recipients (news_level, email, name, received_current
 VALUES (p_news_level, p_email, '0');
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(10), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(20))   BEGIN
-    DECLARE v_email VARCHAR(255) DEFAULT NULL;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_guest` TINYINT(1), IN `p_email` VARCHAR(255), IN `p_billing_name` VARCHAR(255), IN `p_shipping_name` VARCHAR(255), IN `p_tracking_token` VARCHAR(255), IN `p_shipping_company` VARCHAR(255), IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(10), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(20))   BEGIN
+    DECLARE v_email        VARCHAR(255) DEFAULT p_email;
+    DECLARE v_billing_name VARCHAR(255) DEFAULT p_billing_name;
 
-    -- Email auto-fetch: csak regisztrált usernél (user_id != 0)
-    IF p_user_id != 0 THEN
-        SELECT email
-        INTO   v_email
-        FROM   roy.users
-        WHERE  id = p_user_id
-        LIMIT  1;
+    -- Ha regisztrált user (guest = 0), email és billing_name a users táblából
+    IF p_guest = 0 THEN
+        SELECT
+            email,
+            CONCAT(first_name, ' ', last_name)
+        INTO
+            v_email,
+            v_billing_name
+        FROM roy.users
+        WHERE id = p_user_id
+        LIMIT 1;
     END IF;
 
     INSERT INTO roy.orders (
         user_id,
-        email,
         guest,
+        email,
+        billing_name,
+        shipping_name,
+        tracking_token,
+        shipping_company,
         created_at,
         price,
         city,
@@ -108,8 +117,12 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, 
     )
     VALUES (
         p_user_id,
+        p_guest,
         v_email,
-        IF(p_user_id = 0, 1, 0),
+        v_billing_name,
+        p_shipping_name,
+        p_tracking_token,
+        p_shipping_company,
         NOW(),
         0.00,
         p_city,
