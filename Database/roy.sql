@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:8889
--- Létrehozás ideje: 2026. Már 16. 12:12
+-- Létrehozás ideje: 2026. Már 17. 11:22
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -81,9 +81,47 @@ VALUES (p_news_level, p_email, '0');
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(10), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(20))   BEGIN
+    DECLARE v_email VARCHAR(255) DEFAULT NULL;
 
-INSERT INTO roy.orders (user_id, created_at, price, city, zipcode, address, apartment_number, note, house_number, phone_number)
-VALUES(p_user_id, NOW(),'0', p_city, p_zipcode, p_address, p_apartment_number, p_note, p_house_number, p_phone_number);
+    -- Email auto-fetch: csak regisztrált usernél (user_id != 0)
+    IF p_user_id != 0 THEN
+        SELECT email
+        INTO   v_email
+        FROM   roy.users
+        WHERE  id = p_user_id
+        LIMIT  1;
+    END IF;
+
+    INSERT INTO roy.orders (
+        user_id,
+        email,
+        guest,
+        created_at,
+        price,
+        city,
+        zipcode,
+        address,
+        apartment_number,
+        note,
+        house_number,
+        phone_number
+    )
+    VALUES (
+        p_user_id,
+        v_email,
+        IF(p_user_id = 0, 1, 0),
+        NOW(),
+        0.00,
+        p_city,
+        p_zipcode,
+        p_address,
+        p_apartment_number,
+        p_note,
+        p_house_number,
+        p_phone_number
+    );
+
+    SELECT LAST_INSERT_ID() AS id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order_item` (IN `p_order_id` INT, IN `p_product_id` INT, IN `p_quantity` INT)   BEGIN
@@ -541,6 +579,11 @@ SET p_count_out = (
 
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_post_categories` ()   BEGIN
+SELECT *
+    FROM roy.post_categories;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_products` ()   BEGIN
 SELECT *
     FROM roy.products;
@@ -663,12 +706,11 @@ SELECT * from roy.orders
 where orders.id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_order_by_tracking_token` (IN `p_tracking` VARCHAR(255), IN `p_token` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_order_by_tracking_token` (IN `p_tracking_token` VARCHAR(255))   BEGIN
     SELECT *
-    FROM roy.orders
-    WHERE tracking = p_tracking
-      AND token    = p_token
-    LIMIT 1;
+    FROM   roy.orders
+    WHERE  tracking_token = p_tracking_token
+    LIMIT  1;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_order_items_by_order_id` (IN `p_order_id` INT)   BEGIN
@@ -1002,13 +1044,10 @@ CREATE TABLE `orders` (
   `email` varchar(255) DEFAULT NULL,
   `billing_name` varchar(255) DEFAULT NULL,
   `shipping_name` varchar(255) DEFAULT NULL,
-  `tracking` varchar(255) DEFAULT NULL,
-  `token` varchar(255) DEFAULT NULL,
+  `tracking_token` varchar(255) DEFAULT NULL,
   `guest` tinyint(1) NOT NULL DEFAULT '0',
   `order_status` enum('pending','processing','shipped','delivered','cancelled') NOT NULL DEFAULT 'pending',
   `shipping_company` varchar(255) DEFAULT NULL,
-  `confirmed` tinyint(1) NOT NULL DEFAULT '0',
-  `confirmed_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `price` decimal(10,2) NOT NULL,
   `city` varchar(255) NOT NULL,
@@ -1300,9 +1339,7 @@ ALTER TABLE `newsletter_recipients`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_orders_tracking` (`tracking`),
-  ADD UNIQUE KEY `uq_orders_token` (`token`),
-  ADD KEY `fk_orders_user` (`user_id`);
+  ADD UNIQUE KEY `uq_orders_tracking_token` (`tracking_token`) USING BTREE;
 
 --
 -- A tábla indexei `order_items`
