@@ -30,7 +30,7 @@ namespace Servo.service
 
             service.shared.log(accstate);
 
-            if (accstate == "verified")
+            if (accstate == "verified" )
             {
 
 

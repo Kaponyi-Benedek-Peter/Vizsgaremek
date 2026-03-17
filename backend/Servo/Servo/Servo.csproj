@@ -181,6 +181,7 @@
   <ItemGroup>
     <Compile Include="controller\chpass_promise.cs" />
     <Compile Include="controller\chpass_request.cs" />
+    <Compile Include="controller\create_order.cs" />
     <Compile Include="controller\create_post.cs" />
     <Compile Include="controller\create_post_comment_by_post_id.cs" />
     <Compile Include="controller\create_product.cs" />
@@ -196,6 +197,7 @@
     <Compile Include="controller\get_all_orders_user.cs" />
     <Compile Include="controller\get_all_posts.cs" />
     <Compile Include="controller\get_all_posts_admin.cs" />
+    <Compile Include="controller\get_all_post_categories.cs" />
     <Compile Include="controller\get_all_products.cs" />
     <Compile Include="controller\get_all_product_categories.cs" />
     <Compile Include="controller\get_all_product_images_by_id.cs" />
@@ -224,6 +226,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="lib.cs" />
+    <Compile Include="model\create_order.cs" />
     <Compile Include="model\create_post.cs" />
     <Compile Include="model\delacc_promise.cs" />
     <Compile Include="model\delacc_request.cs" />
@@ -234,6 +237,7 @@
     <Compile Include="model\get_all_orders_user.cs" />
     <Compile Include="model\get_all_posts.cs" />
     <Compile Include="model\get_all_posts_admin.cs" />
+    <Compile Include="model\get_all_post_categories.cs" />
     <Compile Include="model\get_all_products.cs" />
     <Compile Include="model\get_all_product_categories.cs" />
     <Compile Include="model\get_all_product_images_by_id.cs" />
@@ -252,6 +256,7 @@
     <Compile Include="service\ban_user.cs" />
     <Compile Include="service\chpass_promise.cs" />
     <Compile Include="service\chpass_request.cs" />
+    <Compile Include="service\create_order.cs" />
     <Compile Include="service\create_post.cs" />
     <Compile Include="service\create_post_comment_by_post_id.cs" />
     <Compile Include="service\create_product.cs" />
@@ -266,6 +271,7 @@
     <Compile Include="service\get_all_orders_user.cs" />
     <Compile Include="service\get_all_posts.cs" />
     <Compile Include="service\get_all_posts_admin.cs" />
+    <Compile Include="service\get_all_post_categories.cs" />
     <Compile Include="service\get_all_product_categories.cs" />
     <Compile Include="service\get_all_product_images_by_product_id.cs" />
     <Compile Include="service\get_all_reviews_page_by_product_id.cs" />

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace Servo.model
 {
@@ -106,11 +107,29 @@ tags
 
 
         public class order
-        {
+        {//	id	user_id	email	billing_name	shipping_name	tracking	token	guest	order_status	shipping_company	confirmed	confirmed_at	created_at	price	city	zipcode	address	apartment_number	note	house_number	phone_number	
             public string user_id { get; set; } = "";
+            public string email { get; set; } = "";
+
+            public string billing_name { get; set; } = "";
+            public string shipping_name { get; set; } = "";
+            public string tracking_token { get; set; } = "";
+
+            public string guest { get; set; } = "";
+
+            public string order_status { get; set; } = "";
+            public string shipping_company { get; set; } = "";
+            public string confirmed { get; set; } = "";
+
+          
+
+
+
+
+
             public string city { get; set; } = "";
-            public int zipcode { get; set; } = 0;
-            public int price { get; set; } = 0;
+            public string zipcode { get; set; } = "";
+            public string price { get; set; } = "";
             public string address { get; set; } = "";
             public string apartment_number { get; set; } = "";
             public string note { get; set; } = "";
@@ -119,6 +138,15 @@ tags
 
         }
 
+
+        public class order_item
+        {
+            public string product_id { get; set; } = "";
+            public string quantity { get; set; } = "";
+
+            public string order_id { get; set; }
+
+        }
 
         public class user
         {
@@ -950,42 +978,7 @@ tags
 
 
 
-        public static int add_order(order ord)
-        {
-
-
-
-
-            try
-            {
-                using (MySqlCommand cmd = new MySqlCommand("create_order", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-
-                    cmd.Parameters.AddWithValue("@p_user_id", ord.user_id);
-                    cmd.Parameters.AddWithValue("@p_city", ord.city);
-                    cmd.Parameters.AddWithValue("@p_zipcode", ord.zipcode);
-                    cmd.Parameters.AddWithValue("@p_price", ord.price);
-                    cmd.Parameters.AddWithValue("@p_address", ord.address);
-                    cmd.Parameters.AddWithValue("@p_apartment_number", ord.apartment_number);
-                    cmd.Parameters.AddWithValue("@p_note", ord.note);
-                    cmd.Parameters.AddWithValue("@p_house_number", ord.house_number);
-                    cmd.Parameters.AddWithValue("@p_phone_number", ord.phone_number);
-
-
-                    cmd.ExecuteNonQuery();
-
-                    return 200;
-                }
-            }
-            catch (Exception ex)
-            {
-                service.shared.log($"Error 1: {ex.Message} --model.shared.add_order");
-                return 500;
-            }
-        }
-
+        
 
         public static string refresh_token(string id, string new_sesstoken)
         {
@@ -1485,6 +1478,63 @@ cmd.Parameters.AddWithValue("@p_comment_count", pos.comment_count);
 
 
 
+        public static (int,string) add_order(order ord)
+        {
+            string toreturn = "error";
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("create_order", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    //id user_id email billing_name    shipping_name tracking
+                    //token guest   order_status shipping_company    confirmed confirmed_at
+                    //created_at price   city zipcode address apartment_number    note house_number
+                    //phone_number
+
+                    service.shared.log($"Adding order for user_id: {ord.user_id}, email: {ord.email}, city: {ord.city}, company: {ord.shipping_company}");
+
+                    cmd.Parameters.AddWithValue("@p_user_id", ord.user_id);
+                    cmd.Parameters.AddWithValue("@p_city", ord.city);
+
+                    cmd.Parameters.AddWithValue("@p_zipcode", ord.zipcode);
+
+                    cmd.Parameters.AddWithValue("@p_guest", ord.guest);
+                    cmd.Parameters.AddWithValue("@p_address", ord.address);
+
+                    cmd.Parameters.AddWithValue("@p_email", ord.email);
+                    cmd.Parameters.AddWithValue("@p_billing_name", ord.billing_name);
+                    cmd.Parameters.AddWithValue("@p_shipping_name", ord.shipping_name);
+                    cmd.Parameters.AddWithValue("@p_tracking_token", ord.tracking_token);
+                    cmd.Parameters.AddWithValue("@p_order_status", ord.order_status);
+                    cmd.Parameters.AddWithValue("@p_shipping_company", ord.shipping_company);
+                    cmd.Parameters.AddWithValue("@p_confirmed", ord.confirmed);
+                    cmd.Parameters.AddWithValue("@p_price", ord.price);
+                    cmd.Parameters.AddWithValue("@p_apartment_number", ord.apartment_number);
+                    cmd.Parameters.AddWithValue("@p_note", ord.note);
+                    cmd.Parameters.AddWithValue("@p_house_number", ord.house_number);
+                    cmd.Parameters.AddWithValue("@p_phone_number", ord.phone_number);
+
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+
+                            toreturn = reader["id"]?.ToString();
+                        }
+                    }
+
+
+                    return (200,toreturn);
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_order");
+                return (500,"error");
+            }
+        }
 
 
 
@@ -1758,7 +1808,33 @@ cmd.Parameters.AddWithValue("@p_comment_count", pos.comment_count);
         }
 
 
+        public static int add_order_item(order_item ord)
+        {
 
+            try
+            {//	id	order_id	product_id	quantity	price	unit_price	product_name_hu
+             //		product_name_en	product_name_de	thumbnail_url	sku	
+                using (MySqlCommand cmd = new MySqlCommand("create_order_item", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    //p_order_id, p_product_id, p_quantity
+
+                    cmd.Parameters.AddWithValue("@p_product_id", ord.product_id);
+                    cmd.Parameters.AddWithValue("@p_quantity", ord.quantity);
+                    cmd.Parameters.AddWithValue("@p_order_id", ord.order_id);
+
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.add_post");
+                return 500;
+            }
+        }
 
 
 

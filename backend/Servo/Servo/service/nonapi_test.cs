@@ -178,7 +178,7 @@ namespace Servo.service
             for (int i = 0; i < 33; i++)
             {
 
-
+                /*
                 model.shared.order ord = new model.shared.order
                 {
                     user_id  = (user_id).ToString(),
@@ -192,10 +192,11 @@ namespace Servo.service
                     phone_number  = "112",
 
                 };
-
+                */
+                service.shared.log("test order in progrees");
                
 
-                model.shared.add_order(ord);
+               // model.shared.add_order(ord);
             }
 
 

@@ -13,7 +13,7 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order"
         };
 
 
@@ -157,7 +157,7 @@ namespace Servo.controller
                 // =========== GETTOKen =========== 
 
 
-                 if (lenyeg.Contains("delete_post_comment_by_post_id"))
+                 if (lenyeg.Contains("delete_post_comment_by_post_id_admin"))
                 {
 
                     controller.delete_all_post_comments_by_post_id.main(data, lenyeg);
@@ -269,7 +269,7 @@ namespace Servo.controller
 
                 }
 
-                else if (lenyeg.Contains("get_all_users"))
+                else if (lenyeg.Contains("get_all_users_admin"))
                 {
 
                     controller.get_all_users.main(data, lenyeg);
@@ -278,15 +278,7 @@ namespace Servo.controller
 
 
                 }
-                else if (lenyeg.Contains("get_all_orders_user"))
-                {
 
-                    controller.get_all_orders_user.main(data, lenyeg);
-
-
-
-
-                }
                 else if (lenyeg.Contains("get_all_orders_admin"))
                 {
 
@@ -323,7 +315,7 @@ namespace Servo.controller
 
 
                 }
-                else if (lenyeg.Contains("ban_user"))
+                else if (lenyeg.Contains("ban_user_admin"))
                 {
 
                     controller.ban_user.main(data, lenyeg);
@@ -332,7 +324,7 @@ namespace Servo.controller
 
 
                 }
-                else if (lenyeg.Contains("unban_user"))
+                else if (lenyeg.Contains("unban_user_admin"))
                 {
 
                     controller.unban_user.main(data, lenyeg);
@@ -341,7 +333,7 @@ namespace Servo.controller
 
 
                 }
-                else if (lenyeg.Contains("update_stock"))
+                else if (lenyeg.Contains("update_stock_admin"))
                 {
 
                     controller.update_stock.main(data, lenyeg);
@@ -391,13 +383,13 @@ namespace Servo.controller
 
                 }
 
-                else if (lenyeg.Contains("delete_post_by_id"))
+                else if (lenyeg.Contains("delete_post_by_id_admin"))
                 {
 
                     controller.delete_post_by_id.main(data, lenyeg);
 
                 }
-                else if (lenyeg.Contains("delete_all_posts"))
+                else if (lenyeg.Contains("delete_all_posts_admin"))
                 {
 
                     controller.delete_all_posts.main(data, lenyeg);
@@ -426,7 +418,7 @@ namespace Servo.controller
                 }
 
 
-                else if (lenyeg.Contains("create_product"))
+                else if (lenyeg.Contains("create_product_admin"))
                 {
 
                     controller.create_product.main(data, lenyeg);
@@ -438,13 +430,13 @@ namespace Servo.controller
                     controller.create_post_comment_by_post_id.main(data, lenyeg);
 
                 }
-                else if (lenyeg.Contains("create_post"))
+                else if (lenyeg.Contains("create_post_admin"))
                 {
 
                     controller.create_post.main(data, lenyeg);
 
                 }
-                else if (lenyeg.Contains("update_post_by_id"))
+                else if (lenyeg.Contains("update_post_by_id_admin"))
                 {
 
                     controller.update_post_by_id.main(data, lenyeg);
@@ -453,7 +445,7 @@ namespace Servo.controller
 
 
 
-                else if (lenyeg.Contains("delete_all_post_comments_by_post_id"))
+                else if (lenyeg.Contains("delete_all_post_comments_by_post_id_admin"))
                 {
 
                     controller.delete_all_post_comments_by_post_id.main(data, lenyeg);
@@ -465,8 +457,18 @@ namespace Servo.controller
                     controller.delete_post_comment_by_comment_id.main(data, lenyeg);
 
                 }
-                
+                else if (lenyeg.Contains("create_order"))
+                {
 
+                    controller.create_order.main(data, lenyeg);
+
+                }
+                else if (lenyeg.Contains("get_all_post_categories"))
+                {
+
+                    controller.get_all_post_categories.main(data, lenyeg);
+
+                }
 
                 //
 

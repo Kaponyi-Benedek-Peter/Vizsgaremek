@@ -99,7 +99,8 @@ namespace Servo.controller
                     var respon = new
                     {
                         status = "success",
-                        statuscode = "200"
+                        statuscode = "200",
+
                     };
                     string jsonresponse = JsonSerializer.Serialize(respon);
 
