@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:8889
--- Létrehozás ideje: 2026. Már 17. 13:15
+-- Létrehozás ideje: 2026. Már 18. 09:47
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -1284,7 +1284,33 @@ INSERT INTO `product_images` (`id`, `alt_text_de`, `alt_text_hu`, `alt_text_en`,
 (12, 'Cetirizin 10mg Dosierungsanleitung', 'Cetirizin 10mg adagolási útmutató', 'Cetirizine 10mg dosage guide', '/assets/products/4/3.webp', 4, 3),
 (13, 'Probiotika 10 Milliarden KBE Kapselflasche', 'Probiotikum 10 milliárd CFU kapszula doboz', 'Probiotic 10 billion CFU capsule bottle', '/assets/products/5/1.webp', 5, 1),
 (14, 'Probiotika Kapseln Nahaufnahme', 'Probiotikum kapszulák közelkép', 'Probiotic capsules close-up', '/assets/products/5/2.webp', 5, 2),
-(15, 'Probiotika Stämme und Inhaltsstoffe', 'Probiotikum törzsek és összetevők', 'Probiotic strains and ingredients', '/assets/products/5/3.webp', 5, 3);
+(15, 'Probiotika Stämme und Inhaltsstoffe', 'Probiotikum törzsek és összetevők', 'Probiotic strains and ingredients', '/assets/products/5/3.webp', 5, 3),
+(16, 'Coenzym Q10 100mg Kapselflasche', 'Koenzim Q10 100mg kapszula doboz', 'Coenzyme Q10 100mg capsule bottle', '/assets/products/6/1.webp', 6, 1),
+(17, 'CoQ10 Kapseln Nahaufnahme', 'CoQ10 kapszulák közelképe', 'CoQ10 capsules close-up', '/assets/products/6/2.webp', 6, 2),
+(18, 'CoQ10 Produktetikett und Inhaltsstoffe', 'CoQ10 termék címke és összetevők', 'CoQ10 product label and ingredients', '/assets/products/6/3.webp', 6, 3),
+(19, 'CoQ10 Dosierungsanleitung', 'CoQ10 adagolási információ', 'CoQ10 dosage information', '/assets/products/6/4.webp', 6, 4),
+(20, 'Bepanthen 5% Dexpanthenol Creme Tube', 'Bepanthen 5% Dexpanthenol krém tubus', 'Bepanthen 5% Dexpanthenol cream tube', '/assets/products/7/1.webp', 7, 1),
+(21, 'Bepanthen Creme Textur Nahaufnahme', 'Bepanthen krém textúra közelkép', 'Bepanthen cream texture close-up', '/assets/products/7/2.webp', 7, 2),
+(22, 'Bepanthen Tube Rückseite, Anwendungshinweise', 'Bepanthen tubus hátoldala, használati utasítás', 'Bepanthen tube back, usage instructions', '/assets/products/7/3.webp', 7, 3),
+(23, 'Eucerin Intensiv-Lotion 10% Urea Flasche', 'Eucerin Intenzív Testápoló 10% Urea flakon', 'Eucerin Intensive Lotion 10% Urea bottle', '/assets/products/8/1.webp', 8, 1),
+(24, 'Eucerin Lotion Textur Nahaufnahme', 'Eucerin testápoló textúra közelkép', 'Eucerin lotion texture close-up', '/assets/products/8/2.webp', 8, 2),
+(25, 'Eucerin Inhaltsstoffe und Testergebnis', 'Eucerin összetevők és dermatológiai tesztelés', 'Eucerin ingredients and dermatological testing', '/assets/products/8/3.webp', 8, 3),
+(26, 'Eucerin Flasche Rückseite', 'Eucerin flakon hátlap', 'Eucerin bottle back label', '/assets/products/8/4.webp', 8, 4),
+(27, 'Tri-Vi-Sol D3+A+C Vitamin Tropfen Flasche für Säuglinge', 'Tri-Vi-Sol D3+A+C vitamin csepp flakon csecsemőknek', 'Tri-Vi-Sol D3+A+C vitamin drops bottle for infants', '/assets/products/9/1.webp', 9, 1),
+(28, 'Tri-Vi-Sol Tropfer und Dosierung', 'Tri-Vi-Sol cseppentő és adagolás', 'Tri-Vi-Sol dropper and dosage', '/assets/products/9/2.webp', 9, 2),
+(29, 'Tri-Vi-Sol Inhaltsstoffe und Nährwertinfo', 'Tri-Vi-Sol összetevők és táplálkozási info', 'Tri-Vi-Sol ingredients and nutritional info', '/assets/products/9/3.webp', 9, 3),
+(30, 'Zarbees Naturals Kinder Honig-Hustensirup Flasche', 'Zarbee\'s gyerek méz köhögés szirup flakon', 'Zarbee\'s Naturals Children\'s Honey Cough Syrup bottle', '/assets/products/10/1.webp', 10, 1),
+(31, 'Zarbees Sirup Messbecher und Flasche', 'Zarbee\'s szirup adagoló pohár és flakon', 'Zarbee\'s syrup measuring cup and bottle', '/assets/products/10/2.webp', 10, 2),
+(32, 'Zarbees Sirup Inhaltsstoffe Etikett', 'Zarbee\'s szirup összetevők felirat', 'Zarbee\'s syrup ingredients label', '/assets/products/10/3.webp', 10, 3),
+(33, 'Zarbees Honig und natürliche Inhaltsstoffe', 'Zarbee\'s méz és természetes összetevők', 'Zarbee\'s honey and natural ingredients', '/assets/products/10/4.webp', 10, 4),
+(34, 'Zarbees Sirup Rückseite, Dosierung für Kinder', 'Zarbee\'s szirup hátlap, gyermek adagolás', 'Zarbee\'s syrup back label, dosage for children', '/assets/products/10/5.webp', 10, 5),
+(35, 'Zarbees Produktsortiment Übersicht', 'Zarbee\'s termékcsalád áttekintés', 'Zarbee\'s product range overview', '/assets/products/10/6.webp', 10, 6),
+(36, 'Echinacea 400mg Kapselflasche', 'Echinacea 400mg kapszula doboz', 'Echinacea 400mg capsule bottle', '/assets/products/11/1.webp', 11, 1),
+(37, 'Echinacea Kapseln Nahaufnahme', 'Echinacea kapszulák közelképe', 'Echinacea capsules close-up', '/assets/products/11/2.webp', 11, 2),
+(38, 'Echinacea purpurea Pflanze und Extrakt', 'Echinacea purpurea növény és kivonat', 'Echinacea purpurea plant and extract', '/assets/products/11/3.webp', 11, 3),
+(39, 'Baldrian Wurzel 500mg Kapselflasche', 'Macskagyökér 500mg kapszula doboz', 'Valerian Root 500mg capsule bottle', '/assets/products/12/1.webp', 12, 1),
+(40, 'Baldrian Kapseln Nahaufnahme', 'Macskagyökér kapszulák közelképe', 'Valerian capsules close-up', '/assets/products/12/2.webp', 12, 2),
+(41, 'Baldrianwurzel Pflanze und Inhaltsstoffe', 'Macskagyökér növény és összetevők', 'Valerian root plant and ingredients', '/assets/products/12/3.webp', 12, 3);
 
 -- --------------------------------------------------------
 
@@ -1484,7 +1510,7 @@ ALTER TABLE `product_categories`
 -- AUTO_INCREMENT a táblához `product_images`
 --
 ALTER TABLE `product_images`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT a táblához `reviews`
