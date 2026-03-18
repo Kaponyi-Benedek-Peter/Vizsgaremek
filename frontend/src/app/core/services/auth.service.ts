@@ -73,6 +73,7 @@ export class AuthService {
   ) {
     this.initAuth();
     this.setupStorageListener();
+    this.setupForceLogoutListener();
   }
 
   private initAuth(): void {
@@ -118,7 +119,7 @@ export class AuthService {
         const state: string = res?.account_state ?? '';
         return this.applyFreshAccountState(state);
       }),
-      catchError(() => of(true)),
+      catchError(() => of(false)),
     );
   }
 
@@ -205,6 +206,15 @@ export class AuthService {
         if (event.key === this.TOKEN_KEY && event.newValue !== null) {
           this.initAuth();
         }
+      });
+    }
+  }
+
+  private setupForceLogoutListener(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('auth:force-logout', (event: Event) => {
+        const message = (event as CustomEvent).detail?.message;
+        this.logout(message);
       });
     }
   }
@@ -337,7 +347,7 @@ export class AuthService {
       );
   }
 
-  logout(): void {
+  logout(sessionExpiredMessage?: string): void {
     this.stopStatusPolling();
     this.clearStorage();
     this.updateAuthState({
@@ -348,7 +358,9 @@ export class AuthService {
       expiresAt: null,
       role: null,
     });
-    this.router.navigate(['/login']);
+
+    const queryParams = sessionExpiredMessage ? { message: sessionExpiredMessage } : {};
+    this.router.navigate(['/login'], { replaceUrl: true, queryParams });
   }
 
   getToken(): string | null {
@@ -551,6 +563,7 @@ export class AuthService {
       storage.removeItem(this.STORAGE_TYPE_KEY);
       storage.removeItem(this.SESSION_TOKEN_KEY);
       storage.removeItem('auth_role');
+      storage.removeItem('user_id');
     });
   }
 

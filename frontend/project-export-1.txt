@@ -1235,7 +1235,10 @@ export const authGuard: CanActivateFn = (route, state) => {
       }
       return true;
     }),
-    catchError(() => of(true)),
+    catchError(() => {
+      router.navigate(['/login']);
+      return of(false);
+    }),
   );
 };
 
@@ -1261,18 +1264,21 @@ export const adminGuard: CanActivateFn = (route, state) => {
       return true;
     }),
     catchError(() => {
-      if (!authService.isAdmin()) {
-        router.navigate(['/home']);
-        return of(false);
-      }
-      return of(true);
+      router.navigate(['/home']);
+      return of(false);
     }),
   );
 };
 
 export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
-  return !authService.isUserAuthenticated();
+  const router = inject(Router);
+
+  if (authService.isUserAuthenticated()) {
+    return router.createUrlTree(['/home']);
+  }
+
+  return true;
 };
 
 
@@ -1330,29 +1336,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
         const errorType = error.error?.error;
-        if (errorType === 'hianyzo_auth_header' && !isPublicEndpoint) {
-          localStorage.removeItem('auth_token'); // storage listener
-          router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
-        } else if (errorType === 'hibas_token') {
-          [
-            'auth_token',
-            'auth_user',
-            'auth_expires',
-            'auth_storage_type',
-            'auth_session_token',
-            'auth_role',
-          ].forEach((key) => {
-            localStorage.removeItem(key);
-            sessionStorage.removeItem(key);
-          });
-          router.navigate(['/login'], {
-            queryParams: { returnUrl: router.url, message: 'session_expired' },
-          });
+
+        if (
+          (errorType === 'hianyzo_auth_header' && !isPublicEndpoint) ||
+          errorType === 'hibas_token'
+        ) {
+          const message = errorType === 'hibas_token' ? 'session_expired' : undefined;
+          window.dispatchEvent(new CustomEvent('auth:force-logout', { detail: { message } }));
         }
       }
+
       if (error.status === 403) {
         router.navigate(['/login']);
       }
+
       return throwError(() => error);
     }),
   );
@@ -2206,6 +2203,7 @@ export class AuthService {
   ) {
     this.initAuth();
     this.setupStorageListener();
+    this.setupForceLogoutListener();
   }
 
   private initAuth(): void {
@@ -2251,7 +2249,7 @@ export class AuthService {
         const state: string = res?.account_state ?? '';
         return this.applyFreshAccountState(state);
       }),
-      catchError(() => of(true)),
+      catchError(() => of(false)),
     );
   }
 
@@ -2338,6 +2336,15 @@ export class AuthService {
         if (event.key === this.TOKEN_KEY && event.newValue !== null) {
           this.initAuth();
         }
+      });
+    }
+  }
+
+  private setupForceLogoutListener(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('auth:force-logout', (event: Event) => {
+        const message = (event as CustomEvent).detail?.message;
+        this.logout(message);
       });
     }
   }
@@ -2470,7 +2477,7 @@ export class AuthService {
       );
   }
 
-  logout(): void {
+  logout(sessionExpiredMessage?: string): void {
     this.stopStatusPolling();
     this.clearStorage();
     this.updateAuthState({
@@ -2481,7 +2488,9 @@ export class AuthService {
       expiresAt: null,
       role: null,
     });
-    this.router.navigate(['/login']);
+
+    const queryParams = sessionExpiredMessage ? { message: sessionExpiredMessage } : {};
+    this.router.navigate(['/login'], { replaceUrl: true, queryParams });
   }
 
   getToken(): string | null {
@@ -2684,6 +2693,7 @@ export class AuthService {
       storage.removeItem(this.STORAGE_TYPE_KEY);
       storage.removeItem(this.SESSION_TOKEN_KEY);
       storage.removeItem('auth_role');
+      storage.removeItem('user_id');
     });
   }
 

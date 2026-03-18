@@ -21,7 +21,10 @@ export const authGuard: CanActivateFn = (route, state) => {
       }
       return true;
     }),
-    catchError(() => of(true)),
+    catchError(() => {
+      router.navigate(['/login']);
+      return of(false);
+    }),
   );
 };
 
@@ -47,16 +50,19 @@ export const adminGuard: CanActivateFn = (route, state) => {
       return true;
     }),
     catchError(() => {
-      if (!authService.isAdmin()) {
-        router.navigate(['/home']);
-        return of(false);
-      }
-      return of(true);
+      router.navigate(['/home']);
+      return of(false);
     }),
   );
 };
 
 export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
-  return !authService.isUserAuthenticated();
+  const router = inject(Router);
+
+  if (authService.isUserAuthenticated()) {
+    return router.createUrlTree(['/home']);
+  }
+
+  return true;
 };
