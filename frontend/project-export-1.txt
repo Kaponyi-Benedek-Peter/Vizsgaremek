@@ -11436,7 +11436,7 @@ FILE: src\app\pages\product-detail\product-detail.css
   width: fit-content;
   padding: 5px 14px;
   background: var(--color-primary-light);
-  color: var(--color-text-primary);
+  color: #ffffff;
   border: 1px solid rgba(6, 122, 69, 0.2);
   border-radius: var(--radius-full);
   font-size: 0.7rem;
@@ -21894,7 +21894,7 @@ FILE: src\app\shared\components\product-card\product-card.ts
 
 import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
@@ -21928,6 +21928,7 @@ export class ProductCard {
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
   private translationService = inject(TranslationService);
+  private router = inject(Router);
   private currentLang = toSignal(this.translationService.currentLang$, {
     initialValue: this.translationService.getCurrentLanguage(),
   });
@@ -22006,6 +22007,7 @@ export class ProductCard {
 
   onViewDetails(): void {
     this.viewDetails.emit(this.product);
+    this.router.navigate(['/products', this.product.id]);
   }
 }
 
