@@ -10,7 +10,7 @@ namespace Servo.model
 {
     internal class get_all_reviews_page_by_product_id
     {
-        static MySqlConnection conn = model.shared.conn;
+        static MySqlConnection conn = null;
 
 
         public static Dictionary<string, object> communicate_get_all_reviews_page_by_product_id(string p_page, string p_amount, string p_product_id)
@@ -25,6 +25,8 @@ namespace Servo.model
 
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("get_all_reviews_page_by_product_id", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -67,6 +69,10 @@ namespace Servo.model
                 service.shared.log($"Error 1: {ex.Message} --model.get_all_products.communicate_get_all_products");
                 result["statuscode"] = "500";
                 result["status"] = "internal_error";
+            }
+            finally
+            {
+                if (conn != null) conn.Dispose();
             }
 
             return result;

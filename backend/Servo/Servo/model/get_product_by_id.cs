@@ -12,7 +12,7 @@ namespace Servo.model
 {
     internal class get_product_by_id
     {
-        static MySqlConnection conn = model.shared.conn;
+        static MySqlConnection conn = null;
 
 
         public static Dictionary<string, object> communicate_get_product_by_id(string id)
@@ -26,6 +26,8 @@ namespace Servo.model
 
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("get_product_by_id", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -70,6 +72,10 @@ namespace Servo.model
                 service.shared.log($"Error 1: {ex.Message} --model.get_product_by_id.communicate_get_product_by_id");
                 result["statuscode"] = "500";
                 result["status"] = "internal_error";
+            }
+            finally
+            {
+                if (conn != null) conn.Dispose();
             }
 
             return result;

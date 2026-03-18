@@ -99,7 +99,7 @@ namespace Servo.service
         {
             
 
-            return new List<double> { Math.Round(inn * usd), Math.Round(inn * eur)};
+            return new List<double> { Math.Round(inn * usd,1), Math.Round(inn * eur,1)};
         }
 
 

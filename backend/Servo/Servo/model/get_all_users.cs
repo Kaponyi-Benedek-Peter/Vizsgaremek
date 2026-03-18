@@ -11,7 +11,7 @@ namespace Servo.model
     internal class get_all_users
     {
 
-        static MySqlConnection conn = model.shared.conn;
+        static MySqlConnection conn = null;
 
 
 
@@ -28,6 +28,8 @@ namespace Servo.model
 
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("get_all_users", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -63,6 +65,10 @@ namespace Servo.model
                 result["statuscode"] = "500";
                 result["status"] = "internal_error";
 
+            }
+            finally
+            {
+                if (conn != null) conn.Dispose();
             }
 
             return result;

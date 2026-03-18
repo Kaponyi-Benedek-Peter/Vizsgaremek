@@ -10,10 +10,14 @@ namespace Servo.model
 {
     internal class registration_promise
     {
-        public static int main(string service_id) {
-
+        public static int main(string service_id)
+        {
+            string connStr = model.shared.connStr;
+            MySqlConnection conn = null;
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
 
                 Dictionary<string, string> lista = new Dictionary<string, string>
                {
@@ -24,10 +28,9 @@ namespace Servo.model
                 //string result = model.shared.fetchsqlsing("update_account_state_by_email", null, null, null, "users", null, lista);
 
 
-                string connStr = model.shared.connStr;
-                MySqlConnection conn = model.shared.conn;
 
-                
+
+
                 using (MySqlCommand cmd = new MySqlCommand("update_account_state_by_id", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -41,12 +44,20 @@ namespace Servo.model
 
                 return 200;
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 service.shared.log($"Error 1: {ex.Message} --model.registration_promise.main");
                 return 500;
-                
-            }
 
+            }
+            finally
+            {
+                if (conn != null)
+                {
+                    conn.Close();
+                }
+
+            }
         }
     }
 }

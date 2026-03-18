@@ -11,14 +11,14 @@ namespace Servo.model
     internal class get_all_featured_products
     {
 
-        static MySqlConnection conn = model.shared.conn;
+        
 
 
 
 
 
         public static Dictionary<string, object> communicate_get_all_featured_products()
-        {
+        {MySqlConnection conn = null;
             var result = new Dictionary<string, object>
             {
                 { "statuscode", "200" },
@@ -28,6 +28,8 @@ namespace Servo.model
 
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("get_all_featured_products", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -71,6 +73,13 @@ namespace Servo.model
                 result["statuscode"] = "500";
                 result["status"] = "internal_error";
 
+            }
+            finally
+            {
+                if (conn != null)
+                {
+                    conn.Close();
+                }
             }
 
             return result;

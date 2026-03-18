@@ -227,17 +227,35 @@ tags
         public static void init(string databasename)
         {
             connStr = $"server={service.shared.conf("r", "sql_conn_server")};port={service.shared.conf("r", "sql_conn_port")};user={service.shared.conf("r", "sql_conn_user")};password={service.shared.conf("r", "sql_conn_password")};database={databasename};";
-            conn = new MySqlConnection(connStr);
-            try { 
-            conn.Open();
-            }
-            catch(Exception ex) { service.shared.log("Start the MySql server! || "+ex.Message ); }
+           
+            
             service.shared.log("[mysql connection open]");
 
         }
+
+        public static (MySqlConnection,string) newconn()
+        {
+            MySqlConnection tempconn;
+            tempconn = new MySqlConnection(connStr);
+            try
+            {
+                
+                tempconn.Open();
+
+                return (tempconn,"ok");
+
+            }
+            catch (Exception ex) { 
+                
+                service.shared.log("Start the MySql server! || " + ex.Message);
+                return(tempconn, "error");
+
+            }
+        }
+
         public static string connStr;
 
-        public static MySqlConnection conn;
+        public static MySqlConnection conn => new MySqlConnection(model.shared.connStr);
 
         /*
         public static string fetchsqlsing(string rw, string inntype, string inn, string outttype, string table, string newValue = null, Dictionary<string, string> lista = null)

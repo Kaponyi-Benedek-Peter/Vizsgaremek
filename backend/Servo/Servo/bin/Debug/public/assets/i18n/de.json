@@ -491,7 +491,10 @@
     "recent_orders": "Neueste Bestellungen",
     "no_orders": "Keine Bestellungen gefunden.",
     "greeting": "Willkommen, {{name}}!",
-    "errors": { "orders_load_failed": "Fehler beim Laden der Produkte!" }
+    "errors": {
+      "orders_load_failed": "Fehler beim Laden der Produkte!",
+      "users_load_failed": "Fehler beim Laden der Benutzer!"
+    }
   },
   "footer": {
     "contactInfo": "Kontaktinformationen",

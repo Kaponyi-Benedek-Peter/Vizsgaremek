@@ -11,12 +11,14 @@ namespace Servo.model
 {
     internal class delete_all_posts
     {
-        static string connStr = model.shared.connStr;
-        static MySqlConnection conn = model.shared.conn;
+
+        
         public static int communicate_delete_all_posts()
-        {
+        {MySqlConnection conn = null;
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("delete_all_posts", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -31,6 +33,13 @@ namespace Servo.model
                 service.shared.log($"Error 1: {ex.Message} --model.delete_all_posts.communicate_delete_all_posts");
 
                 return 500;
+            }
+            finally
+            {
+                                if (conn != null)
+                {
+                    conn.Close();
+                }
             }
         }
 
