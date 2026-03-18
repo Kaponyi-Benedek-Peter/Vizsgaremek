@@ -56,12 +56,4 @@
       }
     }
   </section>
-
-  @if (showModal && selectedProduct) {
-    <app-product-detail-modal
-      [product]="selectedProduct"
-      (close)="handleModalClose()"
-      (addToCart)="handleModalAddToCart($event)"
-    />
-  }
 </div>

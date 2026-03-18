@@ -10,7 +10,6 @@ import { CategoryBar } from '../category-bar/category-bar';
 import { ProductCard } from '../product-card/product-card';
 import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
-import { ProductDetailModal } from '../product-detail-modal/product-detail-modal';
 import { ICONS } from '../../../core/constants/visuals';
 
 const POLL_INTERVAL_MS = 60_000;
@@ -24,7 +23,6 @@ const POLL_INTERVAL_MS = 60_000;
     ProductFilter,
     ProductCard,
     ProductPagination,
-    ProductDetailModal,
   ],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
@@ -44,7 +42,6 @@ export class ProductList {
   categories = computed<Category[]>(() => this.productService.categories());
 
   selectedProduct: ProductWithHelpers | null = null;
-  showModal = false;
 
   async ngOnInit(): Promise<void> {
     await Promise.all([this.productService.loadProducts(), this.productService.loadCategories()]);
@@ -95,17 +92,6 @@ export class ProductList {
 
   handleViewDetails(product: ProductWithHelpers): void {
     this.selectedProduct = product;
-    this.showModal = true;
-  }
-
-  handleModalClose(): void {
-    this.showModal = false;
-    this.selectedProduct = null;
-  }
-
-  handleModalAddToCart(event: { product: ProductWithHelpers; quantity: number }): void {
-    this.cartService.addToCart(event.product, event.quantity);
-    this.handleModalClose();
   }
 
   private scrollToTop(): void {
