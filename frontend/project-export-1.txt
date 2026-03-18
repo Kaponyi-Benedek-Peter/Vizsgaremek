@@ -11674,7 +11674,7 @@ FILE: src\app\pages\product-detail\product-detail.css
 .total-value {
   font-size: var(--text-2xl);
   font-weight: 800;
-  color: var(--color-text-primary);
+  color: #ffffff;
 }
 
 .add-to-cart-btn {
