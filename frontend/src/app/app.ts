@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Header } from './shared/components/header/header';
 import { Footer } from './shared/components/footer/footer';
 import { Toast } from './shared/components/toast/toast';
 import { TranslationService } from './core/services/translation.service';
+import { ImageCacheService } from './core/services/image-cache.service';
 
 @Component({
   selector: 'app-root',
@@ -13,6 +14,9 @@ import { TranslationService } from './core/services/translation.service';
 })
 export class App {
   protected readonly title = signal('frontend');
+
+  private imageCacheService = inject(ImageCacheService);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -27,5 +31,7 @@ export class App {
         replaceUrl: true,
       });
     }
+
+    this.imageCacheService.preloadCriticalImages();
   }
 }

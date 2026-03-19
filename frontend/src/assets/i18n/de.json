@@ -461,7 +461,48 @@
       "category": "Kategorie",
       "actions": "Aktionen",
       "items": "Artikel",
-      "price": "Preis"
+      "price": "Preis",
+      "brand": "Marke",
+      "billing": "Rechnungsstellung",
+      "view_images": "Bilder anzeigen"
+    },
+    "gallery": {
+      "title": "Produkt-Bilder",
+      "upload": "Uploaden",
+      "delete_image": "Bild löschen",
+      "confirm_delete_title": "Sind Sie sicher, dass Sie die Bilder löschen?",
+      "confirm_delete_text": "Diese Maßnahme darf nicht widerrufen werden. Bild wird vollständig gelöscht.",
+      "details": "Abbildung 1 Details",
+      "download": "Downloaden",
+      "transparent": "Transparent",
+      "transparent_hint": "Wenn aktiviert, entfernt das Backend automatisch den Bildhintergrund",
+      "meta": {
+        "filename": "Dateiname",
+        "type": "Typus",
+        "resolution": "Auflösung",
+        "size": "Dateigröße",
+        "modified": "zuletzt geändert"
+      }
+    },
+    "user_actions": {
+      "actions": "Aktionen",
+      "set_role": "Recht",
+      "ban": "Verbot",
+      "unban": "Verbot aufheben",
+      "delete": "Benutzer löschen",
+      "you": "Du",
+      "confirm_role_title": "Änderung der Berechtigung",
+      "confirm_role_text": "{{name}} Berechtigung ändern: {{state}}?",
+      "confirm_ban_title": "Benutzer deaktivieren",
+      "confirm_ban_text": "Gibt es ein Verbot von {{name}}? Sie verlieren den Zugang zu Ihrem Konto..",
+      "confirm_unban_title": "Benutzer auflösen",
+      "confirm_unban_text": "{{name}} Verbot auflösen? Ihr Benutzerkonto wird wieder auf Verified eingestellt.",
+      "confirm_delete_title": "Benutzer löschen",
+      "confirm_delete_text": "Wird {{name}} dauerhaft gelöscht? Kann nicht zurückgezogen werden.",
+      "success": "Benutzer erfolgreich aktualisiert.",
+      "banned": "Benutzer deaktiviert.",
+      "deleted": "Benutzer gelöscht.",
+      "error": "Fehler bei der Durchführung der Operation. Bitte versuchen Sie es erneut."
     },
     "stats": {
       "this_week": "diese Woche",

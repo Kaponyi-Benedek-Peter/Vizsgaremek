@@ -1,5 +1,4 @@
 <div class="admin-page">
-  <!-- Mobile overlay: tap to close the drawer -->
   <div
     class="sidebar-overlay"
     [class.active]="mobileOverlayActive()"
@@ -165,7 +164,7 @@
             <div class="empty-state">{{ 'admin.no_orders' | translate }}</div>
           } @else {
             <div class="table-wrapper">
-              <table class="admin-table">
+              <table class="admin-table" appResizableTable="dashboard-orders">
                 <thead>
                   <tr>
                     <th>{{ 'admin.table.order_id' | translate }}</th>
@@ -208,7 +207,7 @@
               type="search"
               class="admin-search"
               [(ngModel)]="orderSearch"
-              [placeholder]="'admin.search_orders' | translate"
+              [placeholder]="('admin.search_orders' | translate) + '   (city:budapest, status:delivered)'"
             />
           </div>
           <button class="retry-btn" (click)="loadOrders()" [disabled]="ordersLoading()">
@@ -234,12 +233,12 @@
               @if (filteredOrders().length === 0) {
                 <div class="empty-state">{{ 'admin.no_orders' | translate }}</div>
               } @else {
-                <table class="admin-table">
+                <table class="admin-table" appResizableTable="orders">
                   <thead>
                     <tr>
                       <th>{{ 'admin.table.order_id' | translate }}</th>
                       <th>{{ 'admin.table.email' | translate }}</th>
-                      <th>{{ 'admin.table.billing_name' | translate }}</th>
+                      <th>{{ 'admin.table.billing' | translate }}</th>
                       <th>{{ 'admin.table.date' | translate }}</th>
                       <th>{{ 'admin.table.address' | translate }}</th>
                       <th>{{ 'admin.table.phone' | translate }}</th>
@@ -284,7 +283,7 @@
               type="search"
               class="admin-search"
               [(ngModel)]="userSearch"
-              [placeholder]="'admin.search_users' | translate"
+              [placeholder]="('admin.search_users' | translate) + '   (role:admin, email:gmail)'"
             />
           </div>
           <button class="retry-btn" (click)="loadUsers()" [disabled]="usersLoading()">
@@ -310,7 +309,7 @@
               @if (filteredUsers().length === 0) {
                 <div class="empty-state">{{ 'admin.no_users' | translate }}</div>
               } @else {
-                <table class="admin-table">
+                <table class="admin-table" appResizableTable="users">
                   <thead>
                     <tr>
                       <th>{{ 'admin.table.user' | translate }}</th>
@@ -318,11 +317,12 @@
                       <th>{{ 'admin.table.role' | translate }}</th>
                       <th>{{ 'admin.table.registered' | translate }}</th>
                       <th>ID</th>
+                      <th>{{ 'admin.table.actions' | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (user of filteredUsers(); track user.id) {
-                      <tr>
+                      <tr [class.row-banned]="user.account_state === 'banned'" [class.row-deleted]="user.account_state === 'deleted'">
                         <td>
                           <div class="user-cell">
                             <div class="user-avatar">{{ getUserInitial(user) }}</div>
@@ -337,6 +337,53 @@
                         </td>
                         <td class="muted">{{ formatDate(user.created_at) }}</td>
                         <td class="muted">#{{ user.id }}</td>
+                        <td>
+                          @if (!isSelf(user) && user.account_state !== 'deleted') {
+                            <div class="user-actions-wrapper">
+                              <button
+                                class="action-menu-btn"
+                                (click)="toggleUserMenu(user.id, $event)"
+                                [attr.aria-label]="'admin.table.actions' | translate"
+                              >
+                                ⋮
+                              </button>
+                              @if (activeUserMenu() === user.id) {
+                                <div class="action-dropdown">
+                                  @if (user.account_state !== 'banned') {
+                                    <div class="dropdown-section">
+                                      <span class="dropdown-label">{{ 'admin.user_actions.set_role' | translate }}</span>
+                                      @for (state of getAvailableStates(user); track state) {
+                                        <button
+                                          class="dropdown-item"
+                                          (click)="requestChangeRole(user, state)"
+                                        >
+                                          <span [class]="'role-dot ' + getAccountStateClass(state)"></span>
+                                          {{ state }}
+                                        </button>
+                                      }
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <button class="dropdown-item dropdown-item-warn" (click)="requestBanUser(user)">
+                                      {{ 'admin.user_actions.ban' | translate }}
+                                    </button>
+                                  } @else {
+                                    <button class="dropdown-item dropdown-item-success" (click)="requestUnbanUser(user)">
+                                      {{ 'admin.user_actions.unban' | translate }}
+                                    </button>
+                                    <div class="dropdown-divider"></div>
+                                  }
+                                  <button class="dropdown-item dropdown-item-danger" (click)="requestDeleteUser(user)">
+                                    {{ 'admin.user_actions.delete' | translate }}
+                                  </button>
+                                </div>
+                              }
+                            </div>
+                          } @else if (isSelf(user)) {
+                            <span class="muted self-label">{{ 'admin.user_actions.you' | translate }}</span>
+                          } @else {
+                            <span class="muted">—</span>
+                          }
+                        </td>
                       </tr>
                     }
                   </tbody>
@@ -357,7 +404,7 @@
               type="search"
               class="admin-search"
               [(ngModel)]="productSearch"
-              [placeholder]="'admin.search_products' | translate"
+              [placeholder]="('admin.search_products' | translate) + '   (brand:bayer, category:medicines)'"
             />
           </div>
           <button class="retry-btn" (click)="loadProducts()" [disabled]="productsLoading()">
@@ -383,10 +430,12 @@
               @if (filteredProducts().length === 0) {
                 <div class="empty-state">{{ 'admin.no_products' | translate }}</div>
               } @else {
-                <table class="admin-table">
+                <table class="admin-table" appResizableTable="products">
                   <thead>
                     <tr>
                       <th>{{ 'admin.table.product' | translate }}</th>
+                      <th>{{ 'admin.table.images' | translate }}</th>
+                      <th>{{ 'admin.table.brand' | translate }}</th>
                       <th>{{ 'admin.table.category' | translate }}</th>
                       <th>SKU</th>
                       <th>{{ 'admin.table.price' | translate }}</th>
@@ -410,10 +459,32 @@
                             </div>
                             <div class="product-cell-info">
                               <span class="product-name">{{ product.name }}</span>
-                              <span class="product-brand muted">{{ product.brand }}</span>
                             </div>
                           </div>
                         </td>
+                        <td>
+                          <button
+                            class="images-btn"
+                            (click)="openGallery(product)"
+                            [attr.title]="'admin.table.view_images' | translate"
+                          >
+                            <svg
+                              class="images-icon"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.8"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                              <circle cx="8.5" cy="8.5" r="1.5" />
+                              <polyline points="21 15 16 10 5 21" />
+                            </svg>
+                            <span class="images-count">{{ getProductImageCount(product) }}</span>
+                          </button>
+                        </td>
+                        <td class="muted">{{ product.brand }}</td>
                         <td class="muted">{{ product.category }}</td>
                         <td class="muted">{{ product.sku }}</td>
                         <td class="font-bold">{{ formatRevenue(product.price) }}</td>
@@ -448,3 +519,296 @@
     }
   </main>
 </div>
+
+@if (galleryOpen()) {
+  <div class="gallery-overlay" (click)="onGalleryOverlayClick($event)">
+    <div class="gallery-modal">
+      <div class="gallery-modal-header">
+        <div class="gallery-modal-title-group">
+          <h2 class="gallery-modal-title">
+            {{ 'admin.gallery.title' | translate }}
+          </h2>
+          @if (galleryProduct(); as product) {
+            <span class="gallery-product-name">{{ product.name }}</span>
+          }
+        </div>
+        <div class="gallery-header-controls">
+          <label class="transparent-toggle" [attr.title]="'admin.gallery.transparent_hint' | translate">
+            <span class="transparent-label">{{ 'admin.gallery.transparent' | translate }}</span>
+            <button
+              class="toggle-switch"
+              [class.active]="uploadTransparent()"
+              (click)="toggleTransparent()"
+              role="switch"
+              [attr.aria-checked]="uploadTransparent()"
+            >
+              <span class="toggle-knob"></span>
+            </button>
+          </label>
+          <button
+            class="gallery-close-btn"
+            (click)="closeGallery()"
+            [attr.aria-label]="'common.close' | translate"
+          >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="gallery-modal-body">
+        @if (galleryLoading()) {
+          <div class="gallery-loading">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
+          </div>
+        } @else {
+          <div class="gallery-grid">
+            @for (image of galleryImages(); track image.id) {
+              <div class="gallery-card" (click)="openImageDetail(image)">
+                <div class="gallery-card-image-wrapper">
+                  <img
+                    [src]="image.objectUrl || image.image_url"
+                    [alt]="image.alt_text_en"
+                    class="gallery-card-image"
+                    loading="lazy"
+                  />
+                </div>
+                <button
+                  class="gallery-card-delete"
+                  (click)="requestDeleteImage(image, $event)"
+                  [attr.aria-label]="'admin.gallery.delete_image' | translate"
+                  [attr.title]="'admin.gallery.delete_image' | translate"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="3 6 5 6 21 6" />
+                    <path
+                      d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                    />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
+                  </svg>
+                </button>
+                <div class="gallery-card-label">
+                  {{ image.alt_text_en || extractFileName(image.image_url) }}
+                </div>
+              </div>
+            }
+
+            <div class="gallery-card gallery-card-add" (click)="triggerFileUpload()">
+              <div class="gallery-card-add-content">
+                <svg
+                  class="gallery-add-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span class="gallery-add-text">{{ 'admin.gallery.upload' | translate }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@if (detailOpen()) {
+  <div class="detail-overlay" (click)="onDetailOverlayClick($event)">
+    <div class="detail-modal">
+      <button
+        class="gallery-close-btn detail-close-btn"
+        (click)="closeImageDetail()"
+        [attr.aria-label]="'common.close' | translate"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+
+      <div class="detail-content">
+        <div class="detail-image-container">
+          @if (detailImage(); as img) {
+            <img
+              [src]="img.objectUrl || img.image_url"
+              [alt]="img.alt_text_en"
+              class="detail-full-image"
+              (load)="onDetailImageLoad($event)"
+            />
+          }
+        </div>
+
+        <div class="detail-info-panel">
+          <h3 class="detail-info-title">{{ 'admin.gallery.details' | translate }}</h3>
+
+          @if (detailMeta(); as meta) {
+            <div class="detail-meta-list">
+              <div class="detail-meta-row">
+                <span class="detail-meta-label">{{
+                  'admin.gallery.meta.filename' | translate
+                }}</span>
+                <span class="detail-meta-value">{{ meta.name }}</span>
+              </div>
+              <div class="detail-meta-row">
+                <span class="detail-meta-label">{{ 'admin.gallery.meta.type' | translate }}</span>
+                <span class="detail-meta-value">{{ meta.type }}</span>
+              </div>
+              <div class="detail-meta-row">
+                <span class="detail-meta-label">{{
+                  'admin.gallery.meta.resolution' | translate
+                }}</span>
+                <span class="detail-meta-value">{{ meta.resolution }}</span>
+              </div>
+              @if (meta.size !== '—') {
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">{{ 'admin.gallery.meta.size' | translate }}</span>
+                  <span class="detail-meta-value">{{ meta.size }}</span>
+                </div>
+              }
+              @if (meta.lastModified !== '—') {
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">{{
+                    'admin.gallery.meta.modified' | translate
+                  }}</span>
+                  <span class="detail-meta-value">{{ meta.lastModified }}</span>
+                </div>
+              }
+            </div>
+          }
+
+          @if (detailImage(); as img) {
+            <div class="detail-actions">
+              <button class="detail-download-btn" (click)="downloadImage(img)">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                {{ 'admin.gallery.download' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (deleteConfirmOpen()) {
+  <div class="confirm-overlay" (click)="cancelDeleteImage()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-wrapper">
+        <svg
+          class="confirm-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          />
+        </svg>
+      </div>
+      <h3 class="confirm-title">{{ 'admin.gallery.confirm_delete_title' | translate }}</h3>
+      <p class="confirm-text">{{ 'admin.gallery.confirm_delete_text' | translate }}</p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel-btn" (click)="cancelDeleteImage()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="confirm-delete-btn" (click)="confirmDeleteImage()">
+          {{ 'admin.gallery.delete_image' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (userActionConfirm(); as req) {
+  <div class="confirm-overlay" (click)="cancelUserAction()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-wrapper" [class.confirm-icon-danger]="req.action === 'delete' || req.action === 'ban'" [class.confirm-icon-primary]="req.action === 'change_role' || req.action === 'unban'">
+        @if (req.action === 'delete') {
+          <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
+        } @else if (req.action === 'ban') {
+          <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+          </svg>
+        } @else {
+          <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="8.5" cy="7" r="4" />
+            <polyline points="17 11 19 13 23 9" />
+          </svg>
+        }
+      </div>
+      <h3 class="confirm-title">{{ getUserActionTitle() | translate }}</h3>
+      <p class="confirm-text">
+        {{ getUserActionText() | translate: { name: getUserFullName(req.user), state: req.newState || '' } }}
+      </p>
+      @if (req.newState) {
+        <div class="confirm-state-preview">
+          <span [class]="'role-badge ' + getAccountStateClass(req.user.account_state)">{{ req.user.account_state }}</span>
+          <span class="state-arrow">→</span>
+          <span [class]="'role-badge ' + getAccountStateClass(req.newState)">{{ req.newState }}</span>
+        </div>
+      }
+      <div class="confirm-actions">
+        <button class="confirm-cancel-btn" (click)="cancelUserAction()" [disabled]="userActionLoading()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button [class]="getUserActionBtnClass()" (click)="confirmUserAction()" [disabled]="userActionLoading()">
+          @if (userActionLoading()) {
+            <span class="spinner-small">⏳</span>
+          } @else {
+            {{ getUserActionTitle() | translate }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

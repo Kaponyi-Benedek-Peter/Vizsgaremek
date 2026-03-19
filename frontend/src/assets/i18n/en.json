@@ -491,7 +491,49 @@
       "category": "Category",
       "actions": "Actions",
       "items": "Items",
-      "price": "Price"
+      "price": "Price",
+      "brand": "Brand",
+      "billing": "Billing",
+      "images": "Images",
+      "view_images": "View images"
+    },
+    "gallery": {
+      "title": "Product Images",
+      "upload": "Upload",
+      "delete_image": "Delete image",
+      "confirm_delete_title": "Delete this image?",
+      "confirm_delete_text": "This action cannot be undone. The image will be permanently removed.",
+      "details": "Image Details",
+      "download": "Download",
+      "transparent": "Transparent",
+      "transparent_hint": "When enabled, the backend will remove the image background automatically",
+      "meta": {
+        "filename": "Filename",
+        "type": "Type",
+        "resolution": "Resolution",
+        "size": "File size",
+        "modified": "Last modified"
+      }
+    },
+    "user_actions": {
+      "actions": "Actions",
+      "set_role": "Set role",
+      "ban": "Ban user",
+      "unban": "Unban user",
+      "delete": "Delete user",
+      "you": "You",
+      "confirm_role_title": "Change role",
+      "confirm_role_text": "Change {{name}}'s role to {{state}}?",
+      "confirm_ban_title": "Ban user",
+      "confirm_ban_text": "Ban {{name}}? They will lose access to their account.",
+      "confirm_unban_title": "Unban user",
+      "confirm_unban_text": "Unban {{name}}? Their account will be restored to verified.",
+      "confirm_delete_title": "Delete user",
+      "confirm_delete_text": "Permanently delete {{name}}? This cannot be undone.",
+      "success": "User updated successfully.",
+      "banned": "User has been banned.",
+      "deleted": "User has been deleted.",
+      "error": "Action failed. Please try again."
     },
     "stats": {
       "this_week": "this week",

@@ -164,6 +164,41 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
+  updateUserStateAdmin(userId: string, newState: string): Observable<ApiResponse> {
+    const auth = this.buildAdminAuthBody();
+    const body = {
+      ...auth,
+      user_id: this.encodeBase64(userId),
+      new_account_state: this.encodeBase64(newState),
+    };
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/update_user_state_admin`, body)
+      .pipe(catchError(this.handleError));
+  }
+
+  banUserAdmin(userId: string, reason = ''): Observable<ApiResponse> {
+    const auth = this.buildAdminAuthBody();
+    const body = {
+      ...auth,
+      user_id: this.encodeBase64(userId),
+      ban_reason: this.encodeBase64(reason),
+    };
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/ban_user_admin`, body)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteUserAdmin(userId: string): Observable<ApiResponse> {
+    const auth = this.buildAdminAuthBody();
+    const body = {
+      ...auth,
+      user_id: this.encodeBase64(userId),
+    };
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/delete_user_admin`, body)
+      .pipe(catchError(this.handleError));
+  }
+
   getOrderHistory(): Observable<ApiResponse<any[]>> {
     return this.http
       .get<ApiResponse<any[]>>(`${this.API_URL}/api/orders`)
