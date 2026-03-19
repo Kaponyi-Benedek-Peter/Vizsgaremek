@@ -351,7 +351,7 @@
   width: fit-content;
   padding: 5px 14px;
   background: var(--color-primary-light);
-  color: var(--color-text-primary);
+  color: #ffffff;
   border: 1px solid rgba(6, 122, 69, 0.2);
   border-radius: var(--radius-full);
   font-size: 0.7rem;
@@ -585,7 +585,7 @@
 .total-value {
   font-size: var(--text-2xl);
   font-weight: 800;
-  color: var(--color-text-primary);
+  color: #ffffff;
 }
 
 .add-to-cart-btn {

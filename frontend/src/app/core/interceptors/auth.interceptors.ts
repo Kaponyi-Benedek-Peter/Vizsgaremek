@@ -47,29 +47,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
         const errorType = error.error?.error;
-        if (errorType === 'hianyzo_auth_header' && !isPublicEndpoint) {
-          localStorage.removeItem('auth_token'); // storage listener
-          router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
-        } else if (errorType === 'hibas_token') {
-          [
-            'auth_token',
-            'auth_user',
-            'auth_expires',
-            'auth_storage_type',
-            'auth_session_token',
-            'auth_role',
-          ].forEach((key) => {
-            localStorage.removeItem(key);
-            sessionStorage.removeItem(key);
-          });
-          router.navigate(['/login'], {
-            queryParams: { returnUrl: router.url, message: 'session_expired' },
-          });
+
+        if (
+          (errorType === 'hianyzo_auth_header' && !isPublicEndpoint) ||
+          errorType === 'hibas_token'
+        ) {
+          const message = errorType === 'hibas_token' ? 'session_expired' : undefined;
+          window.dispatchEvent(new CustomEvent('auth:force-logout', { detail: { message } }));
         }
       }
+
       if (error.status === 403) {
         router.navigate(['/login']);
       }
+
       return throwError(() => error);
     }),
   );

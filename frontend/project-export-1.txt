@@ -29,20 +29,24 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 forum.model.ts
 │   │   │   │   ├── 📄 product.model.ts
 │   │   │   │   └── 📄 review.model.ts
-│   │   │   └── 📁 services/
-│   │   │       ├── 📄 account.service.ts
-│   │   │       ├── 📄 auth.service.ts
-│   │   │       ├── 📄 cart.service.ts
-│   │   │       ├── 📄 currency.service.ts
-│   │   │       ├── 📄 forum.service.ts
-│   │   │       ├── 📄 review.service.ts
-│   │   │       ├── 📄 theme.service.ts
-│   │   │       ├── 📄 toast.service.ts
-│   │   │       └── 📄 translation.service.ts
+│   │   │   ├── 📁 services/
+│   │   │   │   ├── 📄 account.service.ts
+│   │   │   │   ├── 📄 auth.service.ts
+│   │   │   │   ├── 📄 cart.service.ts
+│   │   │   │   ├── 📄 currency.service.ts
+│   │   │   │   ├── 📄 forum.service.ts
+│   │   │   │   ├── 📄 image-cache.service.ts
+│   │   │   │   ├── 📄 review.service.ts
+│   │   │   │   ├── 📄 theme.service.ts
+│   │   │   │   ├── 📄 toast.service.ts
+│   │   │   │   └── 📄 translation.service.ts
+│   │   │   └── 📁 utils/
+│   │   │       └── 📄 image-utils.ts
 │   │   ├── 📁 pages/
 │   │   │   ├── 📁 admin/
 │   │   │   │   ├── 📄 admin.css
 │   │   │   │   ├── 📄 admin.html
+│   │   │   │   ├── 📄 admin.mock.ts
 │   │   │   │   ├── 📄 admin.spec.ts
 │   │   │   │   └── 📄 admin.ts
 │   │   │   ├── 📁 bracket/
@@ -108,6 +112,7 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 product-detail.spec.ts
 │   │   │   │   └── 📄 product-detail.ts
 │   │   │   ├── 📁 products/
+│   │   │   │   ├── 📄 product.mock.ts
 │   │   │   │   ├── 📄 products.css
 │   │   │   │   ├── 📄 products.html
 │   │   │   │   ├── 📄 products.spec.ts
@@ -197,10 +202,6 @@ PROJECT STRUCTURE
 │   │       │   │   ├── 📄 product-card.css
 │   │       │   │   ├── 📄 product-card.html
 │   │       │   │   └── 📄 product-card.ts
-│   │       │   ├── 📁 product-detail-modal/
-│   │       │   │   ├── 📄 product-detail-modal.css
-│   │       │   │   ├── 📄 product-detail-modal.html
-│   │       │   │   └── 📄 product-detail-modal.ts
 │   │       │   ├── 📁 product-filter/
 │   │       │   │   ├── 📄 product-filter.css
 │   │       │   │   ├── 📄 product-filter.html
@@ -226,6 +227,8 @@ PROJECT STRUCTURE
 │   │       │       ├── 📄 toast.html
 │   │       │       └── 📄 toast.ts
 │   │       ├── 📁 directives/
+│   │       │   ├── 📄 cached-image.directive.ts
+│   │       │   ├── 📄 resizable-table.directive.ts
 │   │       │   └── 📄 scroll-reveal.directive.ts
 │   │       └── 📁 pipes/
 │   │           └── 📄 currency.pipe.ts
@@ -240,7 +243,20 @@ PROJECT STRUCTURE
 │   │   │   ├── 📄 en.json
 │   │   │   └── 📄 hu.json
 │   │   ├── 📁 icons/
-│   │   └── 📁 images/
+│   │   ├── 📁 images/
+│   │   └── 📁 products/
+│   │       ├── 📁 1/
+│   │       ├── 📁 10/
+│   │       ├── 📁 11/
+│   │       ├── 📁 12/
+│   │       ├── 📁 2/
+│   │       ├── 📁 3/
+│   │       ├── 📁 4/
+│   │       ├── 📁 5/
+│   │       ├── 📁 6/
+│   │       ├── 📁 7/
+│   │       ├── 📁 8/
+│   │       └── 📁 9/
 │   ├── 📁 environments/
 │   │   ├── 📄 environment.prod.ts
 │   │   └── 📄 environment.ts
@@ -735,12 +751,13 @@ describe('App', () => {
 FILE: src\app\app.ts
 ================================================================================
 
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { Header } from './shared/components/header/header';
 import { Footer } from './shared/components/footer/footer';
 import { Toast } from './shared/components/toast/toast';
 import { TranslationService } from './core/services/translation.service';
+import { ImageCacheService } from './core/services/image-cache.service';
 
 @Component({
   selector: 'app-root',
@@ -750,6 +767,9 @@ import { TranslationService } from './core/services/translation.service';
 })
 export class App {
   protected readonly title = signal('frontend');
+
+  private imageCacheService = inject(ImageCacheService);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -764,6 +784,8 @@ export class App {
         replaceUrl: true,
       });
     }
+
+    this.imageCacheService.preloadCriticalImages();
   }
 }
 
@@ -1214,70 +1236,68 @@ FILE: src\app\core\guards\auth.guard.ts
 
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
+import { map, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-/**
- * Auth Guard - Managing guarded routes
- *
- * USE:
- * {
- *   path: 'profile',
- *   component: ProfileComponent,
- *   canActivate: [authGuard]
- * }
- */
 export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isUserAuthenticated()) {
-    return true;
+  if (!authService.isUserAuthenticated()) {
+    router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+    return false;
   }
 
-  router.navigate(['/login'], {
-    queryParams: { returnUrl: state.url },
-  });
-
-  return false;
+  return authService.checkUserStateGuard().pipe(
+    map((allowed) => {
+      if (!allowed) {
+        router.navigate(['/login']);
+        return false;
+      }
+      return true;
+    }),
+    catchError(() => {
+      router.navigate(['/login']);
+      return of(false);
+    }),
+  );
 };
 
-/**
- * Admin Guard - Admin privilege check
- *
- * USE:
- * {
- *   path: 'admin',
- *   component: AdminComponent,
- *   canActivate: [adminGuard]
- * }
- */
 export const adminGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
   if (!authService.isUserAuthenticated()) {
-    router.navigate(['/login'], {
-      queryParams: { returnUrl: state.url },
-    });
+    router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
     return false;
   }
 
-  if (authService.isAdmin()) {
-    return true;
-  }
-
-  router.navigate(['/home']);
-  return false;
+  return authService.checkUserStateGuard().pipe(
+    map((allowed) => {
+      if (!allowed) {
+        router.navigate(['/login']);
+        return false;
+      }
+      if (!authService.isAdmin()) {
+        router.navigate(['/home']);
+        return false;
+      }
+      return true;
+    }),
+    catchError(() => {
+      router.navigate(['/home']);
+      return of(false);
+    }),
+  );
 };
 
-/**
- * Guest Guard - Only unauthenticated (login, register oldalak).
- */
 export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
+  const router = inject(Router);
 
   if (authService.isUserAuthenticated()) {
-    return false;
+    return router.createUrlTree(['/home']);
   }
 
   return true;
@@ -1338,29 +1358,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
         const errorType = error.error?.error;
-        if (errorType === 'hianyzo_auth_header' && !isPublicEndpoint) {
-          localStorage.removeItem('auth_token'); // storage listener
-          router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
-        } else if (errorType === 'hibas_token') {
-          [
-            'auth_token',
-            'auth_user',
-            'auth_expires',
-            'auth_storage_type',
-            'auth_session_token',
-            'auth_role',
-          ].forEach((key) => {
-            localStorage.removeItem(key);
-            sessionStorage.removeItem(key);
-          });
-          router.navigate(['/login'], {
-            queryParams: { returnUrl: router.url, message: 'session_expired' },
-          });
+
+        if (
+          (errorType === 'hianyzo_auth_header' && !isPublicEndpoint) ||
+          errorType === 'hibas_token'
+        ) {
+          const message = errorType === 'hibas_token' ? 'session_expired' : undefined;
+          window.dispatchEvent(new CustomEvent('auth:force-logout', { detail: { message } }));
         }
       }
+
       if (error.status === 403) {
         router.navigate(['/login']);
       }
+
       return throwError(() => error);
     }),
   );
@@ -1916,18 +1927,28 @@ export interface ApiResponse<T = any> {
 }
 
 export interface OrderItem {
-  productId: string;
-  quantity: number;
+  product_id: string;
+  quantity: string;
 }
 
 export interface CreateOrderRequest {
-  city: string;
-  zipcode: string;
-  address: string;
-  houseNumber: number;
-  apartmentNumber: number;
-  phoneNumber: string;
-  note: string;
+  order: {
+    user_id: string;
+    session_token: string;
+    email: string;
+    billing_name: string;
+    shipping_name: string;
+    shipping_company: string;
+    price: string;
+    city: string;
+    guest: string;
+    zipcode: string;
+    address: string;
+    apartment_number: string;
+    note: string;
+    house_number: string;
+    phone_number: string;
+  };
   items: OrderItem[];
 }
 
@@ -1950,13 +1971,18 @@ export interface AdminUsersResponse {
 export interface AdminOrder {
   id: string;
   user_id: string;
+  email: string;
+  billing_name: string;
+  order_status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   created_at: string;
   price: string;
   city: string;
-  apartment_number: string;
-  note: string;
+  zipcode: string;
+  address: string;
   house_number: string;
+  apartment_number: string;
   phone_number: string;
+  note: string;
 }
 
 export interface AdminOrdersResponse {
@@ -1979,7 +2005,7 @@ export class AccountService {
   private authService = inject(AuthService);
 
   getProfile(): Observable<User> {
-    return this.http.get<User>(`${this.API_URL}/api/profile`).pipe(catchError(this.handleError));
+    return this.http.get<User>(`${this.API_URL}/api/getUser`).pipe(catchError(this.handleError));
   }
 
   updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
@@ -1990,7 +2016,7 @@ export class AccountService {
     if (updates.email) encodedUpdates.email = this.encodeBase64(updates.email);
 
     return this.http
-      .put<ApiResponse<User>>(`${this.API_URL}/api/profile`, encodedUpdates)
+      .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, encodedUpdates)
       .pipe(catchError(this.handleError));
   }
 
@@ -2034,9 +2060,44 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  createOrder(order: CreateOrderRequest): Observable<ApiResponse> {
+  createOrder(order: CreateOrderRequest): Observable<ApiResponse & { tracking_token?: string }> {
     return this.http
-      .post<ApiResponse>(`${this.API_URL}/api/create_order`, order)
+      .post<ApiResponse & { tracking_token?: string }>(`${this.API_URL}/api/create_order`, order)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateUserStateAdmin(userId: string, newState: string): Observable<ApiResponse> {
+    const auth = this.buildAdminAuthBody();
+    const body = {
+      ...auth,
+      user_id: this.encodeBase64(userId),
+      new_account_state: this.encodeBase64(newState),
+    };
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/update_user_state_admin`, body)
+      .pipe(catchError(this.handleError));
+  }
+
+  banUserAdmin(userId: string, reason = ''): Observable<ApiResponse> {
+    const auth = this.buildAdminAuthBody();
+    const body = {
+      ...auth,
+      user_id: this.encodeBase64(userId),
+      ban_reason: this.encodeBase64(reason),
+    };
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/ban_user_admin`, body)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteUserAdmin(userId: string): Observable<ApiResponse> {
+    const auth = this.buildAdminAuthBody();
+    const body = {
+      ...auth,
+      user_id: this.encodeBase64(userId),
+    };
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/delete_user_admin`, body)
       .pipe(catchError(this.handleError));
   }
 
@@ -2055,14 +2116,14 @@ export class AccountService {
   getAllUsersAdmin(): Observable<AdminUsersResponse> {
     const body = this.buildAdminAuthBody();
     return this.http
-      .post<AdminUsersResponse>(`${this.API_URL}/api/get_all_users`, body)
+      .post<AdminUsersResponse>(`${this.API_URL}/api/get_all_users_admin`, body)
       .pipe(catchError(this.handleError));
   }
 
   getAllOrdersAdmin(): Observable<AdminOrdersResponse> {
     const body = this.buildAdminAuthBody();
     return this.http
-      .post<AdminOrdersResponse>(`${this.API_URL}/api/get_all_orders`, body)
+      .post<AdminOrdersResponse>(`${this.API_URL}/api/get_all_orders_admin`, body)
       .pipe(catchError(this.handleError));
   }
 
@@ -2127,7 +2188,7 @@ FILE: src\app\core\services\auth.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import {
   User,
@@ -2159,9 +2220,12 @@ export class AuthService {
   private readonly EXPIRES_KEY = 'auth_expires';
   private readonly STORAGE_TYPE_KEY = 'auth_storage_type';
   private readonly SESSION_TOKEN_KEY = 'auth_session_token';
+  private readonly STATUS_POLL_INTERVAL = 100_000;
 
   private toastService = inject(ToastService);
   private translationService = inject(TranslationService);
+
+  private statusPollingId: ReturnType<typeof setInterval> | null = null;
 
   private authStateSignal = signal<AuthState>({
     isAuthenticated: false,
@@ -2196,6 +2260,7 @@ export class AuthService {
   ) {
     this.initAuth();
     this.setupStorageListener();
+    this.setupForceLogoutListener();
   }
 
   private initAuth(): void {
@@ -2215,16 +2280,86 @@ export class AuthService {
           expiresAt,
           role,
         });
+        this.startStatusPolling();
       } else {
         this.clearStorage();
       }
     }
   }
 
+  getUserState(): Observable<{ account_state: string; statuscode: string; status: string }> {
+    const id = localStorage.getItem('user_id') ?? sessionStorage.getItem('user_id') ?? '';
+    const sessionToken = this.getSessionToken() ?? '';
+    if (!id || id === 'undefined') {
+      return of({ account_state: '', statuscode: '401', status: 'no_id' });
+    }
+
+    return this.http.post<any>(`${this.API_URL}/api/get_user_state`, {
+      id: btoa(id),
+      session_token: btoa(sessionToken),
+    });
+  }
+
+  checkUserStateGuard(): Observable<boolean> {
+    return this.getUserState().pipe(
+      map((res) => {
+        const state: string = res?.account_state ?? '';
+        return this.applyFreshAccountState(state);
+      }),
+      catchError(() => of(false)),
+    );
+  }
+
+  startStatusPolling(): void {
+    this.stopStatusPolling();
+    this.statusPollingId = setInterval(() => {
+      if (!this.isUserAuthenticated()) {
+        this.stopStatusPolling();
+        return;
+      }
+      this.getUserState()
+        .pipe(catchError(() => of(null)))
+        .subscribe((res) => {
+          if (!res?.account_state) return;
+          this.applyFreshAccountState(res.account_state);
+        });
+    }, this.STATUS_POLL_INTERVAL);
+  }
+
+  stopStatusPolling(): void {
+    if (this.statusPollingId !== null) {
+      clearInterval(this.statusPollingId);
+      this.statusPollingId = null;
+    }
+  }
+
+  private applyFreshAccountState(state: string): boolean {
+    if (!state) return true;
+
+    if (state === 'banned' || state === 'deleted') {
+      this.stopStatusPolling();
+      this.logout();
+      const key = state === 'banned' ? 'auth.errors.account_banned' : 'auth.errors.account_deleted';
+      setTimeout(() => this.toastService.error(key), 150);
+      return false;
+    }
+
+    const current = this.authStateSignal();
+    if (current.role !== (state as UserState)) {
+      const stayLoggedIn = localStorage.getItem(this.TOKEN_KEY) !== null;
+      const storage = stayLoggedIn ? localStorage : sessionStorage;
+      storage.setItem('auth_role', state);
+      this.updateAuthState({ ...current, role: state as UserState });
+    }
+
+    return true;
+  }
+
   private storeRole(role: UserState, stayLoggedIn: boolean): void {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
     storage.setItem('auth_role', role);
   }
+
   private storeId(user_id: string, stayLoggedIn: boolean): void {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
     storage.setItem('user_id', user_id);
@@ -2258,6 +2393,15 @@ export class AuthService {
         if (event.key === this.TOKEN_KEY && event.newValue !== null) {
           this.initAuth();
         }
+      });
+    }
+  }
+
+  private setupForceLogoutListener(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('auth:force-logout', (event: Event) => {
+        const message = (event as CustomEvent).detail?.message;
+        this.logout(message);
       });
     }
   }
@@ -2390,7 +2534,8 @@ export class AuthService {
       );
   }
 
-  logout(): void {
+  logout(sessionExpiredMessage?: string): void {
+    this.stopStatusPolling();
     this.clearStorage();
     this.updateAuthState({
       isAuthenticated: false,
@@ -2400,7 +2545,9 @@ export class AuthService {
       expiresAt: null,
       role: null,
     });
-    this.router.navigate(['/login']);
+
+    const queryParams = sessionExpiredMessage ? { message: sessionExpiredMessage } : {};
+    this.router.navigate(['/login'], { replaceUrl: true, queryParams });
   }
 
   getToken(): string | null {
@@ -2492,13 +2639,11 @@ export class AuthService {
     user?: User,
     skipNavigation = false,
   ): void {
-    const id = response.user_id;
-    const role = response.user_state;
     const jwtToken = response.jwt_token;
     const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
-      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 days
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     let userData = user;
     if (!userData && jwtToken) {
@@ -2514,6 +2659,9 @@ export class AuthService {
         };
       }
     }
+
+    const id = response.user_id ?? userData?.id ?? '';
+    const role = response.user_state;
 
     this.clearStorage();
     this.storeRole(role, stayLoggedIn);
@@ -2532,6 +2680,8 @@ export class AuthService {
       expiresAt,
       role,
     });
+
+    this.startStatusPolling();
 
     if (!skipNavigation) {
       this.router.navigate(['/home'], { queryParams: {} });
@@ -2568,18 +2718,11 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY);
   }
 
-  private getStoredSessionToken(): string | null {
-    return (
-      localStorage.getItem(this.SESSION_TOKEN_KEY) || sessionStorage.getItem(this.SESSION_TOKEN_KEY)
-    );
-  }
-
   private getStoredUser(): User | null {
-    const userJson = localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY);
-    if (!userJson) return null;
-
+    const userStr = localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY);
+    if (!userStr) return null;
     try {
-      return JSON.parse(userJson);
+      return JSON.parse(userStr) as User;
     } catch {
       return null;
     }
@@ -2589,12 +2732,14 @@ export class AuthService {
     const expiresStr =
       localStorage.getItem(this.EXPIRES_KEY) || sessionStorage.getItem(this.EXPIRES_KEY);
     if (!expiresStr) return null;
+    const date = new Date(expiresStr);
+    return isNaN(date.getTime()) ? null : date;
+  }
 
-    try {
-      return new Date(expiresStr);
-    } catch {
-      return null;
-    }
+  private getStoredSessionToken(): string | null {
+    return (
+      localStorage.getItem(this.SESSION_TOKEN_KEY) || sessionStorage.getItem(this.SESSION_TOKEN_KEY)
+    );
   }
 
   private clearStorage(): void {
@@ -2605,6 +2750,7 @@ export class AuthService {
       storage.removeItem(this.STORAGE_TYPE_KEY);
       storage.removeItem(this.SESSION_TOKEN_KEY);
       storage.removeItem('auth_role');
+      storage.removeItem('user_id');
     });
   }
 
@@ -2623,9 +2769,8 @@ export class AuthService {
       errorMessage = 'auth.errors.network_error';
     } else {
       const apiError = error.error as ApiErrorResponse;
-      const backendStatus = apiError?.status; // backend "status" field , pl. "wrong_password"
+      const backendStatus = apiError?.status;
 
-      // backend status code
       switch (backendStatus) {
         case 'inexistent_user_or_incorrect_data':
           errorMessage = 'auth.errors.invalid_credentials_or_inexistent_user';
@@ -2656,7 +2801,6 @@ export class AuthService {
           errorMessage = 'auth.errors.server_error';
           break;
         default:
-          // Fallback: HTTP status
           switch (error.status) {
             case 0:
               errorMessage = 'auth.errors.network_error';
@@ -2682,7 +2826,6 @@ export class AuthService {
           }
       }
 
-      // wrong jwt = logout
       if (backendStatus === 'hianyzo_auth_header' || backendStatus === 'hibas_token') {
         this.logout();
       }
@@ -3151,12 +3294,16 @@ export class ForumService {
       );
   }
 
-  incrementViews(postId: string) {
+  incrementViews(postId: string, userId: string, sessionToken: string) {
     return this.http
       .post<{
         status: string;
         statuscode: number;
-      }>(`${this.API_URL}/api/increment_post_view_by_id`, { id: btoa(postId) })
+      }>(`${this.API_URL}/api/increment_post_views_by_id`, {
+        user_id: btoa(userId),
+        session_token: btoa(sessionToken),
+        post_id: btoa(postId),
+      })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         catchError(() => of(null)),
@@ -3180,7 +3327,7 @@ export class ForumService {
   addComment(postId: string, sesstoken: string, content: string) {
     return this.http
       .post<{ status: string; statuscode: number; new_comment_id?: number }>(
-        `${this.API_URL}/api/create_post_comment_by_post_id`,
+        `${this.API_URL}/api/create_post_comment`,
         {
           post_id: btoa(postId),
           sesstoken: btoa(sesstoken),
@@ -3271,6 +3418,149 @@ export class ForumService {
 
 
 ================================================================================
+FILE: src\app\core\services\image-cache.service.ts
+================================================================================
+
+import { Injectable } from '@angular/core';
+import { ICONS, IMAGES } from '../constants/visuals';
+
+const CACHE_NAME = 'roy-shack-images-v1';
+
+@Injectable({ providedIn: 'root' })
+export class ImageCacheService {
+  private supported = typeof caches !== 'undefined';
+  private preloaded = false;
+  private preloadPromise: Promise<void> | null = null;
+
+  async preloadCriticalImages(): Promise<void> {
+    if (!this.supported || this.preloaded) return;
+    if (this.preloadPromise) return this.preloadPromise;
+
+    this.preloadPromise = this.doPreload();
+    return this.preloadPromise;
+  }
+
+  private async doPreload(): Promise<void> {
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      const existingKeys = await cache.keys();
+      const existingUrls = new Set(existingKeys.map((r) => r.url));
+
+      const urls = this.collectPreloadUrls();
+      const toCache = urls.filter((url) => {
+        const absolute = new URL(url, window.location.origin).href;
+        return !existingUrls.has(absolute);
+      });
+
+      if (toCache.length === 0) {
+        this.preloaded = true;
+        return;
+      }
+
+      const batches = this.chunk(toCache, 6);
+      for (const batch of batches) {
+        const results = await Promise.allSettled(
+          batch.map(async (url) => {
+            const res = await fetch(url, { mode: 'cors', credentials: 'same-origin' });
+            if (res.ok) {
+              await cache.put(url, res);
+            }
+          }),
+        );
+        results.forEach((r, i) => {
+          if (r.status === 'rejected') {
+            console.warn(`ImageCache: failed to cache ${batch[i]}`);
+          }
+        });
+      }
+
+      this.preloaded = true;
+    } catch (err) {
+      console.warn('ImageCache: preload failed', err);
+      this.preloaded = true;
+    }
+  }
+
+  async getCachedUrl(src: string): Promise<string> {
+    if (!this.supported || !src) return src;
+
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      const match = await cache.match(src);
+      if (match) {
+        const blob = await match.blob();
+        return URL.createObjectURL(blob);
+      }
+
+      const response = await fetch(src, { mode: 'cors', credentials: 'same-origin' });
+      if (response.ok) {
+        const cloned = response.clone();
+        cache.put(src, cloned).catch(() => {});
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+      }
+    } catch {}
+
+    return src;
+  }
+
+  async cacheUrl(src: string): Promise<void> {
+    if (!this.supported || !src) return;
+
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      const match = await cache.match(src);
+      if (match) return;
+
+      const response = await fetch(src, { mode: 'cors', credentials: 'same-origin' });
+      if (response.ok) {
+        await cache.put(src, response);
+      }
+    } catch {}
+  }
+
+  async clearCache(): Promise<void> {
+    if (!this.supported) return;
+    await caches.delete(CACHE_NAME);
+    this.preloaded = false;
+    this.preloadPromise = null;
+  }
+
+  private collectPreloadUrls(): string[] {
+    const urls: string[] = [];
+
+    Object.values(ICONS).forEach((url) => {
+      if (typeof url === 'string' && url && !url.startsWith('data:')) {
+        urls.push(url);
+      }
+    });
+
+    Object.entries(IMAGES).forEach(([, url]) => {
+      if (
+        typeof url === 'string' &&
+        url &&
+        !url.startsWith('data:') &&
+        !url.includes('placeholder')
+      ) {
+        urls.push(url);
+      }
+    });
+
+    return [...new Set(urls)];
+  }
+
+  private chunk<T>(arr: T[], size: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < arr.length; i += size) {
+      chunks.push(arr.slice(i, i + size));
+    }
+    return chunks;
+  }
+}
+
+
+
+================================================================================
 FILE: src\app\core\services\review.service.ts
 ================================================================================
 
@@ -3301,7 +3591,7 @@ export class ReviewService {
     };
 
     return this.http
-      .post<ReviewsApiResponse>(`${this.API_URL}/api/get_all_reviews_by_product_id`, body)
+      .post<ReviewsApiResponse>(`${this.API_URL}/api/get_all_reviews_page_by_product_id`, body)
       .pipe(
         timeout(5000),
         map((r) => {
@@ -3516,6 +3806,20 @@ export class TranslationService {
 
 
 ================================================================================
+FILE: src\app\core\utils\image-utils.ts
+================================================================================
+
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+
+
+================================================================================
 FILE: src\app\pages\admin\admin.css
 ================================================================================
 
@@ -3560,7 +3864,6 @@ FILE: src\app\pages\admin\admin.css
   overflow: hidden;
 }
 
-/* Logo icon – webp img replaces emoji */
 .logo-icon {
   width: 26px;
   height: 26px;
@@ -3629,7 +3932,6 @@ FILE: src\app\pages\admin\admin.css
   color: white;
 }
 
-/* Nav icon – webp img replaces emoji text */
 .nav-icon {
   width: 20px;
   height: 20px;
@@ -3639,7 +3941,6 @@ FILE: src\app\pages\admin\admin.css
   transition: filter 0.15s;
 }
 
-/* Active nav item: icon should always be white regardless of theme */
 .nav-item.active .nav-icon {
   filter: brightness(0) saturate(100%) invert(1);
 }
@@ -3660,7 +3961,7 @@ FILE: src\app\pages\admin\admin.css
 .logout-btn:hover {
   background: rgba(220, 38, 38, 0.08) !important;
 }
-/* Logout icon tinted red */
+
 .logout-btn .nav-icon {
   filter: brightness(0) saturate(100%) invert(20%) sepia(80%) saturate(6000%) hue-rotate(355deg);
 }
@@ -3777,7 +4078,6 @@ FILE: src\app\pages\admin\admin.css
   justify-content: center;
 }
 
-/* Stat icons – sized webp imgs */
 .stat-icon-img {
   width: 40px;
   height: 40px;
@@ -3785,7 +4085,6 @@ FILE: src\app\pages\admin\admin.css
   filter: var(--icon-filter, brightness(0) saturate(100%));
 }
 
-/* Color-tint stat icons to match card accent colors */
 .stat-card.primary .stat-icon-img {
   filter: brightness(0) saturate(100%) invert(28%) sepia(90%) saturate(700%) hue-rotate(120deg);
 }
@@ -3891,10 +4190,12 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .admin-table {
-  width: 100%;
-  border-collapse: collapse;
+  table-layout: auto;
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: var(--text-sm, 0.9rem);
-  min-width: 600px;
 }
 
 .admin-table th {
@@ -3907,6 +4208,35 @@ FILE: src\app\pages\admin\admin.css
   text-transform: uppercase;
   letter-spacing: 0.4px;
   white-space: nowrap;
+  position: relative;
+  border-bottom: 1px solid var(--border-color);
+  user-select: none;
+  cursor: col-resize;
+}
+
+.admin-table th::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  right: 0;
+  width: 2px;
+  height: 60%;
+  background: var(--border-color);
+  border-radius: 2px;
+  pointer-events: none;
+  transition:
+    background 0.15s,
+    width 0.1s;
+}
+
+.admin-table th:hover::after {
+  background: var(--color-primary);
+  width: 3px;
+}
+
+.admin-table th.is-resizing::after {
+  background: var(--color-primary);
+  width: 3px;
 }
 
 .admin-table td {
@@ -3914,6 +4244,7 @@ FILE: src\app\pages\admin\admin.css
   border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .admin-table tr:last-child td {
@@ -3984,14 +4315,32 @@ FILE: src\app\pages\admin\admin.css
 .role-admin {
   background: rgba(220, 38, 38, 0.1);
   color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.3);
 }
 .role-pharmacist {
   background: rgba(6, 122, 69, 0.1);
   color: #067a45;
+  border: 1px solid rgba(6, 122, 69, 0.3);
 }
+
 .role-user {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
+  background: rgba(234, 179, 8, 0.1);
+  color: #b45309;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.role-banned {
+  background: rgba(234, 88, 12, 0.12);
+  color: #ea580c;
+  border: 1px solid rgba(234, 88, 12, 0.25);
+  text-decoration: line-through;
+}
+
+.role-deleted {
+  background: rgba(100, 116, 139, 0.12);
+  color: #64748b;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  text-decoration: line-through;
 }
 
 .stock-ok {
@@ -4056,7 +4405,6 @@ FILE: src\app\pages\admin\admin.css
   padding: 4px;
 }
 
-/* Product thumb icon – category medicines webp */
 .product-thumb-img {
   width: 22px;
   height: 22px;
@@ -4077,7 +4425,6 @@ FILE: src\app\pages\admin\admin.css
   min-width: 200px;
 }
 
-/* Search icon – webp img absolutely positioned */
 .search-icon-small {
   position: absolute;
   left: var(--space-3);
@@ -4123,7 +4470,101 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .retry-btn {
-  background-color: var(--bg-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 0.75rem);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.1s;
+}
+
+.retry-btn:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color-hover);
+}
+
+.retry-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.retry-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  cursor: pointer;
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-6);
+  color: var(--text-secondary);
+  font-size: var(--text-sm, 0.9rem);
+  text-align: center;
+}
+
+.loading-state .spinner {
+  font-size: 1.5rem;
+  animation: spinEmoji 1s linear infinite;
+}
+
+@keyframes spinEmoji {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-state {
+  color: #dc2626;
+}
+
+.error-state span {
+  font-weight: 500;
+}
+
+.loading-pulse {
+  opacity: 0.4;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.warning-text {
+  color: #d97706;
 }
 
 .add-btn {
@@ -4154,6 +4595,10 @@ FILE: src\app\pages\admin\admin.css
 }
 
 @media (max-width: 768px) {
+  .sidebar-overlay.active {
+    display: block;
+  }
+
   .admin-sidebar {
     position: fixed;
     left: 0;
@@ -4243,6 +4688,951 @@ FILE: src\app\pages\admin\admin.css
   }
 }
 
+.images-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: rgba(6, 122, 69, 0.08);
+  border: 1px solid rgba(6, 122, 69, 0.2);
+  border-radius: var(--radius-md, 0.5rem);
+  cursor: pointer;
+  color: var(--color-primary);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.images-btn:hover {
+  background: rgba(6, 122, 69, 0.16);
+  border-color: rgba(6, 122, 69, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(6, 122, 69, 0.15);
+}
+
+.images-btn:active {
+  transform: translateY(0);
+}
+
+.images-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.images-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full, 9999px);
+  line-height: 1;
+}
+
+.gallery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal-backdrop, 1040);
+  background: rgba(6, 60, 35, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  animation: overlayFadeIn 0.2s ease;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.gallery-modal {
+  position: relative;
+  width: 100%;
+  max-width: 820px;
+  max-height: 85vh;
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl, 1rem);
+  border: 1px solid var(--border-color);
+  box-shadow:
+    0 24px 48px -12px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(6, 122, 69, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.gallery-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border-color);
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.gallery-modal-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gallery-modal-title {
+  font-size: var(--text-lg, 1.1rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.gallery-product-name {
+  font-size: var(--text-sm, 0.85rem);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gallery-close-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 0.5rem);
+  cursor: pointer;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.gallery-close-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color-hover);
+}
+
+.gallery-close-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.gallery-modal-body {
+  padding: var(--space-5) var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.gallery-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-6);
+  color: var(--text-secondary);
+  font-size: var(--text-sm, 0.9rem);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+
+.gallery-card {
+  position: relative;
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.gallery-card:hover {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 4px 16px rgba(6, 122, 69, 0.12),
+    0 0 0 1px rgba(6, 122, 69, 0.08);
+  transform: translateY(-2px);
+}
+
+.gallery-card-image-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: var(--space-2);
+  background: var(--bg-tertiary, var(--bg-secondary));
+}
+
+.gallery-card-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-sm, 0.375rem);
+}
+
+.gallery-card-label {
+  padding: 6px var(--space-3);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+.gallery-card-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 38, 38, 0.9);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md, 0.5rem);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: all 0.15s;
+  z-index: 2;
+}
+
+.gallery-card-delete svg {
+  width: 14px;
+  height: 14px;
+}
+
+.gallery-card:hover .gallery-card-delete {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.gallery-card-delete:hover {
+  background: #dc2626;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+}
+
+.gallery-card-add {
+  border-style: dashed;
+  border-width: 2px;
+  border-color: var(--border-color);
+  background: transparent;
+}
+
+.gallery-card-add:hover {
+  border-color: var(--color-primary);
+  background: rgba(6, 122, 69, 0.04);
+}
+
+.gallery-card-add-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.gallery-add-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--color-primary);
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.gallery-card-add:hover .gallery-add-icon {
+  opacity: 1;
+}
+
+.gallery-add-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.gallery-card-add:hover .gallery-add-text {
+  opacity: 1;
+}
+
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 1050);
+  background: rgba(6, 60, 35, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  animation: overlayFadeIn 0.2s ease;
+}
+
+.detail-modal {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl, 1rem);
+  border: 1px solid var(--border-color);
+  box-shadow:
+    0 24px 48px -12px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(6, 122, 69, 0.1);
+  overflow: hidden;
+  animation: modalSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-close-btn {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 5;
+}
+
+.detail-content {
+  display: flex;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.detail-image-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: var(--bg-secondary);
+  min-height: 300px;
+  overflow: auto;
+}
+
+.detail-full-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: var(--radius-sm, 0.375rem);
+}
+
+.detail-info-panel {
+  width: 280px;
+  flex-shrink: 0;
+  padding: var(--space-6);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  overflow-y: auto;
+}
+
+.detail-info-title {
+  font-size: var(--text-base, 1rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.detail-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.detail-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-meta-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+}
+
+.detail-meta-value {
+  font-size: var(--text-sm, 0.85rem);
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.detail-actions {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-color);
+}
+
+.detail-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg, 0.75rem);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.detail-download-btn:hover {
+  background: var(--color-primary-dark, #0b5f39);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(6, 122, 69, 0.3);
+}
+
+.detail-download-btn:active {
+  transform: translateY(0);
+}
+
+.detail-download-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal, 1050) + 10);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  animation: overlayFadeIn 0.15s ease;
+}
+
+.confirm-dialog {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl, 1rem);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.35);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  animation: modalSlideIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.confirm-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 38, 38, 0.1);
+  border-radius: var(--radius-full, 9999px);
+  margin-bottom: var(--space-1);
+}
+
+.confirm-icon {
+  width: 24px;
+  height: 24px;
+  color: #dc2626;
+}
+
+.confirm-title {
+  font-size: var(--text-base, 1rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.confirm-text {
+  font-size: var(--text-sm, 0.85rem);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+  margin-top: var(--space-3);
+}
+
+.confirm-cancel-btn {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 0.75rem);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.confirm-cancel-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color-hover);
+}
+
+.confirm-delete-btn {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg, 0.75rem);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.confirm-delete-btn:hover {
+  background: #b91c1c;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+@media (max-width: 768px) {
+  .gallery-overlay,
+  .detail-overlay {
+    padding: var(--space-3);
+  }
+
+  .gallery-modal {
+    max-height: 90vh;
+  }
+
+  .gallery-modal-header {
+    padding: var(--space-4);
+  }
+
+  .gallery-modal-body {
+    padding: var(--space-4);
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .detail-content {
+    flex-direction: column;
+  }
+
+  .detail-image-container {
+    min-height: 200px;
+    padding: var(--space-4);
+  }
+
+  .detail-info-panel {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+    padding: var(--space-4);
+  }
+
+  .detail-full-image {
+    max-height: 40vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
+  }
+
+  .gallery-card-delete {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .confirm-dialog {
+    padding: var(--space-6) var(--space-4) var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-overlay,
+  .detail-overlay,
+  .confirm-overlay {
+    animation: none;
+  }
+
+  .gallery-modal,
+  .detail-modal,
+  .confirm-dialog {
+    animation: none;
+  }
+
+  .gallery-card,
+  .images-btn,
+  .gallery-card-delete {
+    transition: none;
+  }
+}
+
+.gallery-header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.transparent-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.transparent-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background: var(--border-color);
+  border: none;
+  border-radius: var(--radius-full, 9999px);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-switch.active {
+  background: var(--color-primary);
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.toggle-switch.active .toggle-knob {
+  transform: translateX(18px);
+}
+
+.toggle-switch:hover {
+  opacity: 0.85;
+}
+
+.toggle-switch:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.user-actions-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.action-menu-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md, 0.5rem);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 1px;
+}
+
+.action-menu-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.action-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 50;
+  min-width: 180px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 0.75rem);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2);
+  animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dropdown-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  padding: var(--space-1) var(--space-3);
+  margin-bottom: 2px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md, 0.5rem);
+  color: var(--text-primary);
+  font-size: var(--text-sm, 0.85rem);
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition: background 0.1s;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-secondary);
+}
+
+.dropdown-item-warn {
+  color: #d97706;
+}
+.dropdown-item-warn:hover {
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.dropdown-item-danger {
+  color: #dc2626;
+}
+.dropdown-item-danger:hover {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.dropdown-item-success {
+  color: var(--color-primary);
+}
+.dropdown-item-success:hover {
+  background: rgba(6, 122, 69, 0.08);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: var(--space-1) 0;
+}
+
+.role-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.role-dot.role-admin {
+  background: #dc2626;
+}
+.role-dot.role-pharmacist {
+  background: #067a45;
+}
+.role-dot.role-user {
+  background: #d97706;
+}
+.role-dot.role-banned {
+  background: #ea580c;
+}
+.role-dot.role-deleted {
+  background: #64748b;
+}
+
+.self-label {
+  font-size: 0.7rem;
+  font-style: italic;
+}
+
+.row-banned td {
+  opacity: 0.6;
+}
+
+.row-deleted td {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.confirm-icon-danger {
+  background: rgba(220, 38, 38, 0.1) !important;
+}
+.confirm-icon-danger .confirm-icon {
+  color: #dc2626 !important;
+}
+
+.confirm-icon-primary {
+  background: rgba(6, 122, 69, 0.1) !important;
+}
+.confirm-icon-primary .confirm-icon {
+  color: var(--color-primary) !important;
+}
+
+.confirm-action-btn {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg, 0.75rem);
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.confirm-action-btn:hover:not(:disabled) {
+  background: var(--color-primary-dark, #0b5f39);
+  box-shadow: 0 4px 12px rgba(6, 122, 69, 0.3);
+}
+
+.confirm-action-btn:disabled,
+.confirm-delete-btn:disabled,
+.confirm-cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirm-state-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md, 0.5rem);
+  width: 100%;
+  justify-content: center;
+}
+
+.state-arrow {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.spinner-small {
+  font-size: 0.85rem;
+  animation: spinEmoji 1s linear infinite;
+  display: inline-block;
+}
+
+.admin-search::placeholder {
+  font-size: 0.8rem;
+  opacity: 0.55;
+}
+
+@media (max-width: 768px) {
+  .gallery-header-controls {
+    gap: var(--space-3);
+  }
+
+  .transparent-label {
+    display: none;
+  }
+
+  .action-dropdown {
+    position: fixed;
+    top: auto;
+    right: var(--space-3);
+    bottom: var(--space-3);
+    left: var(--space-3);
+    min-width: unset;
+    border-radius: var(--radius-xl, 1rem);
+    box-shadow: var(--shadow-2xl);
+  }
+}
+
 
 
 ================================================================================
@@ -4250,12 +5640,18 @@ FILE: src\app\pages\admin\admin.html
 ================================================================================
 
 <div class="admin-page">
+  <div
+    class="sidebar-overlay"
+    [class.active]="mobileOverlayActive()"
+    (click)="closeMobileSidebar()"
+    aria-hidden="true"
+  ></div>
+
   <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed()">
     <div class="sidebar-header">
       <div class="sidebar-logo">
-        <!-- Admin icon instead of 🏥 emoji -->
         <img [src]="icons.admin" alt="Admin" class="logo-icon" aria-hidden="true" />
-        @if (!sidebarCollapsed()) {
+        @if (showNavLabels()) {
           <span class="logo-text">Roy's Admin</span>
         }
       </div>
@@ -4275,24 +5671,22 @@ FILE: src\app\pages\admin\admin.html
           (click)="setSection(item.id)"
           [attr.title]="item.label | translate"
         >
-          <!-- webp icon instead of emoji string -->
           <img
             [src]="item.icon"
             [attr.alt]="item.label | translate"
             class="nav-icon"
             aria-hidden="true"
           />
-          @if (!sidebarCollapsed()) {
+          @if (showNavLabels()) {
             <span class="nav-label">{{ item.label | translate }}</span>
           }
         </button>
       }
     </nav>
 
-    @if (!sidebarCollapsed()) {
+    @if (showNavLabels()) {
       <div class="sidebar-footer">
         <button class="nav-item logout-btn" (click)="logout()">
-          <!-- login icon repurposed as logout (same visual family) -->
           <img [src]="icons.login" alt="" class="nav-icon" aria-hidden="true" />
           <span class="nav-label">{{ 'profile.logout' | translate }}</span>
         </button>
@@ -4325,7 +5719,6 @@ FILE: src\app\pages\admin\admin.html
         </div>
 
         <div class="stats-grid">
-          <!-- 📦 → orderwhite.webp -->
           <div class="stat-card primary">
             <div class="stat-icon">
               <img [src]="icons.order" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -4340,7 +5733,6 @@ FILE: src\app\pages\admin\admin.html
             </div>
           </div>
 
-          <!-- 💰 → paymentwhite.webp -->
           <div class="stat-card success">
             <div class="stat-icon">
               <img [src]="icons.payment" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -4355,7 +5747,6 @@ FILE: src\app\pages\admin\admin.html
             </div>
           </div>
 
-          <!-- 👥 → customerswhite.webp -->
           <div class="stat-card info">
             <div class="stat-icon">
               <img [src]="icons.customers" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -4370,7 +5761,6 @@ FILE: src\app\pages\admin\admin.html
             </div>
           </div>
 
-          <!-- 🏷️ → salewhite.webp -->
           <div class="stat-card warning">
             <div class="stat-icon">
               <img [src]="icons.sale" alt="" aria-hidden="true" class="stat-icon-img" />
@@ -4415,24 +5805,30 @@ FILE: src\app\pages\admin\admin.html
             <div class="empty-state">{{ 'admin.no_orders' | translate }}</div>
           } @else {
             <div class="table-wrapper">
-              <table class="admin-table">
+              <table class="admin-table" appResizableTable="dashboard-orders">
                 <thead>
                   <tr>
                     <th>{{ 'admin.table.order_id' | translate }}</th>
-                    <th>{{ 'admin.table.user_id' | translate }}</th>
+                    <th>{{ 'admin.table.email' | translate }}</th>
                     <th>{{ 'admin.table.date' | translate }}</th>
                     <th>{{ 'admin.table.address' | translate }}</th>
                     <th>{{ 'admin.table.total' | translate }}</th>
+                    <th>{{ 'admin.table.status' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (order of recentOrders(); track order.id) {
                     <tr>
                       <td class="order-id">#{{ order.id }}</td>
-                      <td class="muted">{{ order.user_id }}</td>
+                      <td class="muted">{{ order.email || order.user_id }}</td>
                       <td class="muted">{{ formatDate(order.created_at) }}</td>
                       <td>{{ getOrderAddressSummary(order) }}</td>
                       <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                      <td>
+                        <span [class]="getOrderStatusClass(order.order_status)">
+                          {{ order.order_status }}
+                        </span>
+                      </td>
                     </tr>
                   }
                 </tbody>
@@ -4447,13 +5843,12 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <!-- 🔍 → searchwhite.webp -->
             <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
               [(ngModel)]="orderSearch"
-              [placeholder]="'admin.search_orders' | translate"
+              [placeholder]="('admin.search_orders' | translate) + '   (city:budapest, status:delivered)'"
             />
           </div>
           <button class="retry-btn" (click)="loadOrders()" [disabled]="ordersLoading()">
@@ -4479,15 +5874,17 @@ FILE: src\app\pages\admin\admin.html
               @if (filteredOrders().length === 0) {
                 <div class="empty-state">{{ 'admin.no_orders' | translate }}</div>
               } @else {
-                <table class="admin-table">
+                <table class="admin-table" appResizableTable="orders">
                   <thead>
                     <tr>
                       <th>{{ 'admin.table.order_id' | translate }}</th>
-                      <th>{{ 'admin.table.user_id' | translate }}</th>
+                      <th>{{ 'admin.table.email' | translate }}</th>
+                      <th>{{ 'admin.table.billing' | translate }}</th>
                       <th>{{ 'admin.table.date' | translate }}</th>
                       <th>{{ 'admin.table.address' | translate }}</th>
                       <th>{{ 'admin.table.phone' | translate }}</th>
                       <th>{{ 'admin.table.total' | translate }}</th>
+                      <th>{{ 'admin.table.status' | translate }}</th>
                       <th>{{ 'admin.table.note' | translate }}</th>
                     </tr>
                   </thead>
@@ -4495,19 +5892,17 @@ FILE: src\app\pages\admin\admin.html
                     @for (order of filteredOrders(); track order.id) {
                       <tr>
                         <td class="order-id">#{{ order.id }}</td>
-                        <td class="muted">{{ order.user_id }}</td>
+                        <td class="muted">{{ order.email || '—' }}</td>
+                        <td>{{ order.billing_name || '—' }}</td>
                         <td class="muted">{{ formatDate(order.created_at) }}</td>
-                        <td>
-                          {{ order.city }}
-                          @if (order.house_number) {
-                            <span class="muted">, {{ order.house_number }}</span>
-                          }
-                          @if (order.apartment_number) {
-                            <span class="muted">/{{ order.apartment_number }}</span>
-                          }
-                        </td>
+                        <td>{{ getOrderAddressSummary(order) }}</td>
                         <td class="muted">{{ order.phone_number || '—' }}</td>
                         <td class="font-bold">{{ formatRevenue(order.price) }}</td>
+                        <td>
+                          <span [class]="getOrderStatusClass(order.order_status)">
+                            {{ order.order_status }}
+                          </span>
+                        </td>
                         <td class="muted note-cell">{{ order.note || '—' }}</td>
                       </tr>
                     }
@@ -4524,13 +5919,12 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <!-- 🔍 → searchwhite.webp -->
             <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
               [(ngModel)]="userSearch"
-              [placeholder]="'admin.search_users' | translate"
+              [placeholder]="('admin.search_users' | translate) + '   (role:admin, email:gmail)'"
             />
           </div>
           <button class="retry-btn" (click)="loadUsers()" [disabled]="usersLoading()">
@@ -4556,7 +5950,7 @@ FILE: src\app\pages\admin\admin.html
               @if (filteredUsers().length === 0) {
                 <div class="empty-state">{{ 'admin.no_users' | translate }}</div>
               } @else {
-                <table class="admin-table">
+                <table class="admin-table" appResizableTable="users">
                   <thead>
                     <tr>
                       <th>{{ 'admin.table.user' | translate }}</th>
@@ -4564,11 +5958,12 @@ FILE: src\app\pages\admin\admin.html
                       <th>{{ 'admin.table.role' | translate }}</th>
                       <th>{{ 'admin.table.registered' | translate }}</th>
                       <th>ID</th>
+                      <th>{{ 'admin.table.actions' | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (user of filteredUsers(); track user.id) {
-                      <tr>
+                      <tr [class.row-banned]="user.account_state === 'banned'" [class.row-deleted]="user.account_state === 'deleted'">
                         <td>
                           <div class="user-cell">
                             <div class="user-avatar">{{ getUserInitial(user) }}</div>
@@ -4583,6 +5978,53 @@ FILE: src\app\pages\admin\admin.html
                         </td>
                         <td class="muted">{{ formatDate(user.created_at) }}</td>
                         <td class="muted">#{{ user.id }}</td>
+                        <td>
+                          @if (!isSelf(user) && user.account_state !== 'deleted') {
+                            <div class="user-actions-wrapper">
+                              <button
+                                class="action-menu-btn"
+                                (click)="toggleUserMenu(user.id, $event)"
+                                [attr.aria-label]="'admin.table.actions' | translate"
+                              >
+                                ⋮
+                              </button>
+                              @if (activeUserMenu() === user.id) {
+                                <div class="action-dropdown">
+                                  @if (user.account_state !== 'banned') {
+                                    <div class="dropdown-section">
+                                      <span class="dropdown-label">{{ 'admin.user_actions.set_role' | translate }}</span>
+                                      @for (state of getAvailableStates(user); track state) {
+                                        <button
+                                          class="dropdown-item"
+                                          (click)="requestChangeRole(user, state)"
+                                        >
+                                          <span [class]="'role-dot ' + getAccountStateClass(state)"></span>
+                                          {{ state }}
+                                        </button>
+                                      }
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <button class="dropdown-item dropdown-item-warn" (click)="requestBanUser(user)">
+                                      {{ 'admin.user_actions.ban' | translate }}
+                                    </button>
+                                  } @else {
+                                    <button class="dropdown-item dropdown-item-success" (click)="requestUnbanUser(user)">
+                                      {{ 'admin.user_actions.unban' | translate }}
+                                    </button>
+                                    <div class="dropdown-divider"></div>
+                                  }
+                                  <button class="dropdown-item dropdown-item-danger" (click)="requestDeleteUser(user)">
+                                    {{ 'admin.user_actions.delete' | translate }}
+                                  </button>
+                                </div>
+                              }
+                            </div>
+                          } @else if (isSelf(user)) {
+                            <span class="muted self-label">{{ 'admin.user_actions.you' | translate }}</span>
+                          } @else {
+                            <span class="muted">—</span>
+                          }
+                        </td>
                       </tr>
                     }
                   </tbody>
@@ -4598,13 +6040,12 @@ FILE: src\app\pages\admin\admin.html
       <div class="section-content">
         <div class="section-toolbar">
           <div class="search-input-wrapper">
-            <!-- 🔍 → searchwhite.webp -->
             <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
             <input
               type="search"
               class="admin-search"
               [(ngModel)]="productSearch"
-              [placeholder]="'admin.search_products' | translate"
+              [placeholder]="('admin.search_products' | translate) + '   (brand:bayer, category:medicines)'"
             />
           </div>
           <button class="retry-btn" (click)="loadProducts()" [disabled]="productsLoading()">
@@ -4630,10 +6071,12 @@ FILE: src\app\pages\admin\admin.html
               @if (filteredProducts().length === 0) {
                 <div class="empty-state">{{ 'admin.no_products' | translate }}</div>
               } @else {
-                <table class="admin-table">
+                <table class="admin-table" appResizableTable="products">
                   <thead>
                     <tr>
                       <th>{{ 'admin.table.product' | translate }}</th>
+                      <th>{{ 'admin.table.images' | translate }}</th>
+                      <th>{{ 'admin.table.brand' | translate }}</th>
                       <th>{{ 'admin.table.category' | translate }}</th>
                       <th>SKU</th>
                       <th>{{ 'admin.table.price' | translate }}</th>
@@ -4643,11 +6086,10 @@ FILE: src\app\pages\admin\admin.html
                     </tr>
                   </thead>
                   <tbody>
-                    @for (product of filteredProducts(); track product.id; let i = $index) {
+                    @for (product of filteredProducts(); track product.id) {
                       <tr>
                         <td>
                           <div class="product-cell">
-                            <!-- 💊 → categories/medicines.webp -->
                             <div class="product-thumb">
                               <img
                                 [src]="icons.categoryMedicines"
@@ -4658,10 +6100,32 @@ FILE: src\app\pages\admin\admin.html
                             </div>
                             <div class="product-cell-info">
                               <span class="product-name">{{ product.name }}</span>
-                              <span class="product-brand muted">{{ product.brand }}</span>
                             </div>
                           </div>
                         </td>
+                        <td>
+                          <button
+                            class="images-btn"
+                            (click)="openGallery(product)"
+                            [attr.title]="'admin.table.view_images' | translate"
+                          >
+                            <svg
+                              class="images-icon"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.8"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                              <circle cx="8.5" cy="8.5" r="1.5" />
+                              <polyline points="21 15 16 10 5 21" />
+                            </svg>
+                            <span class="images-count">{{ getProductImageCount(product) }}</span>
+                          </button>
+                        </td>
+                        <td class="muted">{{ product.brand }}</td>
                         <td class="muted">{{ product.category }}</td>
                         <td class="muted">{{ product.sku }}</td>
                         <td class="font-bold">{{ formatRevenue(product.price) }}</td>
@@ -4670,7 +6134,6 @@ FILE: src\app\pages\admin\admin.html
                             {{ product.stockNumber }} {{ 'common.items_unit' | translate }}
                           </span>
                         </td>
-                        <!-- ⭐ → Unicode star character (no img needed, stays inline) -->
                         <td class="muted">★ {{ product.ratingNumber.toFixed(1) }}</td>
                         <td>
                           <span
@@ -4697,6 +6160,491 @@ FILE: src\app\pages\admin\admin.html
     }
   </main>
 </div>
+
+@if (galleryOpen()) {
+  <div class="gallery-overlay" (click)="onGalleryOverlayClick($event)">
+    <div class="gallery-modal">
+      <div class="gallery-modal-header">
+        <div class="gallery-modal-title-group">
+          <h2 class="gallery-modal-title">
+            {{ 'admin.gallery.title' | translate }}
+          </h2>
+          @if (galleryProduct(); as product) {
+            <span class="gallery-product-name">{{ product.name }}</span>
+          }
+        </div>
+        <div class="gallery-header-controls">
+          <label class="transparent-toggle" [attr.title]="'admin.gallery.transparent_hint' | translate">
+            <span class="transparent-label">{{ 'admin.gallery.transparent' | translate }}</span>
+            <button
+              class="toggle-switch"
+              [class.active]="uploadTransparent()"
+              (click)="toggleTransparent()"
+              role="switch"
+              [attr.aria-checked]="uploadTransparent()"
+            >
+              <span class="toggle-knob"></span>
+            </button>
+          </label>
+          <button
+            class="gallery-close-btn"
+            (click)="closeGallery()"
+            [attr.aria-label]="'common.close' | translate"
+          >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="gallery-modal-body">
+        @if (galleryLoading()) {
+          <div class="gallery-loading">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
+          </div>
+        } @else {
+          <div class="gallery-grid">
+            @for (image of galleryImages(); track image.id) {
+              <div class="gallery-card" (click)="openImageDetail(image)">
+                <div class="gallery-card-image-wrapper">
+                  <img
+                    [src]="image.objectUrl || image.image_url"
+                    [alt]="image.alt_text_en"
+                    class="gallery-card-image"
+                    loading="lazy"
+                  />
+                </div>
+                <button
+                  class="gallery-card-delete"
+                  (click)="requestDeleteImage(image, $event)"
+                  [attr.aria-label]="'admin.gallery.delete_image' | translate"
+                  [attr.title]="'admin.gallery.delete_image' | translate"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="3 6 5 6 21 6" />
+                    <path
+                      d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                    />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
+                  </svg>
+                </button>
+                <div class="gallery-card-label">
+                  {{ image.alt_text_en || extractFileName(image.image_url) }}
+                </div>
+              </div>
+            }
+
+            <div class="gallery-card gallery-card-add" (click)="triggerFileUpload()">
+              <div class="gallery-card-add-content">
+                <svg
+                  class="gallery-add-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span class="gallery-add-text">{{ 'admin.gallery.upload' | translate }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@if (detailOpen()) {
+  <div class="detail-overlay" (click)="onDetailOverlayClick($event)">
+    <div class="detail-modal">
+      <button
+        class="gallery-close-btn detail-close-btn"
+        (click)="closeImageDetail()"
+        [attr.aria-label]="'common.close' | translate"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+
+      <div class="detail-content">
+        <div class="detail-image-container">
+          @if (detailImage(); as img) {
+            <img
+              [src]="img.objectUrl || img.image_url"
+              [alt]="img.alt_text_en"
+              class="detail-full-image"
+              (load)="onDetailImageLoad($event)"
+            />
+          }
+        </div>
+
+        <div class="detail-info-panel">
+          <h3 class="detail-info-title">{{ 'admin.gallery.details' | translate }}</h3>
+
+          @if (detailMeta(); as meta) {
+            <div class="detail-meta-list">
+              <div class="detail-meta-row">
+                <span class="detail-meta-label">{{
+                  'admin.gallery.meta.filename' | translate
+                }}</span>
+                <span class="detail-meta-value">{{ meta.name }}</span>
+              </div>
+              <div class="detail-meta-row">
+                <span class="detail-meta-label">{{ 'admin.gallery.meta.type' | translate }}</span>
+                <span class="detail-meta-value">{{ meta.type }}</span>
+              </div>
+              <div class="detail-meta-row">
+                <span class="detail-meta-label">{{
+                  'admin.gallery.meta.resolution' | translate
+                }}</span>
+                <span class="detail-meta-value">{{ meta.resolution }}</span>
+              </div>
+              @if (meta.size !== '—') {
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">{{ 'admin.gallery.meta.size' | translate }}</span>
+                  <span class="detail-meta-value">{{ meta.size }}</span>
+                </div>
+              }
+              @if (meta.lastModified !== '—') {
+                <div class="detail-meta-row">
+                  <span class="detail-meta-label">{{
+                    'admin.gallery.meta.modified' | translate
+                  }}</span>
+                  <span class="detail-meta-value">{{ meta.lastModified }}</span>
+                </div>
+              }
+            </div>
+          }
+
+          @if (detailImage(); as img) {
+            <div class="detail-actions">
+              <button class="detail-download-btn" (click)="downloadImage(img)">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                {{ 'admin.gallery.download' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (deleteConfirmOpen()) {
+  <div class="confirm-overlay" (click)="cancelDeleteImage()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-wrapper">
+        <svg
+          class="confirm-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          />
+        </svg>
+      </div>
+      <h3 class="confirm-title">{{ 'admin.gallery.confirm_delete_title' | translate }}</h3>
+      <p class="confirm-text">{{ 'admin.gallery.confirm_delete_text' | translate }}</p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel-btn" (click)="cancelDeleteImage()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="confirm-delete-btn" (click)="confirmDeleteImage()">
+          {{ 'admin.gallery.delete_image' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (userActionConfirm(); as req) {
+  <div class="confirm-overlay" (click)="cancelUserAction()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-wrapper" [class.confirm-icon-danger]="req.action === 'delete' || req.action === 'ban'" [class.confirm-icon-primary]="req.action === 'change_role' || req.action === 'unban'">
+        @if (req.action === 'delete') {
+          <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
+        } @else if (req.action === 'ban') {
+          <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+          </svg>
+        } @else {
+          <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="8.5" cy="7" r="4" />
+            <polyline points="17 11 19 13 23 9" />
+          </svg>
+        }
+      </div>
+      <h3 class="confirm-title">{{ getUserActionTitle() | translate }}</h3>
+      <p class="confirm-text">
+        {{ getUserActionText() | translate: { name: getUserFullName(req.user), state: req.newState || '' } }}
+      </p>
+      @if (req.newState) {
+        <div class="confirm-state-preview">
+          <span [class]="'role-badge ' + getAccountStateClass(req.user.account_state)">{{ req.user.account_state }}</span>
+          <span class="state-arrow">→</span>
+          <span [class]="'role-badge ' + getAccountStateClass(req.newState)">{{ req.newState }}</span>
+        </div>
+      }
+      <div class="confirm-actions">
+        <button class="confirm-cancel-btn" (click)="cancelUserAction()" [disabled]="userActionLoading()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button [class]="getUserActionBtnClass()" (click)="confirmUserAction()" [disabled]="userActionLoading()">
+          @if (userActionLoading()) {
+            <span class="spinner-small">⏳</span>
+          } @else {
+            {{ getUserActionTitle() | translate }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+
+================================================================================
+FILE: src\app\pages\admin\admin.mock.ts
+================================================================================
+
+import { AdminUser, AdminOrder } from '../../core/services/account.service';
+
+// ─── Set to false before final build / presentation with live backend ─────────
+export const MOCK_MODE = true;
+
+export const MOCK_USERS: AdminUser[] = [
+  {
+    id: '1',
+    email: 'kovacs.bela@gmail.com',
+    first_name: 'Béla',
+    last_name: 'Kovács',
+    account_state: 'admin',
+    created_at: '2024-01-15T10:23:00',
+  },
+  {
+    id: '2',
+    email: 'nagy.anna@outlook.com',
+    first_name: 'Anna',
+    last_name: 'Nagy',
+    account_state: 'verified',
+    created_at: '2024-02-03T08:11:00',
+  },
+  {
+    id: '3',
+    email: 'horvath.peter@freemail.hu',
+    first_name: 'Péter',
+    last_name: 'Horváth',
+    account_state: 'verified',
+    created_at: '2024-03-22T14:55:00',
+  },
+  {
+    id: '4',
+    email: 'toth.maria@citromail.hu',
+    first_name: 'Mária',
+    last_name: 'Tóth',
+    account_state: 'unverified',
+    created_at: '2024-04-10T09:30:00',
+  },
+  {
+    id: '5',
+    email: 'szabo.gabor@gmail.com',
+    first_name: 'Gábor',
+    last_name: 'Szabó',
+    account_state: 'banned',
+    created_at: '2024-04-18T16:42:00',
+  },
+  {
+    id: '6',
+    email: 'kiss.eva@yahoo.com',
+    first_name: 'Éva',
+    last_name: 'Kiss',
+    account_state: 'verified',
+    created_at: '2024-05-01T11:00:00',
+  },
+  {
+    id: '7',
+    email: 'fekete.laszlo@gmail.com',
+    first_name: 'László',
+    last_name: 'Fekete',
+    account_state: 'deleted',
+    created_at: '2024-05-15T07:18:00',
+  },
+  {
+    id: '8',
+    email: 'molnar.zsuzsa@gmail.com',
+    first_name: 'Zsuzsa',
+    last_name: 'Molnár',
+    account_state: 'verified',
+    created_at: '2024-06-02T13:27:00',
+  },
+];
+
+export const MOCK_ORDERS: AdminOrder[] = [
+  {
+    id: '1001',
+    user_id: '2',
+    email: 'nagy.anna@outlook.com',
+    billing_name: 'Nagy Anna',
+    order_status: 'delivered',
+    created_at: '2025-02-10T10:15:00',
+    price: '12490',
+    city: 'Budapest',
+    zipcode: '1051',
+    address: 'Váci utca',
+    house_number: '14',
+    apartment_number: '3',
+    phone_number: '+36301234567',
+    note: '',
+  },
+  {
+    id: '1002',
+    user_id: '3',
+    email: 'horvath.peter@freemail.hu',
+    billing_name: 'Horváth Péter',
+    order_status: 'shipped',
+    created_at: '2025-02-18T14:40:00',
+    price: '7890',
+    city: 'Pécs',
+    zipcode: '7621',
+    address: 'Király utca',
+    house_number: '22',
+    apartment_number: '',
+    phone_number: '+36209876543',
+    note: 'Kérem a csengőre nyomni: Horváth',
+  },
+  {
+    id: '1003',
+    user_id: '6',
+    email: 'kiss.eva@yahoo.com',
+    billing_name: 'Kiss Éva',
+    order_status: 'processing',
+    created_at: '2025-03-01T09:05:00',
+    price: '24990',
+    city: 'Debrecen',
+    zipcode: '4024',
+    address: 'Piac utca',
+    house_number: '5',
+    apartment_number: '2',
+    phone_number: '+36701112233',
+    note: '',
+  },
+  {
+    id: '1004',
+    user_id: '8',
+    email: 'molnar.zsuzsa@gmail.com',
+    billing_name: 'Molnár Zsuzsa',
+    order_status: 'pending',
+    created_at: '2025-03-10T17:30:00',
+    price: '4990',
+    city: 'Győr',
+    zipcode: '9021',
+    address: 'Baross Gábor út',
+    house_number: '31',
+    apartment_number: '',
+    phone_number: '+36305559988',
+    note: 'Munkaidőben kézbesítsék',
+  },
+  {
+    id: '1005',
+    user_id: '2',
+    email: 'nagy.anna@outlook.com',
+    billing_name: 'Nagy Anna',
+    order_status: 'cancelled',
+    created_at: '2025-03-12T11:00:00',
+    price: '9800',
+    city: 'Budapest',
+    zipcode: '1051',
+    address: 'Váci utca',
+    house_number: '14',
+    apartment_number: '3',
+    phone_number: '+36301234567',
+    note: 'Téves rendelés',
+  },
+  {
+    id: '1006',
+    user_id: '3',
+    email: 'horvath.peter@freemail.hu',
+    billing_name: 'Horváth Péter',
+    order_status: 'delivered',
+    created_at: '2025-03-14T08:22:00',
+    price: '31500',
+    city: 'Pécs',
+    zipcode: '7621',
+    address: 'Király utca',
+    house_number: '22',
+    apartment_number: '',
+    phone_number: '+36209876543',
+    note: '',
+  },
+  {
+    id: '1007',
+    user_id: '6',
+    email: 'kiss.eva@yahoo.com',
+    billing_name: 'Kiss Éva',
+    order_status: 'shipped',
+    created_at: '2025-03-16T15:10:00',
+    price: '18200',
+    city: 'Debrecen',
+    zipcode: '4024',
+    address: 'Piac utca',
+    house_number: '5',
+    apartment_number: '2',
+    phone_number: '+36701112233',
+    note: '',
+  },
+];
 
 
 
@@ -4734,29 +6682,149 @@ describe('Admin', () => {
 FILE: src\app\pages\admin\admin.ts
 ================================================================================
 
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { HttpClient } from '@angular/common/http';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
 import { ProductService } from '../../services/product.service';
-import { ProductWithHelpers } from '../../core/models/product.model';
+import { ToastService } from '../../core/services/toast.service';
+import { ProductWithHelpers, ProductImage } from '../../core/models/product.model';
 import { ICONS } from '../../core/constants/visuals';
+import { ResizableTableDirective } from '../../shared/directives/resizable-table.directive';
+import { formatFileSize } from '../../core/utils/image-utils';
+import { environment } from '../../../environments/environment';
+import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS } from './admin.mock';
 
 type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
 
 interface NavItem {
   id: AdminSection;
-  icon: string; // webp img url from ICONS
+  icon: string;
   label: string;
+}
+
+interface ImageMeta {
+  name: string;
+  size: string;
+  type: string;
+  width: number;
+  height: number;
+  resolution: string;
+  lastModified: string;
+}
+
+interface GalleryImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  alt_text_hu: string;
+  alt_text_en: string;
+  alt_text_de: string;
+  sort_id: string;
+  file?: File;
+  objectUrl?: string;
+  meta?: ImageMeta;
+}
+
+interface SearchQuery {
+  column: string | null;
+  value: string;
+}
+
+function parseSearchQuery(raw: string): SearchQuery {
+  const colonIndex = raw.indexOf(':');
+  if (colonIndex > 0 && colonIndex < raw.length - 1) {
+    const column = raw.substring(0, colonIndex).trim().toLowerCase();
+    const value = raw
+      .substring(colonIndex + 1)
+      .trim()
+      .toLowerCase();
+    if (column && value) {
+      return { column, value };
+    }
+  }
+  return { column: null, value: raw.trim().toLowerCase() };
+}
+
+type FieldExtractor<T> = (item: T) => string;
+
+function smartFilter<T>(
+  items: T[],
+  rawQuery: string,
+  columnMap: Record<string, FieldExtractor<T>>,
+): T[] {
+  if (!rawQuery.trim()) return items;
+
+  const { column, value } = parseSearchQuery(rawQuery);
+  if (!value) return items;
+
+  if (column) {
+    const extractor = columnMap[column];
+    if (extractor) {
+      return items.filter((item) => extractor(item).toLowerCase().includes(value));
+    }
+    return items;
+  }
+
+  const extractors = Object.values(columnMap);
+  return items.filter((item) =>
+    extractors.some((extract) => extract(item).toLowerCase().includes(value)),
+  );
+}
+
+const ORDER_COLUMNS: Record<string, FieldExtractor<AdminOrder>> = {
+  id: (o) => o.id,
+  email: (o) => o.email || '',
+  billing: (o) => o.billing_name || '',
+  city: (o) => o.city || '',
+  zip: (o) => o.zipcode || '',
+  address: (o) => o.address || '',
+  phone: (o) => o.phone_number || '',
+  price: (o) => o.price || '',
+  status: (o) => o.order_status || '',
+  note: (o) => o.note || '',
+};
+
+const USER_COLUMNS: Record<string, FieldExtractor<AdminUser>> = {
+  id: (u) => u.id,
+  email: (u) => u.email || '',
+  name: (u) => `${u.last_name} ${u.first_name}`.trim(),
+  firstname: (u) => u.first_name || '',
+  lastname: (u) => u.last_name || '',
+  role: (u) => u.account_state || '',
+  state: (u) => u.account_state || '',
+};
+
+const PRODUCT_COLUMNS: Record<string, FieldExtractor<ProductWithHelpers>> = {
+  id: (p) => p.id || '',
+  name: (p) => p.name || '',
+  brand: (p) => p.brand || '',
+  category: (p) => p.category || '',
+  sku: (p) => p.sku || '',
+  price: (p) => String(p.price ?? ''),
+  stock: (p) => String(p.stockNumber ?? ''),
+  rating: (p) => String(p.ratingNumber ?? ''),
+  status: (p) => (p.inStock ? 'active' : 'inactive'),
+};
+
+type UserActionType = 'change_role' | 'ban' | 'unban' | 'delete';
+
+const ACCOUNT_STATES = ['verified', 'unverified', 'admin', 'superadmin'] as const;
+
+interface UserActionRequest {
+  user: AdminUser;
+  action: UserActionType;
+  newState?: string;
 }
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
+  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, ResizableTableDirective],
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })
@@ -4764,13 +6832,37 @@ export class Admin implements OnInit {
   private authService = inject(AuthService);
   private accountService = inject(AccountService);
   private productService = inject(ProductService);
+  private toastService = inject(ToastService);
+  private translate = inject(TranslateService);
+  private http = inject(HttpClient);
   private router = inject(Router);
 
-  // Expose ICONS to the template
   protected readonly icons = ICONS;
+  protected readonly ACCOUNT_STATES = ACCOUNT_STATES;
 
   activeSection = signal<AdminSection>('dashboard');
   sidebarCollapsed = signal(false);
+
+  isMobileView = signal(typeof window !== 'undefined' && window.innerWidth <= 768);
+
+  showNavLabels = computed(() =>
+    this.isMobileView() ? this.sidebarCollapsed() : !this.sidebarCollapsed(),
+  );
+
+  mobileOverlayActive = computed(() => this.isMobileView() && this.sidebarCollapsed());
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.isMobileView.set(window.innerWidth <= 768);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.user-actions-wrapper')) {
+      this.activeUserMenu.set(null);
+    }
+  }
 
   orderSearch = '';
   orderStatusFilter = 'all';
@@ -4787,9 +6879,33 @@ export class Admin implements OnInit {
   apiUsers = signal<AdminUser[]>([]);
   apiOrders = signal<AdminOrder[]>([]);
 
+  galleryOpen = signal(false);
+  galleryProduct = signal<ProductWithHelpers | null>(null);
+  galleryImages = signal<GalleryImage[]>([]);
+  galleryLoading = signal(false);
+  uploadTransparent = signal(false);
+  uploadInProgress = signal(false);
+
+  detailOpen = signal(false);
+  detailImage = signal<GalleryImage | null>(null);
+  detailMeta = signal<ImageMeta | null>(null);
+  detailNaturalWidth = signal(0);
+  detailNaturalHeight = signal(0);
+
+  deleteConfirmOpen = signal(false);
+  deleteTargetImage = signal<GalleryImage | null>(null);
+
+  activeUserMenu = signal<string | null>(null);
+  userActionConfirm = signal<UserActionRequest | null>(null);
+  userActionLoading = signal(false);
+
   adminName = computed(() => {
     const user = this.authService.currentUser();
     return user ? `${user.firstname} ${user.lastname}`.trim() : 'Admin';
+  });
+
+  currentAdminId = computed(() => {
+    return this.authService.currentUser()?.id ?? '';
   });
 
   stats = computed(() => {
@@ -4817,42 +6933,15 @@ export class Admin implements OnInit {
   ];
 
   filteredOrders = computed(() => {
-    let orders = this.apiOrders();
-    if (this.orderSearch) {
-      const q = this.orderSearch.toLowerCase();
-      orders = orders.filter(
-        (o) =>
-          o.id.includes(q) ||
-          o.user_id.toLowerCase().includes(q) ||
-          o.city.toLowerCase().includes(q),
-      );
-    }
-    return orders;
+    return smartFilter(this.apiOrders(), this.orderSearch, ORDER_COLUMNS);
   });
 
   filteredUsers = computed(() => {
-    if (!this.userSearch) return this.apiUsers();
-    const q = this.userSearch.toLowerCase();
-    return this.apiUsers().filter(
-      (u) =>
-        u.email.toLowerCase().includes(q) ||
-        u.first_name.toLowerCase().includes(q) ||
-        u.last_name.toLowerCase().includes(q) ||
-        u.id.includes(q),
-    );
+    return smartFilter(this.apiUsers(), this.userSearch, USER_COLUMNS);
   });
 
   filteredProducts = computed(() => {
-    const products = this.productService.products();
-    if (!this.productSearch) return products;
-    const q = this.productSearch.toLowerCase();
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q),
-    );
+    return smartFilter(this.productService.products(), this.productSearch, PRODUCT_COLUMNS);
   });
 
   recentOrders = computed(() => this.apiOrders().slice(0, 5));
@@ -4874,6 +6963,11 @@ export class Admin implements OnInit {
   }
 
   loadUsers(): void {
+    if (MOCK_MODE) {
+      this.apiUsers.set(MOCK_USERS);
+      return;
+    }
+
     this.usersLoading.set(true);
     this.usersError.set(null);
 
@@ -4895,6 +6989,11 @@ export class Admin implements OnInit {
   }
 
   loadOrders(): void {
+    if (MOCK_MODE) {
+      this.apiOrders.set(MOCK_ORDERS);
+      return;
+    }
+
     this.ordersLoading.set(true);
     this.ordersError.set(null);
 
@@ -4933,10 +7032,17 @@ export class Admin implements OnInit {
 
   setSection(section: AdminSection): void {
     this.activeSection.set(section);
+    this.closeMobileSidebar();
   }
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update((v) => !v);
+  }
+
+  closeMobileSidebar(): void {
+    if (this.isMobileView()) {
+      this.sidebarCollapsed.set(false);
+    }
   }
 
   logout(): void {
@@ -4978,6 +7084,7 @@ export class Admin implements OnInit {
   getAccountStateClass(state: string): string {
     const map: Record<string, string> = {
       admin: 'role-admin',
+      superadmin: 'role-admin',
       verified: 'role-pharmacist',
       unverified: 'role-user',
       banned: 'role-banned',
@@ -4987,8 +7094,25 @@ export class Admin implements OnInit {
   }
 
   getOrderAddressSummary(order: AdminOrder): string {
-    const parts = [order.city, order.house_number].filter(Boolean);
-    return parts.join(', ') || '—';
+    const parts = [
+      order.city,
+      order.zipcode ? `(${order.zipcode})` : null,
+      order.address,
+      order.house_number,
+      order.apartment_number ? `/${order.apartment_number}` : null,
+    ].filter(Boolean);
+    return parts.join(' ') || '—';
+  }
+
+  getOrderStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      pending: 'status-pending',
+      processing: 'status-processing',
+      shipped: 'status-shipped',
+      delivered: 'status-delivered',
+      cancelled: 'status-cancelled',
+    };
+    return 'status-badge ' + (map[status] ?? 'status-pending');
   }
 
   trackById(_index: number, item: { id: string }): string {
@@ -4997,6 +7121,461 @@ export class Admin implements OnInit {
 
   trackByProductId(_index: number, item: ProductWithHelpers): string {
     return item.id;
+  }
+
+  isSelf(user: AdminUser): boolean {
+    return user.id === this.currentAdminId();
+  }
+
+  toggleUserMenu(userId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.activeUserMenu.update((current) => (current === userId ? null : userId));
+  }
+
+  getAvailableStates(user: AdminUser): string[] {
+    return ACCOUNT_STATES.filter((s) => s !== user.account_state);
+  }
+
+  requestChangeRole(user: AdminUser, newState: string): void {
+    this.activeUserMenu.set(null);
+    this.userActionConfirm.set({ user, action: 'change_role', newState });
+  }
+
+  requestBanUser(user: AdminUser): void {
+    this.activeUserMenu.set(null);
+    this.userActionConfirm.set({ user, action: 'ban' });
+  }
+
+  requestUnbanUser(user: AdminUser): void {
+    this.activeUserMenu.set(null);
+    this.userActionConfirm.set({ user, action: 'unban', newState: 'verified' });
+  }
+
+  requestDeleteUser(user: AdminUser): void {
+    this.activeUserMenu.set(null);
+    this.userActionConfirm.set({ user, action: 'delete' });
+  }
+
+  cancelUserAction(): void {
+    this.userActionConfirm.set(null);
+  }
+
+  confirmUserAction(): void {
+    const req = this.userActionConfirm();
+    if (!req) return;
+
+    this.userActionLoading.set(true);
+
+    if (MOCK_MODE) {
+      this.executeMockUserAction(req);
+      return;
+    }
+
+    switch (req.action) {
+      case 'change_role':
+      case 'unban':
+        this.accountService.updateUserStateAdmin(req.user.id, req.newState!).subscribe({
+          next: (res) => {
+            if (res.statuscode === '200') {
+              this.applyUserStateChange(req.user.id, req.newState!);
+              this.toastService.show('admin.user_actions.success', 'success');
+            } else {
+              this.toastService.show('admin.user_actions.error', 'error');
+            }
+            this.finishUserAction();
+          },
+          error: () => {
+            this.toastService.show('admin.user_actions.error', 'error');
+            this.finishUserAction();
+          },
+        });
+        break;
+
+      case 'ban':
+        this.accountService.banUserAdmin(req.user.id).subscribe({
+          next: (res) => {
+            if (res.statuscode === '200') {
+              this.applyUserStateChange(req.user.id, 'banned');
+              this.toastService.show('admin.user_actions.banned', 'success');
+            } else {
+              this.toastService.show('admin.user_actions.error', 'error');
+            }
+            this.finishUserAction();
+          },
+          error: () => {
+            this.toastService.show('admin.user_actions.error', 'error');
+            this.finishUserAction();
+          },
+        });
+        break;
+
+      case 'delete':
+        this.accountService.deleteUserAdmin(req.user.id).subscribe({
+          next: (res) => {
+            if (res.statuscode === '200') {
+              this.apiUsers.update((users) => users.filter((u) => u.id !== req.user.id));
+              this.toastService.show('admin.user_actions.deleted', 'success');
+            } else {
+              this.toastService.show('admin.user_actions.error', 'error');
+            }
+            this.finishUserAction();
+          },
+          error: () => {
+            this.toastService.show('admin.user_actions.error', 'error');
+            this.finishUserAction();
+          },
+        });
+        break;
+    }
+  }
+
+  private executeMockUserAction(req: UserActionRequest): void {
+    switch (req.action) {
+      case 'change_role':
+      case 'unban':
+        this.applyUserStateChange(req.user.id, req.newState!);
+        break;
+      case 'ban':
+        this.applyUserStateChange(req.user.id, 'banned');
+        break;
+      case 'delete':
+        this.apiUsers.update((users) => users.filter((u) => u.id !== req.user.id));
+        break;
+    }
+    this.finishUserAction();
+  }
+
+  private applyUserStateChange(userId: string, newState: string): void {
+    this.apiUsers.update((users) =>
+      users.map((u) => (u.id === userId ? { ...u, account_state: newState } : u)),
+    );
+  }
+
+  private finishUserAction(): void {
+    this.userActionLoading.set(false);
+    this.userActionConfirm.set(null);
+  }
+
+  getUserActionTitle(): string {
+    const req = this.userActionConfirm();
+    if (!req) return '';
+    switch (req.action) {
+      case 'change_role':
+        return 'admin.user_actions.confirm_role_title';
+      case 'ban':
+        return 'admin.user_actions.confirm_ban_title';
+      case 'unban':
+        return 'admin.user_actions.confirm_unban_title';
+      case 'delete':
+        return 'admin.user_actions.confirm_delete_title';
+    }
+  }
+
+  getUserActionText(): string {
+    const req = this.userActionConfirm();
+    if (!req) return '';
+    switch (req.action) {
+      case 'change_role':
+        return 'admin.user_actions.confirm_role_text';
+      case 'ban':
+        return 'admin.user_actions.confirm_ban_text';
+      case 'unban':
+        return 'admin.user_actions.confirm_unban_text';
+      case 'delete':
+        return 'admin.user_actions.confirm_delete_text';
+    }
+  }
+
+  getUserActionBtnClass(): string {
+    const req = this.userActionConfirm();
+    if (!req) return '';
+    return req.action === 'delete' || req.action === 'ban'
+      ? 'confirm-delete-btn'
+      : 'confirm-action-btn';
+  }
+
+  openGallery(product: ProductWithHelpers): void {
+    this.galleryProduct.set(product);
+    this.galleryImages.set([]);
+    this.galleryOpen.set(true);
+    this.galleryLoading.set(true);
+    this.uploadTransparent.set(false);
+    document.body.style.overflow = 'hidden';
+
+    if (MOCK_MODE) {
+      this.loadMockGalleryImages(product);
+    } else {
+      this.productService.getProductImages(product.id).subscribe({
+        next: (images) => {
+          this.galleryImages.set(
+            images.map((img) => ({
+              ...img,
+              objectUrl: undefined,
+              file: undefined,
+              meta: undefined,
+            })),
+          );
+          this.galleryLoading.set(false);
+        },
+        error: () => {
+          this.galleryLoading.set(false);
+        },
+      });
+    }
+  }
+
+  private loadMockGalleryImages(product: ProductWithHelpers): void {
+    const mockImages: GalleryImage[] = [];
+    if (product.thumbnail_url) {
+      mockImages.push({
+        id: 'mock-1',
+        product_id: product.id,
+        image_url: product.thumbnail_url,
+        alt_text_hu: product.name_hu || product.name,
+        alt_text_en: product.name_en || product.name,
+        alt_text_de: product.name_de || product.name,
+        sort_id: '1',
+      });
+    }
+    if (product.images && product.images.length > 0) {
+      product.images.forEach((url, i) => {
+        if (url !== product.thumbnail_url) {
+          mockImages.push({
+            id: `mock-${i + 2}`,
+            product_id: product.id,
+            image_url: url,
+            alt_text_hu: product.name_hu || product.name,
+            alt_text_en: product.name_en || product.name,
+            alt_text_de: product.name_de || product.name,
+            sort_id: `${i + 2}`,
+          });
+        }
+      });
+    }
+    this.galleryImages.set(mockImages);
+    this.galleryLoading.set(false);
+  }
+
+  closeGallery(): void {
+    this.galleryImages().forEach((img) => {
+      if (img.objectUrl) URL.revokeObjectURL(img.objectUrl);
+    });
+    this.galleryOpen.set(false);
+    this.galleryProduct.set(null);
+    this.galleryImages.set([]);
+    this.uploadTransparent.set(false);
+    if (!this.detailOpen()) {
+      document.body.style.overflow = '';
+    }
+  }
+
+  onGalleryOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('gallery-overlay')) {
+      this.closeGallery();
+    }
+  }
+
+  getProductImageCount(product: ProductWithHelpers): number {
+    const count = product.images?.length ?? 0;
+    return count > 0 ? count : product.thumbnail_url ? 1 : 0;
+  }
+
+  toggleTransparent(): void {
+    this.uploadTransparent.update((v) => !v);
+  }
+
+  triggerFileUpload(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = (e: Event) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) this.handleFileUpload(files);
+    };
+    input.click();
+  }
+
+  private async handleFileUpload(files: FileList): Promise<void> {
+    const product = this.galleryProduct();
+    if (!product) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const objectUrl = URL.createObjectURL(file);
+
+      const img = new Image();
+      const dims = await new Promise<{ w: number; h: number }>((resolve) => {
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = () => resolve({ w: 0, h: 0 });
+        img.src = objectUrl;
+      });
+
+      const newImage: GalleryImage = {
+        id: `new-${Date.now()}-${i}`,
+        product_id: product.id,
+        image_url: objectUrl,
+        alt_text_hu: file.name,
+        alt_text_en: file.name,
+        alt_text_de: file.name,
+        sort_id: `${this.galleryImages().length + 1}`,
+        file,
+        objectUrl,
+        meta: {
+          name: file.name,
+          size: formatFileSize(file.size),
+          type: file.type || 'unknown',
+          width: dims.w,
+          height: dims.h,
+          resolution: dims.w > 0 ? `${dims.w} × ${dims.h}` : '—',
+          lastModified: new Date(file.lastModified).toLocaleDateString('hu-HU'),
+        },
+      };
+
+      this.galleryImages.update((imgs) => [...imgs, newImage]);
+
+      if (!MOCK_MODE) {
+        this.uploadImageToBackend(product.id, file, newImage.id);
+      }
+    }
+  }
+
+  private uploadImageToBackend(productId: string, file: File, tempId: string): void {
+    this.uploadInProgress.set(true);
+
+    const body = {
+      product_id: btoa(productId),
+      image: btoa(file.name),
+      is_transparent: this.uploadTransparent() ? 1 : 0,
+    };
+
+    // TODO: endpoint: POST /api/upload_product_image_admin
+    // this.http
+    //   .post<{ statuscode: string; status: string; image?: ProductImage }>(
+    //     `${environment.baseURL}/api/upload_product_image_admin`,
+    //     body,
+    //   )
+    //   .subscribe({
+    //     next: (res) => {
+    //       if (res.statuscode === '200' && res.image) {
+    //         this.galleryImages.update((imgs) =>
+    //           imgs.map((img) =>
+    //             img.id === tempId
+    //               ? { ...img, id: res.image!.id, image_url: res.image!.image_url, file: undefined }
+    //               : img,
+    //           ),
+    //         );
+    //       }
+    //       this.uploadInProgress.set(false);
+    //     },
+    //     error: (err) => {
+    //       console.error('Image upload failed:', err);
+    //       this.uploadInProgress.set(false);
+    //     },
+    //   });
+
+    this.uploadInProgress.set(false);
+  }
+
+  requestDeleteImage(image: GalleryImage, event: MouseEvent): void {
+    event.stopPropagation();
+    this.deleteTargetImage.set(image);
+    this.deleteConfirmOpen.set(true);
+  }
+
+  confirmDeleteImage(): void {
+    const target = this.deleteTargetImage();
+    if (!target) return;
+
+    if (target.objectUrl) {
+      URL.revokeObjectURL(target.objectUrl);
+    }
+
+    this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+    this.cancelDeleteImage();
+  }
+
+  cancelDeleteImage(): void {
+    this.deleteConfirmOpen.set(false);
+    this.deleteTargetImage.set(null);
+  }
+
+  openImageDetail(image: GalleryImage): void {
+    this.detailImage.set(image);
+    this.detailNaturalWidth.set(0);
+    this.detailNaturalHeight.set(0);
+
+    if (image.meta) {
+      this.detailMeta.set(image.meta);
+    } else {
+      this.detailMeta.set({
+        name: this.extractFileName(image.image_url),
+        size: '—',
+        type: this.guessImageType(image.image_url),
+        width: 0,
+        height: 0,
+        resolution: '...',
+        lastModified: '—',
+      });
+    }
+
+    this.detailOpen.set(true);
+  }
+
+  onDetailImageLoad(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    this.detailNaturalWidth.set(img.naturalWidth);
+    this.detailNaturalHeight.set(img.naturalHeight);
+
+    const meta = this.detailMeta();
+    if (meta) {
+      this.detailMeta.set({
+        ...meta,
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+        resolution: `${img.naturalWidth} × ${img.naturalHeight}`,
+      });
+    }
+  }
+
+  closeImageDetail(): void {
+    this.detailOpen.set(false);
+    this.detailImage.set(null);
+    this.detailMeta.set(null);
+  }
+
+  onDetailOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('detail-overlay')) {
+      this.closeImageDetail();
+    }
+  }
+
+  extractFileName(url: string): string {
+    const parts = url.split('/');
+    return parts[parts.length - 1] || 'image';
+  }
+
+  private guessImageType(url: string): string {
+    const ext = url.split('.').pop()?.toLowerCase();
+    const map: Record<string, string> = {
+      webp: 'image/webp',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      svg: 'image/svg+xml',
+    };
+    return map[ext ?? ''] ?? 'image/*';
+  }
+
+  downloadImage(image: GalleryImage): void {
+    const link = document.createElement('a');
+    link.href = image.objectUrl || image.image_url;
+    link.download = this.extractFileName(image.image_url);
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }
 
@@ -7687,13 +10266,17 @@ export class ForumDetail implements OnInit {
     this.contentExpanded.set(false);
     this.sliderIndex.set(0);
     this.comments.set([]);
+    const userId = this.authService.currentUser()?.id ?? '';
+    const sessToken = this.sessionToken;
 
     this.forumService.getPostById(id).subscribe((post) => {
       this.post.set(post);
       this.isLoading.set(false);
 
       if (post) {
-        this.forumService.incrementViews(post.id).subscribe();
+        if (this.authService.isAuthenticated()) {
+          this.forumService.incrementViews(post.id, userId, sessToken).subscribe();
+        }
 
         this.forumService.getComments(post.id).subscribe((comments) => {
           this.comments.set(comments);
@@ -11217,7 +13800,7 @@ FILE: src\app\pages\product-detail\product-detail.css
   width: fit-content;
   padding: 5px 14px;
   background: var(--color-primary-light);
-  color: var(--color-text-primary);
+  color: #ffffff;
   border: 1px solid rgba(6, 122, 69, 0.2);
   border-radius: var(--radius-full);
   font-size: 0.7rem;
@@ -11451,7 +14034,7 @@ FILE: src\app\pages\product-detail\product-detail.css
 .total-value {
   font-size: var(--text-2xl);
   font-weight: 800;
-  color: var(--color-text-primary);
+  color: #ffffff;
 }
 
 .add-to-cart-btn {
@@ -12109,7 +14692,7 @@ import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { ProductWithHelpers, enrichProduct } from '../../core/models/product.model';
+import { ProductWithHelpers, ProductImage, enrichProduct } from '../../core/models/product.model';
 import { ReviewWithHelpers } from '../../core/models/review.model';
 import { ProductService } from '../../services/product.service';
 import { ReviewService } from '../../core/services/review.service';
@@ -12137,7 +14720,6 @@ export class ProductDetail implements OnInit, OnDestroy {
   private currencyService = inject(CurrencyService);
   private translationService = inject(TranslationService);
 
-  // Expose ICONS to the template
   protected readonly icons = ICONS;
 
   private currentLang = toSignal(this.translationService.currentLang$, {
@@ -12153,6 +14735,8 @@ export class ProductDetail implements OnInit, OnDestroy {
   quantity = signal(1);
   selectedImageIndex = signal(0);
   addedToCart = signal(false);
+
+  private galleryImages = signal<ProductImage[]>([]);
 
   canGoPrevious = computed(() => this.selectedImageIndex() > 0);
   canGoNext = computed(
@@ -12219,6 +14803,7 @@ export class ProductDetail implements OnInit, OnDestroy {
     if (found) {
       this.product.set(found);
       this.loadReviews(id);
+      this.loadProductImages(id, found);
     } else {
       this.notFound.set(true);
     }
@@ -12228,7 +14813,7 @@ export class ProductDetail implements OnInit, OnDestroy {
     this.langSub = this.translationService.currentLang$.subscribe((lang) => {
       const current = this.product();
       if (current) {
-        this.product.set(enrichProduct(current, lang));
+        this.product.set(enrichProduct(current, lang, this.galleryImages()));
       }
     });
   }
@@ -12236,6 +14821,24 @@ export class ProductDetail implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
     document.body.style.overflow = '';
+  }
+
+  private async loadProductImages(
+    productId: string,
+    rawProduct: ProductWithHelpers,
+  ): Promise<void> {
+    try {
+      const images = await firstValueFrom(this.productService.getProductImages(productId));
+      this.galleryImages.set(images);
+
+      const lang = this.currentLang();
+      this.product.set(enrichProduct(rawProduct, lang, images));
+      this.selectedImageIndex.set(0);
+
+      console.log(`Loaded ${images.length} gallery images for product ${productId}`);
+    } catch (err) {
+      console.warn('Could not load gallery images, thumbnail will be used', err);
+    }
   }
 
   private async loadReviews(productId: string): Promise<void> {
@@ -12299,6 +14902,406 @@ export class ProductDetail implements OnInit, OnDestroy {
     this.router.navigate(['/products']);
   }
 }
+
+
+
+================================================================================
+FILE: src\app\pages\products\product.mock.ts
+================================================================================
+
+import { Product, ProductCategory } from '../../core/models/product.model';
+
+export const MOCK_MODE = true;
+
+export const MOCK_RAW_CATEGORIES: ProductCategory[] = [
+  {
+    id: '1',
+    category_hu: 'Gyógyszerek',
+    category_en: 'Medicines',
+    category_de: 'Medikamente',
+    emoji: '💊',
+    color: '#e74c3c',
+    number_of_products: '3',
+  },
+  {
+    id: '2',
+    category_hu: 'Természetes szerek',
+    category_en: 'Natural Remedies',
+    category_de: 'Naturheilmittel',
+    emoji: '🌿',
+    color: '#27ae60',
+    number_of_products: '2',
+  },
+  {
+    id: '3',
+    category_hu: 'Baba & Mama',
+    category_en: 'Baby & Mother',
+    category_de: 'Baby & Mutter',
+    emoji: '🍼',
+    color: '#3498db',
+    number_of_products: '1',
+  },
+  {
+    id: '4',
+    category_hu: 'Egészséges életmód',
+    category_en: 'Healthy Lifestyle',
+    category_de: 'Gesunder Lifestyle',
+    emoji: '🏃',
+    color: '#f39c12',
+    number_of_products: '2',
+  },
+  {
+    id: '5',
+    category_hu: 'Szezonális egészség',
+    category_en: 'Seasonal Health',
+    category_de: 'Saisongesundheit',
+    emoji: '🌡️',
+    color: '#9b59b6',
+    number_of_products: '1',
+  },
+];
+
+export const MOCK_RAW_PRODUCTS: Product[] = [
+  {
+    id: '1',
+    name: 'Algoflex Forte 400mg',
+    name_hu: 'Algoflex Forte 400mg',
+    name_en: 'Algoflex Forte 400mg',
+    name_de: 'Algoflex Forte 400mg',
+    description_hu:
+      'Fájdalomcsillapító és gyulladáscsökkentő hatású ibuprofén tartalmú filmtabletta. Fejfájás, fogfájás, hátfájás, ízületi fájdalmak esetén alkalmazható.',
+    description_en:
+      'Ibuprofen-based film-coated tablet with analgesic and anti-inflammatory effect. For headache, toothache, back pain and joint pain.',
+    description_de:
+      'Ibuprofen-haltige Filmtablette mit schmerzstillender und entzündungshemmender Wirkung.',
+    description_preview_hu: 'Hatékony fájdalomcsillapítás ibuprofénnel.',
+    description_preview_en: 'Effective pain relief with ibuprofen.',
+    description_preview_de: 'Effektive Schmerzlinderung mit Ibuprofen.',
+    price_huf: '2490',
+    price_usd: '6.99',
+    price_eur: '6.49',
+    sale_percentage: '0',
+    stock: '142',
+    times_ordered: '541',
+    category_id: '1',
+    category: '1',
+    manufacturer: 'TEVA Gyógyszergyár Zrt.',
+    brand: 'Algoflex',
+    rating: '4.6',
+    sku: 'ALG-400-24',
+    active_ingredients: 'Ibuprofenum 400mg',
+    packaging: '24 filmtabletta',
+    thumbnail_url: 'assets/products/1/1.webp',
+    featured: '1',
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2025-01-15T10:00:00Z',
+  },
+  {
+    id: '2',
+    name: 'Nurofen Express 200mg',
+    name_hu: 'Nurofen Express 200mg',
+    name_en: 'Nurofen Express 200mg',
+    name_de: 'Nurofen Express 200mg',
+    description_hu:
+      'Gyorsan ható ibuprofen kapszula. Szabad szemmel nem látható ibuprofen-nátrium hatóanyag gyorsabb felszívódást biztosít.',
+    description_en: 'Fast-acting ibuprofen capsule. Ibuprofen sodium provides faster absorption.',
+    description_de:
+      'Schnell wirkendes Ibuprofen-Kapsel mit Ibuprofen-Natrium für schnellere Aufnahme.',
+    description_preview_hu: 'Gyorsabb hatás ibuprofen-nátriummal.',
+    description_preview_en: 'Faster effect with ibuprofen sodium.',
+    description_preview_de: 'Schnellere Wirkung mit Ibuprofen-Natrium.',
+    price_huf: '1890',
+    price_usd: '5.29',
+    price_eur: '4.89',
+    sale_percentage: '15',
+    stock: '7',
+    times_ordered: '312',
+    category_id: '1',
+    category: '1',
+    manufacturer: 'Reckitt Benckiser',
+    brand: 'Nurofen',
+    rating: '4.3',
+    sku: 'NUR-200-12',
+    active_ingredients: 'Ibuprofen-natrium 342mg (= Ibuprofen 200mg)',
+    packaging: '12 kapszula',
+    thumbnail_url: 'assets/products/2/1.webp',
+    featured: '0',
+    created_at: '2024-02-01T10:00:00Z',
+    updated_at: '2025-02-01T10:00:00Z',
+  },
+  {
+    id: '3',
+    name: 'Béres C-vitamin 1000mg',
+    name_hu: 'Béres C-vitamin 1000mg',
+    name_en: 'Béres Vitamin C 1000mg',
+    name_de: 'Béres Vitamin C 1000mg',
+    description_hu:
+      'Magas dózisú C-vitamin pezsgőtabletta. Erős antioxidáns hatással támogatja az immunrendszert és csökkenti a fáradtság érzetét.',
+    description_en:
+      'High-dose vitamin C effervescent tablet. Strong antioxidant effect supports the immune system and reduces fatigue.',
+    description_de:
+      'Hochdosierte Vitamin C Brausetablette. Starke antioxidative Wirkung unterstützt das Immunsystem.',
+    description_preview_hu: 'Immunerősítő, antioxidáns C-vitamin.',
+    description_preview_en: 'Immune-boosting, antioxidant vitamin C.',
+    description_preview_de: 'Immunstärkendes, antioxidatives Vitamin C.',
+    price_huf: '3490',
+    price_usd: '9.79',
+    price_eur: '9.09',
+    sale_percentage: '0',
+    stock: '88',
+    times_ordered: '267',
+    category_id: '2',
+    category: '2',
+    manufacturer: 'Béres Pharmaceuticals',
+    brand: 'Béres',
+    rating: '4.8',
+    sku: 'BER-CVT-60',
+    active_ingredients: 'Acidum ascorbicum 1000mg',
+    packaging: '20 pezsgőtabletta',
+    thumbnail_url: 'assets/products/3/1.webp',
+    featured: '1',
+    created_at: '2024-03-01T10:00:00Z',
+    updated_at: '2025-03-01T10:00:00Z',
+  },
+  {
+    id: '4',
+    name: 'Pampers Active Baby 3-as',
+    name_hu: 'Pampers Active Baby 3-as méret',
+    name_en: 'Pampers Active Baby Size 3',
+    name_de: 'Pampers Active Baby Größe 3',
+    description_hu:
+      'Puha, légáteresztő pelenka 6-10 kg-os babáknak. Akár 12 órán át tartó szárazságot biztosít.',
+    description_en:
+      'Soft, breathable diaper for babies 6-10 kg. Provides dryness for up to 12 hours.',
+    description_de:
+      'Weiches, atmungsaktives Windel für Babys 6-10 kg. Bietet bis zu 12 Stunden Trockenheit.',
+    description_preview_hu: '12 óra szárazság, 6-10 kg-os babáknak.',
+    description_preview_en: '12 hours dryness, for babies 6-10 kg.',
+    description_preview_de: '12 Stunden Trockenheit, für Babys 6-10 kg.',
+    price_huf: '8990',
+    price_usd: '25.29',
+    price_eur: '23.49',
+    sale_percentage: '0',
+    stock: '0',
+    times_ordered: '189',
+    category_id: '3',
+    category: '3',
+    manufacturer: 'Procter & Gamble',
+    brand: 'Pampers',
+    rating: '4.7',
+    sku: 'PAM-ACT-3-90',
+    active_ingredients: '—',
+    packaging: '90 darab',
+    thumbnail_url: 'assets/products/4/1.webp',
+    featured: '0',
+    created_at: '2024-04-01T10:00:00Z',
+    updated_at: '2025-04-01T10:00:00Z',
+  },
+  {
+    id: '5',
+    name: 'Voltaren Emulgel 1%',
+    name_hu: 'Voltaren Emulgel 1%',
+    name_en: 'Voltaren Emulgel 1%',
+    name_de: 'Voltaren Emulgel 1%',
+    description_hu:
+      'Diklofenák-dietilamint tartalmazó gél izom- és ízületi fájdalmakra. Mélyen behatol a szövetekbe.',
+    description_en:
+      'Diclofenac diethylamine gel for muscle and joint pain. Penetrates deeply into tissues.',
+    description_de:
+      'Diclofenac-Diethylamin-Gel bei Muskel- und Gelenkschmerzen. Dringt tief ins Gewebe ein.',
+    description_preview_hu: 'Mélyen ható ízületi és izomfájdalom gél.',
+    description_preview_en: 'Deep-acting joint and muscle pain gel.',
+    description_preview_de: 'Tiefwirkendes Gelenk- und Muskelschmerzgel.',
+    price_huf: '4290',
+    price_usd: '12.09',
+    price_eur: '11.19',
+    sale_percentage: '20',
+    stock: '34',
+    times_ordered: '204',
+    category_id: '1',
+    category: '1',
+    manufacturer: 'GlaxoSmithKline',
+    brand: 'Voltaren',
+    rating: '4.5',
+    sku: 'VOL-EMU-100G',
+    active_ingredients: 'Diclofenacum diethylaminum 11,6mg/g',
+    packaging: '100g gél',
+    thumbnail_url: 'assets/products/5/1.webp',
+    featured: '1',
+    created_at: '2024-05-01T10:00:00Z',
+    updated_at: '2025-05-01T10:00:00Z',
+  },
+  {
+    id: '6',
+    name: 'Multi-vitamin komplex',
+    name_hu: 'Multi-vitamin komplex',
+    name_en: 'Multi-vitamin complex',
+    name_de: 'Multi-Vitamin-Komplex',
+    description_hu:
+      '23 vitamint és ásványi anyagot tartalmazó komplex formula a napi tápanyagbevitel fedezéséhez.',
+    description_en:
+      'Complex formula containing 23 vitamins and minerals to cover daily nutrient intake.',
+    description_de:
+      'Komplexformel mit 23 Vitaminen und Mineralstoffen zur Deckung des täglichen Nährstoffbedarfs.',
+    description_preview_hu: '23 vitamin és ásványi anyag egyben.',
+    description_preview_en: '23 vitamins and minerals in one.',
+    description_preview_de: '23 Vitamine und Mineralstoffe in einem.',
+    price_huf: '5490',
+    price_usd: '15.49',
+    price_eur: '14.39',
+    sale_percentage: '0',
+    stock: '5',
+    times_ordered: '143',
+    category_id: '4',
+    category: '4',
+    manufacturer: 'Béres Pharmaceuticals',
+    brand: 'Béres',
+    rating: '4.2',
+    sku: 'MUL-VIT-100',
+    active_ingredients:
+      'Vitamin A, B1, B2, B3, B5, B6, B7, B9, B12, C, D3, E, K1, Ca, Mg, Zn, Fe, Cu, Mn, Cr, Mo, Se, I',
+    packaging: '100 tabletta',
+    thumbnail_url: 'assets/products/6/1.webp',
+    featured: '0',
+    created_at: '2024-06-01T10:00:00Z',
+    updated_at: '2025-06-01T10:00:00Z',
+  },
+  {
+    id: '7',
+    name: 'Strepsils Citrom & Méz',
+    name_hu: 'Strepsils Citrom & Méz szopogató tabletta',
+    name_en: 'Strepsils Lemon & Honey lozenges',
+    name_de: 'Strepsils Zitrone & Honig Lutschtabletten',
+    description_hu:
+      'Antibakteriális hatású szopogató tabletta torokfájásra. Citrom és méz ízű, kellemes íze van.',
+    description_en: 'Antibacterial lozenge for sore throat. Pleasant lemon and honey flavour.',
+    description_de:
+      'Antibakteriell wirkende Lutschtablette bei Halsschmerzen. Angenehmer Zitronen-Honig-Geschmack.',
+    description_preview_hu: 'Antibakteriális torokerősítő szopogató.',
+    description_preview_en: 'Antibacterial throat-soothing lozenge.',
+    description_preview_de: 'Antibakteriell lindernde Lutschtablette.',
+    price_huf: '1290',
+    price_usd: '3.59',
+    price_eur: '3.29',
+    sale_percentage: '0',
+    stock: '210',
+    times_ordered: '780',
+    category_id: '5',
+    category: '5',
+    manufacturer: 'Reckitt Benckiser',
+    brand: 'Strepsils',
+    rating: '4.4',
+    sku: 'STR-CIT-36',
+    active_ingredients: 'Amylmetacresol 0.6mg, 2,4-Dichlorobenzyl alcohol 1.2mg',
+    packaging: '36 szopogató tabletta',
+    thumbnail_url: 'assets/products/7/1.webp',
+    featured: '1',
+    created_at: '2024-07-01T10:00:00Z',
+    updated_at: '2025-07-01T10:00:00Z',
+  },
+  {
+    id: '8',
+    name: 'Omega-3 halolaj 1000mg',
+    name_hu: 'Omega-3 halolaj 1000mg',
+    name_en: 'Omega-3 Fish Oil 1000mg',
+    name_de: 'Omega-3 Fischöl 1000mg',
+    description_hu:
+      'Magas EPA és DHA tartalmú halolaj kapszula. Szív- és érrendszeri egészséghez, agyműködés és látás támogatásához.',
+    description_en:
+      'High EPA and DHA fish oil capsule. For cardiovascular health, brain function and vision support.',
+    description_de:
+      'Hochdosierte EPA- und DHA-Fischölkapsel für Herz-Kreislauf-Gesundheit, Gehirnfunktion und Sehvermögen.',
+    description_preview_hu: 'Szív, agy és látás: EPA + DHA komplex.',
+    description_preview_en: 'Heart, brain and vision: EPA + DHA complex.',
+    description_preview_de: 'Herz, Gehirn und Sehen: EPA + DHA Komplex.',
+    price_huf: '4290',
+    price_usd: '12.09',
+    price_eur: '11.19',
+    sale_percentage: '0',
+    stock: '67',
+    times_ordered: '298',
+    category_id: '4',
+    category: '4',
+    manufacturer: 'Now Foods',
+    brand: "Roy's Natural",
+    rating: '4.6',
+    sku: 'OM3-90',
+    active_ingredients: 'EPA 360mg, DHA 240mg per kapszula',
+    packaging: '90 kapszula',
+    thumbnail_url: 'assets/products/8/1.webp',
+    featured: '0',
+    created_at: '2024-08-01T10:00:00Z',
+    updated_at: '2025-08-01T10:00:00Z',
+  },
+  {
+    id: '9',
+    name: 'Kamilla tea bio',
+    name_hu: 'Kamilla tea bio',
+    name_en: 'Organic chamomile tea',
+    name_de: 'Bio Kamillentee',
+    description_hu:
+      'Prémium bio kamilla virágzat tea. Természetes nyugtató, gyulladáscsökkentő és emésztést segítő hatással.',
+    description_en:
+      'Premium organic chamomile flower tea. Natural calming, anti-inflammatory and digestive aid.',
+    description_de:
+      'Hochwertiger Bio-Kamillenblütentee. Natürlich beruhigend, entzündungshemmend und verdauungsfördernd.',
+    description_preview_hu: 'Bio kamilla, természetes nyugtató és emésztéssegítő.',
+    description_preview_en: 'Organic chamomile, natural calming and digestive aid.',
+    description_preview_de: 'Bio-Kamille, natürlich beruhigend und verdauungsfördernd.',
+    price_huf: '1490',
+    price_usd: '4.19',
+    price_eur: '3.89',
+    sale_percentage: '0',
+    stock: '180',
+    times_ordered: '156',
+    category_id: '2',
+    category: '2',
+    manufacturer: 'HerbalLife Kft.',
+    brand: "Roy's Herbs",
+    rating: '4.3',
+    sku: 'TEA-CAM-20',
+    active_ingredients: 'Matricaria chamomilla flos 100%',
+    packaging: '20 filter',
+    thumbnail_url: 'assets/products/9/1.webp',
+    featured: '0',
+    created_at: '2024-09-01T10:00:00Z',
+    updated_at: '2025-09-01T10:00:00Z',
+  },
+  {
+    id: '10',
+    name: 'D3 + K2 vitamin 2000 IU',
+    name_hu: 'D3 + K2 vitamin 2000 IU',
+    name_en: 'Vitamin D3 + K2 2000 IU',
+    name_de: 'Vitamin D3 + K2 2000 IE',
+    description_hu:
+      'D3 és K2 vitamin kombinációja. A D3 kalcium felszívódást segít, a K2 gondoskodik a helyes elhelyezkedéséről a csontokban.',
+    description_en:
+      'Combination of D3 and K2 vitamins. D3 supports calcium absorption, K2 ensures it goes to the bones.',
+    description_de:
+      'Kombination aus D3- und K2-Vitamin. D3 unterstützt die Kalziumaufnahme, K2 sorgt für die richtige Einlagerung in den Knochen.',
+    description_preview_hu: 'D3 + K2: kalcium a csontoknak, immunerő.',
+    description_preview_en: 'D3 + K2: calcium for bones, immune strength.',
+    description_preview_de: 'D3 + K2: Kalzium für Knochen, Immunstärke.',
+    price_huf: '3990',
+    price_usd: '11.19',
+    price_eur: '10.39',
+    sale_percentage: '10',
+    stock: '52',
+    times_ordered: '211',
+    category_id: '2',
+    category: '2',
+    manufacturer: 'Vitabalans Oy',
+    brand: "Roy's Premium",
+    rating: '4.7',
+    sku: 'D3K2-60',
+    active_ingredients: 'Kolekalciferol 50mcg (2000IU), Menachinon-7 75mcg',
+    packaging: '60 kapszula',
+    thumbnail_url: 'assets/products/10/1.webp',
+    featured: '1',
+    created_at: '2024-10-01T10:00:00Z',
+    updated_at: '2025-10-01T10:00:00Z',
+  },
+];
 
 
 
@@ -14543,7 +17546,7 @@ describe('Profile', () => {
 FILE: src\app\pages\profile\profile.ts
 ================================================================================
 
-import { Component, OnInit, signal, computed, inject, OnDestroy } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14562,15 +17565,12 @@ export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | '
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
-export class Profile implements OnInit, OnDestroy {
+export class Profile implements OnInit {
   private authService = inject(AuthService);
   private accountService = inject(AccountService);
   private toastService = inject(ToastService);
   private router = inject(Router);
   private translationService = inject(TranslationService);
-
-  private roleRefreshInterval: ReturnType<typeof setInterval> | null = null;
-  private readonly ROLE_REFRESH_INTERVAL_MS = 30_000;
 
   user = this.authService.currentUser;
   isAuthenticated = this.authService.isAuthenticated;
@@ -14619,25 +17619,6 @@ export class Profile implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadPersonalInfoIntoForm();
-    this.startRolePolling();
-  }
-
-  ngOnDestroy(): void {
-    this.stopRolePolling();
-  }
-
-  private startRolePolling(): void {
-    this.authService.refreshUserState();
-    this.roleRefreshInterval = setInterval(() => {
-      this.authService.refreshUserState();
-    }, this.ROLE_REFRESH_INTERVAL_MS);
-  }
-
-  private stopRolePolling(): void {
-    if (this.roleRefreshInterval !== null) {
-      clearInterval(this.roleRefreshInterval);
-      this.roleRefreshInterval = null;
-    }
   }
 
   setSection(section: ProfileSection): void {
@@ -15515,7 +18496,7 @@ import { firstValueFrom } from 'rxjs';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
 import { AuthService } from '../../core/services/auth.service';
-import { AccountService } from '../../core/services/account.service';
+import { AccountService, CreateOrderRequest } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Product } from '../../core/models/product.model';
 
@@ -15588,15 +18569,11 @@ export class Purchase implements OnInit {
   }
 
   getFormattedUnitPrice(product: Product): string {
-    return this.currencyService.formatPrice(
-      this.currencyService.getDiscountedPrice(product),
-    );
+    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(product));
   }
 
   getFormattedItemTotal(product: Product, quantity: number): string {
-    return this.currencyService.formatPrice(
-      this.cartService.getItemTotal(product, quantity),
-    );
+    return this.currencyService.formatPrice(this.cartService.getItemTotal(product, quantity));
   }
 
   async submitOrder(): Promise<void> {
@@ -15606,17 +18583,28 @@ export class Purchase implements OnInit {
     this.errorMessage.set(null);
 
     try {
-      const orderData = {
-        city: this.form.city,
-        zipcode: this.form.zipcode,
-        address: this.form.address,
-        houseNumber: parseInt(this.form.houseNumber),
-        apartmentNumber: this.form.apartmentNumber ? parseInt(this.form.apartmentNumber) : 0,
-        phoneNumber: this.form.phoneNumber,
-        note: this.form.note,
-        items: this.cartItems().map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
+      const user = this.authService.currentUser();
+      const orderData: CreateOrderRequest = {
+        order: {
+          user_id: btoa(user?.id ?? ''),
+          session_token: btoa(this.authService.getSessionToken() ?? ''),
+          email: btoa(user?.email ?? ''),
+          billing_name: btoa(`${user?.firstname} ${user?.lastname}`),
+          shipping_name: btoa(`${user?.firstname} ${user?.lastname}`),
+          shipping_company: btoa(''),
+          price: btoa(String(this.cartTotal())),
+          city: btoa(this.form.city),
+          guest: btoa('0'),
+          zipcode: btoa(this.form.zipcode),
+          address: btoa(this.form.address),
+          apartment_number: btoa(this.form.apartmentNumber ?? '0'),
+          note: btoa(this.form.note ?? ''),
+          house_number: btoa(this.form.houseNumber),
+          phone_number: btoa(this.form.phoneNumber),
+        },
+        items: this.cartItems().map((i) => ({
+          product_id: btoa(String(i.product.id)),
+          quantity: btoa(String(i.quantity)),
         })),
       };
 
@@ -15672,6 +18660,7 @@ export class Purchase implements OnInit {
     this.router.navigate(['/products']);
   }
 }
+
 
 
 ================================================================================
@@ -16645,6 +19634,8 @@ import {
   ProductCategoriesApiResponse,
   ProductsApiResponse,
   ProductWithHelpers,
+  ProductImage,
+  ProductImagesApiResponse,
   Category,
   enrichProduct,
   mapProductCategory,
@@ -16654,6 +19645,7 @@ import {
 } from '../core/models/product.model';
 import { TranslationService } from '../core/services/translation.service';
 import { environment } from '../../environments/environment';
+import { MOCK_MODE, MOCK_RAW_PRODUCTS, MOCK_RAW_CATEGORIES } from '../pages/products/product.mock';
 
 @Injectable({
   providedIn: 'root',
@@ -16730,6 +19722,15 @@ export class ProductService {
   // --- Load methods ---
 
   async loadProducts(): Promise<void> {
+    if (MOCK_MODE) {
+      const currentLang = this.translationService.getCurrentLanguage();
+      const enriched = MOCK_RAW_PRODUCTS.map((p) => enrichProduct(p, currentLang));
+      this.rawProducts.set(MOCK_RAW_PRODUCTS);
+      this.allProductsSignal.set(enriched);
+      this.updateCategoryCounts();
+      return;
+    }
+
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
     try {
@@ -16753,6 +19754,15 @@ export class ProductService {
   }
 
   async loadFeaturedProducts(): Promise<void> {
+    if (MOCK_MODE) {
+      const currentLang = this.translationService.getCurrentLanguage();
+      const enriched = MOCK_RAW_PRODUCTS.filter((p) => p.featured === '1').map((p) =>
+        enrichProduct(p, currentLang),
+      );
+      this.featuredSignal.set(enriched);
+      return;
+    }
+
     try {
       const products = await firstValueFrom(this.getFeaturedFromApi());
       const currentLang = this.translationService.getCurrentLanguage();
@@ -16762,7 +19772,6 @@ export class ProductService {
       this.featuredSignal.set(enriched);
       console.log(`Loaded ${products.length} featured products from backend`);
     } catch (err) {
-      // Fallback: derive featured from already-loaded products
       const fallback = this.allProductsSignal().filter((p) => p.isFeatured);
       this.featuredSignal.set(fallback);
       console.warn(
@@ -16773,6 +19782,13 @@ export class ProductService {
   }
 
   async loadCategories(): Promise<void> {
+    if (MOCK_MODE) {
+      const mapped = MOCK_RAW_CATEGORIES.map(mapProductCategory);
+      this.categoriesSignal.set(mapped);
+      this.updateCategoryCounts();
+      return;
+    }
+
     try {
       const raw = await firstValueFrom(this.getAllCategories());
       const mapped = raw.map(mapProductCategory);
@@ -16852,6 +19868,30 @@ export class ProductService {
     );
   }
 
+  getProductImages(productId: string): Observable<ProductImage[]> {
+    const body = {
+      product_id: btoa(productId),
+    };
+
+    return this.http
+      .post<ProductImagesApiResponse>(`${this.API_URL}/api/get_all_product_images_by_id`, body)
+      .pipe(
+        timeout(5000),
+        map((r) => {
+          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+          if (!Array.isArray(r.images)) return [];
+          return r.images;
+        }),
+        catchError((err) => {
+          console.warn(
+            'ProductService: Failed to load product images, falling back to thumbnail',
+            err,
+          );
+          return of([]);
+        }),
+      );
+  }
+
   getProductById(id: string): Observable<Product | undefined> {
     return this.getAllProducts().pipe(
       map((products) => products.find((p) => p.id === id)),
@@ -16897,10 +19937,6 @@ export class ProductService {
 
   // --- Private helpers ---
 
-  /**
-   * Builds a map from category numeric ID → id string.
-   * Used to normalize product.category / product.category_id fields.
-   */
   private buildCategoryIdMap(): Map<string, string> {
     const map = new Map<string, string>();
     this.categoriesSignal().forEach((cat) => {
@@ -16909,10 +19945,6 @@ export class ProductService {
     return map;
   }
 
-  /**
-   * Counts how many products belong to each category and updates
-   * the categories signal with the real counts.
-   */
   private updateCategoryCounts(): void {
     const products = this.allProductsSignal();
     const categories = this.categoriesSignal();
@@ -16933,19 +19965,10 @@ export class ProductService {
     this.categoriesSignal.set(updated);
   }
 
-  /**
-   * Returns the Category object for a given category ID.
-   * Used by product detail components to display the category name
-   * instead of using the raw ID as a translation key.
-   */
   getCategoryById(id: string): import('../core/models/product.model').Category | undefined {
     return this.categoriesSignal().find((cat) => cat.id === id);
   }
 
-  /**
-   * Ensures product.category is set to a consistent category ID string.
-   * Handles backends that return `category_id` separately from `category`.
-   */
   private normalizeCategoryId(product: Product, _idMap: Map<string, string>): Product {
     const resolved = product.category ?? product.category_id ?? '';
     return { ...product, category: resolved };
@@ -18901,10 +21924,6 @@ export class NewsletterForm {
 FILE: src\app\shared\components\header\header.css
 ================================================================================
 
-/* ══════════════════════════════════════════════════════════════
-   HEADER — Glass Morphism Sticky Navigation
-   ══════════════════════════════════════════════════════════════ */
-
 .header {
   position: sticky;
   top: 0;
@@ -18938,10 +21957,6 @@ FILE: src\app\shared\components\header\header.css
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   LAYOUT SECTIONS
-   ══════════════════════════════════════════════════════════════ */
-
 .header-left {
   flex-shrink: 0;
 }
@@ -18972,10 +21987,6 @@ FILE: src\app\shared\components\header\header.css
   align-items: center;
   flex-shrink: 0;
 }
-
-/* ══════════════════════════════════════════════════════════════
-   HAMBURGER MENU (hidden on desktop, visible on mobile)
-   ══════════════════════════════════════════════════════════════ */
 
 .mobile-menu-wrapper {
   display: none;
@@ -19061,10 +22072,6 @@ FILE: src\app\shared\components\header\header.css
   background-color: var(--border-color);
   margin: 0.25rem 0;
 }
-
-/* ══════════════════════════════════════════════════════════════
-   USER MENU
-   ══════════════════════════════════════════════════════════════ */
 
 .user-menu-wrapper {
   position: relative;
@@ -19154,10 +22161,6 @@ FILE: src\app\shared\components\header\header.css
 .logout-btn .dropdown-icon {
   color: #dc2626;
 }
-
-/* ══════════════════════════════════════════════════════════════
-   CART
-   ══════════════════════════════════════════════════════════════ */
 
 .cart-menu-wrapper {
   position: relative;
@@ -19476,10 +22479,6 @@ FILE: src\app\shared\components\header\header.css
   border-color: #dc2626;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   ANIMATIONS
-   ══════════════════════════════════════════════════════════════ */
-
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -19490,10 +22489,6 @@ FILE: src\app\shared\components\header\header.css
     transform: translateY(0);
   }
 }
-
-/* ══════════════════════════════════════════════════════════════
-   RESPONSIVE
-   ══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 1024px) {
   .header-center {
@@ -19544,8 +22539,12 @@ FILE: src\app\shared\components\header\header.css
   }
 
   .user-dropdown {
-    width: 240px;
-    right: -10px;
+    position: fixed;
+    top: 70px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    min-width: unset;
   }
 
   .mobile-dropdown {
@@ -21190,7 +24189,7 @@ FILE: src\app\shared\components\product-card\product-card.css
 
 .out-of-stock-overlay span {
   background: rgba(255, 255, 255, 0.95);
-  color: var(--color-text-primary);
+  color: #000000;
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-full);
   font-weight: var(--font-semibold);
@@ -21571,12 +24570,6 @@ FILE: src\app\shared\components\product-card\product-card.html
             ℞
           </span>
         }
-
-        @if (!product.inStock) {
-          <span class="badge out-of-stock-badge">
-            {{ 'product.out_of_stock' | translate }}
-          </span>
-        }
       </div>
 
       @if (!product.inStock) {
@@ -21685,7 +24678,7 @@ FILE: src\app\shared\components\product-card\product-card.ts
 
 import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
@@ -21719,6 +24712,7 @@ export class ProductCard {
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
   private translationService = inject(TranslationService);
+  private router = inject(Router);
   private currentLang = toSignal(this.translationService.currentLang$, {
     initialValue: this.translationService.getCurrentLanguage(),
   });
@@ -21797,1069 +24791,7 @@ export class ProductCard {
 
   onViewDetails(): void {
     this.viewDetails.emit(this.product);
-  }
-}
-
-
-
-================================================================================
-FILE: src\app\shared\components\product-detail-modal\product-detail-modal.css
-================================================================================
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal-backdrop, 1000);
-  padding: var(--space-4, 16px);
-  overflow-y: auto;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-container {
-  position: relative;
-  background: var(--color-surface);
-  border-radius: var(--radius-xl, 16px);
-  max-width: 1000px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-xl);
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-close {
-  position: absolute;
-  top: var(--space-4, 16px);
-  right: var(--space-4, 16px);
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  font-size: var(--text-2xl, 24px);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast, 0.15s ease);
-  z-index: var(--z-modal, 1001);
-  font-family: var(--font-primary);
-  line-height: 1;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .modal-close:hover {
-    background: var(--color-error);
-    border-color: var(--color-error);
-    color: white;
-    transform: rotate(90deg);
-  }
-}
-
-.modal-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-8, 32px);
-  padding: var(--space-8, 32px);
-}
-
-.modal-images {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4, 16px);
-}
-
-.main-image-wrapper {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  background: var(--color-surface-elevated);
-  border-radius: var(--radius-lg, 12px);
-  overflow: hidden;
-}
-
-.main-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.image-nav-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  font-size: 32px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 10;
-  font-family: var(--font-primary);
-  line-height: 1;
-  user-select: none;
-}
-
-.image-nav-btn.prev {
-  left: 12px;
-}
-.image-nav-btn.next {
-  right: 12px;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .image-nav-btn:hover:not(:disabled) {
-    background: rgba(0, 0, 0, 0.8);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: translateY(-50%) scale(1.1);
-  }
-}
-
-.image-nav-btn:disabled,
-.image-nav-btn.disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.image-nav-btn:active:not(:disabled) {
-  transform: translateY(-50%) scale(0.95);
-}
-
-.image-counter {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  color: white;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  z-index: 10;
-  user-select: none;
-}
-
-.prescription-badge {
-  position: absolute;
-  top: var(--space-3, 12px);
-  left: var(--space-3, 12px);
-  background: var(--color-primary);
-  color: white;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-2xl, 24px);
-  font-weight: var(--font-bold);
-  box-shadow: var(--shadow-md);
-  z-index: var(--z-base, 1);
-}
-
-.discount-badge {
-  position: absolute;
-  top: var(--space-3, 12px);
-  right: var(--space-3, 12px);
-  background: var(--color-error);
-  color: white;
-  padding: var(--space-2, 8px) var(--space-4, 16px);
-  border-radius: var(--radius-sm, 6px);
-  font-size: var(--text-base, 16px);
-  font-weight: var(--font-bold);
-  box-shadow: var(--shadow-md);
-  z-index: var(--z-base, 1);
-}
-
-.thumbnail-list {
-  display: flex;
-  gap: var(--space-2, 8px);
-  overflow-x: auto;
-  padding: var(--space-1, 4px);
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-primary) var(--color-surface-elevated);
-}
-
-.thumbnail-list::-webkit-scrollbar {
-  height: 6px;
-}
-.thumbnail-list::-webkit-scrollbar-track {
-  background: var(--color-surface-elevated);
-  border-radius: 3px;
-}
-.thumbnail-list::-webkit-scrollbar-thumb {
-  background: var(--color-primary);
-  border-radius: 3px;
-}
-
-.thumbnail {
-  flex-shrink: 0;
-  width: 80px;
-  height: 80px;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md, 8px);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all var(--transition-fast, 0.15s ease);
-  background: var(--color-surface-elevated);
-  padding: 0;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .thumbnail:hover {
-    border-color: var(--color-primary);
-    transform: scale(1.05);
-  }
-}
-
-.thumbnail.active {
-  border-color: var(--color-primary);
-  border-width: 3px;
-  box-shadow: 0 0 0 2px var(--color-primary-light);
-}
-
-.thumbnail img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.modal-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6, 24px);
-}
-
-.modal-header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2, 8px);
-}
-
-.product-category-badge {
-  display: inline-block;
-  width: fit-content;
-  padding: var(--space-1, 4px) var(--space-3, 12px);
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  border-radius: var(--radius-full, 9999px);
-  font-size: var(--text-xs, 12px);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.modal-title {
-  font-size: var(--text-3xl, 30px);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
-  margin: 0;
-  line-height: var(--leading-tight, 1.25);
-}
-
-.product-rating {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2, 8px);
-}
-
-.rating-stars {
-  color: var(--color-warning, #f59e0b);
-  font-size: var(--text-lg, 18px);
-}
-
-.rating-value {
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  font-size: var(--text-base, 16px);
-}
-
-.rating-count {
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm, 14px);
-}
-
-.price-section {
-  padding: var(--space-4, 16px) 0;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.price {
-  font-size: var(--text-3xl, 30px);
-  font-weight: var(--font-bold);
-  color: var(--color-primary);
-}
-
-.price-with-discount {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1, 4px);
-}
-
-.original-price {
-  font-size: var(--text-lg, 18px);
-  color: var(--color-text-secondary);
-  text-decoration: line-through;
-}
-
-.discounted-price {
-  font-size: var(--text-3xl, 30px);
-  font-weight: var(--font-bold);
-  color: var(--color-error);
-}
-
-.meta-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2, 8px);
-}
-
-.meta-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-2, 8px) 0;
-  font-size: var(--text-sm, 14px);
-}
-
-.meta-label {
-  font-weight: var(--font-medium);
-  color: var(--color-text-secondary);
-}
-
-.meta-value {
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-}
-
-.meta-value.in-stock {
-  color: var(--color-success);
-}
-.meta-value.out-of-stock {
-  color: var(--color-error);
-}
-
-.description-section,
-.pharma-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3, 12px);
-}
-
-.section-title {
-  font-size: var(--text-lg, 18px);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  margin: 0;
-}
-
-.description-text {
-  font-size: var(--text-base, 16px);
-  line-height: var(--leading-relaxed, 1.75);
-  color: var(--color-text-secondary);
-  margin: 0;
-}
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1, 4px);
-  padding: var(--space-3, 12px);
-  background: var(--color-surface-elevated);
-  border-radius: var(--radius-md, 8px);
-  font-size: var(--text-sm, 14px);
-}
-
-.detail-item strong {
-  color: var(--color-text-primary);
-  font-weight: var(--font-semibold);
-}
-
-.detail-item span {
-  color: var(--color-text-secondary);
-}
-
-.cart-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4, 16px);
-  padding-top: var(--space-4, 16px);
-  border-top: 2px solid var(--color-border);
-}
-
-.quantity-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4, 16px);
-  padding: var(--space-3, 12px);
-  background: var(--color-surface-elevated);
-  border-radius: var(--radius-lg, 12px);
-}
-
-.quantity-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md, 8px);
-  background: var(--color-primary);
-  color: var(--color-text-on-primary, white);
-  border: none;
-  font-size: var(--text-2xl, 24px);
-  font-weight: var(--font-bold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-fast, 0.15s ease);
-  font-family: var(--font-primary);
-  line-height: 1;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .quantity-btn:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    transform: scale(1.1);
-  }
-}
-
-.quantity-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.quantity-value {
-  min-width: 60px;
-  text-align: center;
-  font-size: var(--text-2xl, 24px);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
-}
-
-.total-price-display {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-4, 16px);
-  background: var(--color-primary-light);
-  border-radius: var(--radius-lg, 12px);
-}
-
-.total-label {
-  font-size: var(--text-lg, 18px);
-  font-weight: var(--font-medium);
-  color: var(--color-text-primary);
-}
-
-.total-value {
-  font-size: var(--text-2xl, 24px);
-  font-weight: var(--font-bold);
-  color: var(--color-primary);
-}
-
-.add-to-cart-button {
-  width: 100%;
-  padding: var(--space-4, 16px) var(--space-6, 24px);
-  background: var(--color-primary);
-  color: var(--color-text-on-primary, white);
-  border: none;
-  border-radius: var(--radius-lg, 12px);
-  font-size: var(--text-lg, 18px);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all var(--transition-fast, 0.15s ease);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3, 12px);
-  font-family: var(--font-primary);
-  box-shadow: var(--shadow-md);
-  min-height: 52px;
-}
-
-.add-to-cart-button .button-icon {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  flex-shrink: 0;
-  filter: brightness(0) saturate(100%) invert(1);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .add-to-cart-button:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
-  }
-}
-
-.add-to-cart-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.button-icon {
-  font-size: var(--text-xl, 20px);
-}
-
-.prescription-notice {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2, 8px);
-  padding: var(--space-3, 12px);
-  background: var(--color-info);
-  color: white;
-  border-radius: var(--radius-md, 8px);
-  font-size: var(--text-sm, 14px);
-}
-
-.notice-icon {
-  font-size: var(--text-lg, 18px);
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  flex-shrink: 0;
-  filter: var(--icon-filter, brightness(0) saturate(100%));
-}
-
-.notice-text {
-  font-weight: var(--font-medium);
-}
-
-@media (max-width: 768px) {
-  .modal-content {
-    grid-template-columns: 1fr;
-    gap: var(--space-6, 24px);
-    padding: var(--space-6, 24px);
-  }
-
-  .modal-close {
-    top: var(--space-3, 12px);
-    right: var(--space-3, 12px);
-  }
-
-  .modal-title {
-    font-size: var(--text-2xl, 24px);
-  }
-
-  .price,
-  .discounted-price {
-    font-size: var(--text-2xl, 24px);
-  }
-
-  .image-nav-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 26px;
-  }
-
-  .image-nav-btn.prev {
-    left: 8px;
-  }
-  .image-nav-btn.next {
-    right: 8px;
-  }
-
-  .thumbnail {
-    width: 64px;
-    height: 64px;
-  }
-}
-
-@media (max-width: 480px) {
-  .modal-backdrop {
-    padding: 0;
-    align-items: flex-end;
-  }
-
-  .modal-container {
-    max-height: 96vh;
-    border-radius: var(--radius-xl, 16px) var(--radius-xl, 16px) 0 0;
-    width: 100%;
-  }
-
-  .modal-content {
-    padding: var(--space-4, 16px);
-  }
-
-  .modal-title {
-    font-size: var(--text-xl, 20px);
-  }
-
-  .price,
-  .discounted-price {
-    font-size: var(--text-xl, 20px);
-  }
-
-  .quantity-controls {
-    gap: var(--space-3, 12px);
-  }
-
-  .quantity-value {
-    min-width: 48px;
-    font-size: var(--text-xl, 20px);
-  }
-
-  .image-nav-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 22px;
-  }
-
-  .thumbnail {
-    width: 56px;
-    height: 56px;
-  }
-
-  .total-label {
-    font-size: var(--text-base, 16px);
-  }
-
-  .total-value {
-    font-size: var(--text-xl, 20px);
-  }
-
-  .add-to-cart-button {
-    font-size: var(--text-base, 16px);
-    padding: var(--space-3, 12px) var(--space-4, 16px);
-  }
-}
-
-@media (max-width: 375px) {
-  .modal-content {
-    padding: var(--space-3, 12px);
-    gap: var(--space-4, 16px);
-  }
-
-  .modal-title {
-    font-size: var(--text-lg, 18px);
-  }
-
-  .section-title {
-    font-size: var(--text-base, 16px);
-  }
-
-  .description-text {
-    font-size: var(--text-sm, 14px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .modal-backdrop {
-    animation: none;
-  }
-  .modal-container {
-    animation: none;
-  }
-  .modal-close,
-  .image-nav-btn,
-  .thumbnail,
-  .quantity-btn,
-  .add-to-cart-button {
-    transition: none;
-  }
-}
-
-
-
-================================================================================
-FILE: src\app\shared\components\product-detail-modal\product-detail-modal.html
-================================================================================
-
-<div class="modal-backdrop" (click)="handleBackdropClick($event)">
-  <div class="modal-container" role="dialog" aria-modal="true" [attr.aria-label]="localizedName">
-    <button
-      class="modal-close"
-      (click)="handleClose()"
-      [attr.aria-label]="'common.close' | translate"
-    >
-      ✕
-    </button>
-
-    <div class="modal-content">
-      <div class="modal-images">
-        <div class="main-image-wrapper">
-          @if (images.length > 1) {
-            <button
-              class="image-nav-btn prev"
-              [class.disabled]="!canGoPrevious()"
-              [disabled]="!canGoPrevious()"
-              (click)="previousImage()"
-              [attr.aria-label]="'product.previous_image' | translate"
-            >
-              ‹
-            </button>
-          }
-
-          <img [src]="selectedImage" [alt]="localizedName" class="main-image" />
-
-          @if (product.requiresPrescription) {
-            <span class="prescription-badge" [title]="'product.requires_prescription' | translate">
-              ℞
-            </span>
-          }
-
-          @if (hasDiscount) {
-            <span class="discount-badge"> -{{ product.discountPercentage }}% </span>
-          }
-
-          @if (images.length > 1) {
-            <button
-              class="image-nav-btn next"
-              [class.disabled]="!canGoNext()"
-              [disabled]="!canGoNext()"
-              (click)="nextImage()"
-              [attr.aria-label]="'product.next_image' | translate"
-            >
-              ›
-            </button>
-          }
-
-          @if (images.length > 1) {
-            <div class="image-counter">{{ selectedImageIndex() + 1 }} / {{ images.length }}</div>
-          }
-        </div>
-
-        @if (images.length > 1) {
-          <div class="thumbnail-list">
-            @for (image of images; track $index) {
-              <button
-                class="thumbnail"
-                [class.active]="selectedImageIndex() === $index"
-                (click)="selectImage($index)"
-                [attr.aria-label]="'product.view_image' | translate: { number: $index + 1 }"
-              >
-                <img [src]="image" [alt]="localizedName + ' - ' + ($index + 1)" />
-              </button>
-            }
-          </div>
-        }
-      </div>
-
-      <div class="modal-details">
-        <div class="modal-header">
-          <span class="product-category-badge">
-            {{ categoryName }}
-          </span>
-
-          <h2 class="modal-title">{{ localizedName }}</h2>
-
-          @if (product.rating) {
-            <div class="product-rating">
-              <span class="rating-stars">{{ getRatingStars() }}</span>
-              <span class="rating-value">{{ product.rating }}</span>
-              <span class="rating-count"
-                >({{ product.reviewCount }} {{ 'product.reviews' | translate }})</span
-              >
-            </div>
-          }
-        </div>
-
-        <div class="price-section">
-          @if (hasDiscount) {
-            <div class="price-with-discount">
-              <span class="original-price">{{ formattedPrice }}</span>
-              <span class="discounted-price">{{ formattedDiscountedPrice }}</span>
-            </div>
-          } @else {
-            <span class="price">{{ formattedPrice }}</span>
-          }
-        </div>
-
-        <div class="meta-info">
-          @if (product.manufacturer) {
-            <div class="meta-row">
-              <span class="meta-label">{{ 'product.manufacturer' | translate }}:</span>
-              <span class="meta-value">{{ product.manufacturer }}</span>
-            </div>
-          }
-
-          @if (product.brand) {
-            <div class="meta-row">
-              <span class="meta-label">{{ 'product.brand' | translate }}:</span>
-              <span class="meta-value">{{ product.brand }}</span>
-            </div>
-          }
-
-          @if (product.sku) {
-            <div class="meta-row">
-              <span class="meta-label">{{ 'product.sku' | translate }}:</span>
-              <span class="meta-value">{{ product.sku }}</span>
-            </div>
-          }
-
-          <div class="meta-row">
-            <span class="meta-label">{{ 'product.availability' | translate }}:</span>
-            <span
-              class="meta-value"
-              [class.in-stock]="product.inStock"
-              [class.out-of-stock]="!product.inStock"
-            >
-              {{
-                product.inStock
-                  ? ('product.in_stock' | translate)
-                  : ('product.out_of_stock' | translate)
-              }}
-              @if (product.inStock && product.stockQuantity) {
-                ({{ product.stockQuantity }} {{ 'product.pieces' | translate }})
-              }
-            </span>
-          </div>
-        </div>
-
-        <div class="description-section">
-          <h3 class="section-title">{{ 'product.description' | translate }}</h3>
-          <p class="description-text">{{ localizedDescription }}</p>
-        </div>
-
-        @if (product.activeIngredients || product.dosage || product.packaging) {
-          <div class="pharma-details">
-            <h3 class="section-title">{{ 'product.pharmaceutical_details' | translate }}</h3>
-
-            @if (product.activeIngredients) {
-              <div class="detail-item">
-                <strong>{{ 'product.active_ingredients' | translate }}:</strong>
-                <span>{{ product.activeIngredients }}</span>
-              </div>
-            }
-
-            @if (product.dosage) {
-              <div class="detail-item">
-                <strong>{{ 'product.dosage' | translate }}:</strong>
-                <span>{{ product.dosage }}</span>
-              </div>
-            }
-
-            @if (product.packaging) {
-              <div class="detail-item">
-                <strong>{{ 'product.packaging' | translate }}:</strong>
-                <span>{{ product.packaging }}</span>
-              </div>
-            }
-          </div>
-        }
-
-        <div class="cart-section">
-          <div class="quantity-controls">
-            <button
-              class="quantity-btn"
-              (click)="decreaseQuantity()"
-              [disabled]="quantity() <= 1 || !product.inStock"
-              [attr.aria-label]="'product.decrease_quantity' | translate"
-            >
-              −
-            </button>
-
-            <span class="quantity-value">{{ quantity() }}</span>
-
-            <button
-              class="quantity-btn"
-              (click)="increaseQuantity()"
-              [disabled]="quantity() >= product.stockQuantity || !product.inStock"
-              [attr.aria-label]="'product.increase_quantity' | translate"
-            >
-              +
-            </button>
-          </div>
-
-          <div class="total-price-display">
-            <span class="total-label">{{ 'product.total' | translate }}:</span>
-            <span class="total-value">{{ formattedTotalPrice }}</span>
-          </div>
-
-          <button class="add-to-cart-button" [disabled]="!canAddToCart" (click)="handleAddToCart()">
-            <img [src]="icons.basket" alt="" class="button-icon" aria-hidden="true" />
-            {{ 'common.add_to_cart' | translate }}
-          </button>
-
-          @if (product.requiresPrescription) {
-            <div class="prescription-notice">
-              <img [src]="icons.info" alt="" class="notice-icon" aria-hidden="true" />
-              <span class="notice-text">{{
-                'product.prescription_required_notice' | translate
-              }}</span>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-================================================================================
-FILE: src\app\shared\components\product-detail-modal\product-detail-modal.ts
-================================================================================
-
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, Output, signal, computed } from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ProductWithHelpers } from '../../../core/models/product.model';
-import { CurrencyService } from '../../../core/services/currency.service';
-import { ProductService } from '../../../services/product.service';
-import { ICONS } from '../../../core/constants/visuals';
-
-@Component({
-  selector: 'app-product-detail-modal',
-  standalone: true,
-  imports: [CommonModule, TranslateModule],
-  templateUrl: './product-detail-modal.html',
-  styleUrl: './product-detail-modal.css',
-})
-export class ProductDetailModal {
-  @Input({ required: true }) product!: ProductWithHelpers;
-  @Output() close = new EventEmitter<void>();
-  @Output() addToCart = new EventEmitter<{ product: ProductWithHelpers; quantity: number }>();
-
-  private currencyService = inject(CurrencyService);
-  private productService = inject(ProductService);
-  private translateService = inject(TranslateService);
-
-  // Expose ICONS to the template
-  protected readonly icons = ICONS;
-
-  quantity = signal(1);
-  selectedImageIndex = signal(0);
-
-  get images(): string[] {
-    return this.product.images;
-  }
-
-  get selectedImage(): string {
-    return this.images[this.selectedImageIndex()];
-  }
-
-  canGoPrevious = computed(() => this.selectedImageIndex() > 0);
-  canGoNext = computed(() => this.selectedImageIndex() < this.images.length - 1);
-
-  get hasDiscount(): boolean {
-    return this.product.hasDiscount;
-  }
-
-  get formattedPrice(): string {
-    return this.currencyService.formatPrice(this.currencyService.getBasePrice(this.product));
-  }
-
-  get formattedDiscountedPrice(): string {
-    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(this.product));
-  }
-
-  get formattedTotalPrice(): string {
-    const unitPrice = this.currencyService.getDiscountedPrice(this.product);
-    return this.currencyService.formatPrice(unitPrice * this.quantity());
-  }
-
-  get canAddToCart(): boolean {
-    return (
-      this.product.inStock &&
-      !this.product.requiresPrescription &&
-      this.quantity() <= this.product.stockQuantity
-    );
-  }
-
-  get localizedName(): string {
-    return this.product.name;
-  }
-
-  get localizedDescription(): string {
-    return this.product.description;
-  }
-
-  get categoryName(): string {
-    const cat = this.productService.getCategoryById(this.product.category);
-    const lang = this.translateService.currentLang;
-    if (!cat) return '';
-    return lang === 'hu' ? cat.name_hu : lang === 'de' ? cat.name_de : cat.name_en;
-  }
-
-  getRatingStars(): string {
-    const rating = this.product.ratingNumber;
-    if (!rating) return '';
-    const full = Math.floor(rating);
-    const half = rating % 1 >= 0.5;
-    const empty = 5 - full - (half ? 1 : 0);
-    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
-  }
-
-  selectImage(index: number): void {
-    this.selectedImageIndex.set(index);
-  }
-
-  nextImage(): void {
-    if (this.canGoNext()) {
-      this.selectedImageIndex.update((i) => i + 1);
-    }
-  }
-
-  previousImage(): void {
-    if (this.canGoPrevious()) {
-      this.selectedImageIndex.update((i) => i - 1);
-    }
-  }
-
-  increaseQuantity(): void {
-    if (this.quantity() < this.product.stockQuantity) {
-      this.quantity.update((q) => q + 1);
-    }
-  }
-
-  decreaseQuantity(): void {
-    if (this.quantity() > 1) {
-      this.quantity.update((q) => q - 1);
-    }
-  }
-
-  handleAddToCart(): void {
-    if (this.canAddToCart) {
-      this.addToCart.emit({ product: this.product, quantity: this.quantity() });
-    }
-  }
-
-  handleClose(): void {
-    this.close.emit();
-  }
-
-  handleBackdropClick(event: MouseEvent): void {
-    if (event.target === event.currentTarget) {
-      this.close.emit();
-    }
+    this.router.navigate(['/products', this.product.id]);
   }
 }
 
@@ -23642,14 +25574,6 @@ FILE: src\app\shared\components\product-list\product-list.html
       }
     }
   </section>
-
-  @if (showModal && selectedProduct) {
-    <app-product-detail-modal
-      [product]="selectedProduct"
-      (close)="handleModalClose()"
-      (addToCart)="handleModalAddToCart($event)"
-    />
-  }
 </div>
 
 
@@ -23659,8 +25583,10 @@ FILE: src\app\shared\components\product-list\product-list.ts
 ================================================================================
 
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
+import { interval } from 'rxjs';
 import { Category, ProductWithHelpers } from '../../../core/models/product.model';
 import { ProductService } from '../../../services/product.service';
 import { CartService } from '../../../core/services/cart.service';
@@ -23668,8 +25594,9 @@ import { CategoryBar } from '../category-bar/category-bar';
 import { ProductCard } from '../product-card/product-card';
 import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
-import { ProductDetailModal } from '../product-detail-modal/product-detail-modal';
 import { ICONS } from '../../../core/constants/visuals';
+
+const POLL_INTERVAL_MS = 60_000;
 
 @Component({
   selector: 'app-product-list',
@@ -23680,7 +25607,6 @@ import { ICONS } from '../../../core/constants/visuals';
     ProductFilter,
     ProductCard,
     ProductPagination,
-    ProductDetailModal,
   ],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
@@ -23688,8 +25614,8 @@ import { ICONS } from '../../../core/constants/visuals';
 export class ProductList {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+  private destroyRef = inject(DestroyRef);
 
-  // Expose ICONS to the template
   protected readonly icons = ICONS;
 
   products = this.productService.paginatedProducts;
@@ -23700,10 +25626,18 @@ export class ProductList {
   categories = computed<Category[]>(() => this.productService.categories());
 
   selectedProduct: ProductWithHelpers | null = null;
-  showModal = false;
 
   async ngOnInit(): Promise<void> {
     await Promise.all([this.productService.loadProducts(), this.productService.loadCategories()]);
+    this.startPolling();
+  }
+
+  private startPolling(): void {
+    interval(POLL_INTERVAL_MS)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.productService.loadProducts();
+      });
   }
 
   handleCategorySelected(categoryId: string): void {
@@ -23742,17 +25676,6 @@ export class ProductList {
 
   handleViewDetails(product: ProductWithHelpers): void {
     this.selectedProduct = product;
-    this.showModal = true;
-  }
-
-  handleModalClose(): void {
-    this.showModal = false;
-    this.selectedProduct = null;
-  }
-
-  handleModalAddToCart(event: { product: ProductWithHelpers; quantity: number }): void {
-    this.cartService.addToCart(event.product, event.quantity);
-    this.handleModalClose();
   }
 
   private scrollToTop(): void {
@@ -25074,6 +26997,203 @@ export class Toast {
 
 
 ================================================================================
+FILE: src\app\shared\directives\cached-image.directive.ts
+================================================================================
+
+import {
+  Directive,
+  ElementRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
+import { ImageCacheService } from '../../core/services/image-cache.service';
+
+@Directive({
+  selector: 'img[appCachedImg]',
+  standalone: true,
+})
+export class CachedImgDirective implements OnChanges, OnDestroy {
+  @Input('appCachedImg') src: string = '';
+
+  private cacheService = inject(ImageCacheService);
+  private el = inject(ElementRef);
+  private currentBlobUrl: string | null = null;
+  private aborted = false;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['src']) {
+      this.loadImage(this.src);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.aborted = true;
+    this.revokeCurrent();
+  }
+
+  private async loadImage(src: string): Promise<void> {
+    if (!src) return;
+
+    this.revokeCurrent();
+    this.aborted = false;
+
+    const img = this.el.nativeElement as HTMLImageElement;
+
+    img.src = src;
+
+    try {
+      const cachedUrl = await this.cacheService.getCachedUrl(src);
+      if (this.aborted || this.src !== src) return;
+
+      if (cachedUrl !== src) {
+        this.currentBlobUrl = cachedUrl;
+        img.src = cachedUrl;
+      }
+    } catch {}
+  }
+
+  private revokeCurrent(): void {
+    if (this.currentBlobUrl) {
+      URL.revokeObjectURL(this.currentBlobUrl);
+      this.currentBlobUrl = null;
+    }
+  }
+}
+
+
+
+================================================================================
+FILE: src\app\shared\directives\resizable-table.directive.ts
+================================================================================
+
+import { Directive, ElementRef, Input, AfterViewInit, OnDestroy, NgZone } from '@angular/core';
+
+@Directive({
+  selector: '[appResizableTable]',
+  standalone: true,
+})
+export class ResizableTableDirective implements AfterViewInit, OnDestroy {
+  @Input('appResizableTable') tableId = '';
+
+  private table!: HTMLTableElement;
+  private cleanupFns: (() => void)[] = [];
+  private initTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private readonly GRAB_ZONE = 8;
+  private readonly MIN_COL_WIDTH = 60;
+  private readonly STORAGE_PREFIX = 'roys_admin_col_widths_';
+
+  constructor(
+    private el: ElementRef<HTMLTableElement>,
+    private zone: NgZone,
+  ) {}
+
+  ngAfterViewInit(): void {
+    this.table = this.el.nativeElement;
+    this.zone.runOutsideAngular(() => {
+      this.initTimer = setTimeout(() => this.initColumns(), 50);
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.initTimer !== null) clearTimeout(this.initTimer);
+    this.cleanupFns.forEach((fn) => fn());
+    this.cleanupFns = [];
+  }
+
+  private get storageKey(): string {
+    return this.STORAGE_PREFIX + (this.tableId || 'default');
+  }
+
+  private saveWidths(): void {
+    try {
+      const widths = this.getHeaders().map((h) => h.getBoundingClientRect().width);
+      localStorage.setItem(this.storageKey, JSON.stringify(widths));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private loadWidths(): number[] | null {
+    try {
+      const raw = localStorage.getItem(this.storageKey);
+      return raw ? (JSON.parse(raw) as number[]) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private getHeaders(): HTMLTableCellElement[] {
+    return Array.from(this.table.querySelectorAll<HTMLTableCellElement>('thead th'));
+  }
+
+  private initColumns(): void {
+    const headers = this.getHeaders();
+    if (!headers.length) return;
+
+    const saved = this.loadWidths();
+    if (saved) {
+      headers.forEach((th, i) => {
+        if (saved[i]) th.style.minWidth = `${saved[i]}px`;
+      });
+    }
+
+    headers.forEach((th) => {
+      const onMouseMove = (e: MouseEvent) => {
+        const rect = th.getBoundingClientRect();
+        const nearRightEdge = e.clientX >= rect.right - this.GRAB_ZONE;
+        th.style.cursor = nearRightEdge ? 'col-resize' : 'default';
+      };
+
+      const onMouseDown = (e: MouseEvent) => {
+        const rect = th.getBoundingClientRect();
+        if (e.clientX < rect.right - this.GRAB_ZONE) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const startX = e.clientX;
+        const startWidth = rect.width;
+
+        th.classList.add('is-resizing');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+
+        const onDragMove = (ev: MouseEvent) => {
+          const newWidth = Math.max(this.MIN_COL_WIDTH, startWidth + (ev.clientX - startX));
+          th.style.minWidth = `${newWidth}px`;
+        };
+
+        const onDragEnd = () => {
+          document.removeEventListener('mousemove', onDragMove);
+          document.removeEventListener('mouseup', onDragEnd);
+          th.classList.remove('is-resizing');
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+          this.saveWidths();
+        };
+
+        document.addEventListener('mousemove', onDragMove);
+        document.addEventListener('mouseup', onDragEnd);
+      };
+
+      th.addEventListener('mousemove', onMouseMove);
+      th.addEventListener('mousedown', onMouseDown);
+
+      this.cleanupFns.push(() => {
+        th.removeEventListener('mousemove', onMouseMove);
+        th.removeEventListener('mousedown', onMouseDown);
+      });
+    });
+  }
+}
+
+
+
+================================================================================
 FILE: src\app\shared\directives\scroll-reveal.directive.ts
 ================================================================================
 
@@ -25682,7 +27802,48 @@ FILE: src\assets\i18n\de.json
       "category": "Kategorie",
       "actions": "Aktionen",
       "items": "Artikel",
-      "price": "Preis"
+      "price": "Preis",
+      "brand": "Marke",
+      "billing": "Rechnungsstellung",
+      "view_images": "Bilder anzeigen"
+    },
+    "gallery": {
+      "title": "Produkt-Bilder",
+      "upload": "Uploaden",
+      "delete_image": "Bild löschen",
+      "confirm_delete_title": "Sind Sie sicher, dass Sie die Bilder löschen?",
+      "confirm_delete_text": "Diese Maßnahme darf nicht widerrufen werden. Bild wird vollständig gelöscht.",
+      "details": "Abbildung 1 Details",
+      "download": "Downloaden",
+      "transparent": "Transparent",
+      "transparent_hint": "Wenn aktiviert, entfernt das Backend automatisch den Bildhintergrund",
+      "meta": {
+        "filename": "Dateiname",
+        "type": "Typus",
+        "resolution": "Auflösung",
+        "size": "Dateigröße",
+        "modified": "zuletzt geändert"
+      }
+    },
+    "user_actions": {
+      "actions": "Aktionen",
+      "set_role": "Recht",
+      "ban": "Verbot",
+      "unban": "Verbot aufheben",
+      "delete": "Benutzer löschen",
+      "you": "Du",
+      "confirm_role_title": "Änderung der Berechtigung",
+      "confirm_role_text": "{{name}} Berechtigung ändern: {{state}}?",
+      "confirm_ban_title": "Benutzer deaktivieren",
+      "confirm_ban_text": "Gibt es ein Verbot von {{name}}? Sie verlieren den Zugang zu Ihrem Konto..",
+      "confirm_unban_title": "Benutzer auflösen",
+      "confirm_unban_text": "{{name}} Verbot auflösen? Ihr Benutzerkonto wird wieder auf Verified eingestellt.",
+      "confirm_delete_title": "Benutzer löschen",
+      "confirm_delete_text": "Wird {{name}} dauerhaft gelöscht? Kann nicht zurückgezogen werden.",
+      "success": "Benutzer erfolgreich aktualisiert.",
+      "banned": "Benutzer deaktiviert.",
+      "deleted": "Benutzer gelöscht.",
+      "error": "Fehler bei der Durchführung der Operation. Bitte versuchen Sie es erneut."
     },
     "stats": {
       "this_week": "diese Woche",
@@ -25711,7 +27872,11 @@ FILE: src\assets\i18n\de.json
     "search_orders": "Bestellungen suchen...",
     "recent_orders": "Neueste Bestellungen",
     "no_orders": "Keine Bestellungen gefunden.",
-    "greeting": "Willkommen, {{name}}!"
+    "greeting": "Willkommen, {{name}}!",
+    "errors": {
+      "orders_load_failed": "Fehler beim Laden der Produkte!",
+      "users_load_failed": "Fehler beim Laden der Benutzer!"
+    }
   },
   "footer": {
     "contactInfo": "Kontaktinformationen",
@@ -26358,7 +28523,49 @@ FILE: src\assets\i18n\en.json
       "category": "Category",
       "actions": "Actions",
       "items": "Items",
-      "price": "Price"
+      "price": "Price",
+      "brand": "Brand",
+      "billing": "Billing",
+      "images": "Images",
+      "view_images": "View images"
+    },
+    "gallery": {
+      "title": "Product Images",
+      "upload": "Upload",
+      "delete_image": "Delete image",
+      "confirm_delete_title": "Delete this image?",
+      "confirm_delete_text": "This action cannot be undone. The image will be permanently removed.",
+      "details": "Image Details",
+      "download": "Download",
+      "transparent": "Transparent",
+      "transparent_hint": "When enabled, the backend will remove the image background automatically",
+      "meta": {
+        "filename": "Filename",
+        "type": "Type",
+        "resolution": "Resolution",
+        "size": "File size",
+        "modified": "Last modified"
+      }
+    },
+    "user_actions": {
+      "actions": "Actions",
+      "set_role": "Set role",
+      "ban": "Ban user",
+      "unban": "Unban user",
+      "delete": "Delete user",
+      "you": "You",
+      "confirm_role_title": "Change role",
+      "confirm_role_text": "Change {{name}}'s role to {{state}}?",
+      "confirm_ban_title": "Ban user",
+      "confirm_ban_text": "Ban {{name}}? They will lose access to their account.",
+      "confirm_unban_title": "Unban user",
+      "confirm_unban_text": "Unban {{name}}? Their account will be restored to verified.",
+      "confirm_delete_title": "Delete user",
+      "confirm_delete_text": "Permanently delete {{name}}? This cannot be undone.",
+      "success": "User updated successfully.",
+      "banned": "User has been banned.",
+      "deleted": "User has been deleted.",
+      "error": "Action failed. Please try again."
     },
     "stats": {
       "this_week": "this week",
@@ -26387,7 +28594,11 @@ FILE: src\assets\i18n\en.json
     "search_orders": "Search orders...",
     "recent_orders": "Recent Orders",
     "no_orders": "No orders found.",
-    "greeting": "Welcome, {{name}}!"
+    "greeting": "Welcome, {{name}}!",
+    "errors": {
+      "orders_load_failed": "There was an error loading the products!",
+      "users_load_failed": "There was an error loading the users!"
+    }
   },
   "footer": {
     "contactInfo": "Contact information",
@@ -27035,7 +29246,48 @@ FILE: src\assets\i18n\hu.json
       "category": "Kategória",
       "actions": "Műveletek",
       "items": "Tételek",
-      "price": "Ár"
+      "price": "Ár",
+      "brand": "Márka",
+      "billing": "Számlázás",
+      "view_images": "Képek megtekintése"
+    },
+    "gallery": {
+      "title": "Termék képek",
+      "upload": "Feltöltés",
+      "delete_image": "Kép törlése",
+      "confirm_delete_title": "Biztosan törli a képeket?",
+      "confirm_delete_text": "Ez a művelet nem visszavonható. A kép teljesen törölve lesz.",
+      "details": "Kép részletek",
+      "download": "Letöltés",
+      "transparent": "Átlátszó",
+      "transparent_hint": "Bekapcsolva a backend automatikusan eltávolítja a kép hátterét",
+      "meta": {
+        "filename": "Fájlnév",
+        "type": "Típus",
+        "resolution": "Felbontás",
+        "size": "Fájl méret",
+        "modified": "Utoljára módosítva"
+      }
+    },
+    "user_actions": {
+      "actions": "Műveletek",
+      "set_role": "Jogosultság",
+      "ban": "Tiltás",
+      "unban": "Tiltás feloldása",
+      "delete": "Felhasználó törlése",
+      "you": "Te",
+      "confirm_role_title": "Jogosultság módosítása",
+      "confirm_role_text": "{{name}} jogosultságát módosítod: {{state}}?",
+      "confirm_ban_title": "Felhasználó tiltása",
+      "confirm_ban_text": "Tiltod {{name}} fiókját? Elveszíti a hozzáférését.",
+      "confirm_unban_title": "Tiltás feloldása",
+      "confirm_unban_text": "Feloldod {{name}} tiltását? A fiókja visszaáll verified állapotra.",
+      "confirm_delete_title": "Felhasználó törlése",
+      "confirm_delete_text": "Véglegesen törlöd {{name}} fiókját? Ez nem visszavonható.",
+      "success": "Felhasználó frissítve.",
+      "banned": "Felhasználó tiltva.",
+      "deleted": "Felhasználó törölve.",
+      "error": "A művelet sikertelen. Próbáld újra."
     },
     "stats": {
       "this_week": "ezen a héten",
@@ -27064,7 +29316,11 @@ FILE: src\assets\i18n\hu.json
     "search_orders": "Rendelések keresése...",
     "recent_orders": "Legutóbbi rendelések",
     "no_orders": "Nem találhatók rendelések.",
-    "greeting": "Üdvözöljük, {{name}}!"
+    "greeting": "Üdvözöljük, {{name}}!",
+    "errors": {
+      "orders_load_failed": "Hiba történt a termékek betöltésekor!",
+      "users_load_failed": "Hiba történt a felhasználók betöltésekor!"
+    }
   },
   "footer": {
     "contactInfo": "Kapcsolati információk",
@@ -27220,7 +29476,7 @@ FILE: src\environments\environment.prod.ts
 
 export const environment = {
   production: true,
-  baseURL: 'http://192.168.11.213:90',
+  baseURL: 'http://192.168.11.213',
   assetsURL: '',
 };
 
@@ -27232,7 +29488,7 @@ FILE: src\environments\environment.ts
 
 export const environment = {
   production: false,
-  baseURL: 'http://localhost:90',
+  baseURL: 'http://localhost',
   assetsURL: '',
 };
 

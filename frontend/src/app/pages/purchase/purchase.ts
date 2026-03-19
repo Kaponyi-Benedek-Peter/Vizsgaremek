@@ -8,7 +8,7 @@ import { firstValueFrom } from 'rxjs';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
 import { AuthService } from '../../core/services/auth.service';
-import { AccountService } from '../../core/services/account.service';
+import { AccountService, CreateOrderRequest } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Product } from '../../core/models/product.model';
 
@@ -81,15 +81,11 @@ export class Purchase implements OnInit {
   }
 
   getFormattedUnitPrice(product: Product): string {
-    return this.currencyService.formatPrice(
-      this.currencyService.getDiscountedPrice(product),
-    );
+    return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(product));
   }
 
   getFormattedItemTotal(product: Product, quantity: number): string {
-    return this.currencyService.formatPrice(
-      this.cartService.getItemTotal(product, quantity),
-    );
+    return this.currencyService.formatPrice(this.cartService.getItemTotal(product, quantity));
   }
 
   async submitOrder(): Promise<void> {
@@ -99,17 +95,28 @@ export class Purchase implements OnInit {
     this.errorMessage.set(null);
 
     try {
-      const orderData = {
-        city: this.form.city,
-        zipcode: this.form.zipcode,
-        address: this.form.address,
-        houseNumber: parseInt(this.form.houseNumber),
-        apartmentNumber: this.form.apartmentNumber ? parseInt(this.form.apartmentNumber) : 0,
-        phoneNumber: this.form.phoneNumber,
-        note: this.form.note,
-        items: this.cartItems().map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
+      const user = this.authService.currentUser();
+      const orderData: CreateOrderRequest = {
+        order: {
+          user_id: btoa(user?.id ?? ''),
+          session_token: btoa(this.authService.getSessionToken() ?? ''),
+          email: btoa(user?.email ?? ''),
+          billing_name: btoa(`${user?.firstname} ${user?.lastname}`),
+          shipping_name: btoa(`${user?.firstname} ${user?.lastname}`),
+          shipping_company: btoa(''),
+          price: btoa(String(this.cartTotal())),
+          city: btoa(this.form.city),
+          guest: btoa('0'),
+          zipcode: btoa(this.form.zipcode),
+          address: btoa(this.form.address),
+          apartment_number: btoa(this.form.apartmentNumber ?? '0'),
+          note: btoa(this.form.note ?? ''),
+          house_number: btoa(this.form.houseNumber),
+          phone_number: btoa(this.form.phoneNumber),
+        },
+        items: this.cartItems().map((i) => ({
+          product_id: btoa(String(i.product.id)),
+          quantity: btoa(String(i.quantity)),
         })),
       };
 

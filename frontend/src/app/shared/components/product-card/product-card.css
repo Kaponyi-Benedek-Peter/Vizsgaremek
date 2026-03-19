@@ -185,7 +185,7 @@
 
 .out-of-stock-overlay span {
   background: rgba(255, 255, 255, 0.95);
-  color: var(--color-text-primary);
+  color: #000000;
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-full);
   font-weight: var(--font-semibold);

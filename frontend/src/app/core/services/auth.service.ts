@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import {
   User,
@@ -33,9 +33,12 @@ export class AuthService {
   private readonly EXPIRES_KEY = 'auth_expires';
   private readonly STORAGE_TYPE_KEY = 'auth_storage_type';
   private readonly SESSION_TOKEN_KEY = 'auth_session_token';
+  private readonly STATUS_POLL_INTERVAL = 100_000;
 
   private toastService = inject(ToastService);
   private translationService = inject(TranslationService);
+
+  private statusPollingId: ReturnType<typeof setInterval> | null = null;
 
   private authStateSignal = signal<AuthState>({
     isAuthenticated: false,
@@ -70,6 +73,7 @@ export class AuthService {
   ) {
     this.initAuth();
     this.setupStorageListener();
+    this.setupForceLogoutListener();
   }
 
   private initAuth(): void {
@@ -89,16 +93,86 @@ export class AuthService {
           expiresAt,
           role,
         });
+        this.startStatusPolling();
       } else {
         this.clearStorage();
       }
     }
   }
 
+  getUserState(): Observable<{ account_state: string; statuscode: string; status: string }> {
+    const id = localStorage.getItem('user_id') ?? sessionStorage.getItem('user_id') ?? '';
+    const sessionToken = this.getSessionToken() ?? '';
+    if (!id || id === 'undefined') {
+      return of({ account_state: '', statuscode: '401', status: 'no_id' });
+    }
+
+    return this.http.post<any>(`${this.API_URL}/api/get_user_state`, {
+      id: btoa(id),
+      session_token: btoa(sessionToken),
+    });
+  }
+
+  checkUserStateGuard(): Observable<boolean> {
+    return this.getUserState().pipe(
+      map((res) => {
+        const state: string = res?.account_state ?? '';
+        return this.applyFreshAccountState(state);
+      }),
+      catchError(() => of(false)),
+    );
+  }
+
+  startStatusPolling(): void {
+    this.stopStatusPolling();
+    this.statusPollingId = setInterval(() => {
+      if (!this.isUserAuthenticated()) {
+        this.stopStatusPolling();
+        return;
+      }
+      this.getUserState()
+        .pipe(catchError(() => of(null)))
+        .subscribe((res) => {
+          if (!res?.account_state) return;
+          this.applyFreshAccountState(res.account_state);
+        });
+    }, this.STATUS_POLL_INTERVAL);
+  }
+
+  stopStatusPolling(): void {
+    if (this.statusPollingId !== null) {
+      clearInterval(this.statusPollingId);
+      this.statusPollingId = null;
+    }
+  }
+
+  private applyFreshAccountState(state: string): boolean {
+    if (!state) return true;
+
+    if (state === 'banned' || state === 'deleted') {
+      this.stopStatusPolling();
+      this.logout();
+      const key = state === 'banned' ? 'auth.errors.account_banned' : 'auth.errors.account_deleted';
+      setTimeout(() => this.toastService.error(key), 150);
+      return false;
+    }
+
+    const current = this.authStateSignal();
+    if (current.role !== (state as UserState)) {
+      const stayLoggedIn = localStorage.getItem(this.TOKEN_KEY) !== null;
+      const storage = stayLoggedIn ? localStorage : sessionStorage;
+      storage.setItem('auth_role', state);
+      this.updateAuthState({ ...current, role: state as UserState });
+    }
+
+    return true;
+  }
+
   private storeRole(role: UserState, stayLoggedIn: boolean): void {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
     storage.setItem('auth_role', role);
   }
+
   private storeId(user_id: string, stayLoggedIn: boolean): void {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
     storage.setItem('user_id', user_id);
@@ -132,6 +206,15 @@ export class AuthService {
         if (event.key === this.TOKEN_KEY && event.newValue !== null) {
           this.initAuth();
         }
+      });
+    }
+  }
+
+  private setupForceLogoutListener(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('auth:force-logout', (event: Event) => {
+        const message = (event as CustomEvent).detail?.message;
+        this.logout(message);
       });
     }
   }
@@ -264,7 +347,8 @@ export class AuthService {
       );
   }
 
-  logout(): void {
+  logout(sessionExpiredMessage?: string): void {
+    this.stopStatusPolling();
     this.clearStorage();
     this.updateAuthState({
       isAuthenticated: false,
@@ -274,7 +358,9 @@ export class AuthService {
       expiresAt: null,
       role: null,
     });
-    this.router.navigate(['/login']);
+
+    const queryParams = sessionExpiredMessage ? { message: sessionExpiredMessage } : {};
+    this.router.navigate(['/login'], { replaceUrl: true, queryParams });
   }
 
   getToken(): string | null {
@@ -366,13 +452,11 @@ export class AuthService {
     user?: User,
     skipNavigation = false,
   ): void {
-    const id = response.user_id;
-    const role = response.user_state;
     const jwtToken = response.jwt_token;
     const sessionToken = response.session_token ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
-      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback: 7 days
+      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     let userData = user;
     if (!userData && jwtToken) {
@@ -388,6 +472,9 @@ export class AuthService {
         };
       }
     }
+
+    const id = response.user_id ?? userData?.id ?? '';
+    const role = response.user_state;
 
     this.clearStorage();
     this.storeRole(role, stayLoggedIn);
@@ -406,6 +493,8 @@ export class AuthService {
       expiresAt,
       role,
     });
+
+    this.startStatusPolling();
 
     if (!skipNavigation) {
       this.router.navigate(['/home'], { queryParams: {} });
@@ -442,18 +531,11 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY) || sessionStorage.getItem(this.TOKEN_KEY);
   }
 
-  private getStoredSessionToken(): string | null {
-    return (
-      localStorage.getItem(this.SESSION_TOKEN_KEY) || sessionStorage.getItem(this.SESSION_TOKEN_KEY)
-    );
-  }
-
   private getStoredUser(): User | null {
-    const userJson = localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY);
-    if (!userJson) return null;
-
+    const userStr = localStorage.getItem(this.USER_KEY) || sessionStorage.getItem(this.USER_KEY);
+    if (!userStr) return null;
     try {
-      return JSON.parse(userJson);
+      return JSON.parse(userStr) as User;
     } catch {
       return null;
     }
@@ -463,12 +545,14 @@ export class AuthService {
     const expiresStr =
       localStorage.getItem(this.EXPIRES_KEY) || sessionStorage.getItem(this.EXPIRES_KEY);
     if (!expiresStr) return null;
+    const date = new Date(expiresStr);
+    return isNaN(date.getTime()) ? null : date;
+  }
 
-    try {
-      return new Date(expiresStr);
-    } catch {
-      return null;
-    }
+  private getStoredSessionToken(): string | null {
+    return (
+      localStorage.getItem(this.SESSION_TOKEN_KEY) || sessionStorage.getItem(this.SESSION_TOKEN_KEY)
+    );
   }
 
   private clearStorage(): void {
@@ -479,6 +563,7 @@ export class AuthService {
       storage.removeItem(this.STORAGE_TYPE_KEY);
       storage.removeItem(this.SESSION_TOKEN_KEY);
       storage.removeItem('auth_role');
+      storage.removeItem('user_id');
     });
   }
 
@@ -497,9 +582,8 @@ export class AuthService {
       errorMessage = 'auth.errors.network_error';
     } else {
       const apiError = error.error as ApiErrorResponse;
-      const backendStatus = apiError?.status; // backend "status" field , pl. "wrong_password"
+      const backendStatus = apiError?.status;
 
-      // backend status code
       switch (backendStatus) {
         case 'inexistent_user_or_incorrect_data':
           errorMessage = 'auth.errors.invalid_credentials_or_inexistent_user';
@@ -530,7 +614,6 @@ export class AuthService {
           errorMessage = 'auth.errors.server_error';
           break;
         default:
-          // Fallback: HTTP status
           switch (error.status) {
             case 0:
               errorMessage = 'auth.errors.network_error';
@@ -556,7 +639,6 @@ export class AuthService {
           }
       }
 
-      // wrong jwt = logout
       if (backendStatus === 'hianyzo_auth_header' || backendStatus === 'hibas_token') {
         this.logout();
       }

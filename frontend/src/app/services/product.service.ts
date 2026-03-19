@@ -19,6 +19,7 @@ import {
 } from '../core/models/product.model';
 import { TranslationService } from '../core/services/translation.service';
 import { environment } from '../../environments/environment';
+import { MOCK_MODE, MOCK_RAW_PRODUCTS, MOCK_RAW_CATEGORIES } from '../pages/products/product.mock';
 
 @Injectable({
   providedIn: 'root',
@@ -95,6 +96,15 @@ export class ProductService {
   // --- Load methods ---
 
   async loadProducts(): Promise<void> {
+    if (MOCK_MODE) {
+      const currentLang = this.translationService.getCurrentLanguage();
+      const enriched = MOCK_RAW_PRODUCTS.map((p) => enrichProduct(p, currentLang));
+      this.rawProducts.set(MOCK_RAW_PRODUCTS);
+      this.allProductsSignal.set(enriched);
+      this.updateCategoryCounts();
+      return;
+    }
+
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
     try {
@@ -118,6 +128,15 @@ export class ProductService {
   }
 
   async loadFeaturedProducts(): Promise<void> {
+    if (MOCK_MODE) {
+      const currentLang = this.translationService.getCurrentLanguage();
+      const enriched = MOCK_RAW_PRODUCTS.filter((p) => p.featured === '1').map((p) =>
+        enrichProduct(p, currentLang),
+      );
+      this.featuredSignal.set(enriched);
+      return;
+    }
+
     try {
       const products = await firstValueFrom(this.getFeaturedFromApi());
       const currentLang = this.translationService.getCurrentLanguage();
@@ -137,6 +156,13 @@ export class ProductService {
   }
 
   async loadCategories(): Promise<void> {
+    if (MOCK_MODE) {
+      const mapped = MOCK_RAW_CATEGORIES.map(mapProductCategory);
+      this.categoriesSignal.set(mapped);
+      this.updateCategoryCounts();
+      return;
+    }
+
     try {
       const raw = await firstValueFrom(this.getAllCategories());
       const mapped = raw.map(mapProductCategory);
@@ -222,10 +248,7 @@ export class ProductService {
     };
 
     return this.http
-      .post<ProductImagesApiResponse>(
-        `${this.API_URL}/api/get_all_product_images_by_product_id`,
-        body,
-      )
+      .post<ProductImagesApiResponse>(`${this.API_URL}/api/get_all_product_images_by_id`, body)
       .pipe(
         timeout(5000),
         map((r) => {

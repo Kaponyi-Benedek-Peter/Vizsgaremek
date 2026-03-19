@@ -54,13 +54,17 @@ export class ForumDetail implements OnInit {
     this.contentExpanded.set(false);
     this.sliderIndex.set(0);
     this.comments.set([]);
+    const userId = this.authService.currentUser()?.id ?? '';
+    const sessToken = this.sessionToken;
 
     this.forumService.getPostById(id).subscribe((post) => {
       this.post.set(post);
       this.isLoading.set(false);
 
       if (post) {
-        this.forumService.incrementViews(post.id).subscribe();
+        if (this.authService.isAuthenticated()) {
+          this.forumService.incrementViews(post.id, userId, sessToken).subscribe();
+        }
 
         this.forumService.getComments(post.id).subscribe((comments) => {
           this.comments.set(comments);

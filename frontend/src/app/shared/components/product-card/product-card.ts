@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
@@ -34,6 +34,7 @@ export class ProductCard {
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
   private translationService = inject(TranslationService);
+  private router = inject(Router);
   private currentLang = toSignal(this.translationService.currentLang$, {
     initialValue: this.translationService.getCurrentLanguage(),
   });
@@ -112,5 +113,6 @@ export class ProductCard {
 
   onViewDetails(): void {
     this.viewDetails.emit(this.product);
+    this.router.navigate(['/products', this.product.id]);
   }
 }
