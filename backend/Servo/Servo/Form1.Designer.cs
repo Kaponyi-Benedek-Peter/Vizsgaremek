@@ -37,21 +37,25 @@
             this.label3 = new System.Windows.Forms.Label();
             this.files_textbox = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.error_textbox = new System.Windows.Forms.TextBox();
+            this.apis_textbox = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.susconn_textbox = new System.Windows.Forms.TextBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.users_textbox = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.items_textbox = new System.Windows.Forms.TextBox();
             this.button3 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.button4 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.bandwidth_tbox = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.button5 = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.items_textbox = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.users_textbox = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // richTextBox1
@@ -157,21 +161,21 @@
             this.label6.Location = new System.Drawing.Point(9, 177);
             this.label6.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(81, 30);
+            this.label6.Size = new System.Drawing.Size(144, 30);
             this.label6.TabIndex = 18;
-            this.label6.Text = "errors";
+            this.label6.Text = "apis served";
             // 
-            // error_textbox
+            // apis_textbox
             // 
-            this.error_textbox.BackColor = System.Drawing.Color.Black;
-            this.error_textbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.error_textbox.ForeColor = System.Drawing.Color.White;
-            this.error_textbox.Location = new System.Drawing.Point(9, 208);
-            this.error_textbox.Margin = new System.Windows.Forms.Padding(6);
-            this.error_textbox.Name = "error_textbox";
-            this.error_textbox.Size = new System.Drawing.Size(196, 31);
-            this.error_textbox.TabIndex = 17;
-            this.error_textbox.Text = "0";
+            this.apis_textbox.BackColor = System.Drawing.Color.Black;
+            this.apis_textbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.apis_textbox.ForeColor = System.Drawing.Color.White;
+            this.apis_textbox.Location = new System.Drawing.Point(9, 208);
+            this.apis_textbox.Margin = new System.Windows.Forms.Padding(6);
+            this.apis_textbox.Name = "apis_textbox";
+            this.apis_textbox.Size = new System.Drawing.Size(196, 31);
+            this.apis_textbox.TabIndex = 17;
+            this.apis_textbox.Text = "0";
             // 
             // label7
             // 
@@ -181,9 +185,9 @@
             this.label7.Location = new System.Drawing.Point(4, 247);
             this.label7.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(196, 30);
+            this.label7.Size = new System.Drawing.Size(171, 30);
             this.label7.TabIndex = 20;
-            this.label7.Text = "sus connections";
+            this.label7.Text = "denied conn.s";
             // 
             // susconn_textbox
             // 
@@ -196,54 +200,6 @@
             this.susconn_textbox.Size = new System.Drawing.Size(196, 31);
             this.susconn_textbox.TabIndex = 19;
             this.susconn_textbox.Text = "0";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label8.ForeColor = System.Drawing.Color.White;
-            this.label8.Location = new System.Drawing.Point(9, 327);
-            this.label8.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(76, 30);
-            this.label8.TabIndex = 22;
-            this.label8.Text = "users";
-            // 
-            // users_textbox
-            // 
-            this.users_textbox.BackColor = System.Drawing.Color.Black;
-            this.users_textbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.users_textbox.ForeColor = System.Drawing.Color.White;
-            this.users_textbox.Location = new System.Drawing.Point(9, 358);
-            this.users_textbox.Margin = new System.Windows.Forms.Padding(6);
-            this.users_textbox.Name = "users_textbox";
-            this.users_textbox.Size = new System.Drawing.Size(196, 31);
-            this.users_textbox.TabIndex = 21;
-            this.users_textbox.Text = "0";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(9, 402);
-            this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(75, 30);
-            this.label1.TabIndex = 24;
-            this.label1.Text = "items";
-            // 
-            // items_textbox
-            // 
-            this.items_textbox.BackColor = System.Drawing.Color.Black;
-            this.items_textbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.items_textbox.ForeColor = System.Drawing.Color.White;
-            this.items_textbox.Location = new System.Drawing.Point(9, 433);
-            this.items_textbox.Margin = new System.Windows.Forms.Padding(6);
-            this.items_textbox.Name = "items_textbox";
-            this.items_textbox.Size = new System.Drawing.Size(196, 31);
-            this.items_textbox.TabIndex = 23;
-            this.items_textbox.Text = "0";
             // 
             // button3
             // 
@@ -290,7 +246,7 @@
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(214, 46);
             this.textBox4.TabIndex = 30;
-            this.textBox4.Text = "90";
+            this.textBox4.Text = "80";
             // 
             // button4
             // 
@@ -310,18 +266,16 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.bandwidth_tbox);
+            this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.conn_textbox);
             this.groupBox1.Controls.Add(this.files_textbox);
             this.groupBox1.Controls.Add(this.label3);
-            this.groupBox1.Controls.Add(this.error_textbox);
-            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.apis_textbox);
             this.groupBox1.Controls.Add(this.label6);
-            this.groupBox1.Controls.Add(this.items_textbox);
             this.groupBox1.Controls.Add(this.susconn_textbox);
-            this.groupBox1.Controls.Add(this.label8);
             this.groupBox1.Controls.Add(this.label7);
-            this.groupBox1.Controls.Add(this.users_textbox);
             this.groupBox1.ForeColor = System.Drawing.Color.White;
             this.groupBox1.Location = new System.Drawing.Point(730, 278);
             this.groupBox1.Name = "groupBox1";
@@ -329,6 +283,30 @@
             this.groupBox1.TabIndex = 32;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "STATS";
+            // 
+            // bandwidth_tbox
+            // 
+            this.bandwidth_tbox.BackColor = System.Drawing.Color.Black;
+            this.bandwidth_tbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.bandwidth_tbox.ForeColor = System.Drawing.Color.White;
+            this.bandwidth_tbox.Location = new System.Drawing.Point(9, 356);
+            this.bandwidth_tbox.Margin = new System.Windows.Forms.Padding(6);
+            this.bandwidth_tbox.Name = "bandwidth_tbox";
+            this.bandwidth_tbox.Size = new System.Drawing.Size(196, 31);
+            this.bandwidth_tbox.TabIndex = 21;
+            this.bandwidth_tbox.Text = "0";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.label4.ForeColor = System.Drawing.Color.White;
+            this.label4.Location = new System.Drawing.Point(4, 320);
+            this.label4.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(184, 30);
+            this.label4.TabIndex = 22;
+            this.label4.Text = "total bandwidth";
             // 
             // button5
             // 
@@ -361,15 +339,78 @@
             this.textBox1.TabIndex = 34;
             this.textBox1.Text = "roy";
             // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.label1);
+            this.groupBox2.Controls.Add(this.items_textbox);
+            this.groupBox2.Controls.Add(this.label8);
+            this.groupBox2.Controls.Add(this.users_textbox);
+            this.groupBox2.ForeColor = System.Drawing.Color.White;
+            this.groupBox2.Location = new System.Drawing.Point(956, 278);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(214, 496);
+            this.groupBox2.TabIndex = 33;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "STATS";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.label1.ForeColor = System.Drawing.Color.White;
+            this.label1.Location = new System.Drawing.Point(9, 104);
+            this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(75, 30);
+            this.label1.TabIndex = 28;
+            this.label1.Text = "items";
+            // 
+            // items_textbox
+            // 
+            this.items_textbox.BackColor = System.Drawing.Color.Black;
+            this.items_textbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.items_textbox.ForeColor = System.Drawing.Color.White;
+            this.items_textbox.Location = new System.Drawing.Point(9, 135);
+            this.items_textbox.Margin = new System.Windows.Forms.Padding(6);
+            this.items_textbox.Name = "items_textbox";
+            this.items_textbox.Size = new System.Drawing.Size(196, 31);
+            this.items_textbox.TabIndex = 27;
+            this.items_textbox.Text = "0";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.label8.ForeColor = System.Drawing.Color.White;
+            this.label8.Location = new System.Drawing.Point(9, 29);
+            this.label8.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(76, 30);
+            this.label8.TabIndex = 26;
+            this.label8.Text = "users";
+            // 
+            // users_textbox
+            // 
+            this.users_textbox.BackColor = System.Drawing.Color.Black;
+            this.users_textbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.users_textbox.ForeColor = System.Drawing.Color.White;
+            this.users_textbox.Location = new System.Drawing.Point(9, 60);
+            this.users_textbox.Margin = new System.Windows.Forms.Padding(6);
+            this.users_textbox.Name = "users_textbox";
+            this.users_textbox.Size = new System.Drawing.Size(196, 31);
+            this.users_textbox.TabIndex = 25;
+            this.users_textbox.Text = "0";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(68)))), ((int)(((byte)(68)))));
             this.ClientSize = new System.Drawing.Size(1178, 773);
+            this.Controls.Add(this.button5);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.button6);
-            this.Controls.Add(this.button5);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.textBox4);
@@ -387,6 +428,8 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -402,13 +445,9 @@
         private System.Windows.Forms.Label label3;
         public System.Windows.Forms.TextBox files_textbox;
         private System.Windows.Forms.Label label6;
-        public System.Windows.Forms.TextBox error_textbox;
+        public System.Windows.Forms.TextBox apis_textbox;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox susconn_textbox;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.TextBox users_textbox;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox items_textbox;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button6;
         public System.Windows.Forms.TextBox textBox4;
@@ -416,6 +455,13 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button button5;
         public System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox bandwidth_tbox;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox items_textbox;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox users_textbox;
     }
 }
 

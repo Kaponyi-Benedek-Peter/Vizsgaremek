@@ -1,5 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
+using Servo.controller;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -76,6 +77,58 @@ namespace Servo
 
 
 
+            honeypotport = Task.Factory.StartNew(() =>
+            {
+
+
+                HttpListener trap = new HttpListener();
+                trap.Prefixes.Add("http://+:8080/");
+                trap.Prefixes.Add("http://+:3000/");
+                trap.Prefixes.Add("http://+:3001/");
+                trap.Prefixes.Add("http://+:4200/");
+                trap.Prefixes.Add("http://+:5000/");
+                trap.Prefixes.Add("http://+:8888/");
+                trap.Prefixes.Add("http://+:4000/");
+                trap.Prefixes.Add("http://+:6379/");
+                trap.Prefixes.Add("http://+:1433/");
+                trap.Prefixes.Add("http://+:5984/");
+                trap.Prefixes.Add("http://+:9090/");
+                trap.Prefixes.Add("http://+:2375/");
+                trap.Prefixes.Add("http://+:21/");
+                trap.Prefixes.Add("http://+:23/");
+                trap.Prefixes.Add("http://+:2222/");
+                trap.Prefixes.Add("http://+:4444/");
+
+
+                trap.Prefixes.Add("http://+:514/");
+                trap.Prefixes.Add("http://+:513/");
+                trap.Prefixes.Add("http://+:512/");
+                
+                trap.Start();
+                service.shared.log("[honeypot started]");
+
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        HttpListenerContext ctx = trap.GetContext();
+                        string ip = ctx.Request.RemoteEndPoint.Address.ToString();
+                        router.honeypot_ips.Add(ip);
+                        service.shared.log($"[honeypot hit] {ip}");
+                        //ctx.Response.StatusCode = 404;
+                        ctx.Response.Close();
+                    }
+                    catch (Exception ex) when (!token.IsCancellationRequested)
+                    {
+                        service.shared.log($"Error: {ex.Message} --honeypot");
+                    }
+                }
+
+                trap.Stop();
+            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+
+
 
             email_auth_refresh = Task.Factory.StartNew(() =>
             {
@@ -128,6 +181,15 @@ namespace Servo
 
 
 
+            anti_ddos = Task.Factory.StartNew(() =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    router.connectioncounts.Clear();
+
+                    Thread.Sleep(10000);
+                }
+            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
 
 
@@ -142,8 +204,10 @@ namespace Servo
         public Task email_auth_refresh;
 
         public Task newsletter_main;
+        public Task honeypotport;
 
         public Task exchange_rates;
+        public Task anti_ddos;
 
 
         public CancellationTokenSource cts;

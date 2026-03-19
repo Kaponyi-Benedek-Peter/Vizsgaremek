@@ -129,7 +129,7 @@ namespace Servo.service
             catch (Exception ex)
             {
                 log($"{tipus} email sent: {hova} || ERROR: {ex.ToString()}");
-                Form1.Instance.updateerrorcount();
+                
             }
         }
         public static string gen_string(int n)

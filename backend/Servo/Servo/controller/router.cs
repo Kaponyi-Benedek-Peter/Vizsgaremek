@@ -4,6 +4,9 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.IO.Compression;
+using ZstdSharp.Unsafe;
+
 
 
 
@@ -15,6 +18,11 @@ namespace Servo.controller
         {
             "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order"
         };
+
+        public static Dictionary<string, int> connectioncounts = new Dictionary<string, int>();
+        
+        
+        public static List<string> honeypot_ips = new List<string>();
 
 
         public static string safe_close(HttpListenerContext data)
@@ -32,7 +40,7 @@ namespace Servo.controller
 
         }
 
-
+        static Form1 f1 = Form1.Instance;
         private static HttpListenerContext endconnection(HttpListenerContext data)
         {
             try { 
@@ -48,6 +56,17 @@ namespace Servo.controller
         }
         public static void main(HttpListenerContext data, string alap)
         {
+            if(honeypot_ips.Contains(data.Request.RemoteEndPoint.Address.ToString()))
+            {
+                //data.Response.StatusCode = 403;
+                //byte[] buffer = Encoding.UTF8.GetBytes("Forbidden");
+                //data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                //data = endconnection(data);
+                data.Response.Abort();
+                service.shared.log($"[honeypot hit blocked] IP: {data.Request.RemoteEndPoint.Address.ToString()}");
+                return;
+            }
+
             //Form1.Instance.updateconnections();
             service.shared.log("[new connection]");
             string kert = data.Request.Url.AbsolutePath.TrimStart('/');
@@ -66,12 +85,35 @@ namespace Servo.controller
             }
 
 
+            string ip = data.Request.RemoteEndPoint.Address.ToString();
+
+            connectioncounts.TryGetValue(ip, out int count);
+            count++;
+            connectioncounts[ip] = count;
+            if (count >= 350000000)
+            {
+                data.Response.StatusCode = 429;
+                data.Response.ContentType = "text/html";
+                string html = "<head><link rel='icon' href='data:,'><style>*{color:white;background-color:#212121}</style></head><body>Too many requests</body>";
+                byte[] buffer = Encoding.UTF8.GetBytes(html);
+                data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                data = endconnection(data);
+                f1.updatesusconns();
+                return;
+            }
+               
+
+
             
+
+            f1.updateconnections();
+
             //api 
             if (kert.StartsWith("api/", StringComparison.OrdinalIgnoreCase))
             {
                 string lenyeg = kert.Replace("api/", "");
 
+                f1.updateapisserved();
 
 
 
@@ -485,6 +527,8 @@ namespace Servo.controller
 
             else
             {
+
+                f1.updatefilesserved();
                 if (kert.StartsWith("static/", StringComparison.OrdinalIgnoreCase))
                 {
                     kert = kert.Substring(7);
@@ -521,25 +565,62 @@ namespace Servo.controller
                 {
                     if (File.Exists(hely))
                     {
+
                         byte[] fileBytes = File.ReadAllBytes(hely);
                         data.Response.ContentType = service.shared.mime(Path.GetExtension(hely));
-                        data.Response.OutputStream.Write(fileBytes, 0, fileBytes.Length);
+                       
+                        
                         service.shared.log(">> served: " + hely);
+
+
+                        data.Response.StatusCode = 200;
+                      
+                        data.Response.AddHeader("Content-Encoding", "gzip");
+
+                        
+                        using (var ms = new MemoryStream())
+                        {
+                            using (var gz = new GZipStream(ms, CompressionLevel.Optimal))
+                            {
+                                byte[] raw = fileBytes;
+                                gz.Write(raw, 0, raw.Length);
+                            }
+                            byte[] buffer = ms.ToArray();
+                            data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                            f1.updatebandwidth(buffer.Length);
+                        }
+                        
+                        data = endconnection(data);
+                        f1.updatesusconns();
+                        return;
+
+
+
+
+
+                      
                     }
                     else
                     {
                         data.Response.StatusCode = 404;
                         byte[] buffer = Encoding.UTF8.GetBytes("File not found");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+
                         service.shared.log("ERROR: File not found (" + hely + ")");
                     }
                 }
                 catch (Exception ex)
                 {
+                    try { 
                     data.Response.StatusCode = 500;
                     byte[] buffer = Encoding.UTF8.GetBytes("Internal error");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                     service.shared.log($"ERROR: {ex.Message}");
+                    }
+                    catch (Exception ex2)
+                    {
+                        service.shared.log($"ERROR 2: {ex2.Message} --controller.router");
+                    }
                 }
             }
 

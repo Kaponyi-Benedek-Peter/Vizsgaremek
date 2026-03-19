@@ -56,7 +56,7 @@ namespace Servo.model
 
                             product["price_usd"] = service.shared.exchange(Convert.ToDouble(product["price_huf"]))[0].ToString();
                             product["price_eur"] = service.shared.exchange(Convert.ToDouble(product["price_huf"]))[1].ToString();
-                            product["thumbnail_url"] = service.shared.current_url+"assets/products/"+product["id"]+"/thumbnail.webp";
+                            product["thumbnail_url"] = service.shared.current_url+"assets/products/"+product["id"]+"/1.webp";
 
 
                             products.Add(product);

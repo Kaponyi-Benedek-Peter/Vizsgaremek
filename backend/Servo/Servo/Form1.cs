@@ -76,11 +76,29 @@ namespace Servo
 
       
 
-        public void updateerrorcount()
+        public void updateapisserved()
         {
-            error_textbox.Invoke(new Action(() =>
+            apis_textbox.Invoke(new Action(() =>
             {
-                error_textbox.Text = (int.Parse(error_textbox.Text)+1).ToString();
+                apis_textbox.Text = (int.Parse(apis_textbox.Text)+1).ToString();
+            }));
+        }
+
+        static int bandwidthcounter_bytes = 0;
+        public void updatebandwidth(int incrementation)
+        {
+            bandwidthcounter_bytes+=incrementation;
+            bandwidth_tbox.Invoke(new Action(() =>
+            {
+                bandwidth_tbox.Text = (bandwidthcounter_bytes/1000000).ToString();
+            }));
+        }
+
+        public void updatesusconns()
+        {
+            susconn_textbox.Invoke(new Action(() =>
+            {
+                susconn_textbox.Text = (int.Parse(susconn_textbox.Text) + 1).ToString();
             }));
         }
         public void updatefilesserved()
@@ -164,10 +182,11 @@ namespace Servo
             items_textbox.Text = "0";
             conn_textbox.Text = "0";
             files_textbox.Text = "0";
-            error_textbox.Text = "0";
+            apis_textbox.Text = "0";
             susconn_textbox.Text = "0";
             users_textbox.Text = "0";
-
+            bandwidth_tbox.Text = "0";
+            bandwidthcounter_bytes = 0;
         }
 
         private void button6_Click(object sender, EventArgs e)
@@ -215,7 +234,7 @@ namespace Servo
                 items_textbox.BackColor = Color.FromArgb(245, 240, 225);
                 files_textbox.BackColor = Color.FromArgb(245, 240, 225);
                 users_textbox.BackColor = Color.FromArgb(245, 240, 225);
-                error_textbox.BackColor = Color.FromArgb(245, 240, 225);
+                apis_textbox.BackColor = Color.FromArgb(245, 240, 225);
 
                 button5.FlatAppearance.BorderColor = Color.FromArgb(63, 61, 61);
                 button6.FlatAppearance.BorderColor = Color.FromArgb(63, 61, 61);
@@ -274,7 +293,7 @@ namespace Servo
                 items_textbox.ForeColor = Color.FromArgb(0, 0, 0);
                 files_textbox.ForeColor = Color.FromArgb(0, 0, 0);
                 users_textbox.ForeColor = Color.FromArgb(0, 0, 0);
-                error_textbox.ForeColor = Color.FromArgb(0, 0, 0);
+                apis_textbox.ForeColor = Color.FromArgb(0, 0, 0);
 
 
 
@@ -317,7 +336,7 @@ namespace Servo
                 items_textbox.BackColor = Color.FromArgb(0, 0, 0);
                 files_textbox.BackColor = Color.FromArgb(0, 0, 0);
                 users_textbox.BackColor = Color.FromArgb(0, 0, 0);
-                error_textbox.BackColor = Color.FromArgb(0, 0, 0);
+                apis_textbox.BackColor = Color.FromArgb(0, 0, 0);
 
                 button5.FlatAppearance.BorderColor = Color.Silver;
                 button6.FlatAppearance.BorderColor = Color.Silver;
@@ -369,7 +388,7 @@ namespace Servo
                 items_textbox.ForeColor = Color.FromArgb(255, 255, 255);
                 files_textbox.ForeColor = Color.FromArgb(255, 255, 255);
                 users_textbox.ForeColor = Color.FromArgb(255, 255, 255);
-                error_textbox.ForeColor = Color.FromArgb(255, 255, 255);
+                apis_textbox.ForeColor = Color.FromArgb(255, 255, 255);
 
              
 
