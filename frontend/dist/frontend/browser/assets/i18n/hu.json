@@ -492,7 +492,48 @@
       "category": "Kategória",
       "actions": "Műveletek",
       "items": "Tételek",
-      "price": "Ár"
+      "price": "Ár",
+      "brand": "Márka",
+      "billing": "Számlázás",
+      "view_images": "Képek megtekintése"
+    },
+    "gallery": {
+      "title": "Termék képek",
+      "upload": "Feltöltés",
+      "delete_image": "Kép törlése",
+      "confirm_delete_title": "Biztosan törli a képeket?",
+      "confirm_delete_text": "Ez a művelet nem visszavonható. A kép teljesen törölve lesz.",
+      "details": "Kép részletek",
+      "download": "Letöltés",
+      "transparent": "Átlátszó",
+      "transparent_hint": "Bekapcsolva a backend automatikusan eltávolítja a kép hátterét",
+      "meta": {
+        "filename": "Fájlnév",
+        "type": "Típus",
+        "resolution": "Felbontás",
+        "size": "Fájl méret",
+        "modified": "Utoljára módosítva"
+      }
+    },
+    "user_actions": {
+      "actions": "Műveletek",
+      "set_role": "Jogosultság",
+      "ban": "Tiltás",
+      "unban": "Tiltás feloldása",
+      "delete": "Felhasználó törlése",
+      "you": "Te",
+      "confirm_role_title": "Jogosultság módosítása",
+      "confirm_role_text": "{{name}} jogosultságát módosítod: {{state}}?",
+      "confirm_ban_title": "Felhasználó tiltása",
+      "confirm_ban_text": "Tiltod {{name}} fiókját? Elveszíti a hozzáférését.",
+      "confirm_unban_title": "Tiltás feloldása",
+      "confirm_unban_text": "Feloldod {{name}} tiltását? A fiókja visszaáll verified állapotra.",
+      "confirm_delete_title": "Felhasználó törlése",
+      "confirm_delete_text": "Véglegesen törlöd {{name}} fiókját? Ez nem visszavonható.",
+      "success": "Felhasználó frissítve.",
+      "banned": "Felhasználó tiltva.",
+      "deleted": "Felhasználó törölve.",
+      "error": "A művelet sikertelen. Próbáld újra."
     },
     "stats": {
       "this_week": "ezen a héten",
