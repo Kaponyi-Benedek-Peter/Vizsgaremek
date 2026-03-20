@@ -255,8 +255,15 @@ tags
 
         public static string connStr;
 
-        public static MySqlConnection conn => new MySqlConnection(model.shared.connStr);
-
+        public static MySqlConnection conn
+        {
+            get
+            {
+                var c = new MySqlConnection(connStr);
+                c.Open();
+                return c;
+            }
+        }
         /*
         public static string fetchsqlsing(string rw, string inntype, string inn, string outttype, string table, string newValue = null, Dictionary<string, string> lista = null)
         {
@@ -1402,6 +1409,31 @@ tags
             catch (Exception ex)
             {
                 service.shared.log($"Error 1: {ex.Message} --model.shared.update_name_by_id");
+                return 500;
+            }
+        }
+
+
+
+        public static int update_ban_reason_by_id(string user_id, string ban_reason)
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("update_ban_reason_by_user_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_user_id", user_id);
+                    cmd.Parameters.AddWithValue("@p_ban_reason", ban_reason);
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.update_ban_reason_by_id");
                 return 500;
             }
         }

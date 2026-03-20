@@ -63,7 +63,7 @@ namespace Servo.service
 
                     model.shared.order ord;
 
-                    if (guest=="1" || (guest=="0" &&( accstate == "admin" || accstate == "superadmin" || accstate== "verified" || accstate == "verified")))
+                    if (guest=="1" || (guest=="0" &&( accstate == "admin" || accstate == "superadmin" || accstate== "verified")))
                     {
                         string tracking_token_new = service.shared.gen_code(false);
 

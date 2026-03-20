@@ -62,9 +62,16 @@ namespace Servo
 
         public void InvokeOnUi(Action action)
         {
+            try { 
             if (IsDisposed || !IsHandleCreated) return;
             if (InvokeRequired) Invoke(action);
             else action();
+            }
+            catch (Exception e)
+            {
+                // 
+                service.shared.log($"UI invoke error: {e.Message}");
+            }
         }
         public void log(string abc)
         {

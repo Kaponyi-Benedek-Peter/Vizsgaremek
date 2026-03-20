@@ -21,7 +21,7 @@ namespace Servo.service
                 Directory.CreateDirectory(baseDir);
         }
 
-        public static string current_url = "http://192.168.11.213:90/"; //https://www.roysshack.hu
+        public static string current_url = "https://roysshack.hu/"; //https://www.roysshack.hu
 
 
         public static string b64enc(string str)
@@ -65,7 +65,7 @@ namespace Servo.service
         }
 
 
-
+        //Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of "text/html". Strict MIME type checking is enforced for module scripts per HTML spec.
         public static string mime(string ext)
         {
             List<string[]> mimes = new List<string[]>
@@ -75,7 +75,8 @@ namespace Servo.service
                 new[] { ".js", "application/javascript" },
                 new[] { ".json", "application/json" },
                 new[] { ".png", "image/png" },
-                new[] { ".jpg", ".jpeg", "image/jpeg" },
+                new[] { ".jpg", "image/jpeg" },
+                new[] { ".jpeg", "image/jpeg" },
                 new[] { ".gif", "image/gif" },
                 new[] { ".mp4", "video/mp4" },
                 new[] { ".mp3", "audio/mpeg" },

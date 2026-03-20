@@ -210,7 +210,7 @@
     <Compile Include="controller\login_promise.cs" />
     <Compile Include="controller\newsletter_subscription.cs" />
     <Compile Include="controller\router.cs" />
-    <Compile Include="controller\ban_user.cs" />
+    <Compile Include="controller\update_user_state_admin.cs" />
     <Compile Include="controller\login_request.cs" />
     <Compile Include="controller\registration_promise.cs" />
     <Compile Include="controller\registration_request.cs" />
@@ -253,7 +253,7 @@
     <Compile Include="model\registration_promise.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="service\ban_user.cs" />
+    <Compile Include="service\update_user_state_admin.cs" />
     <Compile Include="service\chpass_promise.cs" />
     <Compile Include="service\chpass_request.cs" />
     <Compile Include="service\create_order.cs" />

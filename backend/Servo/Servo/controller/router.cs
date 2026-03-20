@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using System.IO.Compression;
 using ZstdSharp.Unsafe;
 
 
@@ -16,13 +18,22 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin"
         };
 
-        public static Dictionary<string, int> connectioncounts = new Dictionary<string, int>();
+
+        private static ConcurrentDictionary<string, byte[]> _fileCache = new ConcurrentDictionary<string, byte[]> ();
+
+
+        //public static Dictionary<string, int> connectioncounts = new Dictionary<string, int>();
         
         
-        public static List<string> honeypot_ips = new List<string>();
+        //public static List<string> honeypot_ips = new List<string>();
+
+
+        public static ConcurrentDictionary<string, int> connectioncounts = new ConcurrentDictionary<string, int> { };
+        public static ConcurrentBag<string> honeypot_ips = new ConcurrentBag<string> { };
+
 
 
         public static string safe_close(HttpListenerContext data)
@@ -56,7 +67,7 @@ namespace Servo.controller
         }
         public static void main(HttpListenerContext data, string alap)
         {
-            if(honeypot_ips.Contains(data.Request.RemoteEndPoint.Address.ToString()))
+            /*if(honeypot_ips.Contains(data.Request.RemoteEndPoint.Address.ToString()))
             {
                 //data.Response.StatusCode = 403;
                 //byte[] buffer = Encoding.UTF8.GetBytes("Forbidden");
@@ -65,7 +76,10 @@ namespace Servo.controller
                 data.Response.Abort();
                 service.shared.log($"[honeypot hit blocked] IP: {data.Request.RemoteEndPoint.Address.ToString()}");
                 return;
-            }
+            }*/
+            // ha van cloudflare tunnell akkor ezt nem !!
+
+
 
             //Form1.Instance.updateconnections();
             service.shared.log("[new connection]");
@@ -90,7 +104,10 @@ namespace Servo.controller
             connectioncounts.TryGetValue(ip, out int count);
             count++;
             connectioncounts[ip] = count;
-            if (count >= 350000000)
+
+
+
+            if (false) // count > 350
             {
                 data.Response.StatusCode = 429;
                 data.Response.ContentType = "text/html";
@@ -360,7 +377,7 @@ namespace Servo.controller
                 else if (lenyeg.Contains("ban_user_admin"))
                 {
 
-                    controller.ban_user.main(data, lenyeg);
+                    controller.update_user_state_admin.main(data, lenyeg);
 
 
 
@@ -511,10 +528,15 @@ namespace Servo.controller
                     controller.get_all_post_categories.main(data, lenyeg);
 
                 }
+                else if (lenyeg.Contains("update_user_state_admin"))
+                {
+
+                    controller.update_user_state_admin.main(data, lenyeg);
+
+                }
+
 
                 //
-
-
 
 
 
@@ -555,9 +577,23 @@ namespace Servo.controller
                     }
                     else
                     {
-                        // !!! indeexxx
-                        hely = Path.Combine(alap, "index.html");
-                        service.shared.log(">> SPA: " + kert + " -> index.html");
+                        string ext = Path.GetExtension(kert);
+                        if (string.IsNullOrEmpty(ext))
+                        {
+                            // indeeeeeex.html
+                            hely = Path.Combine(alap, "index.html");
+                            service.shared.log(">> SPA: " + kert + " -> index.html");
+                        }
+                        else
+                        {
+                            // nem letezik
+                            data.Response.StatusCode = 404;
+                            byte[] buffer = Encoding.UTF8.GetBytes("File not found");
+                            data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                            service.shared.log("ERROR: File not found (" + kert + ")");
+                            data = endconnection(data);
+                            return;
+                        }
                     }
                 }
 
@@ -565,40 +601,27 @@ namespace Servo.controller
                 {
                     if (File.Exists(hely))
                     {
-
-                        byte[] fileBytes = File.ReadAllBytes(hely);
-                        data.Response.ContentType = service.shared.mime(Path.GetExtension(hely));
-                       
-                        
-                        service.shared.log(">> served: " + hely);
-
-
-                        data.Response.StatusCode = 200;
-                      
-                        data.Response.AddHeader("Content-Encoding", "gzip");
-
-                        
-                        using (var ms = new MemoryStream())
+                        byte[] buffer = _fileCache.GetOrAdd(hely, path =>
                         {
-                            using (var gz = new GZipStream(ms, CompressionLevel.Optimal))
+                            byte[] raw = File.ReadAllBytes(path);
+                            using (var ms = new MemoryStream())
                             {
-                                byte[] raw = fileBytes;
-                                gz.Write(raw, 0, raw.Length);
+                                using (var gz = new GZipStream(ms, CompressionLevel.Optimal))
+                                    gz.Write(raw, 0, raw.Length);
+                                return ms.ToArray();
                             }
-                            byte[] buffer = ms.ToArray();
-                            data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                            f1.updatebandwidth(buffer.Length);
-                        }
-                        
+                        });
+
+                        data.Response.ContentType = service.shared.mime(Path.GetExtension(hely));
+                        data.Response.StatusCode = 200;
+                        data.Response.AddHeader("Content-Encoding", "gzip");
+                        data.Response.ContentLength64 = buffer.Length;
+                        service.shared.log(">> served: " + hely);
+                        data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                        f1.updatebandwidth(buffer.Length);
                         data = endconnection(data);
                         f1.updatesusconns();
                         return;
-
-
-
-
-
-                      
                     }
                     else
                     {
