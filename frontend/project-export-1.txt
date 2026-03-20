@@ -7242,8 +7242,7 @@ FILE: src\app\pages\admin\admin.mock.ts
 
 import { AdminUser, AdminOrder } from '../../core/services/account.service';
 
-// ─── Set to false before final build / presentation with live backend ─────────
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 export const MOCK_USERS: AdminUser[] = [
   {
@@ -15972,7 +15971,7 @@ FILE: src\app\pages\products\product.mock.ts
 
 import { Product, ProductCategory } from '../../core/models/product.model';
 
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 export const MOCK_RAW_CATEGORIES: ProductCategory[] = [
   {

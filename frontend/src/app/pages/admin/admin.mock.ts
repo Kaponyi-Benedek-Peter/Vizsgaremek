@@ -1,7 +1,6 @@
 import { AdminUser, AdminOrder } from '../../core/services/account.service';
 
-// ─── Set to false before final build / presentation with live backend ─────────
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 export const MOCK_USERS: AdminUser[] = [
   {

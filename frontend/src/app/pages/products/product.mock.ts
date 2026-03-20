@@ -1,6 +1,6 @@
 import { Product, ProductCategory } from '../../core/models/product.model';
 
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 export const MOCK_RAW_CATEGORIES: ProductCategory[] = [
   {
