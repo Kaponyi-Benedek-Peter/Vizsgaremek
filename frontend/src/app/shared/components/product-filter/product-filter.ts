@@ -8,8 +8,8 @@ interface FilterState {
   categories: string[];
   priceMin: number | null;
   priceMax: number | null;
-  inStockOnly: boolean;
-  sortBy: SortOption;
+  in_stock_only: boolean;
+  sort_by: SortOption;
 }
 
 @Component({
@@ -26,8 +26,8 @@ export class ProductFilter {
     categories: [],
     priceMin: null,
     priceMax: null,
-    inStockOnly: false,
-    sortBy: 'popularity',
+    in_stock_only: false,
+    sort_by: 'popularity',
   });
 
   isExpanded = signal(false);
@@ -48,8 +48,8 @@ export class ProductFilter {
       state.categories.length > 0 ||
       state.priceMin !== null ||
       state.priceMax !== null ||
-      state.inStockOnly ||
-      state.sortBy !== 'popularity'
+      state.in_stock_only ||
+      state.sort_by !== 'popularity'
     );
   });
 
@@ -57,13 +57,13 @@ export class ProductFilter {
     this.isExpanded.update((v) => !v);
   }
 
-  updateSortBy(sortBy: SortOption): void {
-    this.filterState.update((state) => ({ ...state, sortBy }));
+  updateSortBy(sort_by: SortOption): void {
+    this.filterState.update((state) => ({ ...state, sort_by }));
     this.emitFilters();
   }
 
   updateInStockOnly(): void {
-    this.filterState.update((state) => ({ ...state, inStockOnly: !state.inStockOnly }));
+    this.filterState.update((state) => ({ ...state, in_stock_only: !state.in_stock_only }));
     this.emitFilters();
   }
 
@@ -88,8 +88,8 @@ export class ProductFilter {
       categories: [],
       priceMin: null,
       priceMax: null,
-      inStockOnly: false,
-      sortBy: 'popularity',
+      in_stock_only: false,
+      sort_by: 'popularity',
     });
     this.clearFilters.emit();
   }
@@ -98,12 +98,12 @@ export class ProductFilter {
     const state = this.filterState();
     const filters: ProductFilterOptions = {
       categories: state.categories,
-      priceRange:
+      price_range:
         state.priceMin !== null || state.priceMax !== null
           ? { min: state.priceMin ?? 0, max: state.priceMax ?? Infinity }
           : null,
-      inStockOnly: state.inStockOnly,
-      sortBy: state.sortBy,
+      in_stock_only: state.in_stock_only,
+      sort_by: state.sort_by,
     };
 
     this.filterChanged.emit(filters);

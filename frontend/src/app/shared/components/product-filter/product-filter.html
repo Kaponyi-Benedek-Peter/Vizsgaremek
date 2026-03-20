@@ -5,7 +5,7 @@
       <select
         id="sort-select"
         class="sort-select"
-        [value]="filterState().sortBy"
+        [value]="filterState().sort_by"
         (change)="updateSortBy($any($event.target).value)"
       >
         @for (option of sortOptions; track option.value) {
@@ -73,7 +73,7 @@
             <input
               type="checkbox"
               class="checkbox-input"
-              [checked]="filterState().inStockOnly"
+              [checked]="filterState().in_stock_only"
               (change)="updateInStockOnly()"
             />
             <span class="checkbox-text">{{ 'filter.in_stock_only' | translate }}</span>

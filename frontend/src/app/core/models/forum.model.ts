@@ -1,6 +1,5 @@
 export type PostCategory = string;
 
-// 'hidden' hozzáadva, 'pending' eltávolítva — DB ENUM: draft|published|archived|hidden
 export type PostStatus = 'draft' | 'published' | 'archived' | 'hidden';
 
 export type SortOption = 'newest' | 'oldest' | 'most-viewed' | 'most-liked' | 'trending';
@@ -8,7 +7,7 @@ export type SortOption = 'newest' | 'oldest' | 'most-viewed' | 'most-liked' | 't
 export interface Comment {
   id: string;
   post_id: string;
-  user_id: string; // author_id/author_name/author_role helyett — csak user_id van a DB-ben
+  user_id: string;
   content: string;
   likes: number;
   is_edited: boolean;
@@ -19,11 +18,11 @@ export interface Comment {
 export interface Post {
   id: string;
   title: string;
-  slug: string; // posts táblában van
+  slug: string;
   excerpt: string;
   content: string;
-  user_id: string; // author_id/author_name/author_role nincs a DB-ben, csak user_id
-  category_id: string; // FK a post_categories táblára (INT, de stringként jön a backendtől)
+  user_id: string;
+  category_id: string;
   tags: string;
   image_url?: string;
   status: PostStatus;
@@ -31,7 +30,6 @@ export interface Post {
   likes: number;
   comment_count: number;
   is_featured: number;
-  // is_pinned és type mezők NEM léteznek a posts táblában
   created_at: string;
   updated_at: string;
   published_at?: string;
@@ -76,9 +74,9 @@ export interface BackendPostsResponse {
 
 export interface CategoryInfo {
   id: PostCategory;
-  iconSrc: string;
-  colorClass: string;
-  displayName: string;
+  icon_src: string;
+  color_class: string;
+  display_name: string;
 }
 
 export const CATEGORY_COLOR_MAP: Record<string, string> = {

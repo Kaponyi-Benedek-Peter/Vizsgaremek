@@ -42,14 +42,14 @@ export class ReviewService {
 
   getAverageRating(reviews: ReviewWithHelpers[]): number {
     if (reviews.length === 0) return 0;
-    const sum = reviews.reduce((acc, r) => acc + r.ratingNumber, 0);
+    const sum = reviews.reduce((acc, r) => acc + r.rating_number, 0);
     return sum / reviews.length;
   }
 
-  getRatingStars(ratingNumber: number): string {
-    if (!ratingNumber) return '';
-    const full = Math.floor(ratingNumber);
-    const half = ratingNumber % 1 >= 0.5;
+  getRatingStars(rating_number: number): string {
+    if (!rating_number) return '';
+    const full = Math.floor(rating_number);
+    const half = rating_number % 1 >= 0.5;
     const empty = 5 - full - (half ? 1 : 0);
     return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(empty);
   }

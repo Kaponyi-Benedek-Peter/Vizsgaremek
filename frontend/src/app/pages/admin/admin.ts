@@ -8,7 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
 import { ProductService } from '../../services/product.service';
 import { ToastService } from '../../core/services/toast.service';
-import { ProductWithHelpers, ProductImage } from '../../core/models/product.model';
+import { ProductWithHelpers } from '../../core/models/product.model';
 import { ICONS } from '../../core/constants/visuals';
 import { ResizableTableDirective } from '../../shared/directives/resizable-table.directive';
 import { formatFileSize } from '../../core/utils/image-utils';
@@ -44,6 +44,60 @@ interface GalleryImage {
   file?: File;
   objectUrl?: string;
   meta?: ImageMeta;
+}
+
+type ProductFormTab = 'basic' | 'pricing' | 'descriptions' | 'details';
+
+interface ProductFormData {
+  name_hu: string;
+  name_en: string;
+  name_de: string;
+  description_hu: string;
+  description_en: string;
+  description_de: string;
+  description_preview_hu: string;
+  description_preview_en: string;
+  description_preview_de: string;
+  price_huf: number;
+  sale_percentage: number;
+  stock: number;
+  category_id: string;
+  manufacturer: string;
+  brand: string;
+  sku: string;
+  active_ingredients: string;
+  packaging_hu: string;
+  packaging_en: string;
+  packaging_de: string;
+  thumbnail_url: string;
+  featured: boolean;
+}
+
+function emptyProductForm(): ProductFormData {
+  return {
+    name_hu: '',
+    name_en: '',
+    name_de: '',
+    description_hu: '',
+    description_en: '',
+    description_de: '',
+    description_preview_hu: '',
+    description_preview_en: '',
+    description_preview_de: '',
+    price_huf: 0,
+    sale_percentage: 0,
+    stock: 0,
+    category_id: '',
+    manufacturer: '',
+    brand: '',
+    sku: '',
+    active_ingredients: '',
+    packaging_hu: '',
+    packaging_en: '',
+    packaging_de: '',
+    thumbnail_url: '',
+    featured: false,
+  };
 }
 
 interface SearchQuery {
@@ -122,9 +176,9 @@ const PRODUCT_COLUMNS: Record<string, FieldExtractor<ProductWithHelpers>> = {
   category: (p) => p.category || '',
   sku: (p) => p.sku || '',
   price: (p) => String(p.price ?? ''),
-  stock: (p) => String(p.stockNumber ?? ''),
-  rating: (p) => String(p.ratingNumber ?? ''),
-  status: (p) => (p.inStock ? 'active' : 'inactive'),
+  stock: (p) => String(p.stock_number ?? ''),
+  rating: (p) => String(p.rating_number ?? ''),
+  status: (p) => (p.in_stock ? 'active' : 'inactive'),
 };
 
 type UserActionType = 'change_role' | 'ban' | 'unban' | 'delete';
@@ -215,6 +269,18 @@ export class Admin implements OnInit {
   userActionConfirm = signal<UserActionRequest | null>(null);
   userActionLoading = signal(false);
 
+  productFormOpen = signal(false);
+  productFormTab = signal<ProductFormTab>('basic');
+  productFormData = signal<ProductFormData>(emptyProductForm());
+  productFormEditId = signal<string | null>(null);
+  productFormSaving = signal(false);
+  productDeleteConfirm = signal<ProductWithHelpers | null>(null);
+  productDeleteLoading = signal(false);
+
+  productFormIsEdit = computed(() => this.productFormEditId() !== null);
+
+  availableCategories = computed(() => this.productService.categories());
+
   adminName = computed(() => {
     const user = this.authService.currentUser();
     return user ? `${user.firstname} ${user.lastname}`.trim() : 'Admin';
@@ -230,7 +296,7 @@ export class Admin implements OnInit {
     const products = this.productService.products();
 
     const totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0);
-    const lowStock = products.filter((p) => p.stockNumber > 0 && p.stockNumber < 10).length;
+    const lowStock = products.filter((p) => p.stock_number > 0 && p.stock_number < 10).length;
 
     return {
       totalOrders: orders.length,
@@ -246,6 +312,13 @@ export class Admin implements OnInit {
     { id: 'orders', icon: ICONS.order, label: 'admin.nav.orders' },
     { id: 'users', icon: ICONS.customers, label: 'admin.nav.users' },
     { id: 'products', icon: ICONS.sale, label: 'admin.nav.products' },
+  ];
+
+  productFormTabs: { id: ProductFormTab; label: string }[] = [
+    { id: 'basic', label: 'admin.product_form.tab_basic' },
+    { id: 'pricing', label: 'admin.product_form.tab_pricing' },
+    { id: 'descriptions', label: 'admin.product_form.tab_descriptions' },
+    { id: 'details', label: 'admin.product_form.tab_details' },
   ];
 
   filteredOrders = computed(() => {
@@ -543,6 +616,213 @@ export class Admin implements OnInit {
         });
         break;
     }
+  }
+
+  requestDeleteProduct(product: ProductWithHelpers, event: MouseEvent): void {
+    event.stopPropagation();
+    this.productDeleteConfirm.set(product);
+  }
+
+  cancelDeleteProduct(): void {
+    this.productDeleteConfirm.set(null);
+  }
+
+  confirmDeleteProduct(): void {
+    const product = this.productDeleteConfirm();
+    if (!product) return;
+
+    this.productDeleteLoading.set(true);
+
+    if (MOCK_MODE) {
+      this.toastService.show('admin.product_form.deleted', 'success');
+      this.productDeleteLoading.set(false);
+      this.productDeleteConfirm.set(null);
+      return;
+    }
+
+    const auth = this.buildAdminAuth();
+    const body = { ...auth, product_id: btoa(product.id) };
+
+    this.http
+      .post<{
+        statuscode: string;
+        status: string;
+      }>(`${environment.baseURL}/api/delete_product_admin`, body)
+      .subscribe({
+        next: (res) => {
+          if (res.statuscode === '200') {
+            this.toastService.show('admin.product_form.deleted', 'success');
+            this.loadProducts();
+          } else {
+            this.toastService.show('admin.product_form.delete_error', 'error');
+          }
+          this.productDeleteLoading.set(false);
+          this.productDeleteConfirm.set(null);
+        },
+        error: () => {
+          this.toastService.show('admin.product_form.delete_error', 'error');
+          this.productDeleteLoading.set(false);
+          this.productDeleteConfirm.set(null);
+        },
+      });
+  }
+
+  openProductForm(product?: ProductWithHelpers): void {
+    if (product) {
+      this.productFormEditId.set(product.id);
+      this.productFormData.set({
+        name_hu: product.name_hu || '',
+        name_en: product.name_en || '',
+        name_de: product.name_de || '',
+        description_hu: product.description_hu || product.description_hu || '',
+        description_en: product.description_en || product.description_en || '',
+        description_de: product.description_de || product.description_de || '',
+        description_preview_hu: product.description_preview_hu || '',
+        description_preview_en: product.description_preview_en || '',
+        description_preview_de: product.description_preview_de || '',
+        price_huf: product.price_number || 0,
+        sale_percentage: product.sale_percentage_number || 0,
+        stock: product.stock_number || 0,
+        category_id: product.category_id || '',
+        manufacturer: product.manufacturer || '',
+        brand: product.brand || '',
+        sku: product.sku || '',
+        active_ingredients: product.active_ingredients || product.active_ingredients || '',
+        packaging_hu: product.packaging_hu ?? '',
+        packaging_en: product.packaging_en ?? '',
+        packaging_de: product.packaging_de ?? '',
+        thumbnail_url: product.thumbnail_url || '',
+        featured: product.is_featured || false,
+      });
+    } else {
+      this.productFormEditId.set(null);
+      this.productFormData.set(emptyProductForm());
+    }
+    this.productFormTab.set('basic');
+    this.productFormOpen.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeProductForm(): void {
+    this.productFormOpen.set(false);
+    this.productFormEditId.set(null);
+    this.productFormData.set(emptyProductForm());
+    document.body.style.overflow = '';
+  }
+
+  onProductFormOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('product-form-overlay')) {
+      this.closeProductForm();
+    }
+  }
+
+  setProductFormTab(tab: ProductFormTab): void {
+    this.productFormTab.set(tab);
+  }
+
+  updateProductField<K extends keyof ProductFormData>(key: K, value: ProductFormData[K]): void {
+    this.productFormData.update((data) => ({ ...data, [key]: value }));
+  }
+
+  toggleProductFeatured(): void {
+    this.productFormData.update((data) => ({ ...data, featured: !data.featured }));
+  }
+
+  saveProduct(): void {
+    const data = this.productFormData();
+    const editId = this.productFormEditId();
+
+    if (!data.name_en.trim()) {
+      this.toastService.show('admin.product_form.error_name_required', 'error');
+      this.productFormTab.set('basic');
+      return;
+    }
+
+    this.productFormSaving.set(true);
+
+    if (MOCK_MODE) {
+      this.toastService.show(
+        editId ? 'admin.product_form.updated' : 'admin.product_form.created',
+        'success',
+      );
+      this.productFormSaving.set(false);
+      this.closeProductForm();
+      this.loadProducts();
+      return;
+    }
+
+    const body = this.buildProductApiBody(data, editId);
+
+    const endpoint = editId
+      ? `${environment.baseURL}/api/update_product_admin`
+      : `${environment.baseURL}/api/create_product_admin`;
+
+    this.http.post<{ statuscode: string; status: string }>(endpoint, body).subscribe({
+      next: (res) => {
+        if (res.statuscode === '200') {
+          this.toastService.show(
+            editId ? 'admin.product_form.updated' : 'admin.product_form.created',
+            'success',
+          );
+          this.closeProductForm();
+          this.loadProducts();
+        } else {
+          this.toastService.show('admin.product_form.save_error', 'error');
+        }
+        this.productFormSaving.set(false);
+      },
+      error: () => {
+        this.toastService.show('admin.product_form.save_error', 'error');
+        this.productFormSaving.set(false);
+      },
+    });
+  }
+
+  private buildProductApiBody(
+    data: ProductFormData,
+    editId: string | null,
+  ): Record<string, string | number> {
+    const auth = this.buildAdminAuth();
+    const body: Record<string, string | number> = {
+      ...auth,
+      name_hu: btoa(data.name_hu),
+      name_en: btoa(data.name_en),
+      name_de: btoa(data.name_de),
+      description_hu: btoa(data.description_hu),
+      description_en: btoa(data.description_en),
+      description_de: btoa(data.description_de),
+      description_preview_hu: btoa(data.description_preview_hu),
+      description_preview_en: btoa(data.description_preview_en),
+      description_preview_de: btoa(data.description_preview_de),
+      price_huf: data.price_huf,
+      sale_percentage: data.sale_percentage,
+      stock: data.stock,
+      category_id: btoa(data.category_id),
+      manufacturer: btoa(data.manufacturer),
+      brand: btoa(data.brand),
+      sku: btoa(data.sku),
+      active_ingredients: btoa(data.active_ingredients),
+      packaging_hu: btoa(data.packaging_hu),
+      packaging_en: btoa(data.packaging_en),
+      packaging_de: btoa(data.packaging_de),
+      thumbnail_url: btoa(data.thumbnail_url),
+      featured: data.featured ? 1 : 0,
+    };
+
+    if (editId) {
+      body['product_id'] = btoa(editId);
+    }
+
+    return body;
+  }
+
+  private buildAdminAuth(): { id: string; session_token: string } {
+    const storedId = sessionStorage.getItem('user_id') ?? '';
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+    return {
+      id: btoa(storedId),
+      session_token: btoa(token),
+    };
   }
 
   private executeMockUserAction(req: UserActionRequest): void {

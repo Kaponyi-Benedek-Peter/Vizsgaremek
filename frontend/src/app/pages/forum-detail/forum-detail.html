@@ -19,9 +19,9 @@
         <header class="article-header">
           <!-- category → category_id -->
           @if (getCategoryInfo(post()!.category_id); as cat) {
-            <div class="article-category" [class]="cat.colorClass">
-              <img [src]="cat.iconSrc" [alt]="cat.displayName" class="category-icon-img" />
-              <span>{{ cat.displayName }}</span>
+            <div class="article-category" [class]="cat.color_class">
+              <img [src]="cat.icon_src" [alt]="cat.display_name" class="category-icon-img" />
+              <span>{{ cat.display_name }}</span>
             </div>
           }
 

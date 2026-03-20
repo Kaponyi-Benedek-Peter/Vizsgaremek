@@ -28,7 +28,7 @@
       <app-product-pagination
         [pagination]="pagination()"
         (pageChange)="handlePageChange($event)"
-        (itemsPerPageChange)="handleItemsPerPageChange($event)"
+        (items_per_pageChange)="handleItemsPerPageChange($event)"
       />
     } @else {
       @if (allProducts().length === 0) {

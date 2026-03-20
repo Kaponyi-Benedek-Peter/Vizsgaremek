@@ -31,8 +31,8 @@ export class FeaturedProductCard {
     return this.product?.name_en || this.product?.name || '';
   });
 
-  imageUrl = computed(() => {
-    return this.product?.imageUrl || IMAGES.productDefault;
+  image_url = computed(() => {
+    return this.product?.image_url || IMAGES.productDefault;
   });
 
   altText = computed(() => {
@@ -42,19 +42,19 @@ export class FeaturedProductCard {
 
   price = computed(() => this.currencyService.getDiscountedPrice(this.product));
   oldPrice = computed(() =>
-    this.product?.hasDiscount ? this.currencyService.getBasePrice(this.product) : null,
+    this.product?.has_discount ? this.currencyService.getBasePrice(this.product) : null,
   );
 
-  inStock = computed(() => {
-    return this.product?.inStock || false;
+  in_stock = computed(() => {
+    return this.product?.in_stock || false;
   });
 
-  discountPercentage = computed(() => {
-    return this.product?.discountPercentage || 0;
+  discount_percentage = computed(() => {
+    return this.product?.discount_percentage || 0;
   });
 
-  requiresPrescription = computed(() => {
-    return this.product?.requiresPrescription || false;
+  requires_prescription = computed(() => {
+    return this.product?.requires_prescription || false;
   });
 
   onCardClick(): void {

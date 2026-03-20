@@ -393,7 +393,8 @@
     "clear": "Clear",
     "cancel": "Cancel",
     "scroll_right": "Scroll right",
-    "added_to_cart": "Added to cart"
+    "added_to_cart": "Added to cart",
+    "edit": "Edit"
   },
   "home": {
     "featured": {
@@ -534,6 +535,40 @@
       "banned": "User has been banned.",
       "deleted": "User has been deleted.",
       "error": "Action failed. Please try again."
+    },
+    "product_form": {
+      "add": "Add Product",
+      "add_title": "New Product",
+      "edit_title": "Edit Product",
+      "save": "Save Changes",
+      "create": "Create Product",
+      "delete": "Delete Product",
+      "tab_basic": "Basic",
+      "tab_pricing": "Pricing",
+      "tab_descriptions": "Descriptions",
+      "tab_details": "Details",
+      "names": "Product Names",
+      "name_hu": "Name (HU)",
+      "name_en": "Name (EN)",
+      "name_de": "Name (DE)",
+      "identification": "Identification",
+      "manufacturer": "Manufacturer",
+      "thumbnail_url": "Thumbnail URL",
+      "price_huf": "Price (HUF)",
+      "sale_pct": "Discount %",
+      "previews": "Preview Descriptions",
+      "full_descriptions": "Full Descriptions",
+      "active_ingredients": "Active Ingredients",
+      "packaging": "Packaging",
+      "featured": "Featured Product",
+      "confirm_delete_title": "Delete Product",
+      "confirm_delete_text": "Permanently delete \"{{name}}\"? This cannot be undone.",
+      "created": "Product created successfully.",
+      "updated": "Product updated successfully.",
+      "deleted": "Product deleted successfully.",
+      "save_error": "Failed to save product.",
+      "delete_error": "Failed to delete product.",
+      "error_name_required": "Product name (EN) is required."
     },
     "stats": {
       "this_week": "this week",

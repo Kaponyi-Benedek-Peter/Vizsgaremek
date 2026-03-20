@@ -38,12 +38,12 @@ export class ProductService {
 
   private filtersSignal = signal<ProductFilterOptions>({
     categories: [],
-    priceRange: null,
-    inStockOnly: false,
-    sortBy: 'popularity',
+    price_range: null,
+    in_stock_only: false,
+    sort_by: 'popularity',
   });
-  private currentPageSignal = signal<number>(1);
-  private itemsPerPageSignal = signal<number>(30);
+  private current_pageSignal = signal<number>(1);
+  private items_per_pageSignal = signal<number>(30);
 
   // --- Public readonly signals ---
   products = computed(() => this.allProductsSignal());
@@ -61,34 +61,34 @@ export class ProductService {
       products = products.filter((p) => filters.categories!.includes(p.category));
     }
 
-    if (filters.priceRange) {
-      const { min, max } = filters.priceRange;
+    if (filters.price_range) {
+      const { min, max } = filters.price_range;
       products = products.filter((p) => p.price >= min && p.price <= max);
     }
 
-    if (filters.inStockOnly) {
-      products = products.filter((p) => p.inStock);
+    if (filters.in_stock_only) {
+      products = products.filter((p) => p.in_stock);
     }
 
-    if (filters.sortBy) {
-      products = this.sortProducts(products, filters.sortBy);
+    if (filters.sort_by) {
+      products = this.sortProducts(products, filters.sort_by);
     }
 
     return products;
   });
 
   paginationState = computed<PaginationConfig>(() => {
-    const totalItems = this.filteredProducts().length;
-    const itemsPerPage = this.itemsPerPageSignal();
-    const currentPage = this.currentPageSignal();
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    return { currentPage, itemsPerPage, totalItems, totalPages };
+    const total_items = this.filteredProducts().length;
+    const items_per_page = this.items_per_pageSignal();
+    const current_page = this.current_pageSignal();
+    const total_pages = Math.ceil(total_items / items_per_page);
+    return { current_page, items_per_page, total_items, total_pages };
   });
 
   paginatedProducts = computed(() => {
     const filtered = this.filteredProducts();
-    const page = this.currentPageSignal();
-    const perPage = this.itemsPerPageSignal();
+    const page = this.current_pageSignal();
+    const perPage = this.items_per_pageSignal();
     const start = (page - 1) * perPage;
     return filtered.slice(start, start + perPage);
   });
@@ -146,7 +146,7 @@ export class ProductService {
       this.featuredSignal.set(enriched);
       console.log(`Loaded ${products.length} featured products from backend`);
     } catch (err) {
-      const fallback = this.allProductsSignal().filter((p) => p.isFeatured);
+      const fallback = this.allProductsSignal().filter((p) => p.is_featured);
       this.featuredSignal.set(fallback);
       console.warn(
         'Featured products endpoint unavailable, using loaded products as fallback:',
@@ -179,27 +179,27 @@ export class ProductService {
 
   setFilters(filters: Partial<ProductFilterOptions>): void {
     this.filtersSignal.update((current) => ({ ...current, ...filters }));
-    this.currentPageSignal.set(1);
+    this.current_pageSignal.set(1);
   }
 
   clearFilters(): void {
     this.filtersSignal.set({
       categories: [],
-      priceRange: null,
-      inStockOnly: false,
-      sortBy: 'popularity',
+      price_range: null,
+      in_stock_only: false,
+      sort_by: 'popularity',
     });
-    this.currentPageSignal.set(1);
+    this.current_pageSignal.set(1);
   }
 
   setPage(page: number): void {
-    const totalPages = this.paginationState().totalPages;
-    if (page >= 1 && page <= totalPages) this.currentPageSignal.set(page);
+    const total_pages = this.paginationState().total_pages;
+    if (page >= 1 && page <= total_pages) this.current_pageSignal.set(page);
   }
 
   setItemsPerPage(count: number): void {
-    this.itemsPerPageSignal.set(count);
-    this.currentPageSignal.set(1);
+    this.items_per_pageSignal.set(count);
+    this.current_pageSignal.set(1);
   }
 
   // --- API calls ---
@@ -348,9 +348,9 @@ export class ProductService {
     return { ...product, category: resolved };
   }
 
-  private sortProducts(products: ProductWithHelpers[], sortBy: SortOption): ProductWithHelpers[] {
+  private sortProducts(products: ProductWithHelpers[], sort_by: SortOption): ProductWithHelpers[] {
     const sorted = [...products];
-    switch (sortBy) {
+    switch (sort_by) {
       case 'popularity':
         return sorted.sort((a, b) => parseFloat(b.times_ordered) - parseFloat(a.times_ordered));
       case 'price-asc':
@@ -363,7 +363,7 @@ export class ProductService {
         return sorted.sort((a, b) => b.name.localeCompare(a.name));
       case 'rating':
       case 'rating-desc':
-        return sorted.sort((a, b) => b.ratingNumber - a.ratingNumber);
+        return sorted.sort((a, b) => b.rating_number - a.rating_number);
       case 'newest':
         return sorted.sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),

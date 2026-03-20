@@ -393,7 +393,8 @@
     "clear": "Törlés",
     "cancel": "Mégse",
     "scroll_right": "Görgetés jobbra",
-    "added_to_cart": "Kosárba helyezve"
+    "added_to_cart": "Kosárba helyezve",
+    "edit": "Szerkesztés"
   },
   "home": {
     "featured": {
@@ -534,6 +535,40 @@
       "banned": "Felhasználó tiltva.",
       "deleted": "Felhasználó törölve.",
       "error": "A művelet sikertelen. Próbáld újra."
+    },
+    "product_form": {
+      "add": "Termék hozzáadása",
+      "add_title": "Új termék",
+      "edit_title": "Termék szerkesztése",
+      "save": "Mentés",
+      "create": "Termék létrehozása",
+      "delete": "Termék törlése",
+      "tab_basic": "Alapadatok",
+      "tab_pricing": "Árazás",
+      "tab_descriptions": "Leírások",
+      "tab_details": "Részletek",
+      "names": "Terméknevek",
+      "name_hu": "Név (HU)",
+      "name_en": "Név (EN)",
+      "name_de": "Név (DE)",
+      "identification": "Azonosítás",
+      "manufacturer": "Gyártó",
+      "thumbnail_url": "Bélyegkép URL",
+      "price_huf": "Ár (HUF)",
+      "sale_pct": "Kedvezmény %",
+      "previews": "Előnézet szövegek",
+      "full_descriptions": "Teljes leírások",
+      "active_ingredients": "Hatóanyagok",
+      "packaging": "Csomagolás",
+      "featured": "Kiemelt termék",
+      "confirm_delete_title": "Termék törlése",
+      "confirm_delete_text": "Véglegesen törlöd a(z) \"{{name}}\" terméket? Ez nem visszavonható.",
+      "created": "Termék sikeresen létrehozva.",
+      "updated": "Termék sikeresen frissítve.",
+      "deleted": "Termék sikeresen törölve.",
+      "save_error": "A termék mentése sikertelen.",
+      "delete_error": "A termék törlése sikertelen.",
+      "error_name_required": "A termék angol neve kötelező."
     },
     "stats": {
       "this_week": "ezen a héten",

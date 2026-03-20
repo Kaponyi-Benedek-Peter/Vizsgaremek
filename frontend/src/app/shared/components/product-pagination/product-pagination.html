@@ -2,10 +2,10 @@
   <div class="items-per-page">
     <label class="items-label">{{ 'pagination.items_per_page' | translate }}:</label>
     <div class="items-options">
-      @for (option of itemsPerPageOptions; track option) {
+      @for (option of items_per_pageOptions; track option) {
         <button
           class="items-option"
-          [class.active]="option === pagination.itemsPerPage"
+          [class.active]="option === pagination.items_per_page"
           (click)="updateItemsPerPage(option)"
         >
           {{ option }}
@@ -19,7 +19,7 @@
     <strong>{{ startItem }}</strong
     >-<strong>{{ endItem }}</strong>
     {{ 'pagination.of' | translate }}
-    <strong>{{ pagination.totalItems }}</strong>
+    <strong>{{ pagination.total_items }}</strong>
   </div>
 
   <nav class="pagination-controls" [attr.aria-label]="'pagination.navigation' | translate">
@@ -39,10 +39,10 @@
         } @else {
           <button
             class="page-button"
-            [class.active]="page === pagination.currentPage"
+            [class.active]="page === pagination.current_page"
             (click)="goToPage(page)"
             [attr.aria-label]="('pagination.page' | translate) + ' ' + page"
-            [attr.aria-current]="page === pagination.currentPage ? 'page' : null"
+            [attr.aria-current]="page === pagination.current_page ? 'page' : null"
           >
             {{ page }}
           </button>

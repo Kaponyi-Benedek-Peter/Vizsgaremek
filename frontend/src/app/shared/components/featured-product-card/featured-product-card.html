@@ -1,13 +1,13 @@
 <div class="featured-product-card" (click)="onCardClick()">
   <div class="featured-product-image-wrapper">
-    <img *ngIf="imageUrl()" [src]="imageUrl()" [alt]="altText()" class="featured-product-image" />
+    <img *ngIf="image_url()" [src]="image_url()" [alt]="altText()" class="featured-product-image" />
 
-    <div class="featured-badges" *ngIf="discountPercentage() || requiresPrescription()">
-      <span *ngIf="discountPercentage()" class="featured-badge featured-badge-discount">
-        -{{ discountPercentage() }}%
+    <div class="featured-badges" *ngIf="discount_percentage() || requires_prescription()">
+      <span *ngIf="discount_percentage()" class="featured-badge featured-badge-discount">
+        -{{ discount_percentage() }}%
       </span>
       <span
-        *ngIf="requiresPrescription()"
+        *ngIf="requires_prescription()"
         class="featured-badge featured-badge-prescription"
         [title]="'product.requires_prescription' | translate"
       >
@@ -16,7 +16,7 @@
     </div>
   </div>
 
-  <div *ngIf="!imageUrl()" class="featured-product-card-placeholder">
+  <div *ngIf="!image_url()" class="featured-product-card-placeholder">
     <div class="featured-placeholder-icon">?</div>
     <div class="featured-placeholder-text">{{ 'product.no_image' | translate }}</div>
   </div>
@@ -33,11 +33,11 @@
 
     <div
       class="featured-product-stock"
-      [class.featured-stock-in]="inStock()"
-      [class.featured-stock-out]="!inStock()"
+      [class.featured-stock-in]="in_stock()"
+      [class.featured-stock-out]="!in_stock()"
     >
       <span class="featured-stock-indicator"></span>
-      <span>{{ (inStock() ? 'product.in_stock' : 'product.out_of_stock') | translate }}</span>
+      <span>{{ (in_stock() ? 'product.in_stock' : 'product.out_of_stock') | translate }}</span>
     </div>
   </div>
 </div>

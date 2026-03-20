@@ -20,7 +20,7 @@ export class CategoryItem {
    * Returns the category name in the currently active language.
    * Falls back to English if the localized name is missing.
    */
-  get displayName(): string {
+  get display_name(): string {
     const lang = this.translateService.currentLang || 'hu';
 
     switch (lang) {

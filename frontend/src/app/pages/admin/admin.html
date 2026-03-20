@@ -207,7 +207,9 @@
               type="search"
               class="admin-search"
               [(ngModel)]="orderSearch"
-              [placeholder]="('admin.search_orders' | translate) + '   (city:budapest, status:delivered)'"
+              [placeholder]="
+                ('admin.search_orders' | translate) + '   (city:budapest, status:delivered)'
+              "
             />
           </div>
           <button class="retry-btn" (click)="loadOrders()" [disabled]="ordersLoading()">
@@ -322,7 +324,10 @@
                   </thead>
                   <tbody>
                     @for (user of filteredUsers(); track user.id) {
-                      <tr [class.row-banned]="user.account_state === 'banned'" [class.row-deleted]="user.account_state === 'deleted'">
+                      <tr
+                        [class.row-banned]="user.account_state === 'banned'"
+                        [class.row-deleted]="user.account_state === 'deleted'"
+                      >
                         <td>
                           <div class="user-cell">
                             <div class="user-avatar">{{ getUserInitial(user) }}</div>
@@ -351,35 +356,50 @@
                                 <div class="action-dropdown">
                                   @if (user.account_state !== 'banned') {
                                     <div class="dropdown-section">
-                                      <span class="dropdown-label">{{ 'admin.user_actions.set_role' | translate }}</span>
+                                      <span class="dropdown-label">{{
+                                        'admin.user_actions.set_role' | translate
+                                      }}</span>
                                       @for (state of getAvailableStates(user); track state) {
                                         <button
                                           class="dropdown-item"
                                           (click)="requestChangeRole(user, state)"
                                         >
-                                          <span [class]="'role-dot ' + getAccountStateClass(state)"></span>
+                                          <span
+                                            [class]="'role-dot ' + getAccountStateClass(state)"
+                                          ></span>
                                           {{ state }}
                                         </button>
                                       }
                                     </div>
                                     <div class="dropdown-divider"></div>
-                                    <button class="dropdown-item dropdown-item-warn" (click)="requestBanUser(user)">
+                                    <button
+                                      class="dropdown-item dropdown-item-warn"
+                                      (click)="requestBanUser(user)"
+                                    >
                                       {{ 'admin.user_actions.ban' | translate }}
                                     </button>
                                   } @else {
-                                    <button class="dropdown-item dropdown-item-success" (click)="requestUnbanUser(user)">
+                                    <button
+                                      class="dropdown-item dropdown-item-success"
+                                      (click)="requestUnbanUser(user)"
+                                    >
                                       {{ 'admin.user_actions.unban' | translate }}
                                     </button>
                                     <div class="dropdown-divider"></div>
                                   }
-                                  <button class="dropdown-item dropdown-item-danger" (click)="requestDeleteUser(user)">
+                                  <button
+                                    class="dropdown-item dropdown-item-danger"
+                                    (click)="requestDeleteUser(user)"
+                                  >
                                     {{ 'admin.user_actions.delete' | translate }}
                                   </button>
                                 </div>
                               }
                             </div>
                           } @else if (isSelf(user)) {
-                            <span class="muted self-label">{{ 'admin.user_actions.you' | translate }}</span>
+                            <span class="muted self-label">{{
+                              'admin.user_actions.you' | translate
+                            }}</span>
                           } @else {
                             <span class="muted">—</span>
                           }
@@ -404,9 +424,14 @@
               type="search"
               class="admin-search"
               [(ngModel)]="productSearch"
-              [placeholder]="('admin.search_products' | translate) + '   (brand:bayer, category:medicines)'"
+              [placeholder]="
+                ('admin.search_products' | translate) + '   (brand:bayer, category:medicines)'
+              "
             />
           </div>
+          <button class="add-btn" (click)="openProductForm()">
+            + {{ 'admin.product_form.add' | translate }}
+          </button>
           <button class="retry-btn" (click)="loadProducts()" [disabled]="productsLoading()">
             🔄 {{ 'common.refresh' | translate }}
           </button>
@@ -442,6 +467,7 @@
                       <th>{{ 'admin.table.stock' | translate }}</th>
                       <th>{{ 'admin.table.rating' | translate }}</th>
                       <th>{{ 'admin.table.status' | translate }}</th>
+                      <th>{{ 'admin.table.actions' | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -489,23 +515,65 @@
                         <td class="muted">{{ product.sku }}</td>
                         <td class="font-bold">{{ formatRevenue(product.price) }}</td>
                         <td>
-                          <span [class]="product.stockNumber < 10 ? 'stock-low' : 'stock-ok'">
-                            {{ product.stockNumber }} {{ 'common.items_unit' | translate }}
+                          <span [class]="product.stock_number < 10 ? 'stock-low' : 'stock-ok'">
+                            {{ product.stock_number }} {{ 'common.items_unit' | translate }}
                           </span>
                         </td>
-                        <td class="muted">★ {{ product.ratingNumber.toFixed(1) }}</td>
+                        <td class="muted">★ {{ product.rating_number.toFixed(1) }}</td>
                         <td>
                           <span
                             [class]="
-                              'status-badge status-' + (product.inStock ? 'delivered' : 'cancelled')
+                              'status-badge status-' + (product.in_stock ? 'delivered' : 'cancelled')
                             "
                           >
                             {{
-                              product.inStock
+                              product.in_stock
                                 ? ('admin.active' | translate)
                                 : ('admin.inactive' | translate)
                             }}
                           </span>
+                        </td>
+                        <td>
+                          <div class="row-actions">
+                            <button
+                              class="row-action-btn edit-btn"
+                              (click)="openProductForm(product)"
+                              [attr.title]="'common.edit' | translate"
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              >
+                                <path
+                                  d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                                />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                              </svg>
+                            </button>
+                            <button
+                              class="row-action-btn delete-btn"
+                              (click)="requestDeleteProduct(product, $event)"
+                              [attr.title]="'admin.product_form.delete' | translate"
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              >
+                                <polyline points="3 6 5 6 21 6" />
+                                <path
+                                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                                />
+                              </svg>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     }
@@ -533,7 +601,10 @@
           }
         </div>
         <div class="gallery-header-controls">
-          <label class="transparent-toggle" [attr.title]="'admin.gallery.transparent_hint' | translate">
+          <label
+            class="transparent-toggle"
+            [attr.title]="'admin.gallery.transparent_hint' | translate"
+          >
             <span class="transparent-label">{{ 'admin.gallery.transparent' | translate }}</span>
             <button
               class="toggle-switch"
@@ -550,17 +621,17 @@
             (click)="closeGallery()"
             [attr.aria-label]="'common.close' | translate"
           >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
       </div>
@@ -764,22 +835,432 @@
   </div>
 }
 
+@if (productFormOpen()) {
+  <div class="product-form-overlay" (click)="onProductFormOverlayClick($event)">
+    <div class="product-form-modal">
+      <div class="product-form-header">
+        <h2 class="product-form-title">
+          {{
+            (productFormIsEdit() ? 'admin.product_form.edit_title' : 'admin.product_form.add_title')
+              | translate
+          }}
+        </h2>
+        <button class="gallery-close-btn" (click)="closeProductForm()">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="product-form-tabs">
+        @for (tab of productFormTabs; track tab.id) {
+          <button
+            [class]="'pf-tab' + (productFormTab() === tab.id ? ' pf-tab-active' : '')"
+            (click)="setProductFormTab(tab.id)"
+          >
+            {{ tab.label | translate }}
+          </button>
+        }
+      </div>
+
+      <div class="product-form-body">
+        <!-- ── BASIC TAB ──────────────────────────────────────────── -->
+        @if (productFormTab() === 'basic') {
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.product_form.names' | translate }}</h3>
+            <div class="pf-grid-3">
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.product_form.name_hu' | translate }}</label>
+                <input
+                  class="pf-input"
+                  [ngModel]="productFormData().name_hu"
+                  (ngModelChange)="updateProductField('name_hu', $event)"
+                />
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.product_form.name_en' | translate }}</label>
+                <input
+                  class="pf-input"
+                  [ngModel]="productFormData().name_en"
+                  (ngModelChange)="updateProductField('name_en', $event)"
+                />
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.product_form.name_de' | translate }}</label>
+                <input
+                  class="pf-input"
+                  [ngModel]="productFormData().name_de"
+                  (ngModelChange)="updateProductField('name_de', $event)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.product_form.identification' | translate }}</h3>
+            <div class="pf-grid-2">
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.table.brand' | translate }}</label>
+                <input
+                  class="pf-input"
+                  [ngModel]="productFormData().brand"
+                  (ngModelChange)="updateProductField('brand', $event)"
+                />
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.product_form.manufacturer' | translate }}</label>
+                <input
+                  class="pf-input"
+                  [ngModel]="productFormData().manufacturer"
+                  (ngModelChange)="updateProductField('manufacturer', $event)"
+                />
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">SKU</label>
+                <input
+                  class="pf-input"
+                  [ngModel]="productFormData().sku"
+                  (ngModelChange)="updateProductField('sku', $event)"
+                />
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.table.category' | translate }}</label>
+                <select
+                  class="pf-select"
+                  [ngModel]="productFormData().category_id"
+                  (ngModelChange)="updateProductField('category_id', $event)"
+                >
+                  <option value="">—</option>
+                  @for (cat of availableCategories(); track cat.id) {
+                    <option [value]="cat.id">{{ cat.icon }} {{ cat.name_en }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <div class="pf-field">
+              <label class="pf-label">{{ 'admin.product_form.thumbnail_url' | translate }}</label>
+              <input
+                class="pf-input"
+                [ngModel]="productFormData().thumbnail_url"
+                (ngModelChange)="updateProductField('thumbnail_url', $event)"
+                placeholder="assets/products/1/1.webp"
+              />
+            </div>
+          </div>
+        }
+
+        <!-- ── PRICING TAB ────────────────────────────────────────── -->
+        @if (productFormTab() === 'pricing') {
+          <div class="pf-section">
+            <div class="pf-grid-3">
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.product_form.price_huf' | translate }}</label>
+                <input
+                  class="pf-input"
+                  type="number"
+                  min="0"
+                  [ngModel]="productFormData().price_huf"
+                  (ngModelChange)="updateProductField('price_huf', +$event)"
+                />
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.product_form.sale_pct' | translate }}</label>
+                <input
+                  class="pf-input"
+                  type="number"
+                  min="0"
+                  max="100"
+                  [ngModel]="productFormData().sale_percentage"
+                  (ngModelChange)="updateProductField('sale_percentage', +$event)"
+                />
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.table.stock' | translate }}</label>
+                <input
+                  class="pf-input"
+                  type="number"
+                  min="0"
+                  [ngModel]="productFormData().stock"
+                  (ngModelChange)="updateProductField('stock', +$event)"
+                />
+              </div>
+            </div>
+          </div>
+
+          @if (productFormData().price_huf > 0 && productFormData().sale_percentage > 0) {
+            <div class="pf-price-preview">
+              <span class="pf-price-original">{{
+                formatRevenue(productFormData().price_huf)
+              }}</span>
+              <span class="pf-price-arrow">→</span>
+              <span class="pf-price-discounted">{{
+                formatRevenue(
+                  productFormData().price_huf * (1 - productFormData().sale_percentage / 100)
+                )
+              }}</span>
+              <span class="pf-price-badge">-{{ productFormData().sale_percentage }}%</span>
+            </div>
+          }
+        }
+
+        <!-- ── DESCRIPTIONS TAB ───────────────────────────────────── -->
+        @if (productFormTab() === 'descriptions') {
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.product_form.previews' | translate }}</h3>
+            <div class="pf-grid-3">
+              <div class="pf-field">
+                <label class="pf-label">HU</label>
+                <textarea
+                  class="pf-textarea pf-textarea-sm"
+                  [ngModel]="productFormData().description_preview_hu"
+                  (ngModelChange)="updateProductField('description_preview_hu', $event)"
+                ></textarea>
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">EN</label>
+                <textarea
+                  class="pf-textarea pf-textarea-sm"
+                  [ngModel]="productFormData().description_preview_en"
+                  (ngModelChange)="updateProductField('description_preview_en', $event)"
+                ></textarea>
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">DE</label>
+                <textarea
+                  class="pf-textarea pf-textarea-sm"
+                  [ngModel]="productFormData().description_preview_de"
+                  (ngModelChange)="updateProductField('description_preview_de', $event)"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h3 class="pf-section-title">
+              {{ 'admin.product_form.full_descriptions' | translate }}
+            </h3>
+            <div class="pf-stack">
+              <div class="pf-field">
+                <label class="pf-label">HU</label>
+                <textarea
+                  class="pf-textarea"
+                  rows="4"
+                  [ngModel]="productFormData().description_hu"
+                  (ngModelChange)="updateProductField('description_hu', $event)"
+                ></textarea>
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">EN</label>
+                <textarea
+                  class="pf-textarea"
+                  rows="4"
+                  [ngModel]="productFormData().description_en"
+                  (ngModelChange)="updateProductField('description_en', $event)"
+                ></textarea>
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">DE</label>
+                <textarea
+                  class="pf-textarea"
+                  rows="4"
+                  [ngModel]="productFormData().description_de"
+                  (ngModelChange)="updateProductField('description_de', $event)"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ── DETAILS TAB ────────────────────────────────────────── -->
+        @if (productFormTab() === 'details') {
+          <div class="pf-section">
+            <div class="pf-field">
+              <label class="pf-label">{{
+                'admin.product_form.active_ingredients' | translate
+              }}</label>
+              <textarea
+                class="pf-textarea"
+                rows="3"
+                [ngModel]="productFormData().active_ingredients"
+                (ngModelChange)="updateProductField('active_ingredients', $event)"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.product_form.packaging' | translate }}</h3>
+            <div class="pf-grid-3">
+              <div class="pf-field">
+                <label class="pf-label">HU</label>
+                <input
+                  class="pf-input"
+                  [ngModel]="productFormData().packaging_hu"
+                  (ngModelChange)="updateProductField('packaging_hu', $event)"
+                />
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">EN</label>
+                <input
+                  class="pf-input"
+                  [ngModel]="productFormData().packaging_en"
+                  (ngModelChange)="updateProductField('packaging_en', $event)"
+                />
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">DE</label>
+                <input
+                  class="pf-input"
+                  [ngModel]="productFormData().packaging_de"
+                  (ngModelChange)="updateProductField('packaging_de', $event)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <label class="transparent-toggle">
+              <span class="transparent-label">{{ 'admin.product_form.featured' | translate }}</span>
+              <button
+                class="toggle-switch"
+                [class.active]="productFormData().featured"
+                (click)="toggleProductFeatured()"
+                role="switch"
+                [attr.aria-checked]="productFormData().featured"
+              >
+                <span class="toggle-knob"></span>
+              </button>
+            </label>
+          </div>
+        }
+      </div>
+
+      <div class="product-form-footer">
+        <button
+          class="confirm-cancel-btn"
+          (click)="closeProductForm()"
+          [disabled]="productFormSaving()"
+        >
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="confirm-action-btn" (click)="saveProduct()" [disabled]="productFormSaving()">
+          @if (productFormSaving()) {
+            <span class="spinner-small">⏳</span>
+          } @else {
+            {{
+              (productFormIsEdit() ? 'admin.product_form.save' : 'admin.product_form.create')
+                | translate
+            }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (productDeleteConfirm(); as product) {
+  <div class="confirm-overlay" (click)="cancelDeleteProduct()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-wrapper confirm-icon-danger">
+        <svg
+          class="confirm-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          />
+        </svg>
+      </div>
+      <h3 class="confirm-title">{{ 'admin.product_form.confirm_delete_title' | translate }}</h3>
+      <p class="confirm-text">
+        {{ 'admin.product_form.confirm_delete_text' | translate: { name: product.name } }}
+      </p>
+      <div class="confirm-actions">
+        <button
+          class="confirm-cancel-btn"
+          (click)="cancelDeleteProduct()"
+          [disabled]="productDeleteLoading()"
+        >
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button
+          class="confirm-delete-btn"
+          (click)="confirmDeleteProduct()"
+          [disabled]="productDeleteLoading()"
+        >
+          @if (productDeleteLoading()) {
+            <span class="spinner-small">⏳</span>
+          } @else {
+            {{ 'admin.product_form.delete' | translate }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
 @if (userActionConfirm(); as req) {
   <div class="confirm-overlay" (click)="cancelUserAction()">
     <div class="confirm-dialog" (click)="$event.stopPropagation()">
-      <div class="confirm-icon-wrapper" [class.confirm-icon-danger]="req.action === 'delete' || req.action === 'ban'" [class.confirm-icon-primary]="req.action === 'change_role' || req.action === 'unban'">
+      <div
+        class="confirm-icon-wrapper"
+        [class.confirm-icon-danger]="req.action === 'delete' || req.action === 'ban'"
+        [class.confirm-icon-primary]="req.action === 'change_role' || req.action === 'unban'"
+      >
         @if (req.action === 'delete') {
-          <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            class="confirm-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            <path
+              d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+            />
           </svg>
         } @else if (req.action === 'ban') {
-          <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            class="confirm-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="12" cy="12" r="10" />
             <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
           </svg>
         } @else {
-          <svg class="confirm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            class="confirm-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
             <circle cx="8.5" cy="7" r="4" />
             <polyline points="17 11 19 13 23 9" />
@@ -788,20 +1269,35 @@
       </div>
       <h3 class="confirm-title">{{ getUserActionTitle() | translate }}</h3>
       <p class="confirm-text">
-        {{ getUserActionText() | translate: { name: getUserFullName(req.user), state: req.newState || '' } }}
+        {{
+          getUserActionText()
+            | translate: { name: getUserFullName(req.user), state: req.newState || '' }
+        }}
       </p>
       @if (req.newState) {
         <div class="confirm-state-preview">
-          <span [class]="'role-badge ' + getAccountStateClass(req.user.account_state)">{{ req.user.account_state }}</span>
+          <span [class]="'role-badge ' + getAccountStateClass(req.user.account_state)">{{
+            req.user.account_state
+          }}</span>
           <span class="state-arrow">→</span>
-          <span [class]="'role-badge ' + getAccountStateClass(req.newState)">{{ req.newState }}</span>
+          <span [class]="'role-badge ' + getAccountStateClass(req.newState)">{{
+            req.newState
+          }}</span>
         </div>
       }
       <div class="confirm-actions">
-        <button class="confirm-cancel-btn" (click)="cancelUserAction()" [disabled]="userActionLoading()">
+        <button
+          class="confirm-cancel-btn"
+          (click)="cancelUserAction()"
+          [disabled]="userActionLoading()"
+        >
           {{ 'common.cancel' | translate }}
         </button>
-        <button [class]="getUserActionBtnClass()" (click)="confirmUserAction()" [disabled]="userActionLoading()">
+        <button
+          [class]="getUserActionBtnClass()"
+          (click)="confirmUserAction()"
+          [disabled]="userActionLoading()"
+        >
           @if (userActionLoading()) {
             <span class="spinner-small">⏳</span>
           } @else {

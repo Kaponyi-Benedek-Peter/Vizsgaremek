@@ -39,8 +39,8 @@ export class ProductCard {
     initialValue: this.translationService.getCurrentLanguage(),
   });
 
-  get hasDiscount(): boolean {
-    return this.product.hasDiscount;
+  get has_discount(): boolean {
+    return this.product.has_discount;
   }
 
   get formattedPrice(): string {
@@ -53,14 +53,14 @@ export class ProductCard {
 
   get canAddToCart(): boolean {
     return (
-      this.product.inStock &&
-      !this.product.requiresPrescription &&
-      this.quantity() <= this.product.stockQuantity
+      this.product.in_stock &&
+      !this.product.requires_prescription &&
+      this.quantity() <= this.product.stock_quantity
     );
   }
 
   get hasRating(): boolean {
-    return this.product.ratingNumber > 0;
+    return this.product.rating_number > 0;
   }
 
   localizedName = computed(() => {
@@ -85,7 +85,7 @@ export class ProductCard {
   }
 
   getRatingStars(): string {
-    const rating = this.product.ratingNumber;
+    const rating = this.product.rating_number;
     if (!rating) return '';
     const full = Math.floor(rating);
     const half = rating % 1 >= 0.5;
@@ -94,7 +94,7 @@ export class ProductCard {
   }
 
   increaseQuantity(): void {
-    if (this.quantity() < this.product.stockQuantity) {
+    if (this.quantity() < this.product.stock_quantity) {
       this.quantity.update((q) => q + 1);
       this.quantityChange.emit({ product: this.product, quantity: this.quantity() });
     }

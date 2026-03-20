@@ -31,7 +31,7 @@ export class ForumService {
   private categoriesSignal = signal<CategoryInfo[]>([]);
   private filtersSignal = signal<PostFilters>({});
   private sortBySignal = signal<SortOption>('newest');
-  private currentPageSignal = signal(1);
+  private current_pageSignal = signal(1);
   private pageSizeSignal = signal(9);
   private isLoadingSignal = signal(false);
   private loadErrorSignal = signal(false);
@@ -39,11 +39,11 @@ export class ForumService {
   posts = this.postsSignal.asReadonly();
   categories = this.categoriesSignal.asReadonly();
   filters = this.filtersSignal.asReadonly();
-  sortBy = this.sortBySignal.asReadonly();
+  sort_by = this.sortBySignal.asReadonly();
   isLoading = this.isLoadingSignal.asReadonly();
   loadError = this.loadErrorSignal.asReadonly();
 
-  currentPage = computed(() => this.currentPageSignal());
+  current_page = computed(() => this.current_pageSignal());
 
   filteredPosts = computed(() => {
     const posts = this.applyFilters(this.postsSignal(), this.filtersSignal());
@@ -52,13 +52,13 @@ export class ForumService {
 
   paginatedPosts = computed(() => {
     const posts = this.filteredPosts();
-    const page = this.currentPageSignal();
+    const page = this.current_pageSignal();
     const pageSize = this.pageSizeSignal();
     const start = (page - 1) * pageSize;
     return posts.slice(start, start + pageSize);
   });
 
-  totalPages = computed(() => Math.ceil(this.filteredPosts().length / this.pageSizeSignal()));
+  total_pages = computed(() => Math.ceil(this.filteredPosts().length / this.pageSizeSignal()));
 
   loadPosts(): void {
     this.isLoadingSignal.set(true);
@@ -120,9 +120,9 @@ export class ForumService {
     return backendCategories.map(
       (bc): CategoryInfo => ({
         id: bc.id,
-        iconSrc: getCategoryIcon(bc.id),
-        colorClass: CATEGORY_COLOR_MAP[bc.id] ?? DEFAULT_CATEGORY_COLOR,
-        displayName: this.resolveName(bc, lang),
+        icon_src: getCategoryIcon(bc.id),
+        color_class: CATEGORY_COLOR_MAP[bc.id] ?? DEFAULT_CATEGORY_COLOR,
+        display_name: this.resolveName(bc, lang),
       }),
     );
   }
@@ -204,23 +204,23 @@ export class ForumService {
 
   setFilters(filters: PostFilters): void {
     this.filtersSignal.set(filters);
-    this.currentPageSignal.set(1);
+    this.current_pageSignal.set(1);
   }
 
-  setSorting(sortBy: SortOption): void {
-    this.sortBySignal.set(sortBy);
-    this.currentPageSignal.set(1);
+  setSorting(sort_by: SortOption): void {
+    this.sortBySignal.set(sort_by);
+    this.current_pageSignal.set(1);
   }
 
   setPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages()) {
-      this.currentPageSignal.set(page);
+    if (page >= 1 && page <= this.total_pages()) {
+      this.current_pageSignal.set(page);
     }
   }
 
   setPosts(posts: Post[]): void {
     this.postsSignal.set(posts);
-    this.currentPageSignal.set(1);
+    this.current_pageSignal.set(1);
   }
 
   private applyFilters(posts: Post[], filters: PostFilters): Post[] {
@@ -240,9 +240,9 @@ export class ForumService {
     });
   }
 
-  private applySorting(posts: Post[], sortBy: SortOption): Post[] {
+  private applySorting(posts: Post[], sort_by: SortOption): Post[] {
     const sorted = [...posts];
-    switch (sortBy) {
+    switch (sort_by) {
       case 'newest':
         return sorted.sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),

@@ -1,21 +1,21 @@
 <article
   class="product-card"
   [class.compact]="compact"
-  [class.out-of-stock]="!product.inStock"
+  [class.out-of-stock]="!product.in_stock"
   [attr.aria-label]="localizedName()"
 >
   <a [routerLink]="['/products', product.id]" class="product-link">
     <div class="product-image-wrapper">
-      <img [src]="product.imageUrl" [alt]="localizedName()" class="product-image" loading="lazy" />
+      <img [src]="product.image_url" [alt]="localizedName()" class="product-image" loading="lazy" />
 
       <div class="product-image-overlay"></div>
 
       <div class="badges">
-        @if (hasDiscount) {
-          <span class="badge discount-badge"> -{{ product.discountPercentage }}% </span>
+        @if (has_discount) {
+          <span class="badge discount-badge"> -{{ product.discount_percentage }}% </span>
         }
 
-        @if (product.requiresPrescription) {
+        @if (product.requires_prescription) {
           <span
             class="badge prescription-badge"
             [title]="'product.requires_prescription' | translate"
@@ -25,7 +25,7 @@
         }
       </div>
 
-      @if (!product.inStock) {
+      @if (!product.in_stock) {
         <div class="out-of-stock-overlay">
           <span>{{ 'product.out_of_stock' | translate }}</span>
         </div>
@@ -57,12 +57,12 @@
       @if (hasRating && !compact) {
         <div class="product-rating">
           <span class="rating-stars">{{ getRatingStars() }}</span>
-          <span class="rating-value">{{ product.ratingNumber.toFixed(1) }}</span>
+          <span class="rating-value">{{ product.rating_number.toFixed(1) }}</span>
         </div>
       }
 
       <div class="product-price-section">
-        @if (hasDiscount) {
+        @if (has_discount) {
           <div class="price-with-discount">
             <span class="original-price">{{ formattedPrice }}</span>
             <span class="discounted-price">{{ formattedDiscountedPrice }}</span>
@@ -76,11 +76,11 @@
 
   <div class="product-actions">
     @if (!compact) {
-      <div class="quantity-controls" [class.disabled]="!product.inStock">
+      <div class="quantity-controls" [class.disabled]="!product.in_stock">
         <button
           class="quantity-btn"
           (click)="decreaseQuantity()"
-          [disabled]="quantity() <= 1 || !product.inStock"
+          [disabled]="quantity() <= 1 || !product.in_stock"
           [attr.aria-label]="'product.decrease_quantity' | translate"
         >
           −
@@ -91,7 +91,7 @@
         <button
           class="quantity-btn"
           (click)="increaseQuantity()"
-          [disabled]="quantity() >= product.stockQuantity || !product.inStock"
+          [disabled]="quantity() >= product.stock_quantity || !product.in_stock"
           [attr.aria-label]="'product.increase_quantity' | translate"
         >
           +
