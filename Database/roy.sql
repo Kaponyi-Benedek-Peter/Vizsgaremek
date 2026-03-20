@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: localhost:8889
--- Létrehozás ideje: 2026. Már 18. 09:47
+-- Létrehozás ideje: 2026. Már 20. 08:54
 -- Kiszolgáló verziója: 5.7.24
 -- PHP verzió: 8.3.1
 
@@ -856,6 +856,12 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_account_state_by_id` (IN `p_
     WHERE id = p_id;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_ban_reason_by_user_id` (IN `p_user_id` INT, IN `p_ban_reason` VARCHAR(255))   BEGIN
+    UPDATE roy.users
+    SET    ban_reason = p_ban_reason
+    WHERE  id = p_user_id;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_confirmation_by_id` (IN `p_id` INT, IN `p_new_new_value` VARCHAR(255), IN `p_new_confirmation_token` VARCHAR(255), IN `p_new_confirmation_token_expire` DATETIME, IN `p_new_confirmation_type` VARCHAR(255))   BEGIN
 UPDATE roy.confirmations
 SET new_value = p_new_new_value,
@@ -1343,16 +1349,17 @@ CREATE TABLE `users` (
   `sesstoken_expire` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `first_name` varchar(255) NOT NULL,
   `last_name` varchar(16) NOT NULL,
-  `account_state` enum('verified','unverified','banned','admin','deleted') NOT NULL
+  `account_state` enum('verified','unverified','banned','admin','superadmin','deleted') NOT NULL,
+  `ban_reason` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- A tábla adatainak kiíratása `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sesstoken_expire`, `first_name`, `last_name`, `account_state`) VALUES
-(77, 'bp.kaponyi@gmail.com', '2026-03-10 13:39:11', 'jyWrVjsbmJzNNejcqLESus', 'waajxlkYiW4JdiOOAn2w6Uv3IptLfHWVHYnBqaxaYg8=', '2026-03-17 13:39:11', 'kukukuku', 'kukukuku', 'admin'),
-(78, 'kerepesi.aron@szechenyi.hu', '2026-03-10 14:12:10', 'zhOcUbUsGaJzWIdHiXwHBA', '7L6z2bdXVIb0e8BLlkzWtYZ9cMCX+g568nwo22mguMo=', '2026-03-17 14:12:36', 'first', 'last', 'verified');
+INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sesstoken_expire`, `first_name`, `last_name`, `account_state`, `ban_reason`) VALUES
+(77, 'bp.kaponyi@gmail.com', '2026-03-10 13:39:11', 'jyWrVjsbmJzNNejcqLESus', 'waajxlkYiW4JdiOOAn2w6Uv3IptLfHWVHYnBqaxaYg8=', '2026-03-17 13:39:11', 'kukukuku', 'kukukuku', 'admin', NULL),
+(78, 'kerepesi.aron@szechenyi.hu', '2026-03-10 14:12:10', 'zhOcUbUsGaJzWIdHiXwHBA', '7L6z2bdXVIb0e8BLlkzWtYZ9cMCX+g568nwo22mguMo=', '2026-03-17 14:12:36', 'first', 'last', 'verified', NULL);
 
 --
 -- Indexek a kiírt táblákhoz
