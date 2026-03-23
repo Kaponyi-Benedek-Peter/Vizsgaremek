@@ -215,10 +215,7 @@ PROJECT STRUCTURE
 │   │           └── 📄 currency.pipe.ts
 │   ├── 📁 assets/
 │   │   ├── 📁 fonts/
-│   │   │   ├── 📁 Inconsolata/
-│   │   │   │   └── 📁 static/
-│   │   │   └── 📁 Roboto/
-│   │   │       └── 📁 static/
+│   │   │   └── 📁 Inconsolata/
 │   │   ├── 📁 i18n/
 │   │   │   ├── 📄 de.json
 │   │   │   ├── 📄 en.json
@@ -30425,7 +30422,11 @@ FILE: src\index.html
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Roy's Shack</title>
+    <title>Roy's Shack Est. 1888 — Pharmacy & Wellness</title>
+    <meta
+      name="description"
+      content="Roy's Shack Est. 1888 — Your trusted online pharmacy for medicines, natural remedies, vitamins, and wellness products. Browse our catalog, read expert advice on our forum, and order with confidence."
+    />
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="roy_icon_green.ico" />
@@ -30681,7 +30682,7 @@ FILE: src\styles\styles.css
 
 @font-face {
   font-family: 'Inconsolata';
-  src: url('../assets/fonts/Inconsolata/static/Inconsolata-Regular.ttf') format('truetype');
+  src: url('../assets/fonts/Inconsolata/Inconsolata-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -30689,15 +30690,7 @@ FILE: src\styles\styles.css
 
 @font-face {
   font-family: 'Inconsolata';
-  src: url('../assets/fonts/Inconsolata/static/Inconsolata-Medium.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Inconsolata';
-  src: url('../assets/fonts/Inconsolata/static/Inconsolata-Bold.ttf') format('truetype');
+  src: url('../assets/fonts/Inconsolata/Inconsolata-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
