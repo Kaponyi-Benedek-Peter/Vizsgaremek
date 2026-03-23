@@ -1,4 +1,3 @@
-import { CommonModule, NgIf } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject, computed } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CurrencyService } from '../../../core/services/currency.service';
@@ -10,7 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-featured-product-card',
-  imports: [CommonModule, NgIf, TranslateModule, CurrencyPipe],
+  imports: [TranslateModule, CurrencyPipe],
   templateUrl: './featured-product-card.html',
   styleUrl: './featured-product-card.css',
 })

@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+Disallow: /products/
+Disallow: /forum/
+Disallow: /profile
+Disallow: /purchase
+Disallow: /admin
+Disallow: /login-promise
+Disallow: /registration-promise
+Disallow: /delacc-promise
+Disallow: /password-reset
+
+Sitemap: https://roysshack.hu/sitemap.xml

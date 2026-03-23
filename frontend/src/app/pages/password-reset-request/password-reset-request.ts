@@ -1,5 +1,5 @@
 import { Component, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -9,7 +9,7 @@ import { TranslationService } from '../../core/services/translation.service';
 @Component({
   selector: 'app-password-reset-request',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [FormsModule, RouterModule, TranslateModule],
   templateUrl: './password-reset-request.html',
   styleUrl: './password-reset-request.css',
 })

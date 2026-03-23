@@ -1,5 +1,4 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
@@ -27,7 +26,7 @@ interface SocialLink {
 @Component({
   selector: 'app-newsletter-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, NgFor, NgIf],
+  imports: [FormsModule, TranslateModule],
   templateUrl: './newsletter-form.html',
   styleUrl: './newsletter-form.css',
 })
@@ -51,15 +50,12 @@ export class NewsletterForm {
   isLangDropdownOpen = false;
   activeSocialTooltip: string | null = null;
 
-  // current language as default language
   selectedLang = toSignal(this.translationService.currentLang$, {
     initialValue: this.translationService.getCurrentLanguage(),
   });
 
-  // writeable signal for the newsletter language
   newsletterLang = signal<SupportedLanguage>(this.translationService.getCurrentLanguage());
 
-  // languages from visuals.ts
   readonly languages = LANGUAGE_OPTIONS;
 
   socialLinks: SocialLink[] = [
@@ -96,14 +92,6 @@ export class NewsletterForm {
         }
       }, 3000);
     }
-  }
-
-  trackByLangCode(index: number, lang: any) {
-    return lang.code;
-  }
-
-  trackBySocialName(index: number, social: any) {
-    return social.name;
   }
 
   onSubmit(): void {

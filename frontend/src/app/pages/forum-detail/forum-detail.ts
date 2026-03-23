@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -12,7 +12,7 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 @Component({
   selector: 'app-forum-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslateModule],
   templateUrl: './forum-detail.html',
   styleUrl: './forum-detail.css',
 })

@@ -446,7 +446,6 @@
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
     "comment_edited": "szerkesztve",
-
     "empty_title": "Még nincsenek posztok",
     "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
     "error_title": "Nem sikerült betölteni",
@@ -496,7 +495,8 @@
       "price": "Ár",
       "brand": "Márka",
       "billing": "Számlázás",
-      "view_images": "Képek megtekintése"
+      "view_images": "Képek megtekintése",
+      "images": "Képek"
     },
     "gallery": {
       "title": "Termék képek",

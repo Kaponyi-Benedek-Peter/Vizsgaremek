@@ -5,6 +5,7 @@ import { catchError, map, timeout, forkJoin, of } from 'rxjs';
 
 import {
   Post,
+  Comment,
   PostFilters,
   SortOption,
   CategoryInfo,
@@ -171,7 +172,7 @@ export class ForumService {
       .post<{
         status: string;
         statuscode: number;
-        comments: any[];
+        comments: Comment[];
       }>(`${this.API_URL}/api/get_post_comments_by_post_id`, { post_id: btoa(postId) })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),

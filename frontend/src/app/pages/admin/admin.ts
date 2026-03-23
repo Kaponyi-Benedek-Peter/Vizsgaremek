@@ -1,18 +1,16 @@
 import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
 import { ICONS } from '../../core/constants/visuals';
 import { ResizableTableDirective } from '../../shared/directives/resizable-table.directive';
 import { formatFileSize } from '../../core/utils/image-utils';
-import { environment } from '../../../environments/environment';
 import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS } from './admin.mock';
 
 type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
@@ -194,7 +192,7 @@ interface UserActionRequest {
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, ResizableTableDirective],
+  imports: [RouterModule, FormsModule, TranslateModule, ResizableTableDirective],
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })
@@ -204,7 +202,6 @@ export class Admin implements OnInit {
   private productService = inject(ProductService);
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
-  private http = inject(HttpClient);
   private router = inject(Router);
 
   protected readonly icons = ICONS;
@@ -641,30 +638,24 @@ export class Admin implements OnInit {
     }
 
     const auth = this.buildAdminAuth();
-    const body = { ...auth, product_id: btoa(product.id) };
 
-    this.http
-      .post<{
-        statuscode: string;
-        status: string;
-      }>(`${environment.baseURL}/api/delete_product_admin`, body)
-      .subscribe({
-        next: (res) => {
-          if (res.statuscode === '200') {
-            this.toastService.show('admin.product_form.deleted', 'success');
-            this.loadProducts();
-          } else {
-            this.toastService.show('admin.product_form.delete_error', 'error');
-          }
-          this.productDeleteLoading.set(false);
-          this.productDeleteConfirm.set(null);
-        },
-        error: () => {
+    this.productService.deleteProductAdmin(auth, product.id).subscribe({
+      next: (res) => {
+        if (res.statuscode === '200') {
+          this.toastService.show('admin.product_form.deleted', 'success');
+          this.loadProducts();
+        } else {
           this.toastService.show('admin.product_form.delete_error', 'error');
-          this.productDeleteLoading.set(false);
-          this.productDeleteConfirm.set(null);
-        },
-      });
+        }
+        this.productDeleteLoading.set(false);
+        this.productDeleteConfirm.set(null);
+      },
+      error: () => {
+        this.toastService.show('admin.product_form.delete_error', 'error');
+        this.productDeleteLoading.set(false);
+        this.productDeleteConfirm.set(null);
+      },
+    });
   }
 
   openProductForm(product?: ProductWithHelpers): void {
@@ -753,11 +744,7 @@ export class Admin implements OnInit {
 
     const body = this.buildProductApiBody(data, editId);
 
-    const endpoint = editId
-      ? `${environment.baseURL}/api/update_product_admin`
-      : `${environment.baseURL}/api/create_product_admin`;
-
-    this.http.post<{ statuscode: string; status: string }>(endpoint, body).subscribe({
+    this.productService.saveProductAdmin(body, !!editId).subscribe({
       next: (res) => {
         if (res.statuscode === '200') {
           this.toastService.show(

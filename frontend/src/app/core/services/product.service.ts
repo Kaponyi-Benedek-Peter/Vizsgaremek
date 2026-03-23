@@ -16,10 +16,14 @@ import {
   ProductFilterOptions,
   PaginationConfig,
   SortOption,
-} from '../core/models/product.model';
-import { TranslationService } from '../core/services/translation.service';
-import { environment } from '../../environments/environment';
-import { MOCK_MODE, MOCK_RAW_PRODUCTS, MOCK_RAW_CATEGORIES } from '../pages/products/product.mock';
+} from '../models/product.model';
+import { TranslationService } from './translation.service';
+import { environment } from '../../../environments/environment';
+import {
+  MOCK_MODE,
+  MOCK_RAW_PRODUCTS,
+  MOCK_RAW_CATEGORIES,
+} from '../../pages/products/product.mock';
 
 @Injectable({
   providedIn: 'root',
@@ -116,7 +120,6 @@ export class ProductService {
       this.rawProducts.set(normalized);
       this.allProductsSignal.set(enriched);
       this.updateCategoryCounts();
-      console.log(`Loaded ${products.length} products from backend`);
     } catch (err) {
       console.error('Failed to load products from backend:', err);
       this.errorSignal.set('products.error.load_failed');
@@ -144,7 +147,6 @@ export class ProductService {
       const normalized = products.map((p) => this.normalizeCategoryId(p, categoryIdMap));
       const enriched = normalized.map((p) => enrichProduct(p, currentLang));
       this.featuredSignal.set(enriched);
-      console.log(`Loaded ${products.length} featured products from backend`);
     } catch (err) {
       const fallback = this.allProductsSignal().filter((p) => p.is_featured);
       this.featuredSignal.set(fallback);
@@ -168,7 +170,6 @@ export class ProductService {
       const mapped = raw.map(mapProductCategory);
       this.categoriesSignal.set(mapped);
       this.updateCategoryCounts();
-      console.log(`Loaded ${raw.length} categories from backend`);
     } catch (err) {
       console.error('Failed to load categories from backend:', err);
       this.categoriesSignal.set([]);
@@ -309,6 +310,27 @@ export class ProductService {
     );
   }
 
+  deleteProductAdmin(
+    auth: Record<string, string>,
+    productId: string,
+  ): Observable<{ statuscode: string; status: string }> {
+    const body = { ...auth, product_id: btoa(productId) };
+    return this.http.post<{ statuscode: string; status: string }>(
+      `${this.API_URL}/api/delete_product_admin`,
+      body,
+    );
+  }
+
+  saveProductAdmin(
+    body: Record<string, string | number>,
+    isEdit: boolean,
+  ): Observable<{ statuscode: string; status: string }> {
+    const endpoint = isEdit
+      ? `${this.API_URL}/api/update_product_admin`
+      : `${this.API_URL}/api/create_product_admin`;
+    return this.http.post<{ statuscode: string; status: string }>(endpoint, body);
+  }
+
   // --- Private helpers ---
 
   private buildCategoryIdMap(): Map<string, string> {
@@ -339,7 +361,7 @@ export class ProductService {
     this.categoriesSignal.set(updated);
   }
 
-  getCategoryById(id: string): import('../core/models/product.model').Category | undefined {
+  getCategoryById(id: string): import('../models/product.model').Category | undefined {
     return this.categoriesSignal().find((cat) => cat.id === id);
   }
 

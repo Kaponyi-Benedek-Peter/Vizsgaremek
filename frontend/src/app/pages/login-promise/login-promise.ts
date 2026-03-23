@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
@@ -7,7 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-login-promise',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [RouterModule, TranslateModule],
   templateUrl: './login-promise.html',
   styleUrl: './login-promise.css',
 })

@@ -1,11 +1,10 @@
-import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Category } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-category-item',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './category-item.html',
   styleUrl: './category-item.css',
 })

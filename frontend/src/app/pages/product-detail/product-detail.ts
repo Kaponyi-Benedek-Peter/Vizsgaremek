@@ -1,10 +1,10 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers, ProductImage, enrichProduct } from '../../core/models/product.model';
 import { ReviewWithHelpers } from '../../core/models/review.model';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 import { ReviewService } from '../../core/services/review.service';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
@@ -17,7 +17,7 @@ import { ICONS } from '../../core/constants/visuals';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, TranslateModule, RouterLink],
+  imports: [DatePipe, TranslateModule, RouterLink],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
 })
@@ -144,8 +144,6 @@ export class ProductDetail implements OnInit, OnDestroy {
       const lang = this.currentLang();
       this.product.set(enrichProduct(rawProduct, lang, images));
       this.selectedImageIndex.set(0);
-
-      console.log(`Loaded ${images.length} gallery images for product ${productId}`);
     } catch (err) {
       console.warn('Could not load gallery images, thumbnail will be used', err);
     }

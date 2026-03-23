@@ -1,5 +1,4 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -13,7 +12,7 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 @Component({
   selector: 'app-forum',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PostCardComponent],
+  imports: [RouterModule, FormsModule, TranslateModule, PostCardComponent],
   templateUrl: './forum.html',
   styleUrl: './forum.css',
 })
@@ -27,10 +26,9 @@ export class Forum implements OnInit {
 
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
+  forumService = inject(ForumService);
 
   isAuthenticated = computed(() => this.authService.isAuthenticated());
-
-  constructor(public forumService: ForumService) {}
 
   posts = computed(() => this.forumService.paginatedPosts());
   total_pages = computed(() => this.forumService.total_pages());
@@ -51,7 +49,6 @@ export class Forum implements OnInit {
   applySearch(): void {
     const filters: PostFilters = {
       search_query: this.search_query() || undefined,
-      // category_id alapján szűr (nem category — az nem létezik a Post modellben)
       category_id:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };

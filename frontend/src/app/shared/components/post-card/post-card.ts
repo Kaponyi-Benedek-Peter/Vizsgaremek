@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Post } from '../../../core/models/forum.model';
@@ -9,7 +9,7 @@ import { ICONS } from '../../../core/constants/visuals';
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [RouterModule, TranslateModule],
   templateUrl: './post-card.html',
   styleUrl: './post-card.css',
 })

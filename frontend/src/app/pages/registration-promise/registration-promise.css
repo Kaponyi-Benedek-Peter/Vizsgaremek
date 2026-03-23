@@ -14,7 +14,7 @@
 }
 
 .icon-wrapper.error {
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: var(--color-error-light);
 }
 
 .error-icon {
@@ -82,7 +82,7 @@
 }
 
 .icon-wrapper.error {
-  background: rgba(220, 38, 38, 0.1);
+  background: var(--color-error-light);
 }
 
 .check-icon {

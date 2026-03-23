@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -25,7 +25,7 @@ interface CheckoutForm {
 @Component({
   selector: 'app-purchase',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslateModule],
   templateUrl: './purchase.html',
   styleUrl: './purchase.css',
 })

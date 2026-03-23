@@ -1,11 +1,10 @@
-import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { PaginationConfig } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-product-pagination',
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './product-pagination.html',
   styleUrl: './product-pagination.css',
 })

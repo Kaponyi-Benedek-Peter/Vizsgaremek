@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: var(--z-modal-backdrop);
 
   background-color: rgba(6, 122, 69, 0.92);
 
@@ -121,7 +121,7 @@
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
   min-width: 220px;
-  z-index: 1001;
+  z-index: var(--z-modal);
   animation: slideDown 0.2s ease;
   overflow: hidden;
 }
@@ -166,7 +166,7 @@
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
   min-width: 250px;
-  z-index: 1001;
+  z-index: var(--z-modal);
   animation: slideDown 0.2s ease;
 }
 
@@ -225,15 +225,15 @@
 }
 
 .logout-btn {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .logout-btn:hover {
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: var(--color-error-light);
 }
 
 .logout-btn .dropdown-icon {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .cart-menu-wrapper {
@@ -299,7 +299,7 @@
   box-shadow: var(--shadow-lg);
   width: 380px;
   max-height: 500px;
-  z-index: 1001;
+  z-index: var(--z-modal);
   animation: slideDown 0.2s ease;
   display: flex;
   flex-direction: column;
@@ -475,8 +475,8 @@
 }
 
 .remove-item-btn:hover {
-  background-color: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .cart-dropdown-footer {
@@ -538,7 +538,7 @@
 .clear-cart-btn {
   background: none;
   border: 1px solid rgba(220, 38, 38, 0.3);
-  color: #dc2626;
+  color: var(--color-error);
   padding: 0.35rem 0.75rem;
   border-radius: 6px;
   font-size: 0.8rem;
@@ -549,8 +549,8 @@
 }
 
 .clear-cart-btn:hover {
-  background-color: rgba(220, 38, 38, 0.1);
-  border-color: #dc2626;
+  background-color: var(--color-error-light);
+  border-color: var(--color-error);
 }
 
 @keyframes slideDown {

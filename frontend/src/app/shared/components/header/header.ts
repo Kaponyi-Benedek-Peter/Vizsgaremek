@@ -1,7 +1,15 @@
-import { Component, HostListener, OnInit, signal, computed } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnInit,
+  OnDestroy,
+  signal,
+  computed,
+  inject,
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 import { PrimaryBtn } from '../primary-btn/primary-btn';
 import { IconBtn } from '../icon-btn/icon-btn';
@@ -16,15 +24,23 @@ import { User } from '../../../core/models/auth.model';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [PrimaryBtn, IconBtn, RouterModule, LanguageSwitcher, TranslateModule, CommonModule],
+  imports: [PrimaryBtn, IconBtn, RouterModule, LanguageSwitcher, TranslateModule],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
-export class Header implements OnInit {
+export class Header implements OnInit, OnDestroy {
+  private themeService = inject(ThemeService);
+  private authService = inject(AuthService);
+  cartService = inject(CartService);
+  currencyService = inject(CurrencyService);
+
+  private subs: Subscription[] = [];
+
   ICONS = ICONS;
   IMAGES = IMAGES;
   currentTheme: Theme = 'light';
   isAuthenticated = false;
+  isAdmin = false;
   currentUser: User | null = null;
   showUserMenu = signal(false);
   showCartDropdown = signal(false);
@@ -34,25 +50,21 @@ export class Header implements OnInit {
   cartItems = computed(() => this.cartService.items());
   cartTotal = computed(() => this.cartService.totalPrice());
 
-  constructor(
-    private themeService: ThemeService,
-    private authService: AuthService,
-    public cartService: CartService,
-    public currencyService: CurrencyService,
-  ) {}
-
-  isAdmin = false;
-
   ngOnInit(): void {
-    this.themeService.currentTheme$.subscribe((theme) => {
-      this.currentTheme = theme;
-    });
+    this.subs.push(
+      this.themeService.currentTheme$.subscribe((theme) => {
+        this.currentTheme = theme;
+      }),
+      this.authService.authState$.subscribe((state) => {
+        this.isAuthenticated = state.isAuthenticated;
+        this.currentUser = state.user;
+        this.isAdmin = state.role === 'admin';
+      }),
+    );
+  }
 
-    this.authService.authState$.subscribe((state) => {
-      this.isAuthenticated = state.isAuthenticated;
-      this.currentUser = state.user;
-      this.isAdmin = state.role === 'admin';
-    });
+  ngOnDestroy(): void {
+    this.subs.forEach((s) => s.unsubscribe());
   }
 
   toggleMobileMenu(): void {

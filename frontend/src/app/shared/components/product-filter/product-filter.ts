@@ -1,6 +1,6 @@
 import { Component, computed, EventEmitter, Output, signal } from '@angular/core';
 import { ProductFilterOptions, SortOption } from '../../../core/models/product.model';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -14,7 +14,7 @@ interface FilterState {
 
 @Component({
   selector: 'app-product-filter',
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [FormsModule, TranslateModule],
   templateUrl: './product-filter.html',
   styleUrl: './product-filter.css',
 })

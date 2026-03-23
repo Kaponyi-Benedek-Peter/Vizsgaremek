@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,7 +13,7 @@ export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | '
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslateModule],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })

@@ -311,24 +311,24 @@
 }
 
 [data-theme='dark'] .tag {
-  color: #10b981;
+  color: var(--color-success);
   background: rgba(16, 185, 129, 0.15);
   border-color: rgba(16, 185, 129, 0.4);
 }
 
 [data-theme='dark'] .tag:hover {
   background: rgba(16, 185, 129, 0.25);
-  border-color: #10b981;
+  border-color: var(--color-success);
 }
 
 .category-medicines {
-  color: #dc2626;
-  border-color: #dc2626;
+  color: var(--color-error);
+  border-color: var(--color-error);
 }
 
 .category-natural {
-  color: #16a34a;
-  border-color: #16a34a;
+  color: var(--color-success);
+  border-color: var(--color-success);
 }
 
 .category-baby {
@@ -337,13 +337,13 @@
 }
 
 .category-lifestyle {
-  color: #2563eb;
-  border-color: #2563eb;
+  color: var(--color-info);
+  border-color: var(--color-info);
 }
 
 .category-seasonal {
-  color: #ea580c;
-  border-color: #ea580c;
+  color: var(--color-warning-hover);
+  border-color: var(--color-warning-hover);
 }
 
 .category-qa {

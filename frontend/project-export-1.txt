@@ -36,6 +36,7 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 currency.service.ts
 │   │   │   │   ├── 📄 forum.service.ts
 │   │   │   │   ├── 📄 image-cache.service.ts
+│   │   │   │   ├── 📄 product.service.ts
 │   │   │   │   ├── 📄 review.service.ts
 │   │   │   │   ├── 📄 theme.service.ts
 │   │   │   │   ├── 📄 toast.service.ts
@@ -49,20 +50,10 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 admin.mock.ts
 │   │   │   │   ├── 📄 admin.spec.ts
 │   │   │   │   └── 📄 admin.ts
-│   │   │   ├── 📁 bracket/
-│   │   │   │   ├── 📄 bracket.css
-│   │   │   │   ├── 📄 bracket.html
-│   │   │   │   ├── 📄 bracket.spec.ts
-│   │   │   │   └── 📄 bracket.ts
 │   │   │   ├── 📁 delacc-promise/
 │   │   │   │   ├── 📄 delacc-promise.css
 │   │   │   │   ├── 📄 delacc-promise.html
 │   │   │   │   └── 📄 delacc-promise.ts
-│   │   │   ├── 📁 email/
-│   │   │   │   ├── 📄 email.css
-│   │   │   │   ├── 📄 email.html
-│   │   │   │   ├── 📄 email.spec.ts
-│   │   │   │   └── 📄 email.ts
 │   │   │   ├── 📁 forum/
 │   │   │   │   ├── 📄 forum.css
 │   │   │   │   ├── 📄 forum.html
@@ -132,18 +123,12 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 register.html
 │   │   │   │   ├── 📄 register.spec.ts
 │   │   │   │   └── 📄 register.ts
-│   │   │   ├── 📁 registration-promise/
-│   │   │   │   ├── 📄 registration-promise.css
-│   │   │   │   ├── 📄 registration-promise.html
-│   │   │   │   ├── 📄 registration-promise.spec.ts
-│   │   │   │   └── 📄 registration-promise.ts
-│   │   │   └── 📁 test/
-│   │   │       ├── 📄 test.css
-│   │   │       ├── 📄 test.html
-│   │   │       ├── 📄 test.spec.ts
-│   │   │       └── 📄 test.ts
+│   │   │   └── 📁 registration-promise/
+│   │   │       ├── 📄 registration-promise.css
+│   │   │       ├── 📄 registration-promise.html
+│   │   │       ├── 📄 registration-promise.spec.ts
+│   │   │       └── 📄 registration-promise.ts
 │   │   ├── 📁 services/
-│   │   │   └── 📄 product.service.ts
 │   │   └── 📁 shared/
 │   │       ├── 📁 components/
 │   │       │   ├── 📁 category-bar/
@@ -214,10 +199,6 @@ PROJECT STRUCTURE
 │   │       │   │   ├── 📄 product-pagination.css
 │   │       │   │   ├── 📄 product-pagination.html
 │   │       │   │   └── 📄 product-pagination.ts
-│   │       │   ├── 📁 secondary-btn/
-│   │       │   │   ├── 📄 secondary-btn.css
-│   │       │   │   ├── 📄 secondary-btn.html
-│   │       │   │   └── 📄 secondary-btn.ts
 │   │       │   ├── 📁 slide/
 │   │       │   │   ├── 📄 slide.css
 │   │       │   │   ├── 📄 slide.html
@@ -640,37 +621,46 @@ FILE: src\app\app.routes.ts
 
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
-import { Admin } from './pages/admin/admin';
-import { Bracket } from './pages/bracket/bracket';
-import { Email } from './pages/email/email';
-import { Forum } from './pages/forum/forum';
-import { Legal } from './pages/legal/legal';
-import { Login } from './pages/login/login';
-import { NotFound } from './pages/not-found/not-found';
-import { Products } from './pages/products/products';
-import { Profile } from './pages/profile/profile';
-import { Purchase } from './pages/purchase/purchase';
-import { Register } from './pages/register/register';
 import { authGuard, adminGuard, guestGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: Home },
-  { path: 'forum', component: Forum },
-  { path: 'products', component: Products },
+  {
+    path: 'forum',
+    loadComponent: () => import('./pages/forum/forum').then((m) => m.Forum),
+  },
+  {
+    path: 'forum/:id',
+    loadComponent: () => import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
+  },
+  {
+    path: 'products',
+    loadComponent: () => import('./pages/products/products').then((m) => m.Products),
+  },
   {
     path: 'products/:id',
     loadComponent: () =>
       import('./pages/product-detail/product-detail').then((m) => m.ProductDetail),
   },
-  { path: 'profile', component: Profile, canActivate: [authGuard] },
-  { path: 'purchase', component: Purchase, canActivate: [authGuard] },
-  { path: 'legal', component: Legal },
-  { path: 'bracket', component: Bracket },
-  { path: 'admin', component: Admin, canActivate: [adminGuard] },
   {
-    path: 'forum/:id',
-    loadComponent: () => import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
+    path: 'profile',
+    loadComponent: () => import('./pages/profile/profile').then((m) => m.Profile),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'purchase',
+    loadComponent: () => import('./pages/purchase/purchase').then((m) => m.Purchase),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'legal',
+    loadComponent: () => import('./pages/legal/legal').then((m) => m.Legal),
+  },
+  {
+    path: 'admin',
+    loadComponent: () => import('./pages/admin/admin').then((m) => m.Admin),
+    canActivate: [adminGuard],
   },
   {
     path: 'login',
@@ -682,7 +672,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register').then((m) => m.Register),
     canActivate: [guestGuard],
   },
-  { path: 'email', loadComponent: () => import('./pages/email/email').then((m) => m.Email) },
   {
     path: 'login-promise',
     loadComponent: () => import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
@@ -712,7 +701,10 @@ export const routes: Routes = [
       import('./pages/delacc-promise/delacc-promise').then((m) => m.DelaccPromise),
     canActivate: [authGuard],
   },
-  { path: '**', component: NotFound },
+  {
+    path: '**',
+    loadComponent: () => import('./pages/not-found/not-found').then((m) => m.NotFound),
+  },
 ];
 
 
@@ -1488,6 +1480,8 @@ export interface JWTPayload {
   sub?: string;
   email?: string;
   name?: string;
+  firstname?: string;
+  lastname?: string;
   exp?: number;
   iat?: number;
   iss?: string;
@@ -1495,6 +1489,7 @@ export interface JWTPayload {
   jti?: string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'?: string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string;
+  [key: string]: unknown;
 }
 
 
@@ -2185,6 +2180,7 @@ import {
   ApiErrorResponse,
   UserState,
   PasswordChangePromise,
+  JWTPayload,
 } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
@@ -2275,10 +2271,13 @@ export class AuthService {
       return of({ account_state: '', statuscode: '401', status: 'no_id' });
     }
 
-    return this.http.post<any>(`${this.API_URL}/api/get_user_state`, {
-      id: btoa(id),
-      session_token: btoa(sessionToken),
-    });
+    return this.http.post<{ account_state: string; statuscode: string; status: string }>(
+      `${this.API_URL}/api/get_user_state`,
+      {
+        id: btoa(id),
+        session_token: btoa(sessionToken),
+      },
+    );
   }
 
   checkUserStateGuard(): Observable<boolean> {
@@ -2502,7 +2501,7 @@ export class AuthService {
         responseType: 'text' as 'json',
       })
       .pipe(
-        tap((body: any) => {
+        tap((body: unknown) => {
           try {
             const response = (typeof body === 'string' ? JSON.parse(body) : body) as LoginResponse;
             if (response?.jwt_token) {
@@ -2597,7 +2596,7 @@ export class AuthService {
     return this.getStoredToken() !== null;
   }
 
-  private decodeJWT(token: string): any {
+  private decodeJWT(token: string): JWTPayload | null {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -2631,18 +2630,26 @@ export class AuthService {
       const decoded = this.decodeJWT(jwtToken);
       if (decoded) {
         userData = {
-          id: decoded.sub || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+          id:
+            decoded.sub ||
+            decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ||
+            '',
           email:
             decoded.email ||
-            decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-          firstname: decoded.firstname || '',
-          lastname: decoded.lastname || '',
+            decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ||
+            '',
+          firstname: (decoded.firstname as string) || '',
+          lastname: (decoded.lastname as string) || '',
         };
       }
     }
 
     const id = response.user_id ?? userData?.id ?? '';
     const role = response.user_state;
+
+    if (userData && userData.id !== id) {
+      userData = { ...userData, id };
+    }
 
     this.clearStorage();
     this.storeRole(role, stayLoggedIn);
@@ -3130,6 +3137,7 @@ import { catchError, map, timeout, forkJoin, of } from 'rxjs';
 
 import {
   Post,
+  Comment,
   PostFilters,
   SortOption,
   CategoryInfo,
@@ -3296,7 +3304,7 @@ export class ForumService {
       .post<{
         status: string;
         statuscode: number;
-        comments: any[];
+        comments: Comment[];
       }>(`${this.API_URL}/api/get_post_comments_by_post_id`, { post_id: btoa(postId) })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
@@ -3542,6 +3550,426 @@ export class ImageCacheService {
 
 
 ================================================================================
+FILE: src\app\core\services\product.service.ts
+================================================================================
+
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError, firstValueFrom, of } from 'rxjs';
+import { catchError, map, timeout } from 'rxjs/operators';
+import {
+  Product,
+  ProductCategory,
+  ProductCategoriesApiResponse,
+  ProductsApiResponse,
+  ProductWithHelpers,
+  ProductImage,
+  ProductImagesApiResponse,
+  Category,
+  enrichProduct,
+  mapProductCategory,
+  ProductFilterOptions,
+  PaginationConfig,
+  SortOption,
+} from '../models/product.model';
+import { TranslationService } from './translation.service';
+import { environment } from '../../../environments/environment';
+import {
+  MOCK_MODE,
+  MOCK_RAW_PRODUCTS,
+  MOCK_RAW_CATEGORIES,
+} from '../../pages/products/product.mock';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ProductService {
+  private readonly API_URL = environment.baseURL;
+  private http = inject(HttpClient);
+  private translationService = inject(TranslationService);
+
+  private allProductsSignal = signal<ProductWithHelpers[]>([]);
+  private rawProducts = signal<Product[]>([]);
+  private featuredSignal = signal<ProductWithHelpers[]>([]);
+  private categoriesSignal = signal<Category[]>([]);
+  private loadingSignal = signal<boolean>(false);
+  private errorSignal = signal<string | null>(null);
+
+  private filtersSignal = signal<ProductFilterOptions>({
+    categories: [],
+    price_range: null,
+    in_stock_only: false,
+    sort_by: 'popularity',
+  });
+  private current_pageSignal = signal<number>(1);
+  private items_per_pageSignal = signal<number>(30);
+
+  // --- Public readonly signals ---
+  products = computed(() => this.allProductsSignal());
+  featuredProducts = computed(() => this.featuredSignal());
+  categories = computed(() => this.categoriesSignal());
+  currentFilters = computed(() => this.filtersSignal());
+  isLoading = computed(() => this.loadingSignal());
+  error = computed(() => this.errorSignal());
+
+  private filteredProducts = computed(() => {
+    let products = this.allProductsSignal();
+    const filters = this.filtersSignal();
+
+    if (filters.categories && filters.categories.length > 0) {
+      products = products.filter((p) => filters.categories!.includes(p.category));
+    }
+
+    if (filters.price_range) {
+      const { min, max } = filters.price_range;
+      products = products.filter((p) => p.price >= min && p.price <= max);
+    }
+
+    if (filters.in_stock_only) {
+      products = products.filter((p) => p.in_stock);
+    }
+
+    if (filters.sort_by) {
+      products = this.sortProducts(products, filters.sort_by);
+    }
+
+    return products;
+  });
+
+  paginationState = computed<PaginationConfig>(() => {
+    const total_items = this.filteredProducts().length;
+    const items_per_page = this.items_per_pageSignal();
+    const current_page = this.current_pageSignal();
+    const total_pages = Math.ceil(total_items / items_per_page);
+    return { current_page, items_per_page, total_items, total_pages };
+  });
+
+  paginatedProducts = computed(() => {
+    const filtered = this.filteredProducts();
+    const page = this.current_pageSignal();
+    const perPage = this.items_per_pageSignal();
+    const start = (page - 1) * perPage;
+    return filtered.slice(start, start + perPage);
+  });
+
+  // --- Load methods ---
+
+  async loadProducts(): Promise<void> {
+    if (MOCK_MODE) {
+      const currentLang = this.translationService.getCurrentLanguage();
+      const enriched = MOCK_RAW_PRODUCTS.map((p) => enrichProduct(p, currentLang));
+      this.rawProducts.set(MOCK_RAW_PRODUCTS);
+      this.allProductsSignal.set(enriched);
+      this.updateCategoryCounts();
+      return;
+    }
+
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
+    try {
+      const products = await firstValueFrom(this.getAllProducts());
+      const currentLang = this.translationService.getCurrentLanguage();
+      const categoryIdMap = this.buildCategoryIdMap();
+      const normalized = products.map((p) => this.normalizeCategoryId(p, categoryIdMap));
+      const enriched = normalized.map((p) => enrichProduct(p, currentLang));
+      this.rawProducts.set(normalized);
+      this.allProductsSignal.set(enriched);
+      this.updateCategoryCounts();
+    } catch (err) {
+      console.error('Failed to load products from backend:', err);
+      this.errorSignal.set('products.error.load_failed');
+      this.allProductsSignal.set([]);
+      this.rawProducts.set([]);
+    } finally {
+      this.loadingSignal.set(false);
+    }
+  }
+
+  async loadFeaturedProducts(): Promise<void> {
+    if (MOCK_MODE) {
+      const currentLang = this.translationService.getCurrentLanguage();
+      const enriched = MOCK_RAW_PRODUCTS.filter((p) => p.featured === '1').map((p) =>
+        enrichProduct(p, currentLang),
+      );
+      this.featuredSignal.set(enriched);
+      return;
+    }
+
+    try {
+      const products = await firstValueFrom(this.getFeaturedFromApi());
+      const currentLang = this.translationService.getCurrentLanguage();
+      const categoryIdMap = this.buildCategoryIdMap();
+      const normalized = products.map((p) => this.normalizeCategoryId(p, categoryIdMap));
+      const enriched = normalized.map((p) => enrichProduct(p, currentLang));
+      this.featuredSignal.set(enriched);
+    } catch (err) {
+      const fallback = this.allProductsSignal().filter((p) => p.is_featured);
+      this.featuredSignal.set(fallback);
+      console.warn(
+        'Featured products endpoint unavailable, using loaded products as fallback:',
+        err,
+      );
+    }
+  }
+
+  async loadCategories(): Promise<void> {
+    if (MOCK_MODE) {
+      const mapped = MOCK_RAW_CATEGORIES.map(mapProductCategory);
+      this.categoriesSignal.set(mapped);
+      this.updateCategoryCounts();
+      return;
+    }
+
+    try {
+      const raw = await firstValueFrom(this.getAllCategories());
+      const mapped = raw.map(mapProductCategory);
+      this.categoriesSignal.set(mapped);
+      this.updateCategoryCounts();
+    } catch (err) {
+      console.error('Failed to load categories from backend:', err);
+      this.categoriesSignal.set([]);
+    }
+  }
+
+  // --- Filter / Pagination controls ---
+
+  setFilters(filters: Partial<ProductFilterOptions>): void {
+    this.filtersSignal.update((current) => ({ ...current, ...filters }));
+    this.current_pageSignal.set(1);
+  }
+
+  clearFilters(): void {
+    this.filtersSignal.set({
+      categories: [],
+      price_range: null,
+      in_stock_only: false,
+      sort_by: 'popularity',
+    });
+    this.current_pageSignal.set(1);
+  }
+
+  setPage(page: number): void {
+    const total_pages = this.paginationState().total_pages;
+    if (page >= 1 && page <= total_pages) this.current_pageSignal.set(page);
+  }
+
+  setItemsPerPage(count: number): void {
+    this.items_per_pageSignal.set(count);
+    this.current_pageSignal.set(1);
+  }
+
+  // --- API calls ---
+
+  getAllProducts(): Observable<Product[]> {
+    return this.http.get<ProductsApiResponse>(`${this.API_URL}/api/get_all_products`).pipe(
+      timeout(5000),
+      map((r) => {
+        if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+        if (!Array.isArray(r.products)) throw new Error('Invalid products response');
+        return r.products;
+      }),
+      catchError(this.handleError),
+    );
+  }
+
+  getAllCategories(): Observable<ProductCategory[]> {
+    return this.http
+      .get<ProductCategoriesApiResponse>(`${this.API_URL}/api/get_all_product_categories`)
+      .pipe(
+        timeout(5000),
+        map((r) => {
+          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+          if (!Array.isArray(r.product_categories)) throw new Error('Invalid categories response');
+          return r.product_categories;
+        }),
+        catchError(this.handleError),
+      );
+  }
+
+  getFeaturedFromApi(): Observable<Product[]> {
+    return this.http.get<ProductsApiResponse>(`${this.API_URL}/api/get_all_featured_products`).pipe(
+      timeout(5000),
+      map((r) => {
+        if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+        if (!Array.isArray(r.products)) throw new Error('Invalid featured response');
+        return r.products;
+      }),
+      catchError(this.handleError),
+    );
+  }
+
+  getProductImages(productId: string): Observable<ProductImage[]> {
+    const body = {
+      product_id: btoa(productId),
+    };
+
+    return this.http
+      .post<ProductImagesApiResponse>(`${this.API_URL}/api/get_all_product_images_by_id`, body)
+      .pipe(
+        timeout(5000),
+        map((r) => {
+          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
+          if (!Array.isArray(r.images)) return [];
+          return r.images;
+        }),
+        catchError((err) => {
+          console.warn(
+            'ProductService: Failed to load product images, falling back to thumbnail',
+            err,
+          );
+          return of([]);
+        }),
+      );
+  }
+
+  getProductById(id: string): Observable<Product | undefined> {
+    return this.getAllProducts().pipe(
+      map((products) => products.find((p) => p.id === id)),
+      catchError(() => of(undefined)),
+    );
+  }
+
+  getProductsByCategory(categoryId: string): Observable<Product[]> {
+    return this.getAllProducts().pipe(
+      map((products) => products.filter((p) => (p.category ?? p.category_id) === categoryId)),
+      catchError(() => of([])),
+    );
+  }
+
+  getInStockProducts(): Observable<Product[]> {
+    return this.getAllProducts().pipe(
+      map((products) => products.filter((p) => parseInt(p.stock) > 0)),
+      catchError(() => of([])),
+    );
+  }
+
+  searchProducts(query: string): Observable<Product[]> {
+    const q = query.toLowerCase();
+    return this.getAllProducts().pipe(
+      map((products) =>
+        products.filter(
+          (p) =>
+            p.name_en.toLowerCase().includes(q) ||
+            p.name_hu.toLowerCase().includes(q) ||
+            p.name_de.toLowerCase().includes(q),
+        ),
+      ),
+      catchError(() => of([])),
+    );
+  }
+
+  getSaleProducts(): Observable<Product[]> {
+    return this.getAllProducts().pipe(
+      map((p) => p.filter((x) => parseFloat(x.sale_percentage) > 0)),
+      catchError(() => of([])),
+    );
+  }
+
+  deleteProductAdmin(
+    auth: Record<string, string>,
+    productId: string,
+  ): Observable<{ statuscode: string; status: string }> {
+    const body = { ...auth, product_id: btoa(productId) };
+    return this.http.post<{ statuscode: string; status: string }>(
+      `${this.API_URL}/api/delete_product_admin`,
+      body,
+    );
+  }
+
+  saveProductAdmin(
+    body: Record<string, string | number>,
+    isEdit: boolean,
+  ): Observable<{ statuscode: string; status: string }> {
+    const endpoint = isEdit
+      ? `${this.API_URL}/api/update_product_admin`
+      : `${this.API_URL}/api/create_product_admin`;
+    return this.http.post<{ statuscode: string; status: string }>(endpoint, body);
+  }
+
+  // --- Private helpers ---
+
+  private buildCategoryIdMap(): Map<string, string> {
+    const map = new Map<string, string>();
+    this.categoriesSignal().forEach((cat) => {
+      map.set(cat.id, cat.id);
+    });
+    return map;
+  }
+
+  private updateCategoryCounts(): void {
+    const products = this.allProductsSignal();
+    const categories = this.categoriesSignal();
+    if (categories.length === 0) return;
+
+    const countMap = new Map<string, number>();
+    products.forEach((p) => {
+      const catId = p.category_id ?? p.category ?? '';
+      if (catId) {
+        countMap.set(catId, (countMap.get(catId) ?? 0) + 1);
+      }
+    });
+
+    const updated = categories.map((cat) => ({
+      ...cat,
+      count: countMap.get(cat.id) ?? 0,
+    }));
+    this.categoriesSignal.set(updated);
+  }
+
+  getCategoryById(id: string): import('../models/product.model').Category | undefined {
+    return this.categoriesSignal().find((cat) => cat.id === id);
+  }
+
+  private normalizeCategoryId(product: Product, _idMap: Map<string, string>): Product {
+    const resolved = product.category ?? product.category_id ?? '';
+    return { ...product, category: resolved };
+  }
+
+  private sortProducts(products: ProductWithHelpers[], sort_by: SortOption): ProductWithHelpers[] {
+    const sorted = [...products];
+    switch (sort_by) {
+      case 'popularity':
+        return sorted.sort((a, b) => parseFloat(b.times_ordered) - parseFloat(a.times_ordered));
+      case 'price-asc':
+        return sorted.sort((a, b) => a.price - b.price);
+      case 'price-desc':
+        return sorted.sort((a, b) => b.price - a.price);
+      case 'name-asc':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'name-desc':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      case 'rating':
+      case 'rating-desc':
+        return sorted.sort((a, b) => b.rating_number - a.rating_number);
+      case 'newest':
+        return sorted.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+      default:
+        return sorted;
+    }
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let msg = 'An unknown error occurred';
+    if (error.error instanceof ErrorEvent) {
+      msg = error.error.message;
+    } else {
+      const codes: Record<number, string> = {
+        400: 'Bad request',
+        404: 'Not found',
+        500: 'Server error',
+      };
+      msg = codes[error.status] ?? `Error ${error.status}: ${error.message}`;
+    }
+    console.error('ProductService Error:', msg);
+    return throwError(() => new Error(msg));
+  }
+}
+
+
+
+================================================================================
 FILE: src\app\core\services\review.service.ts
 ================================================================================
 
@@ -3728,7 +4156,7 @@ export class ToastService {
 FILE: src\app\core\services\translation.service.ts
 ================================================================================
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
 
@@ -3738,12 +4166,14 @@ export type SupportedLanguage = 'hu' | 'en' | 'de';
   providedIn: 'root',
 })
 export class TranslationService {
+  private translate = inject(TranslateService);
+
   private currentLangSubject = new BehaviorSubject<SupportedLanguage>(
     (localStorage.getItem('preferredLanguage') as SupportedLanguage) || 'en',
   );
   public currentLang$ = this.currentLangSubject.asObservable();
 
-  constructor(private translate: TranslateService) {
+  constructor() {
     this.initLanguage();
   }
 
@@ -3937,10 +4367,10 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .logout-btn {
-  color: #dc2626 !important;
+  color: var(--color-error) !important;
 }
 .logout-btn:hover {
-  background: rgba(220, 38, 38, 0.08) !important;
+  background: var(--color-error-light) !important;
 }
 
 .logout-btn .nav-icon {
@@ -4111,20 +4541,20 @@ FILE: src\app\pages\admin\admin.css
   color: var(--color-primary);
 }
 .stat-change.negative {
-  color: #dc2626;
+  color: var(--color-error);
 }
 .stat-change.neutral {
-  color: #f59e0b;
+  color: var(--color-warning);
 }
 
 .stat-card.primary {
   border-top: 3px solid var(--color-primary);
 }
 .stat-card.success {
-  border-top: 3px solid #10b981;
+  border-top: 3px solid var(--color-success);
 }
 .stat-card.info {
-  border-top: 3px solid #3b82f6;
+  border-top: 3px solid var(--color-info);
 }
 .stat-card.warning {
   border-top: 3px solid #f59e0b;
@@ -4260,12 +4690,12 @@ FILE: src\app\pages\admin\admin.css
 
 .status-pending {
   background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
+  color: var(--color-warning-hover);
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 .status-processing {
   background: rgba(59, 130, 246, 0.12);
-  color: #2563eb;
+  color: var(--color-info);
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 .status-shipped {
@@ -4275,12 +4705,12 @@ FILE: src\app\pages\admin\admin.css
 }
 .status-delivered {
   background: rgba(6, 122, 69, 0.12);
-  color: #067a45;
+  color: var(--color-success);
   border: 1px solid rgba(6, 122, 69, 0.3);
 }
 .status-cancelled {
   background: rgba(220, 38, 38, 0.12);
-  color: #dc2626;
+  color: var(--color-error);
   border: 1px solid rgba(220, 38, 38, 0.3);
 }
 
@@ -4294,25 +4724,25 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .role-admin {
-  background: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  background: var(--color-error-light);
+  color: var(--color-error);
   border: 1px solid rgba(220, 38, 38, 0.3);
 }
 .role-pharmacist {
-  background: rgba(6, 122, 69, 0.1);
-  color: #067a45;
+  background: var(--color-success-light);
+  color: var(--color-success);
   border: 1px solid rgba(6, 122, 69, 0.3);
 }
 
 .role-user {
   background: rgba(234, 179, 8, 0.1);
-  color: #b45309;
+  color: var(--color-warning-hover);
   border: 1px solid rgba(234, 179, 8, 0.3);
 }
 
 .role-banned {
   background: rgba(234, 88, 12, 0.12);
-  color: #ea580c;
+  color: var(--color-warning-hover);
   border: 1px solid rgba(234, 88, 12, 0.25);
   text-decoration: line-through;
 }
@@ -4329,7 +4759,7 @@ FILE: src\app\pages\admin\admin.css
   font-weight: 600;
 }
 .stock-low {
-  color: #dc2626;
+  color: var(--color-error);
   font-weight: 700;
 }
 
@@ -4436,7 +4866,7 @@ FILE: src\app\pages\admin\admin.css
 .admin-search:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.1);
+  box-shadow: 0 0 0 3px var(--color-success-light);
 }
 
 .admin-select {
@@ -4489,7 +4919,7 @@ FILE: src\app\pages\admin\admin.css
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 99;
+  z-index: var(--z-dropdown);
   cursor: pointer;
 }
 
@@ -4522,7 +4952,7 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .error-state {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .error-state span {
@@ -4545,7 +4975,7 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .warning-text {
-  color: #d97706;
+  color: var(--color-warning-hover);
 }
 
 .add-btn {
@@ -4585,7 +5015,7 @@ FILE: src\app\pages\admin\admin.css
     left: 0;
     top: 0;
     height: 100vh;
-    z-index: 100;
+    z-index: var(--z-dropdown);
     transform: translateX(-100%);
     transition:
       transform 0.25s ease,
@@ -4747,7 +5177,7 @@ FILE: src\app\pages\admin\admin.css
   border: 1px solid var(--border-color);
   box-shadow:
     0 24px 48px -12px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(6, 122, 69, 0.1);
+    0 0 0 1px var(--color-success-light);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -4926,7 +5356,7 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .gallery-card-delete:hover {
-  background: #dc2626;
+  background: var(--color-error);
   box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
 }
 
@@ -5009,9 +5439,9 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .row-action-btn.delete-btn:hover {
-  background: rgba(220, 38, 38, 0.08);
+  background: var(--color-error-light);
   border-color: rgba(220, 38, 38, 0.2);
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .product-form-overlay {
@@ -5038,7 +5468,7 @@ FILE: src\app\pages\admin\admin.css
   border: 1px solid var(--border-color);
   box-shadow:
     0 24px 48px -12px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(6, 122, 69, 0.1);
+    0 0 0 1px var(--color-success-light);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -5159,7 +5589,7 @@ FILE: src\app\pages\admin\admin.css
 .pf-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.1);
+  box-shadow: 0 0 0 3px var(--color-success-light);
 }
 
 .pf-select {
@@ -5176,7 +5606,7 @@ FILE: src\app\pages\admin\admin.css
 .pf-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.1);
+  box-shadow: 0 0 0 3px var(--color-success-light);
 }
 
 .pf-textarea {
@@ -5202,7 +5632,7 @@ FILE: src\app\pages\admin\admin.css
 .pf-textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.1);
+  box-shadow: 0 0 0 3px var(--color-success-light);
 }
 
 .pf-price-preview {
@@ -5235,8 +5665,8 @@ FILE: src\app\pages\admin\admin.css
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px var(--space-2);
-  background: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  background: var(--color-error-light);
+  color: var(--color-error);
   border-radius: var(--radius-full, 9999px);
 }
 
@@ -5303,7 +5733,7 @@ FILE: src\app\pages\admin\admin.css
   border: 1px solid var(--border-color);
   box-shadow:
     0 24px 48px -12px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(6, 122, 69, 0.1);
+    0 0 0 1px var(--color-success-light);
   overflow: hidden;
   animation: modalSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
@@ -5460,7 +5890,7 @@ FILE: src\app\pages\admin\admin.css
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(220, 38, 38, 0.1);
+  background: var(--color-error-light);
   border-radius: var(--radius-full, 9999px);
   margin-bottom: var(--space-1);
 }
@@ -5468,7 +5898,7 @@ FILE: src\app\pages\admin\admin.css
 .confirm-icon {
   width: 24px;
   height: 24px;
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .confirm-title {
@@ -5513,7 +5943,7 @@ FILE: src\app\pages\admin\admin.css
 .confirm-delete-btn {
   flex: 1;
   padding: var(--space-3) var(--space-4);
-  background: #dc2626;
+  background: var(--color-error);
   color: white;
   border: none;
   border-radius: var(--radius-lg, 0.75rem);
@@ -5524,7 +5954,7 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .confirm-delete-btn:hover {
-  background: #b91c1c;
+  background: var(--color-error-hover);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
@@ -5767,17 +6197,17 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .dropdown-item-warn {
-  color: #d97706;
+  color: var(--color-warning-hover);
 }
 .dropdown-item-warn:hover {
   background: rgba(245, 158, 11, 0.08);
 }
 
 .dropdown-item-danger {
-  color: #dc2626;
+  color: var(--color-error);
 }
 .dropdown-item-danger:hover {
-  background: rgba(220, 38, 38, 0.08);
+  background: var(--color-error-light);
 }
 
 .dropdown-item-success {
@@ -5800,7 +6230,7 @@ FILE: src\app\pages\admin\admin.css
   flex-shrink: 0;
 }
 .role-dot.role-admin {
-  background: #dc2626;
+  background: var(--color-error);
 }
 .role-dot.role-pharmacist {
   background: #067a45;
@@ -5830,14 +6260,14 @@ FILE: src\app\pages\admin\admin.css
 }
 
 .confirm-icon-danger {
-  background: rgba(220, 38, 38, 0.1) !important;
+  background: var(--color-error-light) !important;
 }
 .confirm-icon-danger .confirm-icon {
-  color: #dc2626 !important;
+  color: var(--color-error) !important;
 }
 
 .confirm-icon-primary {
-  background: rgba(6, 122, 69, 0.1) !important;
+  background: var(--color-success-light) !important;
 }
 .confirm-icon-primary .confirm-icon {
   color: var(--color-primary) !important;
@@ -7463,20 +7893,18 @@ FILE: src\app\pages\admin\admin.ts
 ================================================================================
 
 import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
 import { ICONS } from '../../core/constants/visuals';
 import { ResizableTableDirective } from '../../shared/directives/resizable-table.directive';
 import { formatFileSize } from '../../core/utils/image-utils';
-import { environment } from '../../../environments/environment';
 import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS } from './admin.mock';
 
 type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
@@ -7658,7 +8086,7 @@ interface UserActionRequest {
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, ResizableTableDirective],
+  imports: [RouterModule, FormsModule, TranslateModule, ResizableTableDirective],
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })
@@ -7668,7 +8096,6 @@ export class Admin implements OnInit {
   private productService = inject(ProductService);
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
-  private http = inject(HttpClient);
   private router = inject(Router);
 
   protected readonly icons = ICONS;
@@ -8105,30 +8532,24 @@ export class Admin implements OnInit {
     }
 
     const auth = this.buildAdminAuth();
-    const body = { ...auth, product_id: btoa(product.id) };
 
-    this.http
-      .post<{
-        statuscode: string;
-        status: string;
-      }>(`${environment.baseURL}/api/delete_product_admin`, body)
-      .subscribe({
-        next: (res) => {
-          if (res.statuscode === '200') {
-            this.toastService.show('admin.product_form.deleted', 'success');
-            this.loadProducts();
-          } else {
-            this.toastService.show('admin.product_form.delete_error', 'error');
-          }
-          this.productDeleteLoading.set(false);
-          this.productDeleteConfirm.set(null);
-        },
-        error: () => {
+    this.productService.deleteProductAdmin(auth, product.id).subscribe({
+      next: (res) => {
+        if (res.statuscode === '200') {
+          this.toastService.show('admin.product_form.deleted', 'success');
+          this.loadProducts();
+        } else {
           this.toastService.show('admin.product_form.delete_error', 'error');
-          this.productDeleteLoading.set(false);
-          this.productDeleteConfirm.set(null);
-        },
-      });
+        }
+        this.productDeleteLoading.set(false);
+        this.productDeleteConfirm.set(null);
+      },
+      error: () => {
+        this.toastService.show('admin.product_form.delete_error', 'error');
+        this.productDeleteLoading.set(false);
+        this.productDeleteConfirm.set(null);
+      },
+    });
   }
 
   openProductForm(product?: ProductWithHelpers): void {
@@ -8217,11 +8638,7 @@ export class Admin implements OnInit {
 
     const body = this.buildProductApiBody(data, editId);
 
-    const endpoint = editId
-      ? `${environment.baseURL}/api/update_product_admin`
-      : `${environment.baseURL}/api/create_product_admin`;
-
-    this.http.post<{ statuscode: string; status: string }>(endpoint, body).subscribe({
+    this.productService.saveProductAdmin(body, !!editId).subscribe({
       next: (res) => {
         if (res.statuscode === '200') {
           this.toastService.show(
@@ -8642,68 +9059,6 @@ export class Admin implements OnInit {
 
 
 ================================================================================
-FILE: src\app\pages\bracket\bracket.css
-================================================================================
-
-
-
-
-================================================================================
-FILE: src\app\pages\bracket\bracket.html
-================================================================================
-
-<p>bracket works!</p>
-
-
-
-================================================================================
-FILE: src\app\pages\bracket\bracket.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Bracket } from './bracket';
-
-describe('Bracket', () => {
-  let component: Bracket;
-  let fixture: ComponentFixture<Bracket>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Bracket]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Bracket);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
-
-
-
-================================================================================
-FILE: src\app\pages\bracket\bracket.ts
-================================================================================
-
-import { Component } from '@angular/core';
-
-@Component({
-  selector: 'app-bracket',
-  standalone: true,
-  imports: [],
-  templateUrl: './bracket.html',
-  styleUrl: './bracket.css',
-})
-export class Bracket {}
-
-
-
-================================================================================
 FILE: src\app\pages\delacc-promise\delacc-promise.css
 ================================================================================
 
@@ -8727,8 +9082,14 @@ FILE: src\app\pages\delacc-promise\delacc-promise.css
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .verification-content {
@@ -8750,7 +9111,7 @@ FILE: src\app\pages\delacc-promise\delacc-promise.css
 }
 
 .error-text {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .redirect-notice {
@@ -8776,12 +9137,12 @@ FILE: src\app\pages\delacc-promise\delacc-promise.css
 
 .icon-wrapper.success {
   background: rgba(6, 122, 69, 0.12);
-  color: #067a45;
+  color: var(--color-success);
 }
 
 .icon-wrapper.error {
-  background: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  background: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .spinner-large {
@@ -8795,7 +9156,9 @@ FILE: src\app\pages\delacc-promise\delacc-promise.css
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .submit-btn {
@@ -8871,7 +9234,7 @@ FILE: src\app\pages\delacc-promise\delacc-promise.ts
 ================================================================================
 
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AccountService } from '../../core/services/account.service';
@@ -8880,7 +9243,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-delacc-promise',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [RouterModule, TranslateModule],
   templateUrl: './delacc-promise.html',
   styleUrl: './delacc-promise.css',
 })
@@ -8960,213 +9323,6 @@ export class DelaccPromise implements OnInit {
 
 
 ================================================================================
-FILE: src\app\pages\email\email.css
-================================================================================
-
-:host {
-  display: block;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-
-
-================================================================================
-FILE: src\app\pages\email\email.html
-================================================================================
-
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Roy's Shack Email</title>
-  </head>
-  <body
-    style="
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f5f5;
-    "
-  >
-    <table
-      role="presentation"
-      cellpadding="0"
-      cellspacing="0"
-      width="100%"
-      style="background-color: #f5f5f5; padding: 40px 20px"
-    >
-      <tr>
-        <td align="center">
-          <table
-            role="presentation"
-            cellpadding="0"
-            cellspacing="0"
-            width="100%"
-            style="
-              max-width: 600px;
-              background-color: #ffffff;
-              border-radius: 8px;
-              overflow: hidden;
-              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            "
-          >
-            <tr>
-              <td
-                style="
-                  background: linear-gradient(135deg, #067a45 0%, #048a4f 100%);
-                  padding: 40px 20px;
-                  text-align: center;
-                "
-              >
-                <div
-                  style="
-                    background-color: rgba(255, 255, 255, 0.2);
-                    width: 60px;
-                    height: 60px;
-                    border-radius: 50%;
-                    margin: 0 auto 16px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: 3px solid rgba(255, 255, 255, 0.3);
-                  "
-                >
-                  <span style="color: white; font-size: 24px; font-weight: bold">🏪</span>
-                </div>
-                <h1
-                  style="
-                    margin: 0;
-                    color: white;
-                    font-size: 28px;
-                    font-weight: 700;
-                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                  "
-                >
-                  Roy's Shack
-                </h1>
-              </td>
-            </tr>
-
-            <tr>
-              <td style="padding: 40px 30px; text-align: center">
-                <h2 style="margin: 0 0 20px; color: #067a45; font-size: 24px; font-weight: 700">
-                  Welcome Back!
-                </h2>
-
-                <p style="margin: 0 0 16px; color: #333333; font-size: 16px; line-height: 1.6">
-                  Hello there,
-                </p>
-
-                <p style="margin: 0 0 30px; color: #666666; font-size: 15px; line-height: 1.6">
-                  We received a request to log in to your Roy's Shack account.<br />
-                  Click the button below to securely sign in:
-                </p>
-
-                <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto">
-                  <tr>
-                    <td
-                      style="
-                        border-radius: 8px;
-                        background: linear-gradient(135deg, #067a45 0%, #048a4f 100%);
-                        box-shadow: 0 4px 12px rgba(6, 122, 69, 0.3);
-                      "
-                    >
-                      <a
-                        ngNonBindable
-                        href="XXXX"
-                        style="
-                          display: inline-block;
-                          padding: 16px 48px;
-                          color: white;
-                          text-decoration: none;
-                          font-size: 16px;
-                          font-weight: 600;
-                          border-radius: 8px;
-                        "
-                      >
-                        Log in
-                      </a>
-                    </td>
-                  </tr>
-                </table>
-
-                <p style="margin: 30px 0 0; color: #999999; font-size: 14px; line-height: 1.6">
-                  If you didn't request this login, you can safely ignore this email.
-                </p>
-              </td>
-            </tr>
-
-            <tr>
-              <td style="padding: 30px; text-align: center; border-top: 1px solid #eeeeee">
-                <p style="margin: 0 0 8px; color: #999999; font-size: 13px">
-                  © 2025 Roy's Shack. All rights reserved.
-                </p>
-                <p style="margin: 0; color: #bbbbbb; font-size: 12px">
-                  This is an automated message, please do not reply.
-                </p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
-
-
-
-================================================================================
-FILE: src\app\pages\email\email.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Email } from './email';
-
-describe('Email', () => {
-  let component: Email;
-  let fixture: ComponentFixture<Email>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Email]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Email);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
-
-
-
-================================================================================
-FILE: src\app\pages\email\email.ts
-================================================================================
-
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-@Component({
-  selector: 'app-email',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './email.html',
-  styleUrl: './email.css',
-})
-export class Email {}
-
-
-
-================================================================================
 FILE: src\app\pages\forum\forum.css
 ================================================================================
 
@@ -9177,8 +9333,14 @@ FILE: src\app\pages\forum\forum.css
 }
 
 .forum-hero {
-  background:
-    linear-gradient(135deg, #065f36 0%, #067a45 25%, #0b5f39 50%, #044d2c 75%, #023a21 100%);
+  background: linear-gradient(
+    135deg,
+    #065f36 0%,
+    #067a45 25%,
+    #0b5f39 50%,
+    #044d2c 75%,
+    #023a21 100%
+  );
   color: white;
   padding: var(--space-16) var(--space-4) var(--space-12);
   text-align: center;
@@ -9204,7 +9366,12 @@ FILE: src\app\pages\forum\forum.css
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 
@@ -9440,13 +9607,13 @@ FILE: src\app\pages\forum\forum.css
 }
 
 .category-chip.category-medicines.active {
-  background: #dc2626;
-  border-color: #dc2626;
+  background: var(--color-error);
+  border-color: var(--color-error);
 }
 
 .category-chip.category-natural.active {
   background: #16a34a;
-  border-color: #16a34a;
+  border-color: var(--color-success);
 }
 
 .category-chip.category-baby.active {
@@ -9456,12 +9623,12 @@ FILE: src\app\pages\forum\forum.css
 
 .category-chip.category-lifestyle.active {
   background: #2563eb;
-  border-color: #2563eb;
+  border-color: var(--color-info);
 }
 
 .category-chip.category-seasonal.active {
   background: #ea580c;
-  border-color: #ea580c;
+  border-color: var(--color-warning-hover);
 }
 
 .category-chip.category-qa.active {
@@ -9719,8 +9886,14 @@ FILE: src\app\pages\forum\forum.css
 }
 
 [data-theme='dark'] .forum-hero {
-  background:
-    linear-gradient(135deg, #044d2c 0%, #065f36 25%, #0b5f39 50%, #033d23 75%, #022b18 100%);
+  background: linear-gradient(
+    135deg,
+    #044d2c 0%,
+    #065f36 25%,
+    #0b5f39 50%,
+    #033d23 75%,
+    #022b18 100%
+  );
 }
 
 [data-theme='dark'] .category-filters {
@@ -10202,7 +10375,6 @@ FILE: src\app\pages\forum\forum.ts
 ================================================================================
 
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -10216,7 +10388,7 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 @Component({
   selector: 'app-forum',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PostCardComponent],
+  imports: [RouterModule, FormsModule, TranslateModule, PostCardComponent],
   templateUrl: './forum.html',
   styleUrl: './forum.css',
 })
@@ -10230,10 +10402,9 @@ export class Forum implements OnInit {
 
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
+  forumService = inject(ForumService);
 
   isAuthenticated = computed(() => this.authService.isAuthenticated());
-
-  constructor(public forumService: ForumService) {}
 
   posts = computed(() => this.forumService.paginatedPosts());
   total_pages = computed(() => this.forumService.total_pages());
@@ -10254,7 +10425,6 @@ export class Forum implements OnInit {
   applySearch(): void {
     const filters: PostFilters = {
       search_query: this.search_query() || undefined,
-      // category_id alapján szűr (nem category — az nem létezik a Post modellben)
       category_id:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
@@ -10355,7 +10525,9 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Hero image */
@@ -10398,7 +10570,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: var(--space-4);
-  background: rgba(6, 122, 69, 0.1);
+  background: var(--color-success-light);
   color: var(--color-primary);
 }
 
@@ -10761,7 +10933,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 .btn-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255,255,255,0.4);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -11271,7 +11443,7 @@ FILE: src\app\pages\forum-detail\forum-detail.ts
 ================================================================================
 
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -11284,7 +11456,7 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 @Component({
   selector: 'app-forum-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslateModule],
   templateUrl: './forum-detail.html',
   styleUrl: './forum-detail.css',
 })
@@ -11683,16 +11855,17 @@ FILE: src\app\pages\home\home.html
   <app-slide></app-slide>
 
   <app-featured>
-    <app-featured-product-card
-      *ngFor="let product of featuredProducts(); let i = index"
-      [product]="product"
-      (cardClick)="onProductClick(product.id)"
-      appScrollReveal
-      [animationType]="'slide-up'"
-      [animationDelay]="i * 150"
-      [threshold]="0.1"
-    >
-    </app-featured-product-card>
+    @for (product of featuredProducts(); track product.id; let i = $index) {
+      <app-featured-product-card
+        [product]="product"
+        (cardClick)="onProductClick(product.id)"
+        appScrollReveal
+        [animationType]="'slide-up'"
+        [animationDelay]="i * 150"
+        [threshold]="0.1"
+      >
+      </app-featured-product-card>
+    }
   </app-featured>
 </div>
 
@@ -11732,8 +11905,8 @@ describe('Home', () => {
 FILE: src\app\pages\home\home.ts
 ================================================================================
 
-import { Component, inject, computed, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, computed, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -11743,19 +11916,12 @@ import { Featured } from '../../shared/components/featured/featured';
 import { FeaturedProductCard } from '../../shared/components/featured-product-card/featured-product-card';
 import { ScrollRevealDirective } from '../../shared/directives/scroll-reveal.directive';
 import { ICONS, IMAGES } from '../../core/constants/visuals';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [
-    CommonModule,
-    Slide,
-    Featured,
-    FeaturedProductCard,
-    ScrollRevealDirective,
-    TranslateModule,
-  ],
+  imports: [Slide, Featured, FeaturedProductCard, ScrollRevealDirective, TranslateModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -11764,6 +11930,7 @@ export class Home implements OnInit {
   private productService = inject(ProductService);
   private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
   IMAGES = IMAGES;
   ICONS = ICONS;
@@ -11771,7 +11938,7 @@ export class Home implements OnInit {
   featuredProducts = computed(() => this.productService.featuredProducts());
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       if (params['activate']) {
         const parts = params['activate'].split(';');
         if (parts.length === 2) {
@@ -11779,7 +11946,6 @@ export class Home implements OnInit {
           const token = parts[1].trim();
           this.authService.completeRegistration(id, token, true).subscribe({
             next: () => {
-              // successful activation
               this.router.navigate(['/home'], { replaceUrl: true });
             },
             error: () => {
@@ -11811,8 +11977,14 @@ FILE: src\app\pages\legal\legal.css
 }
 
 .legal-hero {
-  background:
-    linear-gradient(135deg, #065f36 0%, #067a45 25%, #0b5f39 50%, #044d2c 75%, #023a21 100%);
+  background: linear-gradient(
+    135deg,
+    #065f36 0%,
+    #067a45 25%,
+    #0b5f39 50%,
+    #044d2c 75%,
+    #023a21 100%
+  );
   color: white;
   padding: var(--space-16) var(--space-4) var(--space-12);
   text-align: center;
@@ -11838,7 +12010,12 @@ FILE: src\app\pages\legal\legal.css
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 
@@ -12080,7 +12257,7 @@ FILE: src\app\pages\legal\legal.css
 }
 .cookie-type-badge.analytics {
   background: rgba(37, 99, 235, 0.12);
-  color: #2563eb;
+  color: var(--color-info);
 }
 .cookie-type-badge.preferences {
   background: rgba(124, 58, 237, 0.12);
@@ -12170,8 +12347,14 @@ FILE: src\app\pages\legal\legal.css
 }
 
 [data-theme='dark'] .legal-hero {
-  background:
-    linear-gradient(135deg, #044d2c 0%, #065f36 25%, #0b5f39 50%, #033d23 75%, #022b18 100%);
+  background: linear-gradient(
+    135deg,
+    #044d2c 0%,
+    #065f36 25%,
+    #0b5f39 50%,
+    #033d23 75%,
+    #022b18 100%
+  );
 }
 [data-theme='dark'] .cookie-examples code {
   background: var(--bg-tertiary);
@@ -12450,7 +12633,7 @@ FILE: src\app\pages\legal\legal.ts
 ================================================================================
 
 import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TranslateModule } from '@ngx-translate/core';
 
 type LegalTab = 'terms' | 'privacy' | 'cookies';
@@ -12458,7 +12641,7 @@ type LegalTab = 'terms' | 'privacy' | 'cookies';
 @Component({
   selector: 'app-legal',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './legal.html',
   styleUrl: './legal.css',
 })
@@ -12549,7 +12732,7 @@ FILE: src\app\pages\login\login.css
 
 .form-input:focus {
   border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.1);
+  box-shadow: 0 0 0 3px var(--color-success-light);
 }
 
 .form-input:disabled {
@@ -12631,7 +12814,7 @@ FILE: src\app\pages\login\login.css
 
 .error-message {
   padding: var(--space-3) var(--space-4);
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: var(--color-error-light);
   color: var(--color-error);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
@@ -12772,7 +12955,7 @@ FILE: src\app\pages\login\login.css
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background-color: rgba(6, 122, 69, 0.1);
+  background-color: var(--color-success-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13140,7 +13323,7 @@ FILE: src\app\pages\login\login.ts
 ================================================================================
 
 import { Component, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13150,7 +13333,7 @@ import { SupportedLanguage, TranslationService } from '../../core/services/trans
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [FormsModule, RouterModule, TranslateModule],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
@@ -13237,8 +13420,14 @@ FILE: src\app\pages\login-promise\login-promise.css
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .verification-content {
@@ -13260,7 +13449,7 @@ FILE: src\app\pages\login-promise\login-promise.css
 }
 
 .error-text {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .icon-wrapper {
@@ -13280,12 +13469,12 @@ FILE: src\app\pages\login-promise\login-promise.css
 
 .icon-wrapper.success {
   background: rgba(6, 122, 69, 0.12);
-  color: #067a45;
+  color: var(--color-success);
 }
 
 .icon-wrapper.error {
-  background: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  background: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .spinner-large {
@@ -13299,7 +13488,9 @@ FILE: src\app\pages\login-promise\login-promise.css
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .submit-btn {
@@ -13374,7 +13565,7 @@ FILE: src\app\pages\login-promise\login-promise.ts
 ================================================================================
 
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
@@ -13382,7 +13573,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-login-promise',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [RouterModule, TranslateModule],
   templateUrl: './login-promise.html',
   styleUrl: './login-promise.css',
 })
@@ -14024,7 +14215,7 @@ FILE: src\app\pages\not-found\not-found.ts
 ================================================================================
 
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
@@ -14036,7 +14227,7 @@ import { getLogoSrc } from '../../core/constants/visuals';
 @Component({
   selector: 'app-not-found',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [RouterModule, TranslateModule],
   templateUrl: './not-found.html',
   styleUrl: './not-found.css',
 })
@@ -14152,7 +14343,7 @@ FILE: src\app\pages\password-reset\password-reset.ts
 ================================================================================
 
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
@@ -14161,11 +14352,12 @@ import { ToastService } from '../../core/services/toast.service';
 @Component({
   selector: 'app-password-reset',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [RouterModule, TranslateModule],
   templateUrl: './password-reset.html',
   styleUrl: './password-reset.css',
 })
 export class PasswordReset implements OnInit {
+  private router = inject(Router);
   private location = inject(Location);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
@@ -14174,8 +14366,6 @@ export class PasswordReset implements OnInit {
   isProcessing = signal(false);
   isSuccess = signal(false);
   errorMessage = signal('');
-
-  constructor(private router: Router) {}
 
   ngOnInit(): void {
     const raw = new URLSearchParams(window.location.search).get('chpass') || '';
@@ -14231,7 +14421,6 @@ FILE: src\app\pages\password-reset-request\password-reset-request.css
 ================================================================================
 
 @import '../login/login.css';
-@import '../email/email.css';
 
 
 
@@ -14413,7 +14602,7 @@ FILE: src\app\pages\password-reset-request\password-reset-request.ts
 ================================================================================
 
 import { Component, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14423,7 +14612,7 @@ import { TranslationService } from '../../core/services/translation.service';
 @Component({
   selector: 'app-password-reset-request',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [FormsModule, RouterModule, TranslateModule],
   templateUrl: './password-reset-request.html',
   styleUrl: './password-reset-request.css',
 })
@@ -15750,11 +15939,11 @@ FILE: src\app\pages\product-detail\product-detail.ts
 
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers, ProductImage, enrichProduct } from '../../core/models/product.model';
 import { ReviewWithHelpers } from '../../core/models/review.model';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 import { ReviewService } from '../../core/services/review.service';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
@@ -15767,7 +15956,7 @@ import { ICONS } from '../../core/constants/visuals';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, TranslateModule, RouterLink],
+  imports: [DatePipe, TranslateModule, RouterLink],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
 })
@@ -15894,8 +16083,6 @@ export class ProductDetail implements OnInit, OnDestroy {
       const lang = this.currentLang();
       this.product.set(enrichProduct(rawProduct, lang, images));
       this.selectedImageIndex.set(0);
-
-      console.log(`Loaded ${images.length} gallery images for product ${productId}`);
     } catch (err) {
       console.warn('Could not load gallery images, thumbnail will be used', err);
     }
@@ -16667,7 +16854,7 @@ FILE: src\app\pages\profile\profile.css
 
 .badge--admin {
   background: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
+  color: var(--color-warning);
   border: 1px solid rgba(245, 158, 11, 0.4);
 }
 
@@ -16715,13 +16902,13 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .nav-item--active {
-  background: rgba(6, 122, 69, 0.1);
-  color: #067a45;
+  background: var(--color-success-light);
+  color: var(--color-success);
   font-weight: 600;
 }
 
 .nav-item--active .nav-icon {
-  color: #067a45;
+  color: var(--color-success);
 }
 
 .nav-item--danger {
@@ -16729,13 +16916,13 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .nav-item--danger:hover {
-  background: rgba(220, 38, 38, 0.08);
-  color: #dc2626;
+  background: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .nav-item--danger.nav-item--active {
-  background: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  background: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .nav-icon {
@@ -16743,6 +16930,20 @@ FILE: src\app\pages\profile\profile.css
   height: 20px;
   flex-shrink: 0;
   color: inherit;
+}
+
+.nav-icon-danger {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.nav-icon-danger:hover {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--color-error-hover);
 }
 
 .nav-icon svg {
@@ -16784,8 +16985,8 @@ FILE: src\app\pages\profile\profile.css
 
 .sidebar-logout:hover {
   background: rgba(220, 38, 38, 0.06);
-  border-color: #dc2626;
-  color: #dc2626;
+  border-color: var(--color-error);
+  color: var(--color-error);
 }
 
 .profile-main {
@@ -16835,22 +17036,22 @@ FILE: src\app\pages\profile\profile.css
 
 .section-header__icon--green {
   background: rgba(6, 122, 69, 0.12);
-  color: #067a45;
+  color: var(--color-success);
 }
 
 .section-header__icon--blue {
-  background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  background: var(--color-info-light);
+  color: var(--color-info);
 }
 
 .section-header__icon--orange {
   background: rgba(234, 88, 12, 0.1);
-  color: #ea580c;
+  color: var(--color-warning-hover);
 }
 
 .section-header__icon--red {
-  background: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  background: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .section-title {
@@ -16862,7 +17063,7 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .section-title--danger {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .section-subtitle {
@@ -16897,7 +17098,7 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .card-title--danger {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .card-title-row {
@@ -16922,8 +17123,8 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .card-badge--info {
-  background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  background: var(--color-info-light);
+  color: var(--color-info);
 }
 
 .card-badge--neutral {
@@ -17045,13 +17246,13 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .stat-card--green .stat-card__icon {
-  background: rgba(6, 122, 69, 0.1);
-  color: #067a45;
+  background: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .stat-card--blue .stat-card__icon {
-  background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  background: var(--color-info-light);
+  color: var(--color-info);
 }
 
 .stat-card--purple .stat-card__icon {
@@ -17123,16 +17324,16 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .qa-icon--green {
-  background: rgba(6, 122, 69, 0.1);
-  color: #067a45;
+  background: var(--color-success-light);
+  color: var(--color-success);
 }
 .qa-icon--blue {
-  background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  background: var(--color-info-light);
+  color: var(--color-info);
 }
 .qa-icon--orange {
   background: rgba(234, 88, 12, 0.1);
-  color: #ea580c;
+  color: var(--color-warning-hover);
 }
 
 .qa-text {
@@ -17247,7 +17448,7 @@ FILE: src\app\pages\profile\profile.css
 
 .form-input:focus {
   outline: none;
-  border-color: #067a45;
+  border-color: var(--color-success);
   box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.12);
 }
 
@@ -17258,8 +17459,8 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .form-input--danger:focus {
-  border-color: #dc2626;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px var(--color-error-light);
 }
 
 .form-hint {
@@ -17321,15 +17522,15 @@ FILE: src\app\pages\profile\profile.css
 }
 
 .alert--error {
-  background: rgba(220, 38, 38, 0.08);
+  background: var(--color-error-light);
   border: 1px solid rgba(220, 38, 38, 0.2);
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .alert--success {
   background: rgba(6, 122, 69, 0.08);
   border: 1px solid rgba(6, 122, 69, 0.2);
-  color: #067a45;
+  color: var(--color-success);
 }
 
 .btn {
@@ -17380,19 +17581,19 @@ FILE: src\app\pages\profile\profile.css
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--bg-tertiary);
-  border-color: #067a45;
-  color: #067a45;
+  border-color: var(--color-success);
+  color: var(--color-success);
   transform: translateY(-1px);
 }
 
 .btn-danger-solid {
-  background: #dc2626;
+  background: var(--color-error);
   color: white;
   box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
 
 .btn-danger-solid:hover:not(:disabled) {
-  background: #b91c1c;
+  background: var(--color-error-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
 }
@@ -17426,7 +17627,7 @@ FILE: src\app\pages\profile\profile.css
   background: rgba(234, 88, 12, 0.07);
   border: 1px solid rgba(234, 88, 12, 0.2);
   border-radius: var(--radius-lg);
-  color: #ea580c;
+  color: var(--color-warning-hover);
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.6;
@@ -17451,7 +17652,7 @@ FILE: src\app\pages\profile\profile.css
 .delete-sent__icon {
   width: 72px;
   height: 72px;
-  background: rgba(6, 122, 69, 0.1);
+  background: var(--color-success-light);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -17462,7 +17663,7 @@ FILE: src\app\pages\profile\profile.css
 .delete-sent__icon svg {
   width: 36px;
   height: 36px;
-  color: #067a45;
+  color: var(--color-success);
 }
 
 .delete-sent h3 {
@@ -17571,7 +17772,7 @@ FILE: src\app\pages\profile\profile.css
 }
 
 [data-theme='dark'] .form-input:focus {
-  border-color: #10b981;
+  border-color: var(--color-success);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
@@ -17860,7 +18061,7 @@ FILE: src\app\pages\profile\profile.html
             [class.nav-item--active]="activeSection() === 'danger'"
             (click)="setSection('danger')"
           >
-            <span class="nav-icon">
+            <span class="nav-icon-danger">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path
                   stroke-linecap="round"
@@ -18627,7 +18828,7 @@ FILE: src\app\pages\profile\profile.ts
 ================================================================================
 
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -18641,7 +18842,7 @@ export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | '
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslateModule],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
@@ -18868,15 +19069,15 @@ FILE: src\app\pages\purchase\purchase.css
 }
 
 .alert-success {
-  background-color: rgba(6, 122, 69, 0.1);
+  background-color: var(--color-success-light);
   border: 1px solid var(--color-primary);
   color: var(--color-primary);
 }
 
 .alert-error {
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: var(--color-error-light);
   border: 1px solid #dc2626;
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .checkout-layout {
@@ -19033,7 +19234,7 @@ FILE: src\app\pages\purchase\purchase.css
 .remove-btn {
   background: none;
   border: none;
-  color: #dc2626;
+  color: var(--color-error);
   cursor: pointer;
   font-size: 0.9rem;
   text-decoration: underline;
@@ -19135,7 +19336,7 @@ FILE: src\app\pages\purchase\purchase.css
 .form-group textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.1);
+  box-shadow: 0 0 0 3px var(--color-success-light);
 }
 
 .form-group input:disabled,
@@ -19567,7 +19768,7 @@ FILE: src\app\pages\purchase\purchase.ts
 ================================================================================
 
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -19593,7 +19794,7 @@ interface CheckoutForm {
 @Component({
   selector: 'app-purchase',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslateModule],
   templateUrl: './purchase.html',
   styleUrl: './purchase.css',
 })
@@ -19764,7 +19965,7 @@ FILE: src\app\pages\register\register.css
 
 .success-message {
   padding: var(--space-3) var(--space-4);
-  background-color: rgba(6, 122, 69, 0.1);
+  background-color: var(--color-success-light);
   color: var(--color-success);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
@@ -19994,7 +20195,7 @@ FILE: src\app\pages\register\register.ts
 ================================================================================
 
 import { Component, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -20004,7 +20205,7 @@ import { TranslationService } from '../../core/services/translation.service';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
+  imports: [FormsModule, RouterModule, TranslateModule],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
@@ -20110,7 +20311,7 @@ FILE: src\app\pages\registration-promise\registration-promise.css
 }
 
 .icon-wrapper.error {
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: var(--color-error-light);
 }
 
 .error-icon {
@@ -20178,7 +20379,7 @@ FILE: src\app\pages\registration-promise\registration-promise.css
 }
 
 .icon-wrapper.error {
-  background: rgba(220, 38, 38, 0.1);
+  background: var(--color-error-light);
 }
 
 .check-icon {
@@ -20543,7 +20744,7 @@ FILE: src\app\pages\registration-promise\registration-promise.ts
 ================================================================================
 
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
@@ -20551,7 +20752,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-registration-promise',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [RouterModule, TranslateModule],
   templateUrl: './registration-promise.html',
   styleUrl: './registration-promise.css',
 })
@@ -20630,469 +20831,6 @@ export class RegistrationPromise implements OnInit {
 
   resendEmail(): void {
     this.router.navigate(['/register']);
-  }
-}
-
-
-
-================================================================================
-FILE: src\app\pages\test\test.css
-================================================================================
-
-
-
-
-================================================================================
-FILE: src\app\pages\test\test.html
-================================================================================
-
-<p>===================================== TEST =================================</p>
-<app-primary-btn>{{ 'header.home' | translate }}</app-primary-btn>
-<p>===================================== TEST =================================</p>
-
-
-
-================================================================================
-FILE: src\app\pages\test\test.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Test } from './test';
-
-describe('Test', () => {
-  let component: Test;
-  let fixture: ComponentFixture<Test>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Test]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Test);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
-
-
-
-================================================================================
-FILE: src\app\pages\test\test.ts
-================================================================================
-
-import { Component } from '@angular/core';
-import { PrimaryBtn } from '../../shared/components/primary-btn/primary-btn';
-import { TranslateModule } from '@ngx-translate/core';
-
-@Component({
-  selector: 'app-test',
-  imports: [PrimaryBtn, TranslateModule],
-  templateUrl: './test.html',
-  styleUrl: './test.css',
-})
-export class Test {}
-
-
-
-================================================================================
-FILE: src\app\services\product.service.ts
-================================================================================
-
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, firstValueFrom, of } from 'rxjs';
-import { catchError, map, timeout } from 'rxjs/operators';
-import {
-  Product,
-  ProductCategory,
-  ProductCategoriesApiResponse,
-  ProductsApiResponse,
-  ProductWithHelpers,
-  ProductImage,
-  ProductImagesApiResponse,
-  Category,
-  enrichProduct,
-  mapProductCategory,
-  ProductFilterOptions,
-  PaginationConfig,
-  SortOption,
-} from '../core/models/product.model';
-import { TranslationService } from '../core/services/translation.service';
-import { environment } from '../../environments/environment';
-import { MOCK_MODE, MOCK_RAW_PRODUCTS, MOCK_RAW_CATEGORIES } from '../pages/products/product.mock';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class ProductService {
-  private readonly API_URL = environment.baseURL;
-  private http = inject(HttpClient);
-  private translationService = inject(TranslationService);
-
-  private allProductsSignal = signal<ProductWithHelpers[]>([]);
-  private rawProducts = signal<Product[]>([]);
-  private featuredSignal = signal<ProductWithHelpers[]>([]);
-  private categoriesSignal = signal<Category[]>([]);
-  private loadingSignal = signal<boolean>(false);
-  private errorSignal = signal<string | null>(null);
-
-  private filtersSignal = signal<ProductFilterOptions>({
-    categories: [],
-    price_range: null,
-    in_stock_only: false,
-    sort_by: 'popularity',
-  });
-  private current_pageSignal = signal<number>(1);
-  private items_per_pageSignal = signal<number>(30);
-
-  // --- Public readonly signals ---
-  products = computed(() => this.allProductsSignal());
-  featuredProducts = computed(() => this.featuredSignal());
-  categories = computed(() => this.categoriesSignal());
-  currentFilters = computed(() => this.filtersSignal());
-  isLoading = computed(() => this.loadingSignal());
-  error = computed(() => this.errorSignal());
-
-  private filteredProducts = computed(() => {
-    let products = this.allProductsSignal();
-    const filters = this.filtersSignal();
-
-    if (filters.categories && filters.categories.length > 0) {
-      products = products.filter((p) => filters.categories!.includes(p.category));
-    }
-
-    if (filters.price_range) {
-      const { min, max } = filters.price_range;
-      products = products.filter((p) => p.price >= min && p.price <= max);
-    }
-
-    if (filters.in_stock_only) {
-      products = products.filter((p) => p.in_stock);
-    }
-
-    if (filters.sort_by) {
-      products = this.sortProducts(products, filters.sort_by);
-    }
-
-    return products;
-  });
-
-  paginationState = computed<PaginationConfig>(() => {
-    const total_items = this.filteredProducts().length;
-    const items_per_page = this.items_per_pageSignal();
-    const current_page = this.current_pageSignal();
-    const total_pages = Math.ceil(total_items / items_per_page);
-    return { current_page, items_per_page, total_items, total_pages };
-  });
-
-  paginatedProducts = computed(() => {
-    const filtered = this.filteredProducts();
-    const page = this.current_pageSignal();
-    const perPage = this.items_per_pageSignal();
-    const start = (page - 1) * perPage;
-    return filtered.slice(start, start + perPage);
-  });
-
-  // --- Load methods ---
-
-  async loadProducts(): Promise<void> {
-    if (MOCK_MODE) {
-      const currentLang = this.translationService.getCurrentLanguage();
-      const enriched = MOCK_RAW_PRODUCTS.map((p) => enrichProduct(p, currentLang));
-      this.rawProducts.set(MOCK_RAW_PRODUCTS);
-      this.allProductsSignal.set(enriched);
-      this.updateCategoryCounts();
-      return;
-    }
-
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
-    try {
-      const products = await firstValueFrom(this.getAllProducts());
-      const currentLang = this.translationService.getCurrentLanguage();
-      const categoryIdMap = this.buildCategoryIdMap();
-      const normalized = products.map((p) => this.normalizeCategoryId(p, categoryIdMap));
-      const enriched = normalized.map((p) => enrichProduct(p, currentLang));
-      this.rawProducts.set(normalized);
-      this.allProductsSignal.set(enriched);
-      this.updateCategoryCounts();
-      console.log(`Loaded ${products.length} products from backend`);
-    } catch (err) {
-      console.error('Failed to load products from backend:', err);
-      this.errorSignal.set('products.error.load_failed');
-      this.allProductsSignal.set([]);
-      this.rawProducts.set([]);
-    } finally {
-      this.loadingSignal.set(false);
-    }
-  }
-
-  async loadFeaturedProducts(): Promise<void> {
-    if (MOCK_MODE) {
-      const currentLang = this.translationService.getCurrentLanguage();
-      const enriched = MOCK_RAW_PRODUCTS.filter((p) => p.featured === '1').map((p) =>
-        enrichProduct(p, currentLang),
-      );
-      this.featuredSignal.set(enriched);
-      return;
-    }
-
-    try {
-      const products = await firstValueFrom(this.getFeaturedFromApi());
-      const currentLang = this.translationService.getCurrentLanguage();
-      const categoryIdMap = this.buildCategoryIdMap();
-      const normalized = products.map((p) => this.normalizeCategoryId(p, categoryIdMap));
-      const enriched = normalized.map((p) => enrichProduct(p, currentLang));
-      this.featuredSignal.set(enriched);
-      console.log(`Loaded ${products.length} featured products from backend`);
-    } catch (err) {
-      const fallback = this.allProductsSignal().filter((p) => p.is_featured);
-      this.featuredSignal.set(fallback);
-      console.warn(
-        'Featured products endpoint unavailable, using loaded products as fallback:',
-        err,
-      );
-    }
-  }
-
-  async loadCategories(): Promise<void> {
-    if (MOCK_MODE) {
-      const mapped = MOCK_RAW_CATEGORIES.map(mapProductCategory);
-      this.categoriesSignal.set(mapped);
-      this.updateCategoryCounts();
-      return;
-    }
-
-    try {
-      const raw = await firstValueFrom(this.getAllCategories());
-      const mapped = raw.map(mapProductCategory);
-      this.categoriesSignal.set(mapped);
-      this.updateCategoryCounts();
-      console.log(`Loaded ${raw.length} categories from backend`);
-    } catch (err) {
-      console.error('Failed to load categories from backend:', err);
-      this.categoriesSignal.set([]);
-    }
-  }
-
-  // --- Filter / Pagination controls ---
-
-  setFilters(filters: Partial<ProductFilterOptions>): void {
-    this.filtersSignal.update((current) => ({ ...current, ...filters }));
-    this.current_pageSignal.set(1);
-  }
-
-  clearFilters(): void {
-    this.filtersSignal.set({
-      categories: [],
-      price_range: null,
-      in_stock_only: false,
-      sort_by: 'popularity',
-    });
-    this.current_pageSignal.set(1);
-  }
-
-  setPage(page: number): void {
-    const total_pages = this.paginationState().total_pages;
-    if (page >= 1 && page <= total_pages) this.current_pageSignal.set(page);
-  }
-
-  setItemsPerPage(count: number): void {
-    this.items_per_pageSignal.set(count);
-    this.current_pageSignal.set(1);
-  }
-
-  // --- API calls ---
-
-  getAllProducts(): Observable<Product[]> {
-    return this.http.get<ProductsApiResponse>(`${this.API_URL}/api/get_all_products`).pipe(
-      timeout(5000),
-      map((r) => {
-        if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
-        if (!Array.isArray(r.products)) throw new Error('Invalid products response');
-        return r.products;
-      }),
-      catchError(this.handleError),
-    );
-  }
-
-  getAllCategories(): Observable<ProductCategory[]> {
-    return this.http
-      .get<ProductCategoriesApiResponse>(`${this.API_URL}/api/get_all_product_categories`)
-      .pipe(
-        timeout(5000),
-        map((r) => {
-          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
-          if (!Array.isArray(r.product_categories)) throw new Error('Invalid categories response');
-          return r.product_categories;
-        }),
-        catchError(this.handleError),
-      );
-  }
-
-  getFeaturedFromApi(): Observable<Product[]> {
-    return this.http.get<ProductsApiResponse>(`${this.API_URL}/api/get_all_featured_products`).pipe(
-      timeout(5000),
-      map((r) => {
-        if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
-        if (!Array.isArray(r.products)) throw new Error('Invalid featured response');
-        return r.products;
-      }),
-      catchError(this.handleError),
-    );
-  }
-
-  getProductImages(productId: string): Observable<ProductImage[]> {
-    const body = {
-      product_id: btoa(productId),
-    };
-
-    return this.http
-      .post<ProductImagesApiResponse>(`${this.API_URL}/api/get_all_product_images_by_id`, body)
-      .pipe(
-        timeout(5000),
-        map((r) => {
-          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
-          if (!Array.isArray(r.images)) return [];
-          return r.images;
-        }),
-        catchError((err) => {
-          console.warn(
-            'ProductService: Failed to load product images, falling back to thumbnail',
-            err,
-          );
-          return of([]);
-        }),
-      );
-  }
-
-  getProductById(id: string): Observable<Product | undefined> {
-    return this.getAllProducts().pipe(
-      map((products) => products.find((p) => p.id === id)),
-      catchError(() => of(undefined)),
-    );
-  }
-
-  getProductsByCategory(categoryId: string): Observable<Product[]> {
-    return this.getAllProducts().pipe(
-      map((products) => products.filter((p) => (p.category ?? p.category_id) === categoryId)),
-      catchError(() => of([])),
-    );
-  }
-
-  getInStockProducts(): Observable<Product[]> {
-    return this.getAllProducts().pipe(
-      map((products) => products.filter((p) => parseInt(p.stock) > 0)),
-      catchError(() => of([])),
-    );
-  }
-
-  searchProducts(query: string): Observable<Product[]> {
-    const q = query.toLowerCase();
-    return this.getAllProducts().pipe(
-      map((products) =>
-        products.filter(
-          (p) =>
-            p.name_en.toLowerCase().includes(q) ||
-            p.name_hu.toLowerCase().includes(q) ||
-            p.name_de.toLowerCase().includes(q),
-        ),
-      ),
-      catchError(() => of([])),
-    );
-  }
-
-  getSaleProducts(): Observable<Product[]> {
-    return this.getAllProducts().pipe(
-      map((p) => p.filter((x) => parseFloat(x.sale_percentage) > 0)),
-      catchError(() => of([])),
-    );
-  }
-
-  // --- Private helpers ---
-
-  private buildCategoryIdMap(): Map<string, string> {
-    const map = new Map<string, string>();
-    this.categoriesSignal().forEach((cat) => {
-      map.set(cat.id, cat.id);
-    });
-    return map;
-  }
-
-  private updateCategoryCounts(): void {
-    const products = this.allProductsSignal();
-    const categories = this.categoriesSignal();
-    if (categories.length === 0) return;
-
-    const countMap = new Map<string, number>();
-    products.forEach((p) => {
-      const catId = p.category_id ?? p.category ?? '';
-      if (catId) {
-        countMap.set(catId, (countMap.get(catId) ?? 0) + 1);
-      }
-    });
-
-    const updated = categories.map((cat) => ({
-      ...cat,
-      count: countMap.get(cat.id) ?? 0,
-    }));
-    this.categoriesSignal.set(updated);
-  }
-
-  getCategoryById(id: string): import('../core/models/product.model').Category | undefined {
-    return this.categoriesSignal().find((cat) => cat.id === id);
-  }
-
-  private normalizeCategoryId(product: Product, _idMap: Map<string, string>): Product {
-    const resolved = product.category ?? product.category_id ?? '';
-    return { ...product, category: resolved };
-  }
-
-  private sortProducts(products: ProductWithHelpers[], sort_by: SortOption): ProductWithHelpers[] {
-    const sorted = [...products];
-    switch (sort_by) {
-      case 'popularity':
-        return sorted.sort((a, b) => parseFloat(b.times_ordered) - parseFloat(a.times_ordered));
-      case 'price-asc':
-        return sorted.sort((a, b) => a.price - b.price);
-      case 'price-desc':
-        return sorted.sort((a, b) => b.price - a.price);
-      case 'name-asc':
-        return sorted.sort((a, b) => a.name.localeCompare(b.name));
-      case 'name-desc':
-        return sorted.sort((a, b) => b.name.localeCompare(a.name));
-      case 'rating':
-      case 'rating-desc':
-        return sorted.sort((a, b) => b.rating_number - a.rating_number);
-      case 'newest':
-        return sorted.sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-        );
-      default:
-        return sorted;
-    }
-  }
-
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    let msg = 'An unknown error occurred';
-    if (error.error instanceof ErrorEvent) {
-      msg = error.error.message;
-    } else {
-      const codes: Record<number, string> = {
-        400: 'Bad request',
-        404: 'Not found',
-        500: 'Server error',
-      };
-      msg = codes[error.status] ?? `Error ${error.status}: ${error.message}`;
-    }
-    console.error('ProductService Error:', msg);
-    return throwError(() => new Error(msg));
   }
 }
 
@@ -21309,7 +21047,6 @@ FILE: src\app\shared\components\category-bar\category-bar.html
 FILE: src\app\shared\components\category-bar\category-bar.ts
 ================================================================================
 
-import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { Category } from '../../../core/models/product.model';
@@ -21317,7 +21054,7 @@ import { CategoryItem } from '../category-item/category-item';
 
 @Component({
   selector: 'app-category-bar',
-  imports: [CommonModule, TranslateModule, CategoryItem],
+  imports: [TranslateModule, CategoryItem],
   templateUrl: './category-bar.html',
   styleUrl: './category-bar.css',
 })
@@ -21450,14 +21187,13 @@ FILE: src\app\shared\components\category-item\category-item.html
 FILE: src\app\shared\components\category-item\category-item.ts
 ================================================================================
 
-import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Category } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-category-item',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './category-item.html',
   styleUrl: './category-item.css',
 })
@@ -21701,13 +21437,13 @@ FILE: src\app\shared\components\featured\featured.ts
 ================================================================================
 
 import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-featured',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './featured.html',
   styleUrl: './featured.css',
 })
@@ -22107,46 +21843,59 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.html
 
 <div class="featured-product-card" (click)="onCardClick()">
   <div class="featured-product-image-wrapper">
-    <img *ngIf="image_url()" [src]="image_url()" [alt]="altText()" class="featured-product-image" />
+    @if (image_url()) {
+      <img [src]="image_url()" [alt]="altText()" class="featured-product-image" />
+    }
 
-    <div class="featured-badges" *ngIf="discount_percentage() || requires_prescription()">
-      <span *ngIf="discount_percentage()" class="featured-badge featured-badge-discount">
-        -{{ discount_percentage() }}%
-      </span>
-      <span
-        *ngIf="requires_prescription()"
-        class="featured-badge featured-badge-prescription"
-        [title]="'product.requires_prescription' | translate"
+    @if (discount_percentage() || requires_prescription()) {
+      <div class="featured-badges">
+        @if (discount_percentage()) {
+          <span class="featured-badge featured-badge-discount">
+            -{{ discount_percentage() }}%
+          </span>
+        }
+        @if (requires_prescription()) {
+          <span
+            class="featured-badge featured-badge-prescription"
+            [title]="'product.requires_prescription' | translate"
+          >
+            ℞
+          </span>
+        }
+      </div>
+    }
+  </div>
+
+  @if (!image_url()) {
+    <div class="featured-product-card-placeholder">
+      <div class="featured-placeholder-icon">?</div>
+      <div class="featured-placeholder-text">{{ 'product.no_image' | translate }}</div>
+    </div>
+  }
+
+  @if (productName()) {
+    <div class="featured-product-info">
+      <h3 class="featured-product-name">{{ productName() }}</h3>
+
+      <div class="featured-product-price-row">
+        <span class="featured-product-price">{{ price() | appCurrency }}</span>
+        @if (oldPrice()) {
+          <span class="featured-product-old-price">
+            {{ oldPrice() | appCurrency }}
+          </span>
+        }
+      </div>
+
+      <div
+        class="featured-product-stock"
+        [class.featured-stock-in]="in_stock()"
+        [class.featured-stock-out]="!in_stock()"
       >
-        ℞
-      </span>
+        <span class="featured-stock-indicator"></span>
+        <span>{{ (in_stock() ? 'product.in_stock' : 'product.out_of_stock') | translate }}</span>
+      </div>
     </div>
-  </div>
-
-  <div *ngIf="!image_url()" class="featured-product-card-placeholder">
-    <div class="featured-placeholder-icon">?</div>
-    <div class="featured-placeholder-text">{{ 'product.no_image' | translate }}</div>
-  </div>
-
-  <div class="featured-product-info" *ngIf="productName()">
-    <h3 class="featured-product-name">{{ productName() }}</h3>
-
-    <div class="featured-product-price-row">
-      <span class="featured-product-price">{{ price() | appCurrency }}</span>
-      <span class="featured-product-old-price" *ngIf="oldPrice()">
-        {{ oldPrice() | appCurrency }}
-      </span>
-    </div>
-
-    <div
-      class="featured-product-stock"
-      [class.featured-stock-in]="in_stock()"
-      [class.featured-stock-out]="!in_stock()"
-    >
-      <span class="featured-stock-indicator"></span>
-      <span>{{ (in_stock() ? 'product.in_stock' : 'product.out_of_stock') | translate }}</span>
-    </div>
-  </div>
+  }
 </div>
 
 
@@ -22155,7 +21904,6 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.html
 FILE: src\app\shared\components\featured-product-card\featured-product-card.ts
 ================================================================================
 
-import { CommonModule, NgIf } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject, computed } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CurrencyService } from '../../../core/services/currency.service';
@@ -22167,7 +21915,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-featured-product-card',
-  imports: [CommonModule, NgIf, TranslateModule, CurrencyPipe],
+  imports: [TranslateModule, CurrencyPipe],
   templateUrl: './featured-product-card.html',
   styleUrl: './featured-product-card.css',
 })
@@ -22701,7 +22449,7 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.css
   border-radius: 8px;
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  z-index: 100;
+  z-index: var(--z-dropdown);
   min-width: 140px;
   animation: dropdownFadeIn 0.15s ease;
 }
@@ -22788,25 +22536,29 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.html
 
 <div class="newsletter">
   <div class="social-icons">
-    <div class="social-icon-wrapper" *ngFor="let social of socialLinks; trackBy: trackBySocialName">
-      <a *ngIf="social.url" [href]="social.url" target="_blank" [attr.aria-label]="social.name">
-        <img [src]="social.icon" [alt]="social.name" />
-      </a>
+    @for (social of socialLinks; track social.name) {
+      <div class="social-icon-wrapper">
+        @if (social.url) {
+          <a [href]="social.url" target="_blank" [attr.aria-label]="social.name">
+            <img [src]="social.icon" [alt]="social.name" />
+          </a>
+        } @else {
+          <button
+            class="social-icon-btn"
+            (click)="toggleSocialTooltip(social.name)"
+            [attr.aria-label]="social.name"
+          >
+            <img [src]="social.icon" [alt]="social.name" />
+          </button>
 
-      <ng-container *ngIf="!social.url">
-        <button
-          class="social-icon-btn"
-          (click)="toggleSocialTooltip(social.name)"
-          [attr.aria-label]="social.name"
-        >
-          <img [src]="social.icon" [alt]="social.name" />
-        </button>
-
-        <div class="social-tooltip" *ngIf="activeSocialTooltip === social.name">
-          {{ 'footer.no_social_link' | translate }}
-        </div>
-      </ng-container>
-    </div>
+          @if (activeSocialTooltip === social.name) {
+            <div class="social-tooltip">
+              {{ 'footer.no_social_link' | translate }}
+            </div>
+          }
+        }
+      </div>
+    }
   </div>
 
   <p>{{ 'footer.newsletter' | translate }}</p>
@@ -22822,18 +22574,21 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.html
       <span class="newsletter-lang-arrow" [class.open]="isLangDropdownOpen">▾</span>
     </button>
 
-    <div class="newsletter-lang-dropdown" *ngIf="isLangDropdownOpen">
-      <button
-        class="newsletter-lang-item"
-        type="button"
-        *ngFor="let lang of languages; trackBy: trackByLangCode"
-        [class.active]="newsletterLang() === lang.code"
-        (click)="selectNewsletterLang(lang.code)"
-      >
-        <img [src]="lang.flag" [alt]="lang.name" class="newsletter-flag" />
-        <span>{{ lang.name }}</span>
-      </button>
-    </div>
+    @if (isLangDropdownOpen) {
+      <div class="newsletter-lang-dropdown">
+        @for (lang of languages; track lang.code) {
+          <button
+            class="newsletter-lang-item"
+            type="button"
+            [class.active]="newsletterLang() === lang.code"
+            (click)="selectNewsletterLang(lang.code)"
+          >
+            <img [src]="lang.flag" [alt]="lang.name" class="newsletter-flag" />
+            <span>{{ lang.name }}</span>
+          </button>
+        }
+      </div>
+    }
   </div>
 
   <form (ngSubmit)="onSubmit()">
@@ -22857,7 +22612,6 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.ts
 ================================================================================
 
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
@@ -22885,7 +22639,7 @@ interface SocialLink {
 @Component({
   selector: 'app-newsletter-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, NgFor, NgIf],
+  imports: [FormsModule, TranslateModule],
   templateUrl: './newsletter-form.html',
   styleUrl: './newsletter-form.css',
 })
@@ -22909,15 +22663,12 @@ export class NewsletterForm {
   isLangDropdownOpen = false;
   activeSocialTooltip: string | null = null;
 
-  // current language as default language
   selectedLang = toSignal(this.translationService.currentLang$, {
     initialValue: this.translationService.getCurrentLanguage(),
   });
 
-  // writeable signal for the newsletter language
   newsletterLang = signal<SupportedLanguage>(this.translationService.getCurrentLanguage());
 
-  // languages from visuals.ts
   readonly languages = LANGUAGE_OPTIONS;
 
   socialLinks: SocialLink[] = [
@@ -22954,14 +22705,6 @@ export class NewsletterForm {
         }
       }, 3000);
     }
-  }
-
-  trackByLangCode(index: number, lang: any) {
-    return lang.code;
-  }
-
-  trackBySocialName(index: number, social: any) {
-    return social.name;
   }
 
   onSubmit(): void {
@@ -23009,7 +22752,7 @@ FILE: src\app\shared\components\header\header.css
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: var(--z-modal-backdrop);
 
   background-color: rgba(6, 122, 69, 0.92);
 
@@ -23127,7 +22870,7 @@ FILE: src\app\shared\components\header\header.css
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
   min-width: 220px;
-  z-index: 1001;
+  z-index: var(--z-modal);
   animation: slideDown 0.2s ease;
   overflow: hidden;
 }
@@ -23172,7 +22915,7 @@ FILE: src\app\shared\components\header\header.css
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
   min-width: 250px;
-  z-index: 1001;
+  z-index: var(--z-modal);
   animation: slideDown 0.2s ease;
 }
 
@@ -23231,15 +22974,15 @@ FILE: src\app\shared\components\header\header.css
 }
 
 .logout-btn {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .logout-btn:hover {
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: var(--color-error-light);
 }
 
 .logout-btn .dropdown-icon {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .cart-menu-wrapper {
@@ -23305,7 +23048,7 @@ FILE: src\app\shared\components\header\header.css
   box-shadow: var(--shadow-lg);
   width: 380px;
   max-height: 500px;
-  z-index: 1001;
+  z-index: var(--z-modal);
   animation: slideDown 0.2s ease;
   display: flex;
   flex-direction: column;
@@ -23481,8 +23224,8 @@ FILE: src\app\shared\components\header\header.css
 }
 
 .remove-item-btn:hover {
-  background-color: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  background-color: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .cart-dropdown-footer {
@@ -23544,7 +23287,7 @@ FILE: src\app\shared\components\header\header.css
 .clear-cart-btn {
   background: none;
   border: 1px solid rgba(220, 38, 38, 0.3);
-  color: #dc2626;
+  color: var(--color-error);
   padding: 0.35rem 0.75rem;
   border-radius: 6px;
   font-size: 0.8rem;
@@ -23555,8 +23298,8 @@ FILE: src\app\shared\components\header\header.css
 }
 
 .clear-cart-btn:hover {
-  background-color: rgba(220, 38, 38, 0.1);
-  border-color: #dc2626;
+  background-color: var(--color-error-light);
+  border-color: var(--color-error);
 }
 
 @keyframes slideDown {
@@ -23678,15 +23421,12 @@ FILE: src\app\shared\components\header\header.html
               <img [src]="ICONS.basket" alt="orders" class="dropdown-icon" />
               {{ 'header.my_orders' | translate }}
             </a>
-            <a
-              *ngIf="isAdmin"
-              routerLink="/admin"
-              class="user-dropdown-item"
-              (click)="closeUserMenu()"
-            >
-              <img [src]="ICONS.admin" alt="orders" class="dropdown-icon" />
-              {{ 'header.admin' | translate }}
-            </a>
+            @if (isAdmin) {
+              <a routerLink="/admin" class="user-dropdown-item" (click)="closeUserMenu()">
+                <img [src]="ICONS.admin" alt="orders" class="dropdown-icon" />
+                {{ 'header.admin' | translate }}
+              </a>
+            }
             <div class="user-dropdown-divider"></div>
             <button class="user-dropdown-item logout-btn" (click)="logout()">
               <svg
@@ -23874,10 +23614,18 @@ FILE: src\app\shared\components\header\header.html
 FILE: src\app\shared\components\header\header.ts
 ================================================================================
 
-import { Component, HostListener, OnInit, signal, computed } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnInit,
+  OnDestroy,
+  signal,
+  computed,
+  inject,
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 import { PrimaryBtn } from '../primary-btn/primary-btn';
 import { IconBtn } from '../icon-btn/icon-btn';
@@ -23892,15 +23640,23 @@ import { User } from '../../../core/models/auth.model';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [PrimaryBtn, IconBtn, RouterModule, LanguageSwitcher, TranslateModule, CommonModule],
+  imports: [PrimaryBtn, IconBtn, RouterModule, LanguageSwitcher, TranslateModule],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
-export class Header implements OnInit {
+export class Header implements OnInit, OnDestroy {
+  private themeService = inject(ThemeService);
+  private authService = inject(AuthService);
+  cartService = inject(CartService);
+  currencyService = inject(CurrencyService);
+
+  private subs: Subscription[] = [];
+
   ICONS = ICONS;
   IMAGES = IMAGES;
   currentTheme: Theme = 'light';
   isAuthenticated = false;
+  isAdmin = false;
   currentUser: User | null = null;
   showUserMenu = signal(false);
   showCartDropdown = signal(false);
@@ -23910,25 +23666,21 @@ export class Header implements OnInit {
   cartItems = computed(() => this.cartService.items());
   cartTotal = computed(() => this.cartService.totalPrice());
 
-  constructor(
-    private themeService: ThemeService,
-    private authService: AuthService,
-    public cartService: CartService,
-    public currencyService: CurrencyService,
-  ) {}
-
-  isAdmin = false;
-
   ngOnInit(): void {
-    this.themeService.currentTheme$.subscribe((theme) => {
-      this.currentTheme = theme;
-    });
+    this.subs.push(
+      this.themeService.currentTheme$.subscribe((theme) => {
+        this.currentTheme = theme;
+      }),
+      this.authService.authState$.subscribe((state) => {
+        this.isAuthenticated = state.isAuthenticated;
+        this.currentUser = state.user;
+        this.isAdmin = state.role === 'admin';
+      }),
+    );
+  }
 
-    this.authService.authState$.subscribe((state) => {
-      this.isAuthenticated = state.isAuthenticated;
-      this.currentUser = state.user;
-      this.isAdmin = state.role === 'admin';
-    });
+  ngOnDestroy(): void {
+    this.subs.forEach((s) => s.unsubscribe());
   }
 
   toggleMobileMenu(): void {
@@ -24150,7 +23902,7 @@ FILE: src\app\shared\components\language-switcher\language-switcher.css
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  z-index: 1000;
+  z-index: var(--z-modal-backdrop);
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -24259,28 +24011,31 @@ FILE: src\app\shared\components\language-switcher\language-switcher.html
     }
   </button>
 
-  <div class="lang-dropdown" *ngIf="isOpen">
-    <div class="lang-list">
-      <button
-        *ngFor="let lang of languages"
-        class="lang-item"
-        [class.active]="currentLanguage === lang.code"
-        (click)="selectLanguage(lang.code)"
-      >
-        @if (lang.imageError) {
-          <span class="fallback-text">{{ lang.code.toUpperCase() }}</span>
-        } @else {
-          <img
-            [src]="lang.flagImage"
-            [alt]="lang.name"
-            class="lang-item-flag-img"
-            (error)="onImageError(lang.code)"
-          />
+  @if (isOpen) {
+    <div class="lang-dropdown">
+      <div class="lang-list">
+        @for (lang of languages; track lang.code) {
+          <button
+            class="lang-item"
+            [class.active]="currentLanguage === lang.code"
+            (click)="selectLanguage(lang.code)"
+          >
+            @if (lang.imageError) {
+              <span class="fallback-text">{{ lang.code.toUpperCase() }}</span>
+            } @else {
+              <img
+                [src]="lang.flagImage"
+                [alt]="lang.name"
+                class="lang-item-flag-img"
+                (error)="onImageError(lang.code)"
+              />
+            }
+            <span class="lang-item-name">{{ lang.name }}</span>
+          </button>
         }
-        <span class="lang-item-name">{{ lang.name }}</span>
-      </button>
+      </div>
     </div>
-  </div>
+  }
 </div>
 
 
@@ -24289,8 +24044,8 @@ FILE: src\app\shared\components\language-switcher\language-switcher.html
 FILE: src\app\shared\components\language-switcher\language-switcher.ts
 ================================================================================
 
-import { NgFor, NgIf } from '@angular/common';
-import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService, SupportedLanguage } from '../../../core/services/translation.service';
 import { environment } from '../../../../environments/environment';
@@ -24305,11 +24060,15 @@ interface Language {
 @Component({
   selector: 'app-language-switcher',
   standalone: true,
-  imports: [NgIf, NgFor, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './language-switcher.html',
   styleUrl: './language-switcher.css',
 })
 export class LanguageSwitcher implements OnInit {
+  private elementRef = inject(ElementRef);
+  private translationService = inject(TranslationService);
+  private destroyRef = inject(DestroyRef);
+
   isOpen = false;
   currentLanguage: SupportedLanguage = 'en';
 
@@ -24334,15 +24093,12 @@ export class LanguageSwitcher implements OnInit {
     },
   ];
 
-  constructor(
-    private elementRef: ElementRef,
-    private translationService: TranslationService,
-  ) {}
-
   ngOnInit(): void {
-    this.translationService.currentLang$.subscribe((lang) => {
-      this.currentLanguage = lang;
-    });
+    this.translationService.currentLang$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((lang) => {
+        this.currentLanguage = lang;
+      });
   }
 
   get currentLang(): Language {
@@ -24696,24 +24452,24 @@ FILE: src\app\shared\components\post-card\post-card.css
 }
 
 [data-theme='dark'] .tag {
-  color: #10b981;
+  color: var(--color-success);
   background: rgba(16, 185, 129, 0.15);
   border-color: rgba(16, 185, 129, 0.4);
 }
 
 [data-theme='dark'] .tag:hover {
   background: rgba(16, 185, 129, 0.25);
-  border-color: #10b981;
+  border-color: var(--color-success);
 }
 
 .category-medicines {
-  color: #dc2626;
-  border-color: #dc2626;
+  color: var(--color-error);
+  border-color: var(--color-error);
 }
 
 .category-natural {
-  color: #16a34a;
-  border-color: #16a34a;
+  color: var(--color-success);
+  border-color: var(--color-success);
 }
 
 .category-baby {
@@ -24722,13 +24478,13 @@ FILE: src\app\shared\components\post-card\post-card.css
 }
 
 .category-lifestyle {
-  color: #2563eb;
-  border-color: #2563eb;
+  color: var(--color-info);
+  border-color: var(--color-info);
 }
 
 .category-seasonal {
-  color: #ea580c;
-  border-color: #ea580c;
+  color: var(--color-warning-hover);
+  border-color: var(--color-warning-hover);
 }
 
 .category-qa {
@@ -24911,7 +24667,7 @@ FILE: src\app\shared\components\post-card\post-card.ts
 ================================================================================
 
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Post } from '../../../core/models/forum.model';
@@ -24921,7 +24677,7 @@ import { ICONS } from '../../../core/constants/visuals';
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [RouterModule, TranslateModule],
   templateUrl: './post-card.html',
   styleUrl: './post-card.css',
 })
@@ -25756,13 +25512,12 @@ FILE: src\app\shared\components\product-card\product-card.html
 FILE: src\app\shared\components\product-card\product-card.ts
 ================================================================================
 
-import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
-import { ProductService } from '../../../services/product.service';
+import { ProductService } from '../../../core/services/product.service';
 import { getImageUrl, getCategoryIcon, ICONS } from '../../../core/constants/visuals';
 import { TranslationService } from '../../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -25770,7 +25525,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [CommonModule, TranslateModule, RouterLink],
+  imports: [TranslateModule, RouterLink],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
 })
@@ -26301,7 +26056,7 @@ FILE: src\app\shared\components\product-filter\product-filter.ts
 
 import { Component, computed, EventEmitter, Output, signal } from '@angular/core';
 import { ProductFilterOptions, SortOption } from '../../../core/models/product.model';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -26315,7 +26070,7 @@ interface FilterState {
 
 @Component({
   selector: 'app-product-filter',
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [FormsModule, TranslateModule],
   templateUrl: './product-filter.html',
   styleUrl: './product-filter.css',
 })
@@ -26662,13 +26417,16 @@ FILE: src\app\shared\components\product-list\product-list.html
 FILE: src\app\shared\components\product-list\product-list.ts
 ================================================================================
 
-import { CommonModule } from '@angular/common';
 import { Component, computed, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 import { interval } from 'rxjs';
-import { Category, ProductWithHelpers } from '../../../core/models/product.model';
-import { ProductService } from '../../../services/product.service';
+import {
+  Category,
+  ProductWithHelpers,
+  ProductFilterOptions,
+} from '../../../core/models/product.model';
+import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { CategoryBar } from '../category-bar/category-bar';
 import { ProductCard } from '../product-card/product-card';
@@ -26680,14 +26438,7 @@ const POLL_INTERVAL_MS = 60_000;
 
 @Component({
   selector: 'app-product-list',
-  imports: [
-    CommonModule,
-    TranslateModule,
-    CategoryBar,
-    ProductFilter,
-    ProductCard,
-    ProductPagination,
-  ],
+  imports: [TranslateModule, CategoryBar, ProductFilter, ProductCard, ProductPagination],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
 })
@@ -26732,7 +26483,7 @@ export class ProductList {
     this.productService.setFilters({ categories: [] });
   }
 
-  handleFilterChanged(filters: any): void {
+  handleFilterChanged(filters: Partial<ProductFilterOptions>): void {
     this.productService.setFilters(filters);
   }
 
@@ -27057,14 +26808,13 @@ FILE: src\app\shared\components\product-pagination\product-pagination.html
 FILE: src\app\shared\components\product-pagination\product-pagination.ts
 ================================================================================
 
-import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { PaginationConfig } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-product-pagination',
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './product-pagination.html',
   styleUrl: './product-pagination.css',
 })
@@ -27148,48 +26898,6 @@ export class ProductPagination {
     }
 
     return pages;
-  }
-}
-
-
-
-================================================================================
-FILE: src\app\shared\components\secondary-btn\secondary-btn.css
-================================================================================
-
-
-
-
-================================================================================
-FILE: src\app\shared\components\secondary-btn\secondary-btn.html
-================================================================================
-
-<button class="secondary-btn" (click)="onClick()">
-  <span class="btn-text">
-    <ng-content></ng-content>
-  </span>
-</button>
-
-
-
-================================================================================
-FILE: src\app\shared\components\secondary-btn\secondary-btn.ts
-================================================================================
-
-import { Component, EventEmitter, Output } from '@angular/core';
-
-@Component({
-  selector: 'app-secondary-btn',
-  standalone: true,
-  imports: [],
-  templateUrl: './secondary-btn.html',
-  styleUrl: './secondary-btn.css',
-})
-export class SecondaryBtn {
-  @Output() clicked = new EventEmitter<void>();
-
-  onClick() {
-    this.clicked.emit();
   }
 }
 
@@ -27761,7 +27469,7 @@ export class Slide implements OnInit, OnDestroy {
   isPaused = false;
   readonly autoplayDuration = 5000;
 
-  private intervalId: any = null;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
     this.startAutoplay();
@@ -27831,7 +27539,7 @@ FILE: src\app\shared\components\toast\toast.css
   position: fixed;
   top: 80px;
   right: 20px;
-  z-index: 9999;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -27855,19 +27563,19 @@ FILE: src\app\shared\components\toast\toast.css
 }
 
 .toast-success {
-  border-left-color: #10b981;
+  border-left-color: var(--color-success);
 }
 
 .toast-error {
-  border-left-color: #ef4444;
+  border-left-color: var(--color-error);
 }
 
 .toast-info {
-  border-left-color: #3b82f6;
+  border-left-color: var(--color-info);
 }
 
 .toast-warning {
-  border-left-color: #f59e0b;
+  border-left-color: var(--color-warning);
 }
 
 .toast-icon {
@@ -27880,19 +27588,19 @@ FILE: src\app\shared\components\toast\toast.css
 }
 
 .toast-success .toast-icon {
-  color: #10b981;
+  color: var(--color-success);
 }
 
 .toast-error .toast-icon {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .toast-info .toast-icon {
-  color: #3b82f6;
+  color: var(--color-info);
 }
 
 .toast-warning .toast-icon {
-  color: #f59e0b;
+  color: var(--color-warning);
 }
 
 .toast-icon svg {
@@ -28054,14 +27762,14 @@ FILE: src\app\shared\components\toast\toast.ts
 ================================================================================
 
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TranslateModule } from '@ngx-translate/core';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './toast.html',
   styleUrl: './toast.css',
 })
@@ -28277,7 +27985,7 @@ export class ResizableTableDirective implements AfterViewInit, OnDestroy {
 FILE: src\app\shared\directives\scroll-reveal.directive.ts
 ================================================================================
 
-import { Directive, ElementRef, HostListener, Input, OnInit } from '@angular/core';
+import { Directive, ElementRef, HostListener, Input, OnInit, inject } from '@angular/core';
 
 export type AnimationType =
   | 'fade'
@@ -28299,9 +28007,8 @@ export class ScrollRevealDirective implements OnInit {
   @Input() threshold: number = 0.1;
   @Input() autoPlay: boolean = false;
 
+  private el = inject(ElementRef);
   private hasAnimated = false;
-
-  constructor(private el: ElementRef) {}
 
   ngOnInit(): void {
     this.setupElement();
@@ -28784,7 +28491,8 @@ FILE: src\assets\i18n\de.json
     "clear": "Löschen",
     "cancel": "Abbrechen",
     "scroll_right": "Nach rechts scrollen",
-    "added_to_cart": "Zum Warenkorb hinzugefügt"
+    "added_to_cart": "Zum Warenkorb hinzugefügt",
+    "edit": "Bearbeiten"
   },
   "home": {
     "featured": {
@@ -28885,7 +28593,8 @@ FILE: src\assets\i18n\de.json
       "price": "Preis",
       "brand": "Marke",
       "billing": "Rechnungsstellung",
-      "view_images": "Bilder anzeigen"
+      "view_images": "Bilder anzeigen",
+      "images": "Bilder"
     },
     "gallery": {
       "title": "Produkt-Bilder",
@@ -29135,6 +28844,36 @@ FILE: src\assets\i18n\de.json
     "browse_products": "Produkte entdecken",
     "quick_links": "Oder springe zu",
     "quick_links_label": "Schnellnavigation"
+  },
+  "danger": {
+    "confirm_password": "Mit Passwort bestätigen",
+    "delete_account": "Konto löschen",
+    "delete_btn": "Kontolöschung anfordern",
+    "delete_desc": "Ihr Konto und alle zugehörigen Daten – einschließlich Bestellverlauf, Bewertungen und persönliche Informationen – werden dauerhaft gelöscht. Zur Bestätigung wird eine E-Mail gesendet.",
+    "email_sent_desc": "Überprüfen Sie Ihren Posteingang und klicken Sie auf den Link, um die Kontolöschung zu bestätigen. Der Link ist 7 Tage gültig.",
+    "email_sent_title": "Bestätigungs-E-Mail gesendet",
+    "password_hint": "Zur Bestätigung wird ein Link an Ihre E-Mail-Adresse gesendet. Ihr Konto wird erst nach dem Klick auf den Link gelöscht.",
+    "password_placeholder": "Geben Sie Ihr aktuelles Passwort ein",
+    "subtitle": "Unwiderrufliche Kontoaktionen",
+    "warning_banner": "Die Aktionen auf dieser Seite sind endgültig und können nicht rückgängig gemacht werden. Bitte gehen Sie mit Vorsicht vor."
+  },
+  "errors": {
+    "current_password_required": "Bitte geben Sie Ihr aktuelles Passwort ein.",
+    "delete_failed": "Die Löschanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "name_required": "Vorname und Nachname sind erforderlich.",
+    "new_password_too_short": "Das neue Passwort muss mindestens 6 Zeichen lang sein.",
+    "password_change_failed": "Passwortänderung fehlgeschlagen. Überprüfen Sie Ihr aktuelles Passwort und versuchen Sie es erneut.",
+    "passwords_do_not_match": "Die neuen Passwörter stimmen nicht überein.",
+    "update_failed": "Profilaktualisierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+  },
+  "orders": {
+    "browse_products": "Produkte durchstöbern",
+    "empty_desc": "Sie haben noch keine Bestellungen aufgegeben. Stöbern Sie in unserem Produktkatalog!",
+    "empty_title": "Noch keine Bestellungen",
+    "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung"
+  },
+  "success": {
+    "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
   }
 }
 
@@ -30349,7 +30088,6 @@ FILE: src\assets\i18n\hu.json
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
     "comment_edited": "szerkesztve",
-
     "empty_title": "Még nincsenek posztok",
     "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
     "error_title": "Nem sikerült betölteni",
@@ -30399,7 +30137,8 @@ FILE: src\assets\i18n\hu.json
       "price": "Ár",
       "brand": "Márka",
       "billing": "Számlázás",
-      "view_images": "Képek megtekintése"
+      "view_images": "Képek megtekintése",
+      "images": "Képek"
     },
     "gallery": {
       "title": "Termék képek",
@@ -30735,6 +30474,23 @@ FILE: src\styles\abstracts\_themes.css
   --color-border: var(--color-medium-gray);
   --color-border-light: var(--color-gray-dark);
 
+  /* Status Colors - Dark Theme */
+  --color-success: #16a34a;
+  --color-success-hover: #15803d;
+  --color-success-light: rgba(22, 163, 74, 0.15);
+
+  --color-error: #f87171;
+  --color-error-hover: #ef4444;
+  --color-error-light: rgba(248, 113, 113, 0.15);
+
+  --color-warning: #fbbf24;
+  --color-warning-hover: #f59e0b;
+  --color-warning-light: rgba(251, 191, 36, 0.15);
+
+  --color-info: #60a5fa;
+  --color-info-hover: #3b82f6;
+  --color-info-light: rgba(96, 165, 250, 0.15);
+
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.55), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
@@ -30810,10 +30566,23 @@ FILE: src\styles\abstracts\_variables.css
 
   --color-accent: var(--color-cyan);
   --color-accent-bright: var(--color-blue-bright);
+
+  /* Status Colors - Light Theme */
   --color-success: var(--color-green-primary);
+  --color-success-hover: var(--color-green-dark);
+  --color-success-light: rgba(6, 122, 69, 0.1);
+
   --color-error: #dc2626;
+  --color-error-hover: #b91c1c;
+  --color-error-light: rgba(220, 38, 38, 0.1);
+
   --color-warning: #f59e0b;
-  --color-info: var(--color-blue-bright);
+  --color-warning-hover: #d97706;
+  --color-warning-light: rgba(245, 158, 11, 0.1);
+
+  --color-info: #2563eb;
+  --color-info-hover: #1d4ed8;
+  --color-info-light: rgba(37, 99, 235, 0.1);
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -30884,13 +30653,15 @@ FILE: src\styles\abstracts\_variables.css
 
   /* Z-index layers */
   --z-base: 1;
-  --z-dropdown: 1;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
+  --z-above: 2;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 500;
+  --z-modal-backdrop: 1000;
   --z-modal: 1050;
   --z-popover: 1060;
   --z-tooltip: 1070;
+  --z-toast: 9999;
 }
 
 

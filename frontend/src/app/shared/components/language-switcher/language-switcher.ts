@@ -1,5 +1,5 @@
-import { NgFor, NgIf } from '@angular/common';
-import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslationService, SupportedLanguage } from '../../../core/services/translation.service';
 import { environment } from '../../../../environments/environment';
@@ -14,11 +14,15 @@ interface Language {
 @Component({
   selector: 'app-language-switcher',
   standalone: true,
-  imports: [NgIf, NgFor, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './language-switcher.html',
   styleUrl: './language-switcher.css',
 })
 export class LanguageSwitcher implements OnInit {
+  private elementRef = inject(ElementRef);
+  private translationService = inject(TranslationService);
+  private destroyRef = inject(DestroyRef);
+
   isOpen = false;
   currentLanguage: SupportedLanguage = 'en';
 
@@ -43,15 +47,12 @@ export class LanguageSwitcher implements OnInit {
     },
   ];
 
-  constructor(
-    private elementRef: ElementRef,
-    private translationService: TranslationService,
-  ) {}
-
   ngOnInit(): void {
-    this.translationService.currentLang$.subscribe((lang) => {
-      this.currentLanguage = lang;
-    });
+    this.translationService.currentLang$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((lang) => {
+        this.currentLanguage = lang;
+      });
   }
 
   get currentLang(): Language {

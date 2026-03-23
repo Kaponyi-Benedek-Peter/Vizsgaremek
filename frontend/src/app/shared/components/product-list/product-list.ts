@@ -1,10 +1,13 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 import { interval } from 'rxjs';
-import { Category, ProductWithHelpers } from '../../../core/models/product.model';
-import { ProductService } from '../../../services/product.service';
+import {
+  Category,
+  ProductWithHelpers,
+  ProductFilterOptions,
+} from '../../../core/models/product.model';
+import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { CategoryBar } from '../category-bar/category-bar';
 import { ProductCard } from '../product-card/product-card';
@@ -16,14 +19,7 @@ const POLL_INTERVAL_MS = 60_000;
 
 @Component({
   selector: 'app-product-list',
-  imports: [
-    CommonModule,
-    TranslateModule,
-    CategoryBar,
-    ProductFilter,
-    ProductCard,
-    ProductPagination,
-  ],
+  imports: [TranslateModule, CategoryBar, ProductFilter, ProductCard, ProductPagination],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
 })
@@ -68,7 +64,7 @@ export class ProductList {
     this.productService.setFilters({ categories: [] });
   }
 
-  handleFilterChanged(filters: any): void {
+  handleFilterChanged(filters: Partial<ProductFilterOptions>): void {
     this.productService.setFilters(filters);
   }
 

@@ -28,15 +28,16 @@
   <app-slide></app-slide>
 
   <app-featured>
-    <app-featured-product-card
-      *ngFor="let product of featuredProducts(); let i = index"
-      [product]="product"
-      (cardClick)="onProductClick(product.id)"
-      appScrollReveal
-      [animationType]="'slide-up'"
-      [animationDelay]="i * 150"
-      [threshold]="0.1"
-    >
-    </app-featured-product-card>
+    @for (product of featuredProducts(); track product.id; let i = $index) {
+      <app-featured-product-card
+        [product]="product"
+        (cardClick)="onProductClick(product.id)"
+        appScrollReveal
+        [animationType]="'slide-up'"
+        [animationDelay]="i * 150"
+        [threshold]="0.1"
+      >
+      </app-featured-product-card>
+    }
   </app-featured>
 </div>
