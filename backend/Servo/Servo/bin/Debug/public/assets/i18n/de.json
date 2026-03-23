@@ -363,7 +363,8 @@
     "clear": "Löschen",
     "cancel": "Abbrechen",
     "scroll_right": "Nach rechts scrollen",
-    "added_to_cart": "Zum Warenkorb hinzugefügt"
+    "added_to_cart": "Zum Warenkorb hinzugefügt",
+    "edit": "Bearbeiten"
   },
   "home": {
     "featured": {
@@ -464,7 +465,8 @@
       "price": "Preis",
       "brand": "Marke",
       "billing": "Rechnungsstellung",
-      "view_images": "Bilder anzeigen"
+      "view_images": "Bilder anzeigen",
+      "images": "Bilder"
     },
     "gallery": {
       "title": "Produkt-Bilder",
@@ -714,5 +716,35 @@
     "browse_products": "Produkte entdecken",
     "quick_links": "Oder springe zu",
     "quick_links_label": "Schnellnavigation"
+  },
+  "danger": {
+    "confirm_password": "Mit Passwort bestätigen",
+    "delete_account": "Konto löschen",
+    "delete_btn": "Kontolöschung anfordern",
+    "delete_desc": "Ihr Konto und alle zugehörigen Daten – einschließlich Bestellverlauf, Bewertungen und persönliche Informationen – werden dauerhaft gelöscht. Zur Bestätigung wird eine E-Mail gesendet.",
+    "email_sent_desc": "Überprüfen Sie Ihren Posteingang und klicken Sie auf den Link, um die Kontolöschung zu bestätigen. Der Link ist 7 Tage gültig.",
+    "email_sent_title": "Bestätigungs-E-Mail gesendet",
+    "password_hint": "Zur Bestätigung wird ein Link an Ihre E-Mail-Adresse gesendet. Ihr Konto wird erst nach dem Klick auf den Link gelöscht.",
+    "password_placeholder": "Geben Sie Ihr aktuelles Passwort ein",
+    "subtitle": "Unwiderrufliche Kontoaktionen",
+    "warning_banner": "Die Aktionen auf dieser Seite sind endgültig und können nicht rückgängig gemacht werden. Bitte gehen Sie mit Vorsicht vor."
+  },
+  "errors": {
+    "current_password_required": "Bitte geben Sie Ihr aktuelles Passwort ein.",
+    "delete_failed": "Die Löschanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "name_required": "Vorname und Nachname sind erforderlich.",
+    "new_password_too_short": "Das neue Passwort muss mindestens 6 Zeichen lang sein.",
+    "password_change_failed": "Passwortänderung fehlgeschlagen. Überprüfen Sie Ihr aktuelles Passwort und versuchen Sie es erneut.",
+    "passwords_do_not_match": "Die neuen Passwörter stimmen nicht überein.",
+    "update_failed": "Profilaktualisierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+  },
+  "orders": {
+    "browse_products": "Produkte durchstöbern",
+    "empty_desc": "Sie haben noch keine Bestellungen aufgegeben. Stöbern Sie in unserem Produktkatalog!",
+    "empty_title": "Noch keine Bestellungen",
+    "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung"
+  },
+  "success": {
+    "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
   }
 }

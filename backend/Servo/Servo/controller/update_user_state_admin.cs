@@ -131,7 +131,7 @@ namespace Servo.controller
                     string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                    data.Response.StatusCode = 200;
+                    data.Response.StatusCode = 422;
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
@@ -151,7 +151,7 @@ namespace Servo.controller
                     string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                    data.Response.StatusCode = 200;
+                    data.Response.StatusCode = 409;
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
@@ -171,7 +171,7 @@ namespace Servo.controller
                     string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                    data.Response.StatusCode = 200;
+                    data.Response.StatusCode = 403;
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
@@ -191,7 +191,7 @@ namespace Servo.controller
                     string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                    data.Response.StatusCode = 200;
+                    data.Response.StatusCode = 401;
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }

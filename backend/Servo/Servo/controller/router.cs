@@ -18,7 +18,7 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin","get_all_product"
         };
 
 
@@ -88,6 +88,24 @@ namespace Servo.controller
             data.Response.AddHeader("Access-Control-Allow-Origin", "*");
             data.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             data.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+            data.Response.AddHeader("X-Frame-Options", "SAMEORIGIN");
+            data.Response.AddHeader("Strict-Transport-Security", "max-age=2592000; includeSubDomains");
+            data.Response.AddHeader("Cross-Origin-Resource-Policy", "same-origin");
+            data.Response.AddHeader("Cross-Origin-Embedder-Policy", "require-corp");
+            data.Response.AddHeader("Cross-Origin-Opener-Policy", "same-origin");
+            data.Response.AddHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+            data.Response.AddHeader("Content-Security-Policy",
+                "default-src 'self'; " +
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                "style-src 'self' 'unsafe-inline'; " +
+                "img-src 'self' data: https:; " +
+                "font-src 'self' data: https:; " +
+                "connect-src 'self' https:; " +
+                "frame-ancestors 'none'; " +
+                "object-src 'none';" +
+                "base-uri 'self';"
+            );
 
 
 
@@ -308,7 +326,12 @@ namespace Servo.controller
 
 
                 }
+                else if (lenyeg.Contains("get_all_product_image"))
+                {
 
+                    controller.get_all_product_images.main(data, lenyeg);
+
+                }
                 else if (lenyeg.Contains("get_all_products"))
                 {
 
@@ -534,7 +557,7 @@ namespace Servo.controller
                     controller.update_user_state_admin.main(data, lenyeg);
 
                 }
-
+               
 
                 //
 
@@ -612,8 +635,20 @@ namespace Servo.controller
                             }
                         });
 
-                        data.Response.ContentType = service.shared.mime(Path.GetExtension(hely));
-                        data.Response.StatusCode = 200;
+                        (string, Boolean) mime_response = service.shared.mime(Path.GetExtension(hely));
+                        data.Response.ContentType = mime_response.Item1;
+
+                        if(mime_response.Item2)
+                        {
+                            data.Response.AddHeader("Cache-Control", "public, max-age=31536000, immutable");
+                        }
+                        else
+                        {
+                            data.Response.AddHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+                        }
+
+
+                            data.Response.StatusCode = 200;
                         data.Response.AddHeader("Content-Encoding", "gzip");
                         data.Response.ContentLength64 = buffer.Length;
                         service.shared.log(">> served: " + hely);

@@ -66,30 +66,50 @@ namespace Servo.service
 
 
         //Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of "text/html". Strict MIME type checking is enforced for module scripts per HTML spec.
-        public static string mime(string ext)
+        public static (string, bool) mime(string ext)
         {
-            List<string[]> mimes = new List<string[]>
-            {
-                new[] { ".html", "text/html" },
-                new[] { ".css", "text/css" },
-                new[] { ".js", "application/javascript" },
-                new[] { ".json", "application/json" },
-                new[] { ".png", "image/png" },
-                new[] { ".jpg", "image/jpeg" },
-                new[] { ".jpeg", "image/jpeg" },
-                new[] { ".gif", "image/gif" },
-                new[] { ".mp4", "video/mp4" },
-                new[] { ".mp3", "audio/mpeg" },
-                new[] { ".txt", "text/plain" }
-            };
+            List<(string ext, string type, bool isStatic)> mimes = new List<(string, string, bool)>
+    {
+        // Static assets (isStatic: true)
+        (".png",  "image/png",              true),
+        (".jpg",  "image/jpeg",             true),
+        (".jpeg", "image/jpeg",             true),
+        (".gif",  "image/gif",              true),
+        (".svg",  "image/svg+xml",          true),
+        (".ico",  "image/x-icon",           true),
+        (".woff", "font/woff",              true),
+        (".woff2","font/woff2",             true),
+        (".ttf",  "font/ttf",               true),
+        (".eot",  "application/vnd.ms-fontobject", true),
+        (".mp4",  "video/mp4",              true),
+        (".mp3",  "audio/mpeg",             true),
+        (".wav",  "audio/wav",              true),
+        (".webm", "video/webm",             true),
+        (".ogg",  "audio/ogg",              true),
 
-            foreach (var item in mimes)
+        (".html", "text/html",              false),
+        (".css",  "text/css",               false),
+        (".js",   "application/javascript",  false),
+        (".pdf",  "application/pdf",        false),
+        (".json", "application/json",       false),
+        (".xml",  "application/xml",        false),
+        (".txt",  "text/plain",             false),
+        (".csv",  "text/csv",               false),
+        (".zip",  "application/zip",        false),
+        (".tar",  "application/x-tar",      false),
+        (".gz",   "application/gzip",       false)
+    };
+
+            string extLower = ext?.ToLower();
+            foreach (var (extension, type, isStatic) in mimes)
             {
-                if (item[0] == ext.ToLower())
-                    return item[1];
+                if (extension == extLower)
+                    return (type, isStatic);
             }
-            return "application/octet-stream";
+
+            return ("application/octet-stream", false);
         }
+
 
 
         public static double usd=0.0027;
