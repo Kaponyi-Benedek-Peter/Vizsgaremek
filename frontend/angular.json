@@ -26,6 +26,11 @@
               },
               {
                 "glob": "**/*",
+                "input": "src/assets/products",
+                "output": "/assets/products"
+              },
+              {
+                "glob": "**/*",
                 "input": "src/assets/icons",
                 "output": "/assets/icons"
               },
