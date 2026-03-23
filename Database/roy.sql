@@ -2,10 +2,10 @@
 -- version 5.1.2
 -- https://www.phpmyadmin.net/
 --
--- Gép: localhost:8889
--- Létrehozás ideje: 2026. Már 20. 08:54
--- Kiszolgáló verziója: 5.7.24
--- PHP verzió: 8.3.1
+-- Host: localhost:3306
+-- Generation Time: Mar 23, 2026 at 11:26 AM
+-- Server version: 5.7.24
+-- PHP Version: 8.3.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,12 +18,12 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Adatbázis: `roy`
+-- Database: `roy`
 --
 
 DELIMITER $$
 --
--- Eljárások
+-- Procedures
 --
 CREATE DEFINER=`root`@`localhost` PROCEDURE `ban_user_by_id` (IN `p_id` INT)   BEGIN
 UPDATE roy.users
@@ -929,14 +929,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_comment_by_comment_id` 
     WHERE id = p_comment_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_comment_by_post_id` (IN `p_id` INT, IN `p_content` TEXT)   BEGIN
-    UPDATE roy.post_comments
-    SET
-        content = p_content,
-        is_edited = 1
-    WHERE id = p_id;
-END$$
-
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_by_id` (IN `p_id` INT, IN `p_name_de` VARCHAR(255), IN `p_description_en` TEXT, IN `p_price_huf` INT, IN `p_times_ordered` INT, IN `p_stock` INT, IN `p_sale_percentage` DECIMAL(10,0), IN `p_description_preview_en` TEXT, IN `p_name_hu` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_description_hu` TEXT, IN `p_description_de` TEXT, IN `p_description_preview_hu` TEXT, IN `p_description_preview_de` TEXT, IN `p_category_id` INT, IN `p_manufacturer` VARCHAR(255), IN `p_brand` VARCHAR(255), IN `p_sku` VARCHAR(255), IN `p_active_ingredients` TEXT, IN `p_packaging_en` VARCHAR(255), IN `p_packaging_hu` VARCHAR(255), IN `p_packaging_de` VARCHAR(255), IN `p_thumbnail_url` VARCHAR(255), IN `p_featured` TINYINT)   BEGIN
 
 UPDATE roy.products
@@ -1018,7 +1010,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `confirmations`
+-- Table structure for table `confirmations`
 --
 
 CREATE TABLE `confirmations` (
@@ -1033,7 +1025,7 @@ CREATE TABLE `confirmations` (
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `newsletter_recipients`
+-- Table structure for table `newsletter_recipients`
 --
 
 CREATE TABLE `newsletter_recipients` (
@@ -1045,7 +1037,7 @@ CREATE TABLE `newsletter_recipients` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- A tábla adatainak kiíratása `newsletter_recipients`
+-- Dumping data for table `newsletter_recipients`
 --
 
 INSERT INTO `newsletter_recipients` (`email`, `name`, `news_level`, `received_current_newsletter`, `id`) VALUES
@@ -1054,7 +1046,7 @@ INSERT INTO `newsletter_recipients` (`email`, `name`, `news_level`, `received_cu
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `orders`
+-- Table structure for table `orders`
 --
 
 CREATE TABLE `orders` (
@@ -1078,10 +1070,17 @@ CREATE TABLE `orders` (
   `phone_number` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `email`, `billing_name`, `shipping_name`, `tracking_token`, `guest`, `order_status`, `shipping_company`, `created_at`, `price`, `city`, `zipcode`, `address`, `apartment_number`, `note`, `house_number`, `phone_number`) VALUES
+(1, 38, 'a@a', 'a', 'a', 'a', 0, 'pending', 'shipping_company', '2026-03-23 09:51:31', '0.00', 'city', '0000', 'address', 1, 'note', 2, '0');
+
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `order_items`
+-- Table structure for table `order_items`
 --
 
 CREATE TABLE `order_items` (
@@ -1101,7 +1100,7 @@ CREATE TABLE `order_items` (
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `posts`
+-- Table structure for table `posts`
 --
 
 CREATE TABLE `posts` (
@@ -1126,7 +1125,7 @@ CREATE TABLE `posts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- A tábla adatainak kiíratása `posts`
+-- Dumping data for table `posts`
 --
 
 INSERT INTO `posts` (`id`, `title`, `content`, `user_id`, `created_at`, `image_url`, `category_id`, `updated_at`, `slug`, `excerpt`, `status`, `views`, `likes`, `comment_count`, `is_featured`, `published_at`, `last_activity_at`, `tags`) VALUES
@@ -1135,7 +1134,7 @@ INSERT INTO `posts` (`id`, `title`, `content`, `user_id`, `created_at`, `image_u
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `post_categories`
+-- Table structure for table `post_categories`
 --
 
 CREATE TABLE `post_categories` (
@@ -1148,7 +1147,7 @@ CREATE TABLE `post_categories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- A tábla adatainak kiíratása `post_categories`
+-- Dumping data for table `post_categories`
 --
 
 INSERT INTO `post_categories` (`id`, `name_hu`, `name_de`, `name_en`, `color`, `emoji`) VALUES
@@ -1157,7 +1156,7 @@ INSERT INTO `post_categories` (`id`, `name_hu`, `name_de`, `name_en`, `color`, `
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `post_comments`
+-- Table structure for table `post_comments`
 --
 
 CREATE TABLE `post_comments` (
@@ -1174,7 +1173,7 @@ CREATE TABLE `post_comments` (
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `products`
+-- Table structure for table `products`
 --
 
 CREATE TABLE `products` (
@@ -1208,7 +1207,7 @@ CREATE TABLE `products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- A tábla adatainak kiíratása `products`
+-- Dumping data for table `products`
 --
 
 INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_ordered`, `stock`, `sale_percentage`, `description_preview_en`, `name_hu`, `name_en`, `description_hu`, `description_de`, `description_preview_hu`, `description_preview_de`, `category_id`, `manufacturer`, `brand`, `rating`, `sku`, `active_ingredients`, `packaging_en`, `packaging_hu`, `packaging_de`, `created_at`, `updated_at`, `thumbnail_url`, `featured`) VALUES
@@ -1228,7 +1227,7 @@ INSERT INTO `products` (`id`, `name_de`, `description_en`, `price_huf`, `times_o
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `product_categories`
+-- Table structure for table `product_categories`
 --
 
 CREATE TABLE `product_categories` (
@@ -1242,7 +1241,7 @@ CREATE TABLE `product_categories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- A tábla adatainak kiíratása `product_categories`
+-- Dumping data for table `product_categories`
 --
 
 INSERT INTO `product_categories` (`category_en`, `emoji`, `color`, `number_of_products`, `id`, `category_hu`, `category_de`) VALUES
@@ -1258,7 +1257,7 @@ INSERT INTO `product_categories` (`category_en`, `emoji`, `color`, `number_of_pr
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `product_images`
+-- Table structure for table `product_images`
 --
 
 CREATE TABLE `product_images` (
@@ -1272,7 +1271,7 @@ CREATE TABLE `product_images` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- A tábla adatainak kiíratása `product_images`
+-- Dumping data for table `product_images`
 --
 
 INSERT INTO `product_images` (`id`, `alt_text_de`, `alt_text_hu`, `alt_text_en`, `image_url`, `product_id`, `sort_id`) VALUES
@@ -1321,7 +1320,7 @@ INSERT INTO `product_images` (`id`, `alt_text_de`, `alt_text_hu`, `alt_text_en`,
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `reviews`
+-- Table structure for table `reviews`
 --
 
 CREATE TABLE `reviews` (
@@ -1337,7 +1336,7 @@ CREATE TABLE `reviews` (
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -1354,7 +1353,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- A tábla adatainak kiíratása `users`
+-- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sesstoken_expire`, `first_name`, `last_name`, `account_state`, `ban_reason`) VALUES
@@ -1362,18 +1361,18 @@ INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sess
 (78, 'kerepesi.aron@szechenyi.hu', '2026-03-10 14:12:10', 'zhOcUbUsGaJzWIdHiXwHBA', '7L6z2bdXVIb0e8BLlkzWtYZ9cMCX+g568nwo22mguMo=', '2026-03-17 14:12:36', 'first', 'last', 'verified', NULL);
 
 --
--- Indexek a kiírt táblákhoz
+-- Indexes for dumped tables
 --
 
 --
--- A tábla indexei `confirmations`
+-- Indexes for table `confirmations`
 --
 ALTER TABLE `confirmations`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_confirmations_user` (`user_id`);
 
 --
--- A tábla indexei `newsletter_recipients`
+-- Indexes for table `newsletter_recipients`
 --
 ALTER TABLE `newsletter_recipients`
   ADD PRIMARY KEY (`id`),
@@ -1381,14 +1380,14 @@ ALTER TABLE `newsletter_recipients`
   ADD KEY `fk_newsletter_recipients_user` (`email`);
 
 --
--- A tábla indexei `orders`
+-- Indexes for table `orders`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_orders_tracking_token` (`tracking_token`) USING BTREE;
 
 --
--- A tábla indexei `order_items`
+-- Indexes for table `order_items`
 --
 ALTER TABLE `order_items`
   ADD PRIMARY KEY (`id`),
@@ -1396,7 +1395,7 @@ ALTER TABLE `order_items`
   ADD KEY `fk_order_items_product` (`product_id`);
 
 --
--- A tábla indexei `posts`
+-- Indexes for table `posts`
 --
 ALTER TABLE `posts`
   ADD PRIMARY KEY (`id`),
@@ -1405,13 +1404,13 @@ ALTER TABLE `posts`
   ADD KEY `fk_posts_category` (`category_id`);
 
 --
--- A tábla indexei `post_categories`
+-- Indexes for table `post_categories`
 --
 ALTER TABLE `post_categories`
   ADD PRIMARY KEY (`id`);
 
 --
--- A tábla indexei `post_comments`
+-- Indexes for table `post_comments`
 --
 ALTER TABLE `post_comments`
   ADD PRIMARY KEY (`id`),
@@ -1419,7 +1418,7 @@ ALTER TABLE `post_comments`
   ADD KEY `fk_post_comments_user` (`user_id`);
 
 --
--- A tábla indexei `products`
+-- Indexes for table `products`
 --
 ALTER TABLE `products`
   ADD PRIMARY KEY (`id`),
@@ -1427,13 +1426,13 @@ ALTER TABLE `products`
   ADD KEY `fk_products_category` (`category_id`);
 
 --
--- A tábla indexei `product_categories`
+-- Indexes for table `product_categories`
 --
 ALTER TABLE `product_categories`
   ADD PRIMARY KEY (`id`);
 
 --
--- A tábla indexei `product_images`
+-- Indexes for table `product_images`
 --
 ALTER TABLE `product_images`
   ADD PRIMARY KEY (`id`),
@@ -1441,7 +1440,7 @@ ALTER TABLE `product_images`
   ADD KEY `fk_product_images_product` (`product_id`);
 
 --
--- A tábla indexei `reviews`
+-- Indexes for table `reviews`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`id`),
@@ -1449,107 +1448,107 @@ ALTER TABLE `reviews`
   ADD KEY `fk_reviews_user` (`user_id`);
 
 --
--- A tábla indexei `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- A kiírt táblák AUTO_INCREMENT értéke
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT a táblához `confirmations`
+-- AUTO_INCREMENT for table `confirmations`
 --
 ALTER TABLE `confirmations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT a táblához `newsletter_recipients`
+-- AUTO_INCREMENT for table `newsletter_recipients`
 --
 ALTER TABLE `newsletter_recipients`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT a táblához `orders`
+-- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT a táblához `order_items`
+-- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT a táblához `posts`
+-- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT a táblához `post_categories`
+-- AUTO_INCREMENT for table `post_categories`
 --
 ALTER TABLE `post_categories`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT a táblához `post_comments`
+-- AUTO_INCREMENT for table `post_comments`
 --
 ALTER TABLE `post_comments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT a táblához `products`
+-- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- AUTO_INCREMENT a táblához `product_categories`
+-- AUTO_INCREMENT for table `product_categories`
 --
 ALTER TABLE `product_categories`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
--- AUTO_INCREMENT a táblához `product_images`
+-- AUTO_INCREMENT for table `product_images`
 --
 ALTER TABLE `product_images`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
--- AUTO_INCREMENT a táblához `reviews`
+-- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT a táblához `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
--- Megkötések a kiírt táblákhoz
+-- Constraints for dumped tables
 --
 
 --
--- Megkötések a táblához `confirmations`
+-- Constraints for table `confirmations`
 --
 ALTER TABLE `confirmations`
   ADD CONSTRAINT `fk_confirmations_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Megkötések a táblához `order_items`
+-- Constraints for table `order_items`
 --
 ALTER TABLE `order_items`
   ADD CONSTRAINT `fk_order_items_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_order_items_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON UPDATE CASCADE;
 
 --
--- Megkötések a táblához `posts`
+-- Constraints for table `posts`
 --
 ALTER TABLE `posts`
   ADD CONSTRAINT `fk_posts_category` FOREIGN KEY (`category_id`) REFERENCES `post_categories` (`id`) ON UPDATE CASCADE,
@@ -1557,26 +1556,26 @@ ALTER TABLE `posts`
   ADD CONSTRAINT `fk_posts_user_complete` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Megkötések a táblához `post_comments`
+-- Constraints for table `post_comments`
 --
 ALTER TABLE `post_comments`
   ADD CONSTRAINT `fk_post_comments_post` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_post_comments_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Megkötések a táblához `products`
+-- Constraints for table `products`
 --
 ALTER TABLE `products`
   ADD CONSTRAINT `fk_products_category` FOREIGN KEY (`category_id`) REFERENCES `product_categories` (`id`) ON UPDATE CASCADE;
 
 --
--- Megkötések a táblához `product_images`
+-- Constraints for table `product_images`
 --
 ALTER TABLE `product_images`
   ADD CONSTRAINT `fk_product_images_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Megkötések a táblához `reviews`
+-- Constraints for table `reviews`
 --
 ALTER TABLE `reviews`
   ADD CONSTRAINT `fk_reviews_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
