@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 24, 2026 at 08:50 AM
+-- Generation Time: Mar 24, 2026 at 09:49 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -207,7 +207,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post` (IN `p_title` VARCHAR(
     );
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post_comment_by_post_id` (IN `p_post_id` INT, IN `p_user_id` INT, IN `p_content` TEXT)   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post_category` (IN `p_name_hu` VARCHAR(255), IN `p_name_de` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_color` VARCHAR(255), IN `p_emoji` VARCHAR(255))   BEGIN
+INSERT INTO roy.post_categories(
+name_hu,name_de,name_en,color,emoji)
+VALUES (p_name_hu, p_name_de, p_name_en, p_color, p_emoji);
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_post_comment` (IN `p_post_id` INT, IN `p_user_id` INT, IN `p_content` TEXT)   BEGIN
     INSERT INTO roy.post_comments (post_id, user_id, content, created_at)
     VALUES (p_post_id, p_user_id, p_content, NOW());
 
@@ -917,6 +923,17 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_by_id` (IN `p_id` INT, 
     WHERE id = p_id;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_category_by_id` (IN `p_id` INT, IN `p_name_hu` VARCHAR(255), IN `p_name_de` VARCHAR(255), IN `p_name_en` VARCHAR(255), IN `p_color` VARCHAR(255), IN `p_emoji` VARCHAR(255))   BEGIN
+    UPDATE roy.post_categories
+    SET 
+        name_hu = p_name_hu,
+        name_de = p_name_de,
+        name_en = p_name_en,
+        color   = p_color,
+        emoji   = p_emoji
+    WHERE id = p_id;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_post_comment_by_comment_id` (IN `p_comment_id` INT, IN `p_content` VARCHAR(255))   BEGIN
     UPDATE roy.post_comments
     SET
@@ -1148,7 +1165,8 @@ CREATE TABLE `post_categories` (
 --
 
 INSERT INTO `post_categories` (`id`, `name_hu`, `name_de`, `name_en`, `color`, `emoji`) VALUES
-(1, 'hasd', 'dasd', 'easd', 'red', ':)');
+(1, 'name_hu_test', 'name_de_test', 'name_en_test', 'color_test', 'emoji_test'),
+(2, 'name_hu', 'name_de', 'name_en', 'color', 'emoji');
 
 -- --------------------------------------------------------
 
@@ -1489,7 +1507,7 @@ ALTER TABLE `posts`
 -- AUTO_INCREMENT for table `post_categories`
 --
 ALTER TABLE `post_categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `post_comments`
