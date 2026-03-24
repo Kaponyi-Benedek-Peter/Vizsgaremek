@@ -1,15 +1,15 @@
 import {
   ProductService,
   enrichProduct
-} from "./chunk-KG3HXK6P.js";
+} from "./chunk-HFUAAYM2.js";
 import {
   ICONS
-} from "./chunk-B4AVD7OH.js";
+} from "./chunk-YD7FXNWO.js";
 import {
   CartService,
   CurrencyService,
   toSignal
-} from "./chunk-2QWXMZZS.js";
+} from "./chunk-NJHE25JR.js";
 import {
   TranslationService
 } from "./chunk-NEOTYJOM.js";
@@ -20,7 +20,7 @@ import {
   Router,
   RouterLink,
   environment
-} from "./chunk-YSEAUUG4.js";
+} from "./chunk-GK2QC6TC.js";
 import {
   Component,
   Injectable,
@@ -1257,4 +1257,4 @@ var ProductDetail = class _ProductDetail {
 export {
   ProductDetail
 };
-//# sourceMappingURL=chunk-XU5SFFBX.js.map
+//# sourceMappingURL=chunk-PQO3S4CD.js.map

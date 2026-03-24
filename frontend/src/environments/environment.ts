@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  baseURL: 'https://www.roysshack.hu',
+  baseURL: 'localhost',
   assetsURL: '',
 };

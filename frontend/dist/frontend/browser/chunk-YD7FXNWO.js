@@ -1,6 +1,6 @@
 import {
   environment
-} from "./chunk-YSEAUUG4.js";
+} from "./chunk-GK2QC6TC.js";
 
 // src/app/core/constants/visuals.ts
 var ASSETS = environment.assetsURL;
@@ -234,4 +234,4 @@ export {
   getImageUrl,
   getCategoryIcon
 };
-//# sourceMappingURL=chunk-B4AVD7OH.js.map
+//# sourceMappingURL=chunk-YD7FXNWO.js.map

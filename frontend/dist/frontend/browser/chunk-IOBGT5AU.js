@@ -1,25 +1,25 @@
 import {
   ForumService
-} from "./chunk-IJ6OFOVF.js";
+} from "./chunk-G44UL6MA.js";
 import {
   ICONS,
   IMAGES
-} from "./chunk-B4AVD7OH.js";
+} from "./chunk-YD7FXNWO.js";
 import {
   AuthService
-} from "./chunk-NOGI6VVO.js";
+} from "./chunk-BGHGLIZX.js";
 import {
   DefaultValueAccessor,
   FormsModule,
   NgControlStatus,
   NgModel
-} from "./chunk-646OUKHF.js";
+} from "./chunk-5SSVEJZT.js";
 import "./chunk-NEOTYJOM.js";
 import {
   ActivatedRoute,
   RouterLink,
   RouterModule
-} from "./chunk-YSEAUUG4.js";
+} from "./chunk-GK2QC6TC.js";
 import {
   Component,
   TranslateModule,
@@ -838,4 +838,4 @@ var ForumDetail = class _ForumDetail {
 export {
   ForumDetail
 };
-//# sourceMappingURL=chunk-W5TYSO7L.js.map
+//# sourceMappingURL=chunk-IOBGT5AU.js.map
