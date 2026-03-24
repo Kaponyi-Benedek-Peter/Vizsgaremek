@@ -188,8 +188,8 @@ export const IMAGES = {
 
   // ── Empty / error state illustrations ─────────────────────────────────────
   stateError: `${ASSETS}/assets/images/states/error.webp`,
-  stateEmptyForum: `${ASSETS}/assets/images/states/empty-forum.webp`,
-  stateNoResults: `${ASSETS}/assets/images/states/no-results.webp`,
+  stateEmptyForum: `${ASSETS}/assets/images/states/empty_forum.webp`,
+  stateNoResults: `${ASSETS}/assets/images/states/no_results.webp`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
