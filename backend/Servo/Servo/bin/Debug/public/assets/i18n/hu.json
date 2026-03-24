@@ -638,7 +638,8 @@
     "filters": "Szűrők",
     "advanced_filters": "Részletes szűrés",
     "toggle_filters": "Szűrők megjelenítése/elrejtése",
-    "sort_by": "Rendezés"
+    "sort_by": "Rendezés",
+    "search_placeholder": "Termékek keresése..."
   },
   "checkout": {
     "invalid_phone": "Kérjük, adjon meg érvényes telefonszámot.",

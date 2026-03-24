@@ -67,6 +67,31 @@ namespace Servo.controller
         }
         public static void main(HttpListenerContext data, string alap)
         {
+
+            string host = data.Request.Url.Host;
+            if (data.Request.HttpMethod == "OPTIONS")
+            {
+                data.Response.AddHeader("Access-Control-Allow-Origin", "*");
+                data.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                data.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+                data.Response.StatusCode = 200;
+                data.Response.Close();
+                return;
+            }
+
+            if (host == "roysshack.hu")
+            {
+                data.Response.AddHeader("Access-Control-Allow-Origin", "*");
+                data.Response.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                data.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+                string redirectUrl = "https://www.roysshack.hu" + data.Request.Url.PathAndQuery;
+                data.Response.StatusCode = 301;
+                data.Response.AddHeader("Location", redirectUrl);
+                data.Response.Close();
+                return;
+            }
+
+
             /*if(honeypot_ips.Contains(data.Request.RemoteEndPoint.Address.ToString()))
             {
                 //data.Response.StatusCode = 403;
@@ -92,10 +117,9 @@ namespace Servo.controller
             data.Response.AddHeader("X-Frame-Options", "SAMEORIGIN");
 
             data.Response.AddHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
-
-            data.Response.AddHeader("Cross-Origin-Resource-Policy", "same-origin");
-            data.Response.AddHeader("Cross-Origin-Embedder-Policy", "require-corp");
-            data.Response.AddHeader("Cross-Origin-Opener-Policy", "same-origin");
+            data.Response.AddHeader("Cross-Origin-Resource-Policy", "cross-origin"); //  same-origin
+            data.Response.AddHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+            data.Response.AddHeader("Cross-Origin-Opener-Policy", "unsafe-none");
             data.Response.AddHeader("Content-Security-Policy",
                 "default-src 'self'; " +
                 "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
@@ -625,21 +649,35 @@ namespace Servo.controller
                 {
                     if (File.Exists(hely))
                     {
-                        byte[] buffer = _fileCache.GetOrAdd(hely, path =>
+                        (string, Boolean) mime_response = service.shared.mime(Path.GetExtension(hely));
+
+                        byte[] buffer;
+                        if (mime_response.Item2)
                         {
-                            byte[] raw = File.ReadAllBytes(path);
+                            buffer = _fileCache.GetOrAdd(hely, path =>
+                            {
+                                byte[] raw = File.ReadAllBytes(path);
+                                using (var ms = new MemoryStream())
+                                {
+                                    using (var gz = new GZipStream(ms, CompressionLevel.Optimal))
+                                        gz.Write(raw, 0, raw.Length);
+                                    return ms.ToArray();
+                                }
+                            });
+                        }
+                        else
+                        {
+                            byte[] raw = File.ReadAllBytes(hely);
                             using (var ms = new MemoryStream())
                             {
                                 using (var gz = new GZipStream(ms, CompressionLevel.Optimal))
                                     gz.Write(raw, 0, raw.Length);
-                                return ms.ToArray();
+                                buffer = ms.ToArray();
                             }
-                        });
+                        }
 
-                        (string, Boolean) mime_response = service.shared.mime(Path.GetExtension(hely));
                         data.Response.ContentType = mime_response.Item1;
-
-                        if(mime_response.Item2)
+                        if (mime_response.Item2)
                         {
                             data.Response.AddHeader("Cache-Control", "public, max-age=31536000, immutable");
                         }
@@ -647,9 +685,7 @@ namespace Servo.controller
                         {
                             data.Response.AddHeader("Cache-Control", "no-cache, no-store, must-revalidate");
                         }
-
-
-                            data.Response.StatusCode = 200;
+                        data.Response.StatusCode = 200;
                         data.Response.AddHeader("Content-Encoding", "gzip");
                         data.Response.ContentLength64 = buffer.Length;
                         service.shared.log(">> served: " + hely, "static");
@@ -664,17 +700,17 @@ namespace Servo.controller
                         data.Response.StatusCode = 404;
                         byte[] buffer = Encoding.UTF8.GetBytes("File not found");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-
                         service.shared.log("ERROR: File not found (" + hely + ")", "static");
                     }
                 }
                 catch (Exception ex)
                 {
-                    try { 
-                    data.Response.StatusCode = 500;
-                    byte[] buffer = Encoding.UTF8.GetBytes("Internal error");
-                    data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                    service.shared.log($"ERROR: {ex.Message}");
+                    try
+                    {
+                        data.Response.StatusCode = 500;
+                        byte[] buffer = Encoding.UTF8.GetBytes("Internal error");
+                        data.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                        service.shared.log($"ERROR: {ex.Message}");
                     }
                     catch (Exception ex2)
                     {

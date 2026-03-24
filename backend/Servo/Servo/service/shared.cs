@@ -21,7 +21,7 @@ namespace Servo.service
                 Directory.CreateDirectory(baseDir);
         }
 
-        public static string current_url = "https://roysshack.hu/"; //https://www.roysshack.hu
+        public static string current_url = "https://www.roysshack.hu/"; //https://www.roysshack.hu
 
 
         public static string b64enc(string str)
