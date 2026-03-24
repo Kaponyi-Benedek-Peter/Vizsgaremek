@@ -128,7 +128,7 @@ export const ICONS = {
   // ── Forum / Blog ──────────────────────────────────────────────────────────
   forumSearch: `${ASSETS}/assets/icons/forum/search.webp`,
   forumNewPost: `${ASSETS}/assets/icons/forum/new_post.webp`,
-  forumReadingTime: `${ASSETS}/assets/icons/forum/reading_time.webp`,
+  forumReadingTime: `${ASSETS}/assets/icons/forum/reading_time_white.webp`,
   forumDate: `${ASSETS}/assets/icons/forum/date.webp`,
   forumRetry: `${ASSETS}/assets/icons/forum/retry.webp`,
 
@@ -187,9 +187,9 @@ export const IMAGES = {
   productDefault: PLACEHOLDERS.product(400, 400, 'Termék'),
 
   // ── Empty / error state illustrations ─────────────────────────────────────
-  stateError: `${ASSETS}/assets/images/states/error.webp`,
-  stateEmptyForum: `${ASSETS}/assets/images/states/empty_forum.webp`,
-  stateNoResults: `${ASSETS}/assets/images/states/no_results.webp`,
+  stateError: `${ASSETS}/assets/icons/states/error.webp`,
+  stateEmptyForum: `${ASSETS}/assets/icons/states/empty_forum.webp`,
+  stateNoResults: `${ASSETS}/assets/icons/states/no_results.webp`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
