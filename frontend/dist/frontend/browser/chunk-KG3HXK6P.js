@@ -4,7 +4,7 @@ import {
 import {
   HttpClient,
   environment
-} from "./chunk-JGUC3CXT.js";
+} from "./chunk-YSEAUUG4.js";
 import {
   Injectable,
   __async,
@@ -819,4 +819,4 @@ export {
   enrichProduct,
   ProductService
 };
-//# sourceMappingURL=chunk-CE6P7JRB.js.map
+//# sourceMappingURL=chunk-KG3HXK6P.js.map

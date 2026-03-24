@@ -1,6 +1,6 @@
 import {
   AuthService
-} from "./chunk-ZSAXXJLT.js";
+} from "./chunk-NOGI6VVO.js";
 import "./chunk-NEOTYJOM.js";
 import {
   ActivatedRoute,
@@ -8,7 +8,7 @@ import {
   Router,
   RouterLink,
   RouterModule
-} from "./chunk-JGUC3CXT.js";
+} from "./chunk-YSEAUUG4.js";
 import {
   Component,
   TranslateModule,
@@ -413,4 +413,4 @@ var RegistrationPromise = class _RegistrationPromise {
 export {
   RegistrationPromise
 };
-//# sourceMappingURL=chunk-B3U2EOJP.js.map
+//# sourceMappingURL=chunk-AHML3P43.js.map

@@ -3,23 +3,23 @@ import {
 } from "./chunk-BLABTRJ2.js";
 import {
   ProductService
-} from "./chunk-CE6P7JRB.js";
+} from "./chunk-KG3HXK6P.js";
 import {
   HERO_SLIDES,
   ICONS,
   IMAGES,
   LANGUAGE_OPTIONS
-} from "./chunk-KM3DUJ3P.js";
+} from "./chunk-B4AVD7OH.js";
 import {
   CartService,
   CurrencyService,
   takeUntilDestroyed,
   toSignal
-} from "./chunk-FGAT32LH.js";
+} from "./chunk-2QWXMZZS.js";
 import {
   AuthService,
   ToastService
-} from "./chunk-ZSAXXJLT.js";
+} from "./chunk-NOGI6VVO.js";
 import {
   DefaultValueAccessor,
   FormsModule,
@@ -29,7 +29,7 @@ import {
   NgModel,
   RequiredValidator,
   ɵNgNoValidate
-} from "./chunk-UT7KEETW.js";
+} from "./chunk-646OUKHF.js";
 import {
   TranslationService
 } from "./chunk-NEOTYJOM.js";
@@ -47,7 +47,7 @@ import {
   provideRouter,
   withComponentInputBinding,
   withInterceptors
-} from "./chunk-JGUC3CXT.js";
+} from "./chunk-YSEAUUG4.js";
 import {
   Component,
   DestroyRef,
@@ -1151,28 +1151,28 @@ var routes = [
   { path: "home", component: Home },
   {
     path: "forum",
-    loadComponent: () => import("./chunk-C2PBG6MG.js").then((m) => m.Forum)
+    loadComponent: () => import("./chunk-3IGUV2OL.js").then((m) => m.Forum)
   },
   {
     path: "forum/:id",
-    loadComponent: () => import("./chunk-TYBSPWK6.js").then((m) => m.ForumDetail)
+    loadComponent: () => import("./chunk-W5TYSO7L.js").then((m) => m.ForumDetail)
   },
   {
     path: "products",
-    loadComponent: () => import("./chunk-I5OTM2YN.js").then((m) => m.Products)
+    loadComponent: () => import("./chunk-PN424SLP.js").then((m) => m.Products)
   },
   {
     path: "products/:id",
-    loadComponent: () => import("./chunk-Z7W6AXSD.js").then((m) => m.ProductDetail)
+    loadComponent: () => import("./chunk-XU5SFFBX.js").then((m) => m.ProductDetail)
   },
   {
     path: "profile",
-    loadComponent: () => import("./chunk-HHIZNQYT.js").then((m) => m.Profile),
+    loadComponent: () => import("./chunk-CECTF3NK.js").then((m) => m.Profile),
     canActivate: [authGuard]
   },
   {
     path: "purchase",
-    loadComponent: () => import("./chunk-7BYM5GBY.js").then((m) => m.Purchase),
+    loadComponent: () => import("./chunk-VJM6LJGV.js").then((m) => m.Purchase),
     canActivate: [authGuard]
   },
   {
@@ -1181,43 +1181,43 @@ var routes = [
   },
   {
     path: "admin",
-    loadComponent: () => import("./chunk-PRZGOROF.js").then((m) => m.Admin),
+    loadComponent: () => import("./chunk-GMXE6HSH.js").then((m) => m.Admin),
     canActivate: [adminGuard]
   },
   {
     path: "login",
-    loadComponent: () => import("./chunk-OZPDRFH7.js").then((m) => m.Login),
+    loadComponent: () => import("./chunk-YOD3HNC7.js").then((m) => m.Login),
     canActivate: [guestGuard]
   },
   {
     path: "register",
-    loadComponent: () => import("./chunk-YXWOL2P2.js").then((m) => m.Register),
+    loadComponent: () => import("./chunk-EZN437RA.js").then((m) => m.Register),
     canActivate: [guestGuard]
   },
   {
     path: "login-promise",
-    loadComponent: () => import("./chunk-ZIBTVNJO.js").then((m) => m.LoginPromise)
+    loadComponent: () => import("./chunk-VBFXYIUY.js").then((m) => m.LoginPromise)
   },
   {
     path: "registration-promise",
-    loadComponent: () => import("./chunk-B3U2EOJP.js").then((m) => m.RegistrationPromise)
+    loadComponent: () => import("./chunk-AHML3P43.js").then((m) => m.RegistrationPromise)
   },
   {
     path: "password-reset-request",
-    loadComponent: () => import("./chunk-NJK4DRW7.js").then((m) => m.PasswordResetRequest)
+    loadComponent: () => import("./chunk-5BSWZIAX.js").then((m) => m.PasswordResetRequest)
   },
   {
     path: "password-reset",
-    loadComponent: () => import("./chunk-QGW3FMXS.js").then((m) => m.PasswordReset)
+    loadComponent: () => import("./chunk-PLV3TSRH.js").then((m) => m.PasswordReset)
   },
   {
     path: "delacc-promise",
-    loadComponent: () => import("./chunk-3ANSU2ZG.js").then((m) => m.DelaccPromise),
+    loadComponent: () => import("./chunk-S4L7DNFN.js").then((m) => m.DelaccPromise),
     canActivate: [authGuard]
   },
   {
     path: "**",
-    loadComponent: () => import("./chunk-34FMDWOX.js").then((m) => m.NotFound)
+    loadComponent: () => import("./chunk-SENNV4MG.js").then((m) => m.NotFound)
   }
 ];
 

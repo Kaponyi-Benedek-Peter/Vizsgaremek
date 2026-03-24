@@ -13463,7 +13463,7 @@ function provideRouterInitializer() {
 // src/environments/environment.ts
 var environment = {
   production: false,
-  baseURL: "http://localhost",
+  baseURL: "https://www.roysshack.hu",
   assetsURL: ""
 };
 
@@ -13507,4 +13507,4 @@ export {
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-JGUC3CXT.js.map
+//# sourceMappingURL=chunk-YSEAUUG4.js.map

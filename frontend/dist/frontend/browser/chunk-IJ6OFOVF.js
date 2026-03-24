@@ -1,10 +1,10 @@
 import {
   getCategoryIcon
-} from "./chunk-KM3DUJ3P.js";
+} from "./chunk-B4AVD7OH.js";
 import {
   HttpClient,
   environment
-} from "./chunk-JGUC3CXT.js";
+} from "./chunk-YSEAUUG4.js";
 import {
   Injectable,
   TranslateService,
@@ -235,4 +235,4 @@ var ForumService = class _ForumService {
 export {
   ForumService
 };
-//# sourceMappingURL=chunk-MQ3N62BI.js.map
+//# sourceMappingURL=chunk-IJ6OFOVF.js.map

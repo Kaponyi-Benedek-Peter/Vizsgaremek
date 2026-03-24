@@ -3,11 +3,11 @@ import {
 } from "./chunk-BLABTRJ2.js";
 import {
   getLogoSrc
-} from "./chunk-KM3DUJ3P.js";
+} from "./chunk-B4AVD7OH.js";
 import {
   RouterLink,
   RouterModule
-} from "./chunk-JGUC3CXT.js";
+} from "./chunk-YSEAUUG4.js";
 import {
   Component,
   TranslateModule,
@@ -252,4 +252,4 @@ var NotFound = class _NotFound {
 export {
   NotFound
 };
-//# sourceMappingURL=chunk-34FMDWOX.js.map
+//# sourceMappingURL=chunk-SENNV4MG.js.map
