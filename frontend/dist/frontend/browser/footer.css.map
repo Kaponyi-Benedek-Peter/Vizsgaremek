@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/shared/components/footer/footer.css"],
+  "sourcesContent": [".footer {\r\n  background-color: var(--color-primary);\r\n  color: var(--color-white);\r\n  width: 100%;\r\n  transition: background-color var(--transition-speed) var(--transition-ease);\r\n}\r\n"],
+  "mappings": ";AAAA,CAAC;AACC,oBAAkB,IAAI;AACtB,SAAO,IAAI;AACX,SAAO;AACP,cAAY,iBAAiB,IAAI,oBAAoB,IAAI;AAC3D;",
+  "names": []
+}
