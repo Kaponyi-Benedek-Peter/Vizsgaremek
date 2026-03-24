@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 23, 2026 at 11:26 AM
+-- Generation Time: Mar 24, 2026 at 08:50 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -77,7 +77,7 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_newsletter_recipient` (IN `p_news_level` INT, IN `p_email` VARCHAR(255), IN `p_name` VARCHAR(255))   BEGIN
 INSERT INTO roy.newsletter_recipients (news_level, email, name, received_current_newsletter)
-VALUES (p_news_level, p_email, '0');
+VALUES (p_news_level, p_email, p_name, 0);
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_order` (IN `p_user_id` INT, IN `p_guest` TINYINT(1), IN `p_email` VARCHAR(255), IN `p_billing_name` VARCHAR(255), IN `p_shipping_name` VARCHAR(255), IN `p_tracking_token` VARCHAR(255), IN `p_shipping_company` VARCHAR(255), IN `p_city` VARCHAR(255), IN `p_zipcode` VARCHAR(10), IN `p_address` VARCHAR(255), IN `p_apartment_number` INT(11), IN `p_note` VARCHAR(255), IN `p_house_number` INT, IN `p_phone_number` VARCHAR(20))   BEGIN
@@ -399,10 +399,9 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_order_by_id` (IN `p_id` INT)
     DELETE FROM roy.orders WHERE id = p_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_order_by_tracking_token` (IN `p_tracking` VARCHAR(255), IN `p_token` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_order_by_tracking_token` (IN `p_tracking_token` VARCHAR(255))   BEGIN
     DELETE FROM roy.orders
-    WHERE tracking = p_tracking
-      AND token    = p_token;
+    WHERE tracking_token = p_tracking_token;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_order_item_by_id` (IN `p_id` INT)   BEGIN
@@ -809,27 +808,13 @@ where users.id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user_id_by_post_comment_id` (IN `p_post_comment_id` INT)   BEGIN
-SELECT user_id FROM post_comments WHERE p_post_comment_id = id;
+SELECT user_id FROM roy.post_comments WHERE p_post_comment_id = id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `increment_post_view_by_id` (IN `p_id` INT)   BEGIN
     UPDATE roy.posts
     SET views = views + 1
     WHERE id = p_id;
-END$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `modify_order_by_tracking_token` (IN `p_tracking` VARCHAR(255), IN `p_token` VARCHAR(255), IN `p_email` VARCHAR(255), IN `p_billing_name` VARCHAR(255), IN `p_shipping_name` VARCHAR(255), IN `p_order_status` ENUM('pending','processing','shipped','delivered','cancelled'), IN `p_shipping_company` VARCHAR(255), IN `p_confirmed` TINYINT(1), IN `p_confirmed_at` DATETIME)   BEGIN
-    UPDATE roy.orders
-    SET
-        email            = p_email,
-        billing_name     = p_billing_name,
-        shipping_name    = p_shipping_name,
-        order_status     = p_order_status,
-        shipping_company = p_shipping_company,
-        confirmed        = p_confirmed,
-        confirmed_at     = p_confirmed_at
-    WHERE tracking = p_tracking
-      AND token    = p_token;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `received_current_newsletter_false_all` ()   BEGIN
@@ -876,6 +861,17 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_name_by_id` (IN `p_id` INT, 
     SET first_name = p_new_first_name,
     last_name = p_new_last_name
     WHERE id = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_order_by_tracking_token` (IN `p_tracking_token` VARCHAR(255), IN `p_email` VARCHAR(255), IN `p_billing_name` VARCHAR(255), IN `p_shipping_name` VARCHAR(255), IN `p_order_status` ENUM('pending','processing','shipped','delivered','cancelled'), IN `p_shipping_company` VARCHAR(255))   BEGIN
+    UPDATE roy.orders
+    SET
+        email            = p_email,
+        billing_name     = p_billing_name,
+        shipping_name    = p_shipping_name,
+        order_status     = p_order_status,
+        shipping_company = p_shipping_company
+    WHERE tracking_token = p_tracking_token;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_order_item_quantity` (IN `p_id` INT, IN `p_new_quantity` INT)   BEGIN
@@ -960,7 +956,7 @@ WHERE id = p_id;
 
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_category_by_id` (IN `p_id` INT, IN `p_category_en` VARCHAR(255), IN `p_category_hu` INT, IN `p_category_de` VARCHAR(255), IN `p_color` VARCHAR(255), IN `p_emoji` VARCHAR(255))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product_category_by_id` (IN `p_id` INT, IN `p_category_en` VARCHAR(255), IN `p_category_hu` VARCHAR(255), IN `p_category_de` VARCHAR(255), IN `p_color` VARCHAR(255), IN `p_emoji` VARCHAR(255))   BEGIN
 	UPDATE roy.product_categories
     SET category_en = p_category_en,
     category_hu = p_category_hu,
@@ -1075,7 +1071,8 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `user_id`, `email`, `billing_name`, `shipping_name`, `tracking_token`, `guest`, `order_status`, `shipping_company`, `created_at`, `price`, `city`, `zipcode`, `address`, `apartment_number`, `note`, `house_number`, `phone_number`) VALUES
-(1, 38, 'a@a', 'a', 'a', 'a', 0, 'pending', 'shipping_company', '2026-03-23 09:51:31', '0.00', 'city', '0000', 'address', 1, 'note', 2, '0');
+(1, 38, 'a@a', 'a', 'a', 'a', 0, 'pending', 'shipping_company', '2026-03-23 09:51:31', '0.00', 'city', '0000', 'address', 1, 'note', 2, '0'),
+(3, 38, 'a', 'billing_name', 'shipping_name', 'b', 1, 'cancelled', 'shipping_company', '2026-03-24 09:22:32', '0.00', 'a', '0000', 'aa', 1, 'a', 1, '1');
 
 -- --------------------------------------------------------
 
@@ -1474,7 +1471,7 @@ ALTER TABLE `newsletter_recipients`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `order_items`
