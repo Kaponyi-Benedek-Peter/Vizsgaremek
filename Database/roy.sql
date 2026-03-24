@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 24, 2026 at 09:49 AM
+-- Generation Time: Mar 24, 2026 at 10:04 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -756,6 +756,11 @@ END$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_post_by_slug` (IN `p_slug` VARCHAR(255))   BEGIN
     SELECT * FROM roy.posts
     WHERE slug = p_slug;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_post_status_by_id` (IN `p_id` INT)   BEGIN
+SELECT status from roy.posts
+where id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_products_by_category_id` (IN `p_category_id` INT)   BEGIN
