@@ -41,6 +41,17 @@ export interface Product {
   updated_at: string;
 }
 
+export interface ProductImageGroup {
+  name: string;
+  files: string[];
+}
+
+export interface AllProductImagesApiResponse {
+  status: string;
+  statuscode: number | string;
+  images: ProductImageGroup[];
+}
+
 export interface ProductCategory {
   id: string;
   category_en: string;

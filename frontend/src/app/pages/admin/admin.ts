@@ -878,6 +878,7 @@ export class Admin implements OnInit {
   }
 
   openGallery(product: ProductWithHelpers): void {
+    this.productService.invalidateImageCache();
     this.galleryProduct.set(product);
     this.galleryImages.set([]);
     this.galleryOpen.set(true);
@@ -1025,39 +1026,29 @@ export class Admin implements OnInit {
 
   private uploadImageToBackend(productId: string, file: File, tempId: string): void {
     this.uploadInProgress.set(true);
+    const auth = this.buildAdminAuth();
 
-    const body = {
-      product_id: btoa(productId),
-      image: btoa(file.name),
-      is_transparent: this.uploadTransparent() ? 1 : 0,
-    };
-
-    // TODO: endpoint: POST /api/upload_product_image_admin
-    // this.http
-    //   .post<{ statuscode: string; status: string; image?: ProductImage }>(
-    //     `${environment.baseURL}/api/upload_product_image_admin`,
-    //     body,
-    //   )
-    //   .subscribe({
-    //     next: (res) => {
-    //       if (res.statuscode === '200' && res.image) {
-    //         this.galleryImages.update((imgs) =>
-    //           imgs.map((img) =>
-    //             img.id === tempId
-    //               ? { ...img, id: res.image!.id, image_url: res.image!.image_url, file: undefined }
-    //               : img,
-    //           ),
-    //         );
-    //       }
-    //       this.uploadInProgress.set(false);
-    //     },
-    //     error: (err) => {
-    //       console.error('Image upload failed:', err);
-    //       this.uploadInProgress.set(false);
-    //     },
-    //   });
-
-    this.uploadInProgress.set(false);
+    this.productService
+      .uploadProductImageAdmin(auth, productId, file.name, this.uploadTransparent())
+      .subscribe({
+        next: (res) => {
+          if (res.statuscode === '200' && res.image) {
+            this.galleryImages.update((imgs) =>
+              imgs.map((img) =>
+                img.id === tempId
+                  ? { ...img, id: res.image!.id, image_url: res.image!.image_url, file: undefined }
+                  : img,
+              ),
+            );
+            this.productService.invalidateImageCache();
+          }
+          this.uploadInProgress.set(false);
+        },
+        error: (err) => {
+          console.error('Image upload failed:', err);
+          this.uploadInProgress.set(false);
+        },
+      });
   }
 
   requestDeleteImage(image: GalleryImage, event: MouseEvent): void {
@@ -1075,6 +1066,7 @@ export class Admin implements OnInit {
     }
 
     this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+    this.productService.invalidateImageCache();
     this.cancelDeleteImage();
   }
 

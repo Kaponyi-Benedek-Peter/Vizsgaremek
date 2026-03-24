@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, firstValueFrom, of } from 'rxjs';
-import { catchError, map, timeout } from 'rxjs/operators';
+import { catchError, map, shareReplay, timeout } from 'rxjs/operators';
 import {
   Product,
   ProductCategory,
@@ -16,6 +16,8 @@ import {
   ProductFilterOptions,
   PaginationConfig,
   SortOption,
+  ProductImageGroup,
+  AllProductImagesApiResponse,
 } from '../models/product.model';
 import { TranslationService } from './translation.service';
 import { environment } from '../../../environments/environment';
@@ -48,6 +50,8 @@ export class ProductService {
   });
   private current_pageSignal = signal<number>(1);
   private items_per_pageSignal = signal<number>(30);
+
+  private allProductImagesCache$: Observable<ProductImageGroup[]> | null = null;
 
   // --- Public readonly signals ---
   products = computed(() => this.allProductsSignal());
@@ -243,28 +247,76 @@ export class ProductService {
     );
   }
 
-  getProductImages(productId: string): Observable<ProductImage[]> {
-    const body = {
-      product_id: btoa(productId),
-    };
+  private getAllProductImages(): Observable<ProductImageGroup[]> {
+    if (!this.allProductImagesCache$) {
+      this.allProductImagesCache$ = this.http
+        .get<AllProductImagesApiResponse>(`${this.API_URL}/api/get_all_product_image`)
+        .pipe(
+          timeout(5000),
+          map((r) => {
+            if (String(r.statuscode) !== '200') throw new Error(`API Error: ${r.status}`);
+            if (!Array.isArray(r.images)) return [];
+            return r.images;
+          }),
+          catchError((err) => {
+            console.warn('ProductService: Failed to load all product images', err);
+            this.allProductImagesCache$ = null;
+            return of([]);
+          }),
+          shareReplay({ bufferSize: 1, refCount: false, windowTime: 60_000 }),
+        );
+    }
+    return this.allProductImagesCache$;
+  }
 
+  getProductImages(productId: string): Observable<ProductImage[]> {
+    return this.getAllProductImages().pipe(
+      map((groups) => {
+        const group = groups.find((g) => g.name === productId);
+        if (!group) return [];
+        return group.files.map((url, i) => ({
+          id: `${productId}-${i + 1}`,
+          product_id: productId,
+          image_url: url,
+          alt_text_hu: '',
+          alt_text_en: '',
+          alt_text_de: '',
+          sort_id: `${i + 1}`,
+        }));
+      }),
+      catchError((err) => {
+        console.warn(
+          'ProductService: Failed to load product images, falling back to thumbnail',
+          err,
+        );
+        return of([]);
+      }),
+    );
+  }
+
+  invalidateImageCache(): void {
+    this.allProductImagesCache$ = null;
+  }
+
+  uploadProductImageAdmin(
+    auth: Record<string, string>,
+    productId: string,
+    fileName: string,
+    isTransparent: boolean,
+  ): Observable<{ statuscode: string; status: string; image?: ProductImage }> {
+    const body = {
+      ...auth,
+      product_id: btoa(productId),
+      image: btoa(fileName),
+      is_transparent: isTransparent ? 1 : 0,
+    };
     return this.http
-      .post<ProductImagesApiResponse>(`${this.API_URL}/api/get_all_product_images_by_id`, body)
-      .pipe(
-        timeout(5000),
-        map((r) => {
-          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
-          if (!Array.isArray(r.images)) return [];
-          return r.images;
-        }),
-        catchError((err) => {
-          console.warn(
-            'ProductService: Failed to load product images, falling back to thumbnail',
-            err,
-          );
-          return of([]);
-        }),
-      );
+      .post<{
+        statuscode: string;
+        status: string;
+        image?: ProductImage;
+      }>(`${this.API_URL}/api/upload_product_image_admin`, body)
+      .pipe(catchError(this.handleError));
   }
 
   getProductById(id: string): Observable<Product | undefined> {

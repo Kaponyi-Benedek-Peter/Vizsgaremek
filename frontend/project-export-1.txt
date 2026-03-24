@@ -922,8 +922,8 @@ export const ICONS = {
 
   // ── Forum / Blog ──────────────────────────────────────────────────────────
   forumSearch: `${ASSETS}/assets/icons/forum/search.webp`,
-  forumNewPost: `${ASSETS}/assets/icons/forum/new-post.webp`,
-  forumReadingTime: `${ASSETS}/assets/icons/forum/reading-time.webp`,
+  forumNewPost: `${ASSETS}/assets/icons/forum/new_post.webp`,
+  forumReadingTime: `${ASSETS}/assets/icons/forum/reading_time.webp`,
   forumDate: `${ASSETS}/assets/icons/forum/date.webp`,
   forumRetry: `${ASSETS}/assets/icons/forum/retry.webp`,
 
@@ -943,10 +943,10 @@ export const ICONS = {
   categoryDefault: `${ASSETS}/assets/icons/categories/default.webp`,
   categoryAll: `${ASSETS}/assets/icons/categories/all.webp`,
   categoryMedicines: `${ASSETS}/assets/icons/categories/medicines.webp`,
-  categoryNaturalRemedies: `${ASSETS}/assets/icons/categories/natural-remedies.webp`,
-  categoryBabyMother: `${ASSETS}/assets/icons/categories/baby-mother.webp`,
-  categoryLifestyle: `${ASSETS}/assets/icons/categories/healthy-lifestyle.webp`,
-  categorySeasonalHealth: `${ASSETS}/assets/icons/categories/seasonal-health.webp`,
+  categoryNaturalRemedies: `${ASSETS}/assets/icons/categories/natural_remedies.webp`,
+  categoryBabyMother: `${ASSETS}/assets/icons/categories/baby_mother.webp`,
+  categoryLifestyle: `${ASSETS}/assets/icons/categories/healthy_lifestyle.webp`,
+  categorySeasonalHealth: `${ASSETS}/assets/icons/categories/seasonal_health.webp`,
   categoryQa: `${ASSETS}/assets/icons/categories/qa.webp`,
   categoryGeneral: `${ASSETS}/assets/icons/categories/general.webp`,
 } as const;
@@ -1644,6 +1644,17 @@ export interface Product {
 
   created_at: string;
   updated_at: string;
+}
+
+export interface ProductImageGroup {
+  name: string;
+  files: string[];
+}
+
+export interface AllProductImagesApiResponse {
+  status: string;
+  statuscode: number | string;
+  images: ProductImageGroup[];
 }
 
 export interface ProductCategory {
@@ -3562,7 +3573,7 @@ FILE: src\app\core\services\product.service.ts
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, firstValueFrom, of } from 'rxjs';
-import { catchError, map, timeout } from 'rxjs/operators';
+import { catchError, map, shareReplay, timeout } from 'rxjs/operators';
 import {
   Product,
   ProductCategory,
@@ -3577,6 +3588,8 @@ import {
   ProductFilterOptions,
   PaginationConfig,
   SortOption,
+  ProductImageGroup,
+  AllProductImagesApiResponse,
 } from '../models/product.model';
 import { TranslationService } from './translation.service';
 import { environment } from '../../../environments/environment';
@@ -3609,6 +3622,8 @@ export class ProductService {
   });
   private current_pageSignal = signal<number>(1);
   private items_per_pageSignal = signal<number>(30);
+
+  private allProductImagesCache$: Observable<ProductImageGroup[]> | null = null;
 
   // --- Public readonly signals ---
   products = computed(() => this.allProductsSignal());
@@ -3804,28 +3819,76 @@ export class ProductService {
     );
   }
 
-  getProductImages(productId: string): Observable<ProductImage[]> {
-    const body = {
-      product_id: btoa(productId),
-    };
+  private getAllProductImages(): Observable<ProductImageGroup[]> {
+    if (!this.allProductImagesCache$) {
+      this.allProductImagesCache$ = this.http
+        .get<AllProductImagesApiResponse>(`${this.API_URL}/api/get_all_product_image`)
+        .pipe(
+          timeout(5000),
+          map((r) => {
+            if (String(r.statuscode) !== '200') throw new Error(`API Error: ${r.status}`);
+            if (!Array.isArray(r.images)) return [];
+            return r.images;
+          }),
+          catchError((err) => {
+            console.warn('ProductService: Failed to load all product images', err);
+            this.allProductImagesCache$ = null;
+            return of([]);
+          }),
+          shareReplay({ bufferSize: 1, refCount: false, windowTime: 60_000 }),
+        );
+    }
+    return this.allProductImagesCache$;
+  }
 
+  getProductImages(productId: string): Observable<ProductImage[]> {
+    return this.getAllProductImages().pipe(
+      map((groups) => {
+        const group = groups.find((g) => g.name === productId);
+        if (!group) return [];
+        return group.files.map((url, i) => ({
+          id: `${productId}-${i + 1}`,
+          product_id: productId,
+          image_url: url,
+          alt_text_hu: '',
+          alt_text_en: '',
+          alt_text_de: '',
+          sort_id: `${i + 1}`,
+        }));
+      }),
+      catchError((err) => {
+        console.warn(
+          'ProductService: Failed to load product images, falling back to thumbnail',
+          err,
+        );
+        return of([]);
+      }),
+    );
+  }
+
+  invalidateImageCache(): void {
+    this.allProductImagesCache$ = null;
+  }
+
+  uploadProductImageAdmin(
+    auth: Record<string, string>,
+    productId: string,
+    fileName: string,
+    isTransparent: boolean,
+  ): Observable<{ statuscode: string; status: string; image?: ProductImage }> {
+    const body = {
+      ...auth,
+      product_id: btoa(productId),
+      image: btoa(fileName),
+      is_transparent: isTransparent ? 1 : 0,
+    };
     return this.http
-      .post<ProductImagesApiResponse>(`${this.API_URL}/api/get_all_product_images_by_id`, body)
-      .pipe(
-        timeout(5000),
-        map((r) => {
-          if (r.statuscode !== '200') throw new Error(`API Error: ${r.status}`);
-          if (!Array.isArray(r.images)) return [];
-          return r.images;
-        }),
-        catchError((err) => {
-          console.warn(
-            'ProductService: Failed to load product images, falling back to thumbnail',
-            err,
-          );
-          return of([]);
-        }),
-      );
+      .post<{
+        statuscode: string;
+        status: string;
+        image?: ProductImage;
+      }>(`${this.API_URL}/api/upload_product_image_admin`, body)
+      .pipe(catchError(this.handleError));
   }
 
   getProductById(id: string): Observable<Product | undefined> {
@@ -8778,6 +8841,7 @@ export class Admin implements OnInit {
   }
 
   openGallery(product: ProductWithHelpers): void {
+    this.productService.invalidateImageCache();
     this.galleryProduct.set(product);
     this.galleryImages.set([]);
     this.galleryOpen.set(true);
@@ -8925,39 +8989,29 @@ export class Admin implements OnInit {
 
   private uploadImageToBackend(productId: string, file: File, tempId: string): void {
     this.uploadInProgress.set(true);
+    const auth = this.buildAdminAuth();
 
-    const body = {
-      product_id: btoa(productId),
-      image: btoa(file.name),
-      is_transparent: this.uploadTransparent() ? 1 : 0,
-    };
-
-    // TODO: endpoint: POST /api/upload_product_image_admin
-    // this.http
-    //   .post<{ statuscode: string; status: string; image?: ProductImage }>(
-    //     `${environment.baseURL}/api/upload_product_image_admin`,
-    //     body,
-    //   )
-    //   .subscribe({
-    //     next: (res) => {
-    //       if (res.statuscode === '200' && res.image) {
-    //         this.galleryImages.update((imgs) =>
-    //           imgs.map((img) =>
-    //             img.id === tempId
-    //               ? { ...img, id: res.image!.id, image_url: res.image!.image_url, file: undefined }
-    //               : img,
-    //           ),
-    //         );
-    //       }
-    //       this.uploadInProgress.set(false);
-    //     },
-    //     error: (err) => {
-    //       console.error('Image upload failed:', err);
-    //       this.uploadInProgress.set(false);
-    //     },
-    //   });
-
-    this.uploadInProgress.set(false);
+    this.productService
+      .uploadProductImageAdmin(auth, productId, file.name, this.uploadTransparent())
+      .subscribe({
+        next: (res) => {
+          if (res.statuscode === '200' && res.image) {
+            this.galleryImages.update((imgs) =>
+              imgs.map((img) =>
+                img.id === tempId
+                  ? { ...img, id: res.image!.id, image_url: res.image!.image_url, file: undefined }
+                  : img,
+              ),
+            );
+            this.productService.invalidateImageCache();
+          }
+          this.uploadInProgress.set(false);
+        },
+        error: (err) => {
+          console.error('Image upload failed:', err);
+          this.uploadInProgress.set(false);
+        },
+      });
   }
 
   requestDeleteImage(image: GalleryImage, event: MouseEvent): void {
@@ -8975,6 +9029,7 @@ export class Admin implements OnInit {
     }
 
     this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+    this.productService.invalidateImageCache();
     this.cancelDeleteImage();
   }
 
