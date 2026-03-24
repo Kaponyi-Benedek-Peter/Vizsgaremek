@@ -137,7 +137,7 @@ namespace Servo.controller
 
                     var respon = new
                     {
-                        status = "inexistent_user_or_incorrect_data",
+                        status = "incorrect_credentials",
                         statuscode = "401"
                     };
 

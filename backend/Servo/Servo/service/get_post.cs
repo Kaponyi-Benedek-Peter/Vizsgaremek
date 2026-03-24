@@ -10,7 +10,7 @@ namespace Servo.service
 {
     internal class get_post
     {
-        public static string process_get_post(string id)
+        public static string process_get_post(string id, string admin, string admin_id, string admin_token)
         {
 
             //service.shared.log("Get all products change request: (" + ip+")"); 
@@ -18,13 +18,55 @@ namespace Servo.service
 
             Dictionary<string, object> resp = new Dictionary<string, object>();
 
+            string admin_accstate = model.shared.get_account_state_by_id(admin_id);
+            string model_sesstoken = model.shared.get_token_by_id(admin_id);
 
-            try
+            if (admin == "1" )
             {
-                resp = model.get_post.communicate_get_post(id);
-            }
-            catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.get_post.process_get_post"); }
+                service.shared.log("admin", "api");
+                if (model_sesstoken == admin_token) {
 
+                    service.shared.log("token correct", "api");
+
+                    if (admin_accstate == "admin" || admin_accstate == "superadmin"){
+
+                        service.shared.log("admin yes", "api");
+
+                        try
+                        {
+                            resp = model.get_post.communicate_get_post(id);
+                        }
+                        catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.get_post.process_get_post"); }
+
+
+
+                    }
+                    else { return "__error_permission_denied"; }
+                       
+
+                }
+                else { return "__error_incorrect_credentials"; }
+                   
+
+            }
+
+            else {
+
+                if (model.shared.get_post_status_by_id(id) == "published")
+                {
+                    try
+                    {
+                        resp = model.get_post.communicate_get_post(id);
+                    }
+                    catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.get_post.process_get_post"); }
+
+                }
+                else
+                {
+                    return "__error_permission_denied";
+                }
+
+            }
 
             /*try
             {
@@ -53,24 +95,18 @@ namespace Servo.service
             }
             else
             {
-
-
-
-                // if (van adat)
-                {
-
-                    //calculate exchange rate
-                    return JsonConvert.SerializeObject(resp);
-                }
-
-
-
-                return "error";
-
-
+                return JsonConvert.SerializeObject(resp);
+                
             }
 
 
         }
+
+
+
+
+
+
+        
     }
 }

@@ -18,7 +18,7 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin","get_all_product"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin","get_all_product","update_stock_admin","get_post_by_id"
         };
 
 
@@ -62,7 +62,7 @@ namespace Servo.controller
             {
                 service.shared.log("ERROR 1: can not close connection: " + ex.Message);
             }
-            service.shared.log("[connection end]\n");
+            service.shared.log("[✖️]"); // connection_end
             return data;
         }
         public static void main(HttpListenerContext data, string alap)
@@ -82,7 +82,7 @@ namespace Servo.controller
 
 
             //Form1.Instance.updateconnections();
-            service.shared.log("[new connection]");
+            service.shared.log("[➕]"); // new connection
             string kert = data.Request.Url.AbsolutePath.TrimStart('/');
             
             data.Response.AddHeader("Access-Control-Allow-Origin", "*");
@@ -90,11 +90,12 @@ namespace Servo.controller
             data.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
             data.Response.AddHeader("X-Frame-Options", "SAMEORIGIN");
-            data.Response.AddHeader("Strict-Transport-Security", "max-age=2592000; includeSubDomains");
+
+            data.Response.AddHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+
             data.Response.AddHeader("Cross-Origin-Resource-Policy", "same-origin");
             data.Response.AddHeader("Cross-Origin-Embedder-Policy", "require-corp");
             data.Response.AddHeader("Cross-Origin-Opener-Policy", "same-origin");
-            data.Response.AddHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
             data.Response.AddHeader("Content-Security-Policy",
                 "default-src 'self'; " +
                 "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
@@ -583,7 +584,7 @@ namespace Servo.controller
                     kert = kert.TrimEnd('/');
 
                 string hely = Path.Combine(alap, kert.Replace("/", Path.DirectorySeparatorChar.ToString()));
-                service.shared.log("> requested file: " + kert + " -> " + hely);
+                service.shared.log("> requested file: " + kert + " -> " + hely,"static");
 
                 bool is_file = File.Exists(hely) && !Directory.Exists(hely);
 
@@ -596,7 +597,7 @@ namespace Servo.controller
                     if (is_static)
                     {
                         hely = static_path;
-                        service.shared.log(">> static: " + static_path);
+                        service.shared.log(">> static: " + static_path, "static");
                     }
                     else
                     {
@@ -605,7 +606,7 @@ namespace Servo.controller
                         {
                             // indeeeeeex.html
                             hely = Path.Combine(alap, "index.html");
-                            service.shared.log(">> SPA: " + kert + " -> index.html");
+                            service.shared.log(">> SPA: " + kert + " -> index.html", "static");
                         }
                         else
                         {
@@ -613,7 +614,7 @@ namespace Servo.controller
                             data.Response.StatusCode = 404;
                             byte[] buffer = Encoding.UTF8.GetBytes("File not found");
                             data.Response.OutputStream.Write(buffer, 0, buffer.Length);
-                            service.shared.log("ERROR: File not found (" + kert + ")");
+                            service.shared.log("ERROR: File not found (" + kert + ")", "static");
                             data = endconnection(data);
                             return;
                         }
@@ -651,7 +652,7 @@ namespace Servo.controller
                             data.Response.StatusCode = 200;
                         data.Response.AddHeader("Content-Encoding", "gzip");
                         data.Response.ContentLength64 = buffer.Length;
-                        service.shared.log(">> served: " + hely);
+                        service.shared.log(">> served: " + hely, "static");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                         f1.updatebandwidth(buffer.Length);
                         data = endconnection(data);
@@ -664,7 +665,7 @@ namespace Servo.controller
                         byte[] buffer = Encoding.UTF8.GetBytes("File not found");
                         data.Response.OutputStream.Write(buffer, 0, buffer.Length);
 
-                        service.shared.log("ERROR: File not found (" + hely + ")");
+                        service.shared.log("ERROR: File not found (" + hely + ")", "static");
                     }
                 }
                 catch (Exception ex)

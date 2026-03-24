@@ -45,7 +45,7 @@ namespace Servo
 
             server_main = Task.Factory.StartNew(() =>
             {
-                service.shared.log("[! server started !]");
+                service.shared.log("[! server started !]","server");
                 //service.shared.log("[starting server 3]");
                 while (!token.IsCancellationRequested)
                 {
@@ -63,12 +63,12 @@ namespace Servo
                     catch (HttpListenerException ex) when (token.IsCancellationRequested)
                     {
 
-                        service.shared.log("[server stopped 1/1]");
+                        service.shared.log("[server stopped 1/1]", "server");
                     }
                     catch (Exception ex)
                     {
 
-                        service.shared.log($"Error 1: {ex.Message} --lib.shared.start_server > server");
+                        service.shared.log($"Error 1: {ex.Message} --lib.shared.start_server > server", "server");
                     }
                 }
                 
@@ -105,7 +105,7 @@ namespace Servo
                 trap.Prefixes.Add("http://+:512/");
                 
                 trap.Start();
-                service.shared.log("[honeypot started]");
+                service.shared.log("[honeypot started]", "server");
 
                 while (!token.IsCancellationRequested)
                 {
@@ -114,13 +114,13 @@ namespace Servo
                         HttpListenerContext ctx = trap.GetContext();
                         string ip = ctx.Request.RemoteEndPoint.Address.ToString();
                         router.honeypot_ips.Add(ip);
-                        service.shared.log($"[honeypot hit] {ip}");
+                        service.shared.log($"[honeypot hit] {ip}", "server");
                         //ctx.Response.StatusCode = 404;
                         ctx.Response.Close();
                     }
                     catch (Exception ex) when (!token.IsCancellationRequested)
                     {
-                        service.shared.log($"Error: {ex.Message} --honeypot");
+                        service.shared.log($"Error: {ex.Message} --honeypot", "server");
                     }
                 }
 
@@ -141,7 +141,7 @@ namespace Servo
                     }
                     catch (Exception ex)
                     {
-                        service.shared.log($"Error 2: {ex.Message} --lib.shared.start_server > email_auth refresh");
+                        service.shared.log($"Error 2: {ex.Message} --lib.shared.start_server > email_auth refresh", "server");
                     }
 
                      
@@ -167,12 +167,12 @@ namespace Servo
 
                             service.shared.eur = (double)data.rates.EUR;
                             service.shared.usd = (double)data.rates.USD;
-                            service.shared.log($"[exchange rate fetched succesfully]");
+                            service.shared.log($"[exchange rate fetched succesfully]", "server");
                         }
                     }
                     catch (Exception ex)
                     {
-                        service.shared.log($"Error 3: {ex.Message} --lib.shared > exhange_rates");
+                        service.shared.log($"Error 3: {ex.Message} --lib.shared > exhange_rates", "server");
                     }
 
                     Thread.Sleep(3000000);

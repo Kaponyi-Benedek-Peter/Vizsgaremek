@@ -229,7 +229,7 @@ tags
             connStr = $"server={service.shared.conf("r", "sql_conn_server")};port={service.shared.conf("r", "sql_conn_port")};user={service.shared.conf("r", "sql_conn_user")};password={service.shared.conf("r", "sql_conn_password")};database={databasename};";
            
             
-            service.shared.log("[mysql connection open]");
+            service.shared.log("[mysql connection open]", "server");
 
         }
 
@@ -247,7 +247,7 @@ tags
             }
             catch (Exception ex) { 
                 
-                service.shared.log("Start the MySql server! || " + ex.Message);
+                service.shared.log("Start the MySql server! || " + ex.Message, "server");
                 return(tempconn, "error");
 
             }
@@ -1828,7 +1828,42 @@ cmd.Parameters.AddWithValue("@p_comment_count", pos.comment_count);
 
 
 
+        public static string get_post_status_by_id(string id)
+        {
+            try
+            {
 
+
+                string toreturn = null;
+
+                using (MySqlCommand cmd = new MySqlCommand("get_post_status_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_id", id);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+
+                            toreturn = reader["status"]?.ToString();
+                        }
+                    }
+                }
+
+                if (toreturn != null)
+                    return toreturn;
+                else
+                    return "404";
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_post_status_by_id");
+                return "500";
+            }
+
+        }
 
 
 

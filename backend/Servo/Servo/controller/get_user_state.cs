@@ -140,13 +140,13 @@ namespace Servo.controller
                     var respon = new
                     {
                         status = "incorrect_credentials",
-                        statuscode = "403"
+                        statuscode = "401"
                     };
 
                     string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                    data.Response.StatusCode = 403;
+                    data.Response.StatusCode = 401;
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }

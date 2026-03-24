@@ -28,7 +28,7 @@ namespace Servo
 
         public static Form1 Instance { get; private set; }
         public static testpanel testpanell = new testpanel();
-        public RichTextBox LogBox => richTextBox1;
+        public RichTextBox LogBox => all_rtbox;
 
 
         
@@ -76,8 +76,8 @@ namespace Servo
         public void log(string abc)
         {
 
-            richTextBox1.Invoke(new Action(() =>
-             richTextBox1.AppendText(abc + Environment.NewLine) // task factory miatti hiba kikerülése
+            all_rtbox.Invoke(new Action(() =>
+             all_rtbox.AppendText(abc + Environment.NewLine) // task factory miatti hiba kikerülése
          ));
         }
 
@@ -85,9 +85,9 @@ namespace Servo
 
         public void updateapisserved()
         {
-            apis_textbox.Invoke(new Action(() =>
+            apis_box.Invoke(new Action(() =>
             {
-                apis_textbox.Text = (int.Parse(apis_textbox.Text)+1).ToString();
+                apis_box.Text = (int.Parse(apis_box.Text)+1).ToString();
             }));
         }
 
@@ -103,23 +103,23 @@ namespace Servo
 
         public void updatesusconns()
         {
-            susconn_textbox.Invoke(new Action(() =>
+            denied_tbox.Invoke(new Action(() =>
             {
-                susconn_textbox.Text = (int.Parse(susconn_textbox.Text) + 1).ToString();
+                denied_tbox.Text = (int.Parse(denied_tbox.Text) + 1).ToString();
             }));
         }
         public void updatefilesserved()
         {
-            files_textbox.Invoke(new Action(() =>
+            files_tbox.Invoke(new Action(() =>
             {
-                files_textbox.Text = (int.Parse(files_textbox.Text) + 1).ToString();
+                files_tbox.Text = (int.Parse(files_tbox.Text) + 1).ToString();
             }));
         }
         public void updateconnections()
         {
-            conn_textbox.Invoke(new Action(() =>
+            conn_tbox.Invoke(new Action(() =>
             {
-                conn_textbox.Text = (int.Parse(conn_textbox.Text) + 1).ToString();
+                conn_tbox.Text = (int.Parse(conn_tbox.Text) + 1).ToString();
             }));
         }
        
@@ -136,14 +136,14 @@ namespace Servo
         private void startserver()
         {
            
-            if (firstlaunch) { model.shared.init(textBox1.Text); }
+            if (firstlaunch) { model.shared.init(databasename_tbox.Text); }
             firstlaunch = false;
             if (!sh.isrunning)
             {
                 try
                 {
                     //service.shared.log("[starting server 1]");
-                    sh.start_server(int.Parse(textBox4.Text));
+                    sh.start_server(int.Parse(port_tbox.Text));
                     sh.isrunning = true;
                     //service.shared.log("[starting server 6]");
                 }
@@ -185,13 +185,13 @@ namespace Servo
 
         private void button3_Click(object sender, EventArgs e)
         {
-            richTextBox1.Clear();
-            items_textbox.Text = "0";
-            conn_textbox.Text = "0";
-            files_textbox.Text = "0";
-            apis_textbox.Text = "0";
-            susconn_textbox.Text = "0";
-            users_textbox.Text = "0";
+            all_rtbox.Clear();
+            items_box.Text = "0";
+            conn_tbox.Text = "0";
+            files_tbox.Text = "0";
+            apis_box.Text = "0";
+            denied_tbox.Text = "0";
+            users_box.Text = "0";
             bandwidth_tbox.Text = "0";
             bandwidthcounter_bytes = 0;
         }
@@ -218,7 +218,13 @@ namespace Servo
                 //255; 128; 128
 
 
-                richTextBox1.BackColor = Color.FromArgb(255,255,255);
+                all_rtbox.BackColor = Color.FromArgb(255,255,255);
+                server_rtbox.BackColor = Color.FromArgb(255, 255, 255);
+                api_rtbox.BackColor = Color.FromArgb(255, 255, 255);
+                static_rtbox.BackColor = Color.FromArgb(255, 255, 255);
+
+
+
                 groupBox1.BackColor = Color.FromArgb(255, 255, 255);
 
 
@@ -233,15 +239,16 @@ namespace Servo
                 button3.BackColor = Color.FromArgb(245, 240, 225);
 
 
-                conn_textbox.BackColor = Color.FromArgb(245, 240, 225);
-                susconn_textbox.BackColor = Color.FromArgb(245, 240, 225);
-                textBox4.BackColor = Color.FromArgb(245, 240, 225);
-                textBox1.BackColor = Color.FromArgb(245, 240, 225);
+                conn_tbox.BackColor = Color.FromArgb(245, 240, 225);
+                denied_tbox.BackColor = Color.FromArgb(245, 240, 225);
+                port_tbox.BackColor = Color.FromArgb(245, 240, 225);
+                databasename_tbox.BackColor = Color.FromArgb(245, 240, 225);
+                bandwidth_tbox.BackColor = Color.FromArgb(245, 240, 225);
 
-                items_textbox.BackColor = Color.FromArgb(245, 240, 225);
-                files_textbox.BackColor = Color.FromArgb(245, 240, 225);
-                users_textbox.BackColor = Color.FromArgb(245, 240, 225);
-                apis_textbox.BackColor = Color.FromArgb(245, 240, 225);
+                items_box.BackColor = Color.FromArgb(245, 240, 225);
+                files_tbox.BackColor = Color.FromArgb(245, 240, 225);
+                users_box.BackColor = Color.FromArgb(245, 240, 225);
+                apis_box.BackColor = Color.FromArgb(245, 240, 225);
 
                 button5.FlatAppearance.BorderColor = Color.FromArgb(63, 61, 61);
                 button6.FlatAppearance.BorderColor = Color.FromArgb(63, 61, 61);
@@ -268,7 +275,7 @@ namespace Servo
                 label1.ForeColor = Color.FromArgb(0, 0, 0);
                 label2.ForeColor = Color.FromArgb(0, 0, 0);
                 label3.ForeColor = Color.FromArgb(0, 0, 0);
-
+                label4.ForeColor = Color.FromArgb(0, 0, 0);
                 label6.ForeColor = Color.FromArgb(0, 0, 0);
                 label7.ForeColor = Color.FromArgb(0, 0, 0);
                 label8.ForeColor = Color.FromArgb(0, 0, 0);
@@ -277,7 +284,11 @@ namespace Servo
 
 
                 this.ForeColor = Color.FromArgb(0, 0, 0);
-                richTextBox1.ForeColor = Color.FromArgb(0, 0, 0);
+
+                server_rtbox.ForeColor = Color.FromArgb(0, 0, 0);
+                api_rtbox.ForeColor = Color.FromArgb(0, 0, 0);
+                static_rtbox.ForeColor = Color.FromArgb(0, 0, 0);
+                all_rtbox.ForeColor = Color.FromArgb(0, 0, 0);
                 groupBox1.ForeColor = Color.FromArgb(0, 0, 0);
 
                 this.ForeColor = Color.FromArgb(0, 0, 0);
@@ -291,16 +302,16 @@ namespace Servo
 
                 button3.ForeColor = Color.FromArgb(0, 0, 0);
 
+                bandwidth_tbox.ForeColor = Color.FromArgb(0, 0, 0);
+                conn_tbox.ForeColor = Color.FromArgb(0, 0, 0);
+                denied_tbox.ForeColor = Color.FromArgb(0, 0, 0);
+                port_tbox.ForeColor = Color.FromArgb(0, 0, 0);
+                databasename_tbox.ForeColor = Color.FromArgb(0, 0, 0);
 
-                conn_textbox.ForeColor = Color.FromArgb(0, 0, 0);
-                susconn_textbox.ForeColor = Color.FromArgb(0, 0, 0);
-                textBox4.ForeColor = Color.FromArgb(0, 0, 0);
-                textBox1.ForeColor = Color.FromArgb(0, 0, 0);
-
-                items_textbox.ForeColor = Color.FromArgb(0, 0, 0);
-                files_textbox.ForeColor = Color.FromArgb(0, 0, 0);
-                users_textbox.ForeColor = Color.FromArgb(0, 0, 0);
-                apis_textbox.ForeColor = Color.FromArgb(0, 0, 0);
+                items_box.ForeColor = Color.FromArgb(0, 0, 0);
+                files_tbox.ForeColor = Color.FromArgb(0, 0, 0);
+                users_box.ForeColor = Color.FromArgb(0, 0, 0);
+                apis_box.ForeColor = Color.FromArgb(0, 0, 0);
 
 
 
@@ -313,6 +324,7 @@ namespace Servo
                 label1.ForeColor = Color.FromArgb(255,255,255);
                 label2.ForeColor = Color.FromArgb(255, 255, 255);
                 label3.ForeColor = Color.FromArgb(255, 255, 255);
+                label4.ForeColor = Color.FromArgb(255, 255, 255);
 
                 label6.ForeColor = Color.FromArgb(255, 255, 255);
                 label7.ForeColor = Color.FromArgb(255, 255, 255);
@@ -320,7 +332,12 @@ namespace Servo
 
 
                 this.BackColor=Color.FromArgb(70, 68, 68);
-                richTextBox1.BackColor = Color.FromArgb(70, 68, 68);
+                all_rtbox.BackColor = Color.FromArgb(70, 68, 68);
+                server_rtbox.BackColor = Color.FromArgb(70, 68, 68);
+                api_rtbox.BackColor = Color.FromArgb(70, 68, 68);
+                static_rtbox.BackColor = Color.FromArgb(70, 68, 68);
+
+
                 groupBox1.BackColor = Color.FromArgb(70, 68, 68);
                 
                 this.BackColor = Color.FromArgb(70, 68, 68);
@@ -335,15 +352,18 @@ namespace Servo
                 button3.BackColor = Color.FromArgb(0, 0, 0);
 
 
-                conn_textbox.BackColor = Color.FromArgb(0, 0, 0);
-                susconn_textbox.BackColor = Color.FromArgb(0, 0, 0);
-                textBox4.BackColor = Color.FromArgb(0, 0, 0);
-                textBox1.BackColor = Color.FromArgb(0, 0, 0);
+                conn_tbox.BackColor = Color.FromArgb(0, 0, 0);
+                denied_tbox.BackColor = Color.FromArgb(0, 0, 0);
+                bandwidth_tbox.BackColor = Color.FromArgb(0, 0, 0);
 
-                items_textbox.BackColor = Color.FromArgb(0, 0, 0);
-                files_textbox.BackColor = Color.FromArgb(0, 0, 0);
-                users_textbox.BackColor = Color.FromArgb(0, 0, 0);
-                apis_textbox.BackColor = Color.FromArgb(0, 0, 0);
+
+                port_tbox.BackColor = Color.FromArgb(0, 0, 0);
+                databasename_tbox.BackColor = Color.FromArgb(0, 0, 0);
+
+                items_box.BackColor = Color.FromArgb(0, 0, 0);
+                files_tbox.BackColor = Color.FromArgb(0, 0, 0);
+                users_box.BackColor = Color.FromArgb(0, 0, 0);
+                apis_box.BackColor = Color.FromArgb(0, 0, 0);
 
                 button5.FlatAppearance.BorderColor = Color.Silver;
                 button6.FlatAppearance.BorderColor = Color.Silver;
@@ -372,7 +392,11 @@ namespace Servo
 
 
                 this.ForeColor = Color.FromArgb(255, 255, 255);
-                richTextBox1.ForeColor = Color.FromArgb(255, 255, 255);
+
+                static_rtbox.ForeColor = Color.FromArgb(255, 255, 255);
+                server_rtbox.ForeColor = Color.FromArgb(255, 255, 255);
+                api_rtbox.ForeColor = Color.FromArgb(255, 255, 255);
+                all_rtbox.ForeColor = Color.FromArgb(255, 255, 255);
                 groupBox1.ForeColor = Color.FromArgb(255, 255, 255);
 
                 this.ForeColor = Color.FromArgb(255, 255, 255);
@@ -386,16 +410,16 @@ namespace Servo
 
                 button3.ForeColor = Color.FromArgb(255, 255, 255);
 
+                bandwidth_tbox.ForeColor = Color.FromArgb(255, 255, 255);
+                conn_tbox.ForeColor = Color.FromArgb(255, 255, 255);
+                denied_tbox.ForeColor = Color.FromArgb(255, 255, 255);
+                port_tbox.ForeColor = Color.FromArgb(255, 255, 255);
+                databasename_tbox.ForeColor = Color.FromArgb(255, 255, 255);
 
-                conn_textbox.ForeColor = Color.FromArgb(255, 255, 255);
-                susconn_textbox.ForeColor = Color.FromArgb(255, 255, 255);
-                textBox4.ForeColor = Color.FromArgb(255, 255, 255);
-                textBox1.ForeColor = Color.FromArgb(255, 255, 255);
-
-                items_textbox.ForeColor = Color.FromArgb(255, 255, 255);
-                files_textbox.ForeColor = Color.FromArgb(255, 255, 255);
-                users_textbox.ForeColor = Color.FromArgb(255, 255, 255);
-                apis_textbox.ForeColor = Color.FromArgb(255, 255, 255);
+                items_box.ForeColor = Color.FromArgb(255, 255, 255);
+                files_tbox.ForeColor = Color.FromArgb(255, 255, 255);
+                users_box.ForeColor = Color.FromArgb(255, 255, 255);
+                apis_box.ForeColor = Color.FromArgb(255, 255, 255);
 
              
 

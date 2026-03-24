@@ -34,7 +34,7 @@ namespace Servo.service
         }
 
         static string thumbnail_template(int id) {return $"{service.shared.current_url}assets/products/{id}/thumbnail.webp"; }
-        public static void log(string abc)
+        public static void log(string abc, string type="api")
         {
             var f = Form1.Instance;
             if (f == null)
@@ -49,7 +49,12 @@ namespace Servo.service
                 return;
             }
 
-            f.InvokeOnUi(() => f.LogBox.AppendText(abc + Environment.NewLine));
+            if(type=="api") f.InvokeOnUi(() => f.api_rtbox.AppendText(abc + Environment.NewLine));
+            else if (type == "static") { f.InvokeOnUi(() => f.static_rtbox.AppendText(abc + Environment.NewLine)); }
+            else if (type == "server") { f.InvokeOnUi(() => f.server_rtbox.AppendText(abc + Environment.NewLine)); }
+
+            f.InvokeOnUi(() => f.all_rtbox.AppendText(abc + Environment.NewLine));
+
         }
         private const int KeySize = 32;
         private const int Iterations = 1000;
@@ -73,7 +78,10 @@ namespace Servo.service
         // Static assets (isStatic: true)
         (".png",  "image/png",              true),
         (".jpg",  "image/jpeg",             true),
+
+        (".webp", "image/image/webp",             true),
         (".jpeg", "image/jpeg",             true),
+
         (".gif",  "image/gif",              true),
         (".svg",  "image/svg+xml",          true),
         (".ico",  "image/x-icon",           true),
