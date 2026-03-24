@@ -608,7 +608,8 @@
     "filters": "Filter",
     "advanced_filters": "Erweiterte Filter",
     "toggle_filters": "Filter ein-/ausblenden",
-    "sort_by": "Sortieren nach"
+    "sort_by": "Sortieren nach",
+    "search_placeholder": "Produkte suchen..."
   },
   "checkout": {
     "invalid_phone": "Bitte geben Sie eine gültige Telefonnummer ein.",

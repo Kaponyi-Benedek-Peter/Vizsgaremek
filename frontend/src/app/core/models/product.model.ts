@@ -162,6 +162,7 @@ export interface ProductFilterOptions {
   search_query?: string;
   manufacturers?: string[];
   brands?: string[];
+  search?: string;
 }
 
 export interface PaginationConfig {

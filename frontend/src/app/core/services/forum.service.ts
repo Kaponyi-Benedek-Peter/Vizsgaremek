@@ -134,13 +134,23 @@ export class ForumService {
     return bc.name_en || bc.name_hu || bc.id;
   }
 
-  getPostById(id: string) {
+  getPostById(id: string, isAdmin = false, adminId = '', adminSessionToken = '') {
+    const body: Record<string, string | number> = {
+      post_id: btoa(id),
+      admin: isAdmin ? 1 : 0,
+    };
+
+    if (isAdmin && adminId && adminSessionToken) {
+      body['admin_id'] = btoa(adminId);
+      body['admin_session_token'] = btoa(adminSessionToken);
+    }
+
     return this.http
       .post<{
         status: string;
         statuscode: number;
         post: Post;
-      }>(`${this.API_URL}/api/get_post_by_id`, { id: btoa(id) })
+      }>(`${this.API_URL}/api/get_post_by_id`, body)
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' ? res.post : null)),

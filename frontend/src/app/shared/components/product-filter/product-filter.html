@@ -1,5 +1,25 @@
 <div class="product-filter">
   <div class="quick-filter-bar">
+    <div class="search-input-wrapper">
+      <img [src]="icons.search" alt="" class="search-icon-img" aria-hidden="true" />
+      <input
+        type="search"
+        class="search-input"
+        [value]="filterState().search_query"
+        (input)="handleSearchInput($any($event.target).value)"
+        [placeholder]="'filter.search_placeholder' | translate"
+      />
+      @if (hasSearchQuery()) {
+        <button
+          class="clear-search"
+          (click)="clearSearch()"
+          [attr.aria-label]="'common.clear' | translate"
+        >
+          ✕
+        </button>
+      }
+    </div>
+
     <div class="sort-select-wrapper">
       <label for="sort-select" class="sort-label"> {{ 'filter.sort_by' | translate }}: </label>
       <select

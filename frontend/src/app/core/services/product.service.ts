@@ -81,6 +81,15 @@ export class ProductService {
     if (filters.sort_by) {
       products = this.sortProducts(products, filters.sort_by);
     }
+    if (filters.search_query?.trim()) {
+      const term = filters.search_query.toLowerCase();
+      products = products.filter(
+        (p) =>
+          p.name.toLowerCase().includes(term) ||
+          p.manufacturer?.toLowerCase().includes(term) ||
+          p.description?.toLowerCase().includes(term),
+      );
+    }
 
     return products;
   });
@@ -193,6 +202,7 @@ export class ProductService {
       price_range: null,
       in_stock_only: false,
       sort_by: 'popularity',
+      search_query: '',
     });
     this.current_pageSignal.set(1);
   }

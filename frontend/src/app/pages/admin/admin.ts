@@ -1,5 +1,4 @@
 import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
-
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -13,181 +12,21 @@ import { ResizableTableDirective } from '../../shared/directives/resizable-table
 import { formatFileSize } from '../../core/utils/image-utils';
 import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS } from './admin.mock';
 
-type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
-
-interface NavItem {
-  id: AdminSection;
-  icon: string;
-  label: string;
-}
-
-interface ImageMeta {
-  name: string;
-  size: string;
-  type: string;
-  width: number;
-  height: number;
-  resolution: string;
-  lastModified: string;
-}
-
-interface GalleryImage {
-  id: string;
-  product_id: string;
-  image_url: string;
-  alt_text_hu: string;
-  alt_text_en: string;
-  alt_text_de: string;
-  sort_id: string;
-  file?: File;
-  objectUrl?: string;
-  meta?: ImageMeta;
-}
-
-type ProductFormTab = 'basic' | 'pricing' | 'descriptions' | 'details';
-
-interface ProductFormData {
-  name_hu: string;
-  name_en: string;
-  name_de: string;
-  description_hu: string;
-  description_en: string;
-  description_de: string;
-  description_preview_hu: string;
-  description_preview_en: string;
-  description_preview_de: string;
-  price_huf: number;
-  sale_percentage: number;
-  stock: number;
-  category_id: string;
-  manufacturer: string;
-  brand: string;
-  sku: string;
-  active_ingredients: string;
-  packaging_hu: string;
-  packaging_en: string;
-  packaging_de: string;
-  thumbnail_url: string;
-  featured: boolean;
-}
-
-function emptyProductForm(): ProductFormData {
-  return {
-    name_hu: '',
-    name_en: '',
-    name_de: '',
-    description_hu: '',
-    description_en: '',
-    description_de: '',
-    description_preview_hu: '',
-    description_preview_en: '',
-    description_preview_de: '',
-    price_huf: 0,
-    sale_percentage: 0,
-    stock: 0,
-    category_id: '',
-    manufacturer: '',
-    brand: '',
-    sku: '',
-    active_ingredients: '',
-    packaging_hu: '',
-    packaging_en: '',
-    packaging_de: '',
-    thumbnail_url: '',
-    featured: false,
-  };
-}
-
-interface SearchQuery {
-  column: string | null;
-  value: string;
-}
-
-function parseSearchQuery(raw: string): SearchQuery {
-  const colonIndex = raw.indexOf(':');
-  if (colonIndex > 0 && colonIndex < raw.length - 1) {
-    const column = raw.substring(0, colonIndex).trim().toLowerCase();
-    const value = raw
-      .substring(colonIndex + 1)
-      .trim()
-      .toLowerCase();
-    if (column && value) {
-      return { column, value };
-    }
-  }
-  return { column: null, value: raw.trim().toLowerCase() };
-}
-
-type FieldExtractor<T> = (item: T) => string;
-
-function smartFilter<T>(
-  items: T[],
-  rawQuery: string,
-  columnMap: Record<string, FieldExtractor<T>>,
-): T[] {
-  if (!rawQuery.trim()) return items;
-
-  const { column, value } = parseSearchQuery(rawQuery);
-  if (!value) return items;
-
-  if (column) {
-    const extractor = columnMap[column];
-    if (extractor) {
-      return items.filter((item) => extractor(item).toLowerCase().includes(value));
-    }
-    return items;
-  }
-
-  const extractors = Object.values(columnMap);
-  return items.filter((item) =>
-    extractors.some((extract) => extract(item).toLowerCase().includes(value)),
-  );
-}
-
-const ORDER_COLUMNS: Record<string, FieldExtractor<AdminOrder>> = {
-  id: (o) => o.id,
-  email: (o) => o.email || '',
-  billing: (o) => o.billing_name || '',
-  city: (o) => o.city || '',
-  zip: (o) => o.zipcode || '',
-  address: (o) => o.address || '',
-  phone: (o) => o.phone_number || '',
-  price: (o) => o.price || '',
-  status: (o) => o.order_status || '',
-  note: (o) => o.note || '',
-};
-
-const USER_COLUMNS: Record<string, FieldExtractor<AdminUser>> = {
-  id: (u) => u.id,
-  email: (u) => u.email || '',
-  name: (u) => `${u.last_name} ${u.first_name}`.trim(),
-  firstname: (u) => u.first_name || '',
-  lastname: (u) => u.last_name || '',
-  role: (u) => u.account_state || '',
-  state: (u) => u.account_state || '',
-};
-
-const PRODUCT_COLUMNS: Record<string, FieldExtractor<ProductWithHelpers>> = {
-  id: (p) => p.id || '',
-  name: (p) => p.name || '',
-  brand: (p) => p.brand || '',
-  category: (p) => p.category || '',
-  sku: (p) => p.sku || '',
-  price: (p) => String(p.price ?? ''),
-  stock: (p) => String(p.stock_number ?? ''),
-  rating: (p) => String(p.rating_number ?? ''),
-  status: (p) => (p.in_stock ? 'active' : 'inactive'),
-};
-
-type UserActionType = 'change_role' | 'ban' | 'unban' | 'delete';
-
-const ACCOUNT_STATES = ['verified', 'unverified', 'admin', 'superadmin'] as const;
-
-interface UserActionRequest {
-  user: AdminUser;
-  action: UserActionType;
-  newState?: string;
-}
+import {
+  AdminSection,
+  NavItem,
+  ImageMeta,
+  GalleryImage,
+  ProductFormTab,
+  ProductFormData,
+  UserActionType,
+  UserActionRequest,
+  ACCOUNT_STATES,
+  ORDER_COLUMNS,
+  USER_COLUMNS,
+  PRODUCT_COLUMNS,
+} from '../../core/models/admin.models';
+import { emptyProductForm, smartFilter } from '../../core/utils/admin.utils';
 
 @Component({
   selector: 'app-admin',

@@ -25,6 +25,7 @@ PROJECT STRUCTURE
 │   │   │   ├── 📁 interceptors/
 │   │   │   │   └── 📄 auth.interceptors.ts
 │   │   │   ├── 📁 models/
+│   │   │   │   ├── 📄 admin.models.ts
 │   │   │   │   ├── 📄 auth.model.ts
 │   │   │   │   ├── 📄 forum.model.ts
 │   │   │   │   ├── 📄 product.model.ts
@@ -42,6 +43,7 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 toast.service.ts
 │   │   │   │   └── 📄 translation.service.ts
 │   │   │   └── 📁 utils/
+│   │   │       ├── 📄 admin.utils.ts
 │   │   │       └── 📄 image-utils.ts
 │   │   ├── 📁 pages/
 │   │   │   ├── 📁 admin/
@@ -750,7 +752,8 @@ FILE: src\app\app.ts
 ================================================================================
 
 import { Component, signal, inject } from '@angular/core';
-import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import { Header } from './shared/components/header/header';
 import { Footer } from './shared/components/footer/footer';
 import { Toast } from './shared/components/toast/toast';
@@ -775,6 +778,10 @@ export class App {
   ) {}
 
   ngOnInit(): void {
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      window.scrollTo(0, 0);
+    });
+
     const chpass = new URLSearchParams(window.location.search).get('chpass');
     if (chpass) {
       this.router.navigate(['/password-reset'], {
@@ -1378,6 +1385,120 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
 
 ================================================================================
+FILE: src\app\core\models\admin.models.ts
+================================================================================
+
+import { AdminUser, AdminOrder } from '../../core/services/account.service';
+import { ProductWithHelpers } from '../../core/models/product.model';
+
+export type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
+
+export interface NavItem {
+  id: AdminSection;
+  icon: string;
+  label: string;
+}
+
+export interface ImageMeta {
+  name: string;
+  size: string;
+  type: string;
+  width: number;
+  height: number;
+  resolution: string;
+  lastModified: string;
+}
+
+export interface GalleryImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  alt_text_hu: string;
+  alt_text_en: string;
+  alt_text_de: string;
+  sort_id: string;
+  file?: File;
+  objectUrl?: string;
+  meta?: ImageMeta;
+}
+
+export type ProductFormTab = 'basic' | 'pricing' | 'descriptions' | 'details';
+
+export interface ProductFormData {
+  name_hu: string;
+  name_en: string;
+  name_de: string;
+  description_hu: string;
+  description_en: string;
+  description_de: string;
+  description_preview_hu: string;
+  description_preview_en: string;
+  description_preview_de: string;
+  price_huf: number;
+  sale_percentage: number;
+  stock: number;
+  category_id: string;
+  manufacturer: string;
+  brand: string;
+  sku: string;
+  active_ingredients: string;
+  packaging_hu: string;
+  packaging_en: string;
+  packaging_de: string;
+  thumbnail_url: string;
+  featured: boolean;
+}
+
+export type UserActionType = 'change_role' | 'ban' | 'unban' | 'delete';
+
+export interface UserActionRequest {
+  user: AdminUser;
+  action: UserActionType;
+  newState?: string;
+}
+
+export type FieldExtractor<T> = (item: T) => string;
+
+export const ACCOUNT_STATES = ['verified', 'unverified', 'admin', 'superadmin'] as const;
+
+export const ORDER_COLUMNS: Record<string, FieldExtractor<AdminOrder>> = {
+  id: (o) => o.id,
+  email: (o) => o.email || '',
+  billing: (o) => o.billing_name || '',
+  city: (o) => o.city || '',
+  zip: (o) => o.zipcode || '',
+  address: (o) => o.address || '',
+  phone: (o) => o.phone_number || '',
+  price: (o) => o.price || '',
+  status: (o) => o.order_status || '',
+  note: (o) => o.note || '',
+};
+
+export const USER_COLUMNS: Record<string, FieldExtractor<AdminUser>> = {
+  id: (u) => u.id,
+  email: (u) => u.email || '',
+  name: (u) => `${u.last_name} ${u.first_name}`.trim(),
+  firstname: (u) => u.first_name || '',
+  lastname: (u) => u.last_name || '',
+  role: (u) => u.account_state || '',
+  state: (u) => u.account_state || '',
+};
+
+export const PRODUCT_COLUMNS: Record<string, FieldExtractor<ProductWithHelpers>> = {
+  id: (p) => p.id || '',
+  name: (p) => p.name || '',
+  brand: (p) => p.brand || '',
+  category: (p) => p.category || '',
+  sku: (p) => p.sku || '',
+  price: (p) => String(p.price ?? ''),
+  stock: (p) => String(p.stock_number ?? ''),
+  rating: (p) => String(p.rating_number ?? ''),
+  status: (p) => (p.in_stock ? 'active' : 'inactive'),
+};
+
+
+
+================================================================================
 FILE: src\app\core\models\auth.model.ts
 ================================================================================
 
@@ -1767,6 +1888,7 @@ export interface ProductFilterOptions {
   search_query?: string;
   manufacturers?: string[];
   brands?: string[];
+  search?: string;
 }
 
 export interface PaginationConfig {
@@ -3283,13 +3405,23 @@ export class ForumService {
     return bc.name_en || bc.name_hu || bc.id;
   }
 
-  getPostById(id: string) {
+  getPostById(id: string, isAdmin = false, adminId = '', adminSessionToken = '') {
+    const body: Record<string, string | number> = {
+      post_id: btoa(id),
+      admin: isAdmin ? 1 : 0,
+    };
+
+    if (isAdmin && adminId && adminSessionToken) {
+      body['admin_id'] = btoa(adminId);
+      body['admin_session_token'] = btoa(adminSessionToken);
+    }
+
     return this.http
       .post<{
         status: string;
         statuscode: number;
         post: Post;
-      }>(`${this.API_URL}/api/get_post_by_id`, { id: btoa(id) })
+      }>(`${this.API_URL}/api/get_post_by_id`, body)
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' ? res.post : null)),
@@ -3653,6 +3785,15 @@ export class ProductService {
     if (filters.sort_by) {
       products = this.sortProducts(products, filters.sort_by);
     }
+    if (filters.search_query?.trim()) {
+      const term = filters.search_query.toLowerCase();
+      products = products.filter(
+        (p) =>
+          p.name.toLowerCase().includes(term) ||
+          p.manufacturer?.toLowerCase().includes(term) ||
+          p.description?.toLowerCase().includes(term),
+      );
+    }
 
     return products;
   });
@@ -3765,6 +3906,7 @@ export class ProductService {
       price_range: null,
       in_stock_only: false,
       sort_by: 'popularity',
+      search_query: '',
     });
     this.current_pageSignal.set(1);
   }
@@ -4281,6 +4423,85 @@ export class TranslationService {
   public instant(key: string): string {
     return this.translate.instant(key);
   }
+}
+
+
+
+================================================================================
+FILE: src\app\core\utils\admin.utils.ts
+================================================================================
+
+import { FieldExtractor, ProductFormData } from '../models/admin.models';
+
+export function emptyProductForm(): ProductFormData {
+  return {
+    name_hu: '',
+    name_en: '',
+    name_de: '',
+    description_hu: '',
+    description_en: '',
+    description_de: '',
+    description_preview_hu: '',
+    description_preview_en: '',
+    description_preview_de: '',
+    price_huf: 0,
+    sale_percentage: 0,
+    stock: 0,
+    category_id: '',
+    manufacturer: '',
+    brand: '',
+    sku: '',
+    active_ingredients: '',
+    packaging_hu: '',
+    packaging_en: '',
+    packaging_de: '',
+    thumbnail_url: '',
+    featured: false,
+  };
+}
+
+interface SearchQuery {
+  column: string | null;
+  value: string;
+}
+
+function parseSearchQuery(raw: string): SearchQuery {
+  const colonIndex = raw.indexOf(':');
+  if (colonIndex > 0 && colonIndex < raw.length - 1) {
+    const column = raw.substring(0, colonIndex).trim().toLowerCase();
+    const value = raw
+      .substring(colonIndex + 1)
+      .trim()
+      .toLowerCase();
+    if (column && value) {
+      return { column, value };
+    }
+  }
+  return { column: null, value: raw.trim().toLowerCase() };
+}
+
+export function smartFilter<T>(
+  items: T[],
+  rawQuery: string,
+  columnMap: Record<string, FieldExtractor<T>>,
+): T[] {
+  if (!rawQuery.trim()) return items;
+
+  const { column, value } = parseSearchQuery(rawQuery);
+  if (!value) return items;
+
+  if (column) {
+    const extractor = columnMap[column];
+    if (extractor) {
+      return items.filter((item) => extractor(item).toLowerCase().includes(value));
+    }
+    return items;
+  }
+
+  const extractors = Object.values(columnMap);
+  return items.filter((item) =>
+    extractors.some((extract) => extract(item).toLowerCase().includes(value)),
+  );
 }
 
 
@@ -4930,6 +5151,13 @@ FILE: src\app\pages\admin\admin.css
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
+}
+
+.admin-search::-webkit-search-cancel-button,
+.admin-search::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
 }
 
 .admin-search:focus {
@@ -7962,7 +8190,6 @@ FILE: src\app\pages\admin\admin.ts
 ================================================================================
 
 import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
-
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -7976,181 +8203,21 @@ import { ResizableTableDirective } from '../../shared/directives/resizable-table
 import { formatFileSize } from '../../core/utils/image-utils';
 import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS } from './admin.mock';
 
-type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
-
-interface NavItem {
-  id: AdminSection;
-  icon: string;
-  label: string;
-}
-
-interface ImageMeta {
-  name: string;
-  size: string;
-  type: string;
-  width: number;
-  height: number;
-  resolution: string;
-  lastModified: string;
-}
-
-interface GalleryImage {
-  id: string;
-  product_id: string;
-  image_url: string;
-  alt_text_hu: string;
-  alt_text_en: string;
-  alt_text_de: string;
-  sort_id: string;
-  file?: File;
-  objectUrl?: string;
-  meta?: ImageMeta;
-}
-
-type ProductFormTab = 'basic' | 'pricing' | 'descriptions' | 'details';
-
-interface ProductFormData {
-  name_hu: string;
-  name_en: string;
-  name_de: string;
-  description_hu: string;
-  description_en: string;
-  description_de: string;
-  description_preview_hu: string;
-  description_preview_en: string;
-  description_preview_de: string;
-  price_huf: number;
-  sale_percentage: number;
-  stock: number;
-  category_id: string;
-  manufacturer: string;
-  brand: string;
-  sku: string;
-  active_ingredients: string;
-  packaging_hu: string;
-  packaging_en: string;
-  packaging_de: string;
-  thumbnail_url: string;
-  featured: boolean;
-}
-
-function emptyProductForm(): ProductFormData {
-  return {
-    name_hu: '',
-    name_en: '',
-    name_de: '',
-    description_hu: '',
-    description_en: '',
-    description_de: '',
-    description_preview_hu: '',
-    description_preview_en: '',
-    description_preview_de: '',
-    price_huf: 0,
-    sale_percentage: 0,
-    stock: 0,
-    category_id: '',
-    manufacturer: '',
-    brand: '',
-    sku: '',
-    active_ingredients: '',
-    packaging_hu: '',
-    packaging_en: '',
-    packaging_de: '',
-    thumbnail_url: '',
-    featured: false,
-  };
-}
-
-interface SearchQuery {
-  column: string | null;
-  value: string;
-}
-
-function parseSearchQuery(raw: string): SearchQuery {
-  const colonIndex = raw.indexOf(':');
-  if (colonIndex > 0 && colonIndex < raw.length - 1) {
-    const column = raw.substring(0, colonIndex).trim().toLowerCase();
-    const value = raw
-      .substring(colonIndex + 1)
-      .trim()
-      .toLowerCase();
-    if (column && value) {
-      return { column, value };
-    }
-  }
-  return { column: null, value: raw.trim().toLowerCase() };
-}
-
-type FieldExtractor<T> = (item: T) => string;
-
-function smartFilter<T>(
-  items: T[],
-  rawQuery: string,
-  columnMap: Record<string, FieldExtractor<T>>,
-): T[] {
-  if (!rawQuery.trim()) return items;
-
-  const { column, value } = parseSearchQuery(rawQuery);
-  if (!value) return items;
-
-  if (column) {
-    const extractor = columnMap[column];
-    if (extractor) {
-      return items.filter((item) => extractor(item).toLowerCase().includes(value));
-    }
-    return items;
-  }
-
-  const extractors = Object.values(columnMap);
-  return items.filter((item) =>
-    extractors.some((extract) => extract(item).toLowerCase().includes(value)),
-  );
-}
-
-const ORDER_COLUMNS: Record<string, FieldExtractor<AdminOrder>> = {
-  id: (o) => o.id,
-  email: (o) => o.email || '',
-  billing: (o) => o.billing_name || '',
-  city: (o) => o.city || '',
-  zip: (o) => o.zipcode || '',
-  address: (o) => o.address || '',
-  phone: (o) => o.phone_number || '',
-  price: (o) => o.price || '',
-  status: (o) => o.order_status || '',
-  note: (o) => o.note || '',
-};
-
-const USER_COLUMNS: Record<string, FieldExtractor<AdminUser>> = {
-  id: (u) => u.id,
-  email: (u) => u.email || '',
-  name: (u) => `${u.last_name} ${u.first_name}`.trim(),
-  firstname: (u) => u.first_name || '',
-  lastname: (u) => u.last_name || '',
-  role: (u) => u.account_state || '',
-  state: (u) => u.account_state || '',
-};
-
-const PRODUCT_COLUMNS: Record<string, FieldExtractor<ProductWithHelpers>> = {
-  id: (p) => p.id || '',
-  name: (p) => p.name || '',
-  brand: (p) => p.brand || '',
-  category: (p) => p.category || '',
-  sku: (p) => p.sku || '',
-  price: (p) => String(p.price ?? ''),
-  stock: (p) => String(p.stock_number ?? ''),
-  rating: (p) => String(p.rating_number ?? ''),
-  status: (p) => (p.in_stock ? 'active' : 'inactive'),
-};
-
-type UserActionType = 'change_role' | 'ban' | 'unban' | 'delete';
-
-const ACCOUNT_STATES = ['verified', 'unverified', 'admin', 'superadmin'] as const;
-
-interface UserActionRequest {
-  user: AdminUser;
-  action: UserActionType;
-  newState?: string;
-}
+import {
+  AdminSection,
+  NavItem,
+  ImageMeta,
+  GalleryImage,
+  ProductFormTab,
+  ProductFormData,
+  UserActionType,
+  UserActionRequest,
+  ACCOUNT_STATES,
+  ORDER_COLUMNS,
+  USER_COLUMNS,
+  PRODUCT_COLUMNS,
+} from '../../core/models/admin.models';
+import { emptyProductForm, smartFilter } from '../../core/utils/admin.utils';
 
 @Component({
   selector: 'app-admin',
@@ -9504,6 +9571,13 @@ FILE: src\app\pages\forum\forum.css
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast);
+}
+
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
 }
 
 .search-input:focus {
@@ -11561,25 +11635,28 @@ export class ForumDetail implements OnInit {
     this.comments.set([]);
     const userId = this.authService.currentUser()?.id ?? '';
     const sessToken = this.sessionToken;
+    const isAdmin = this.authService.isAdmin();
 
-    this.forumService.getPostById(id).subscribe((post) => {
-      this.post.set(post);
-      this.isLoading.set(false);
+    this.forumService
+      .getPostById(id, isAdmin, isAdmin ? userId : '', isAdmin ? sessToken : '')
+      .subscribe((post) => {
+        this.post.set(post);
+        this.isLoading.set(false);
 
-      if (post) {
-        if (this.authService.isAuthenticated()) {
-          this.forumService.incrementViews(post.id, userId, sessToken).subscribe();
+        if (post) {
+          if (this.authService.isAuthenticated()) {
+            this.forumService.incrementViews(post.id, userId, sessToken).subscribe();
+          }
+
+          this.forumService.getComments(post.id).subscribe((comments) => {
+            this.comments.set(comments);
+          });
+
+          this.forumService.getRelatedPosts(post.id, 6).subscribe((related) => {
+            this.relatedPosts.set(related);
+          });
         }
-
-        this.forumService.getComments(post.id).subscribe((comments) => {
-          this.comments.set(comments);
-        });
-
-        this.forumService.getRelatedPosts(post.id, 6).subscribe((related) => {
-          this.relatedPosts.set(related);
-        });
-      }
-    });
+      });
   }
 
   getCategoryInfo(categoryId: string): CategoryInfo | undefined {
@@ -16648,7 +16725,9 @@ FILE: src\app\pages\products\products.css
 FILE: src\app\pages\products\products.html
 ================================================================================
 
-<app-product-list></app-product-list>
+<div class="products-page">
+  <app-product-list></app-product-list>
+</div>
 
 
 
@@ -25712,13 +25791,92 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   padding: var(--space-4);
 }
 
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.search-icon-img {
+  position: absolute;
+  left: var(--space-3);
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.5;
+}
+
+.search-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-10) var(--space-2) var(--space-10);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+  font-family: var(--font-primary);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  min-height: 44px;
+}
+
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+.search-input:hover {
+  border-color: var(--color-primary);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.12);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.clear-search {
+  position: absolute;
+  right: var(--space-2);
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  padding: var(--space-1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.clear-search:hover {
+  background: var(--color-neutral-200);
+  color: var(--color-text-primary);
+}
+
 .sort-select-wrapper {
   position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  flex: 1;
-  max-width: 400px;
+  flex-shrink: 0;
 }
 
 .sort-label {
@@ -25729,7 +25887,6 @@ FILE: src\app\shared\components\product-filter\product-filter.css
 }
 
 .sort-select {
-  flex: 1;
   padding: var(--space-2) var(--space-10) var(--space-2) var(--space-3);
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
@@ -25757,13 +25914,12 @@ FILE: src\app\shared\components\product-filter\product-filter.css
 .select-arrow {
   position: absolute;
   right: var(--space-3);
-  pointer-events: none;
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
+  pointer-events: none;
 }
 
 .expand-button {
-  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -25776,58 +25932,57 @@ FILE: src\app\shared\components\product-filter\product-filter.css
   color: var(--color-text-primary);
   cursor: pointer;
   transition: all var(--transition-fast);
-  font-family: var(--font-primary);
   white-space: nowrap;
+  font-family: var(--font-primary);
   min-height: 44px;
+  flex-shrink: 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .expand-button:hover {
-    background: var(--color-primary-light);
     border-color: var(--color-primary);
+    background: var(--color-primary-light);
   }
 }
 
 .expand-icon {
   font-size: var(--text-xs);
+  transition: transform var(--transition-fast);
 }
 
 .expand-text {
-  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
 }
 
 .active-indicator {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 12px;
-  height: 12px;
-  background: var(--color-error);
-  border: 2px solid var(--color-surface);
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .expanded-filters {
+  padding: var(--space-5) var(--space-4);
   border-top: 1px solid var(--color-border);
-  padding: var(--space-5);
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 200ms ease-out;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    max-height: 0;
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
-    max-height: 600px;
+    transform: translateY(0);
   }
 }
 
 .filters-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--space-4);
 }
 
@@ -25839,7 +25994,7 @@ FILE: src\app\shared\components\product-filter\product-filter.css
 }
 
 .clear-all-button {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   background: transparent;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -26025,6 +26180,26 @@ FILE: src\app\shared\components\product-filter\product-filter.html
 
 <div class="product-filter">
   <div class="quick-filter-bar">
+    <div class="search-input-wrapper">
+      <img [src]="icons.search" alt="" class="search-icon-img" aria-hidden="true" />
+      <input
+        type="search"
+        class="search-input"
+        [value]="filterState().search_query"
+        (input)="handleSearchInput($any($event.target).value)"
+        [placeholder]="'filter.search_placeholder' | translate"
+      />
+      @if (hasSearchQuery()) {
+        <button
+          class="clear-search"
+          (click)="clearSearch()"
+          [attr.aria-label]="'common.clear' | translate"
+        >
+          ✕
+        </button>
+      }
+    </div>
+
     <div class="sort-select-wrapper">
       <label for="sort-select" class="sort-label"> {{ 'filter.sort_by' | translate }}: </label>
       <select
@@ -26115,8 +26290,19 @@ FILE: src\app\shared\components\product-filter\product-filter.html
 FILE: src\app\shared\components\product-filter\product-filter.ts
 ================================================================================
 
-import { Component, computed, EventEmitter, Output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  EventEmitter,
+  inject,
+  Output,
+  signal,
+  DestroyRef,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ProductFilterOptions, SortOption } from '../../../core/models/product.model';
+import { ICONS } from '../../../core/constants/visuals';
 
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -26127,6 +26313,7 @@ interface FilterState {
   priceMax: number | null;
   in_stock_only: boolean;
   sort_by: SortOption;
+  search_query: string;
 }
 
 @Component({
@@ -26139,12 +26326,18 @@ export class ProductFilter {
   @Output() filterChanged = new EventEmitter<ProductFilterOptions>();
   @Output() clearFilters = new EventEmitter<void>();
 
+  protected readonly icons = ICONS;
+
+  private destroyRef = inject(DestroyRef);
+  private searchSubject = new Subject<string>();
+
   filterState = signal<FilterState>({
     categories: [],
     priceMin: null,
     priceMax: null,
     in_stock_only: false,
     sort_by: 'popularity',
+    search_query: '',
   });
 
   isExpanded = signal(false);
@@ -26169,6 +26362,26 @@ export class ProductFilter {
       state.sort_by !== 'popularity'
     );
   });
+
+  hasSearchQuery = computed(() => this.filterState().search_query.trim().length > 0);
+
+  constructor() {
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((query) => {
+        this.filterState.update((state) => ({ ...state, search_query: query }));
+        this.emitFilters();
+      });
+  }
+
+  handleSearchInput(value: string): void {
+    this.searchSubject.next(value);
+  }
+
+  clearSearch(): void {
+    this.filterState.update((state) => ({ ...state, search_query: '' }));
+    this.emitFilters();
+  }
 
   toggleExpanded(): void {
     this.isExpanded.update((v) => !v);
@@ -26207,6 +26420,7 @@ export class ProductFilter {
       priceMax: null,
       in_stock_only: false,
       sort_by: 'popularity',
+      search_query: '',
     });
     this.clearFilters.emit();
   }
@@ -26221,6 +26435,7 @@ export class ProductFilter {
           : null,
       in_stock_only: state.in_stock_only,
       sort_by: state.sort_by,
+      search_query: state.search_query.trim() || undefined,
     };
 
     this.filterChanged.emit(filters);
@@ -28797,7 +29012,8 @@ FILE: src\assets\i18n\de.json
     "filters": "Filter",
     "advanced_filters": "Erweiterte Filter",
     "toggle_filters": "Filter ein-/ausblenden",
-    "sort_by": "Sortieren nach"
+    "sort_by": "Sortieren nach",
+    "search_placeholder": "Produkte suchen..."
   },
   "checkout": {
     "invalid_phone": "Bitte geben Sie eine gültige Telefonnummer ein.",
@@ -29584,7 +29800,8 @@ FILE: src\assets\i18n\en.json
     "filters": "Filters",
     "advanced_filters": "Advanced filters",
     "toggle_filters": "Toggle filters",
-    "sort_by": "Sort by"
+    "sort_by": "Sort by",
+    "search_placeholder": "Search products..."
   },
   "checkout": {
     "invalid_phone": "Please enter a valid phone number.",
@@ -30341,7 +30558,8 @@ FILE: src\assets\i18n\hu.json
     "filters": "Szűrők",
     "advanced_filters": "Részletes szűrés",
     "toggle_filters": "Szűrők megjelenítése/elrejtése",
-    "sort_by": "Rendezés"
+    "sort_by": "Rendezés",
+    "search_placeholder": "Termékek keresése..."
   },
   "checkout": {
     "invalid_phone": "Kérjük, adjon meg érvényes telefonszámot.",

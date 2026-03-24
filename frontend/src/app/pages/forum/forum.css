@@ -117,6 +117,13 @@
     box-shadow var(--transition-fast);
 }
 
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
 .search-input:focus {
   outline: none;
   border-color: var(--color-primary);
