@@ -1,36 +1,44 @@
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
-import { Admin } from './pages/admin/admin';
-import { Bracket } from './pages/bracket/bracket';
-import { Email } from './pages/email/email';
-import { Forum } from './pages/forum/forum';
-import { Legal } from './pages/legal/legal';
-import { Login } from './pages/login/login';
-import { NotFound } from './pages/not-found/not-found';
-import { Products } from './pages/products/products';
-import { Profile } from './pages/profile/profile';
-import { Purchase } from './pages/purchase/purchase';
-import { Register } from './pages/register/register';
 import { authGuard, adminGuard, guestGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: Home },
-  { path: 'forum', component: Forum },
-  { path: 'products', component: Products },
+  {
+    path: 'forum',
+    loadComponent: () => import('./pages/forum/forum').then((m) => m.Forum),
+  },
+  {
+    path: 'forum/:id',
+    loadComponent: () => import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
+  },
+  {
+    path: 'products',
+    loadComponent: () => import('./pages/products/products').then((m) => m.Products),
+  },
   {
     path: 'products/:id',
     loadComponent: () =>
       import('./pages/product-detail/product-detail').then((m) => m.ProductDetail),
   },
-  { path: 'profile', component: Profile, canActivate: [authGuard] },
-  { path: 'purchase', component: Purchase, canActivate: [authGuard] },
-  { path: 'legal', component: Legal },
-  { path: 'bracket', component: Bracket },
-  { path: 'admin', component: Admin, canActivate: [adminGuard] },
   {
-    path: 'forum/:id',
-    loadComponent: () => import('./pages/forum-detail/forum-detail').then((m) => m.ForumDetail),
+    path: 'profile',
+    loadComponent: () => import('./pages/profile/profile').then((m) => m.Profile),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'purchase',
+    loadComponent: () => import('./pages/purchase/purchase').then((m) => m.Purchase),
+  },
+  {
+    path: 'legal',
+    loadComponent: () => import('./pages/legal/legal').then((m) => m.Legal),
+  },
+  {
+    path: 'admin',
+    loadComponent: () => import('./pages/admin/admin').then((m) => m.Admin),
+    canActivate: [adminGuard],
   },
   {
     path: 'login',
@@ -42,7 +50,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register').then((m) => m.Register),
     canActivate: [guestGuard],
   },
-  { path: 'email', loadComponent: () => import('./pages/email/email').then((m) => m.Email) },
   {
     path: 'login-promise',
     loadComponent: () => import('./pages/login-promise/login-promise').then((m) => m.LoginPromise),
@@ -72,5 +79,8 @@ export const routes: Routes = [
       import('./pages/delacc-promise/delacc-promise').then((m) => m.DelaccPromise),
     canActivate: [authGuard],
   },
-  { path: '**', component: NotFound },
+  {
+    path: '**',
+    loadComponent: () => import('./pages/not-found/not-found').then((m) => m.NotFound),
+  },
 ];

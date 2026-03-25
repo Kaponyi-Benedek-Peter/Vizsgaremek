@@ -1,146 +1,37 @@
 import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 import { ToastService } from '../../core/services/toast.service';
-import { ProductWithHelpers, ProductImage } from '../../core/models/product.model';
+import { ProductWithHelpers } from '../../core/models/product.model';
 import { ICONS } from '../../core/constants/visuals';
 import { ResizableTableDirective } from '../../shared/directives/resizable-table.directive';
 import { formatFileSize } from '../../core/utils/image-utils';
-import { environment } from '../../../environments/environment';
 import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS } from './admin.mock';
 
-type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
-
-interface NavItem {
-  id: AdminSection;
-  icon: string;
-  label: string;
-}
-
-interface ImageMeta {
-  name: string;
-  size: string;
-  type: string;
-  width: number;
-  height: number;
-  resolution: string;
-  lastModified: string;
-}
-
-interface GalleryImage {
-  id: string;
-  product_id: string;
-  image_url: string;
-  alt_text_hu: string;
-  alt_text_en: string;
-  alt_text_de: string;
-  sort_id: string;
-  file?: File;
-  objectUrl?: string;
-  meta?: ImageMeta;
-}
-
-interface SearchQuery {
-  column: string | null;
-  value: string;
-}
-
-function parseSearchQuery(raw: string): SearchQuery {
-  const colonIndex = raw.indexOf(':');
-  if (colonIndex > 0 && colonIndex < raw.length - 1) {
-    const column = raw.substring(0, colonIndex).trim().toLowerCase();
-    const value = raw
-      .substring(colonIndex + 1)
-      .trim()
-      .toLowerCase();
-    if (column && value) {
-      return { column, value };
-    }
-  }
-  return { column: null, value: raw.trim().toLowerCase() };
-}
-
-type FieldExtractor<T> = (item: T) => string;
-
-function smartFilter<T>(
-  items: T[],
-  rawQuery: string,
-  columnMap: Record<string, FieldExtractor<T>>,
-): T[] {
-  if (!rawQuery.trim()) return items;
-
-  const { column, value } = parseSearchQuery(rawQuery);
-  if (!value) return items;
-
-  if (column) {
-    const extractor = columnMap[column];
-    if (extractor) {
-      return items.filter((item) => extractor(item).toLowerCase().includes(value));
-    }
-    return items;
-  }
-
-  const extractors = Object.values(columnMap);
-  return items.filter((item) =>
-    extractors.some((extract) => extract(item).toLowerCase().includes(value)),
-  );
-}
-
-const ORDER_COLUMNS: Record<string, FieldExtractor<AdminOrder>> = {
-  id: (o) => o.id,
-  email: (o) => o.email || '',
-  billing: (o) => o.billing_name || '',
-  city: (o) => o.city || '',
-  zip: (o) => o.zipcode || '',
-  address: (o) => o.address || '',
-  phone: (o) => o.phone_number || '',
-  price: (o) => o.price || '',
-  status: (o) => o.order_status || '',
-  note: (o) => o.note || '',
-};
-
-const USER_COLUMNS: Record<string, FieldExtractor<AdminUser>> = {
-  id: (u) => u.id,
-  email: (u) => u.email || '',
-  name: (u) => `${u.last_name} ${u.first_name}`.trim(),
-  firstname: (u) => u.first_name || '',
-  lastname: (u) => u.last_name || '',
-  role: (u) => u.account_state || '',
-  state: (u) => u.account_state || '',
-};
-
-const PRODUCT_COLUMNS: Record<string, FieldExtractor<ProductWithHelpers>> = {
-  id: (p) => p.id || '',
-  name: (p) => p.name || '',
-  brand: (p) => p.brand || '',
-  category: (p) => p.category || '',
-  sku: (p) => p.sku || '',
-  price: (p) => String(p.price ?? ''),
-  stock: (p) => String(p.stockNumber ?? ''),
-  rating: (p) => String(p.ratingNumber ?? ''),
-  status: (p) => (p.inStock ? 'active' : 'inactive'),
-};
-
-type UserActionType = 'change_role' | 'ban' | 'unban' | 'delete';
-
-const ACCOUNT_STATES = ['verified', 'unverified', 'admin', 'superadmin'] as const;
-
-interface UserActionRequest {
-  user: AdminUser;
-  action: UserActionType;
-  newState?: string;
-}
+import {
+  AdminSection,
+  NavItem,
+  ImageMeta,
+  GalleryImage,
+  ProductFormTab,
+  ProductFormData,
+  UserActionType,
+  UserActionRequest,
+  ACCOUNT_STATES,
+  ORDER_COLUMNS,
+  USER_COLUMNS,
+  PRODUCT_COLUMNS,
+} from '../../core/models/admin.models';
+import { emptyProductForm, smartFilter } from '../../core/utils/admin.utils';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, ResizableTableDirective],
+  imports: [RouterModule, FormsModule, TranslateModule, ResizableTableDirective],
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })
@@ -150,7 +41,6 @@ export class Admin implements OnInit {
   private productService = inject(ProductService);
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
-  private http = inject(HttpClient);
   private router = inject(Router);
 
   protected readonly icons = ICONS;
@@ -215,6 +105,18 @@ export class Admin implements OnInit {
   userActionConfirm = signal<UserActionRequest | null>(null);
   userActionLoading = signal(false);
 
+  productFormOpen = signal(false);
+  productFormTab = signal<ProductFormTab>('basic');
+  productFormData = signal<ProductFormData>(emptyProductForm());
+  productFormEditId = signal<string | null>(null);
+  productFormSaving = signal(false);
+  productDeleteConfirm = signal<ProductWithHelpers | null>(null);
+  productDeleteLoading = signal(false);
+
+  productFormIsEdit = computed(() => this.productFormEditId() !== null);
+
+  availableCategories = computed(() => this.productService.categories());
+
   adminName = computed(() => {
     const user = this.authService.currentUser();
     return user ? `${user.firstname} ${user.lastname}`.trim() : 'Admin';
@@ -230,7 +132,7 @@ export class Admin implements OnInit {
     const products = this.productService.products();
 
     const totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0);
-    const lowStock = products.filter((p) => p.stockNumber > 0 && p.stockNumber < 10).length;
+    const lowStock = products.filter((p) => p.stock_number > 0 && p.stock_number < 10).length;
 
     return {
       totalOrders: orders.length,
@@ -246,6 +148,13 @@ export class Admin implements OnInit {
     { id: 'orders', icon: ICONS.order, label: 'admin.nav.orders' },
     { id: 'users', icon: ICONS.customers, label: 'admin.nav.users' },
     { id: 'products', icon: ICONS.sale, label: 'admin.nav.products' },
+  ];
+
+  productFormTabs: { id: ProductFormTab; label: string }[] = [
+    { id: 'basic', label: 'admin.product_form.tab_basic' },
+    { id: 'pricing', label: 'admin.product_form.tab_pricing' },
+    { id: 'descriptions', label: 'admin.product_form.tab_descriptions' },
+    { id: 'details', label: 'admin.product_form.tab_details' },
   ];
 
   filteredOrders = computed(() => {
@@ -487,24 +396,29 @@ export class Admin implements OnInit {
       return;
     }
 
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
     switch (req.action) {
       case 'change_role':
       case 'unban':
-        this.accountService.updateUserStateAdmin(req.user.id, req.newState!).subscribe({
-          next: (res) => {
-            if (res.statuscode === '200') {
-              this.applyUserStateChange(req.user.id, req.newState!);
-              this.toastService.show('admin.user_actions.success', 'success');
-            } else {
+        this.accountService
+          .updateUserStateAdmin(adminId, token, req.user.id, req.newState!, '')
+          .subscribe({
+            next: (res) => {
+              if (res.statuscode === '200') {
+                this.applyUserStateChange(req.user.id, req.newState!);
+                this.toastService.show('admin.user_actions.success', 'success');
+              } else {
+                this.toastService.show('admin.user_actions.error', 'error');
+              }
+              this.finishUserAction();
+            },
+            error: () => {
               this.toastService.show('admin.user_actions.error', 'error');
-            }
-            this.finishUserAction();
-          },
-          error: () => {
-            this.toastService.show('admin.user_actions.error', 'error');
-            this.finishUserAction();
-          },
-        });
+              this.finishUserAction();
+            },
+          });
         break;
 
       case 'ban':
@@ -543,6 +457,203 @@ export class Admin implements OnInit {
         });
         break;
     }
+  }
+
+  requestDeleteProduct(product: ProductWithHelpers, event: MouseEvent): void {
+    event.stopPropagation();
+    this.productDeleteConfirm.set(product);
+  }
+
+  cancelDeleteProduct(): void {
+    this.productDeleteConfirm.set(null);
+  }
+
+  confirmDeleteProduct(): void {
+    const product = this.productDeleteConfirm();
+    if (!product) return;
+
+    this.productDeleteLoading.set(true);
+
+    if (MOCK_MODE) {
+      this.toastService.show('admin.product_form.deleted', 'success');
+      this.productDeleteLoading.set(false);
+      this.productDeleteConfirm.set(null);
+      return;
+    }
+
+    const auth = this.buildAdminAuth();
+
+    this.productService.deleteProductAdmin(auth, product.id).subscribe({
+      next: (res) => {
+        if (res.statuscode === '200') {
+          this.toastService.show('admin.product_form.deleted', 'success');
+          this.loadProducts();
+        } else {
+          this.toastService.show('admin.product_form.delete_error', 'error');
+        }
+        this.productDeleteLoading.set(false);
+        this.productDeleteConfirm.set(null);
+      },
+      error: () => {
+        this.toastService.show('admin.product_form.delete_error', 'error');
+        this.productDeleteLoading.set(false);
+        this.productDeleteConfirm.set(null);
+      },
+    });
+  }
+
+  openProductForm(product?: ProductWithHelpers): void {
+    if (product) {
+      this.productFormEditId.set(product.id);
+      this.productFormData.set({
+        name_hu: product.name_hu || '',
+        name_en: product.name_en || '',
+        name_de: product.name_de || '',
+        description_hu: product.description_hu || product.description_hu || '',
+        description_en: product.description_en || product.description_en || '',
+        description_de: product.description_de || product.description_de || '',
+        description_preview_hu: product.description_preview_hu || '',
+        description_preview_en: product.description_preview_en || '',
+        description_preview_de: product.description_preview_de || '',
+        price_huf: product.price_number || 0,
+        sale_percentage: product.sale_percentage_number || 0,
+        stock: product.stock_number || 0,
+        category_id: product.category_id || '',
+        manufacturer: product.manufacturer || '',
+        brand: product.brand || '',
+        sku: product.sku || '',
+        active_ingredients: product.active_ingredients || product.active_ingredients || '',
+        packaging_hu: product.packaging_hu ?? '',
+        packaging_en: product.packaging_en ?? '',
+        packaging_de: product.packaging_de ?? '',
+        thumbnail_url: product.thumbnail_url || '',
+        featured: product.is_featured || false,
+      });
+    } else {
+      this.productFormEditId.set(null);
+      this.productFormData.set(emptyProductForm());
+    }
+    this.productFormTab.set('basic');
+    this.productFormOpen.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeProductForm(): void {
+    this.productFormOpen.set(false);
+    this.productFormEditId.set(null);
+    this.productFormData.set(emptyProductForm());
+    document.body.style.overflow = '';
+  }
+
+  onProductFormOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('product-form-overlay')) {
+      this.closeProductForm();
+    }
+  }
+
+  setProductFormTab(tab: ProductFormTab): void {
+    this.productFormTab.set(tab);
+  }
+
+  updateProductField<K extends keyof ProductFormData>(key: K, value: ProductFormData[K]): void {
+    this.productFormData.update((data) => ({ ...data, [key]: value }));
+  }
+
+  toggleProductFeatured(): void {
+    this.productFormData.update((data) => ({ ...data, featured: !data.featured }));
+  }
+
+  saveProduct(): void {
+    const data = this.productFormData();
+    const editId = this.productFormEditId();
+
+    if (!data.name_en.trim()) {
+      this.toastService.show('admin.product_form.error_name_required', 'error');
+      this.productFormTab.set('basic');
+      return;
+    }
+
+    this.productFormSaving.set(true);
+
+    if (MOCK_MODE) {
+      this.toastService.show(
+        editId ? 'admin.product_form.updated' : 'admin.product_form.created',
+        'success',
+      );
+      this.productFormSaving.set(false);
+      this.closeProductForm();
+      this.loadProducts();
+      return;
+    }
+
+    const body = this.buildProductApiBody(data, editId);
+
+    this.productService.saveProductAdmin(body, !!editId).subscribe({
+      next: (res) => {
+        if (res.statuscode === '200') {
+          this.toastService.show(
+            editId ? 'admin.product_form.updated' : 'admin.product_form.created',
+            'success',
+          );
+          this.closeProductForm();
+          this.loadProducts();
+        } else {
+          this.toastService.show('admin.product_form.save_error', 'error');
+        }
+        this.productFormSaving.set(false);
+      },
+      error: () => {
+        this.toastService.show('admin.product_form.save_error', 'error');
+        this.productFormSaving.set(false);
+      },
+    });
+  }
+
+  private buildProductApiBody(
+    data: ProductFormData,
+    editId: string | null,
+  ): Record<string, string | number> {
+    const auth = this.buildAdminAuth();
+    const body: Record<string, string | number> = {
+      ...auth,
+      name_hu: btoa(data.name_hu),
+      name_en: btoa(data.name_en),
+      name_de: btoa(data.name_de),
+      description_hu: btoa(data.description_hu),
+      description_en: btoa(data.description_en),
+      description_de: btoa(data.description_de),
+      description_preview_hu: btoa(data.description_preview_hu),
+      description_preview_en: btoa(data.description_preview_en),
+      description_preview_de: btoa(data.description_preview_de),
+      price_huf: data.price_huf,
+      sale_percentage: data.sale_percentage,
+      stock: data.stock,
+      category_id: btoa(data.category_id),
+      manufacturer: btoa(data.manufacturer),
+      brand: btoa(data.brand),
+      sku: btoa(data.sku),
+      active_ingredients: btoa(data.active_ingredients),
+      packaging_hu: btoa(data.packaging_hu),
+      packaging_en: btoa(data.packaging_en),
+      packaging_de: btoa(data.packaging_de),
+      thumbnail_url: btoa(data.thumbnail_url),
+      featured: data.featured ? 1 : 0,
+    };
+
+    if (editId) {
+      body['product_id'] = btoa(editId);
+    }
+
+    return body;
+  }
+
+  private buildAdminAuth(): { id: string; session_token: string } {
+    const storedId = sessionStorage.getItem('user_id') ?? '';
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+    return {
+      id: btoa(storedId),
+      session_token: btoa(token),
+    };
   }
 
   private executeMockUserAction(req: UserActionRequest): void {
@@ -611,6 +722,7 @@ export class Admin implements OnInit {
   }
 
   openGallery(product: ProductWithHelpers): void {
+    this.productService.invalidateImageCache();
     this.galleryProduct.set(product);
     this.galleryImages.set([]);
     this.galleryOpen.set(true);
@@ -758,39 +870,52 @@ export class Admin implements OnInit {
 
   private uploadImageToBackend(productId: string, file: File, tempId: string): void {
     this.uploadInProgress.set(true);
+    const adminId = sessionStorage.getItem('user_id') ?? '';
+    const adminSessionToken =
+      this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
 
-    const body = {
-      product_id: btoa(productId),
-      image: btoa(file.name),
-      is_transparent: this.uploadTransparent() ? 1 : 0,
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageBase64 = reader.result as string;
+
+      this.productService
+        .uploadProductImageAdmin(
+          adminId,
+          adminSessionToken,
+          productId,
+          imageBase64,
+          this.uploadTransparent(),
+        )
+        .subscribe({
+          next: (res) => {
+            if (res.statuscode === '200' && res.image) {
+              this.galleryImages.update((imgs) =>
+                imgs.map((img) =>
+                  img.id === tempId
+                    ? {
+                        ...img,
+                        id: res.image!.id,
+                        image_url: res.image!.image_url,
+                        file: undefined,
+                      }
+                    : img,
+                ),
+              );
+              this.productService.invalidateImageCache();
+            }
+            this.uploadInProgress.set(false);
+          },
+          error: (err) => {
+            console.error('Image upload failed:', err);
+            this.uploadInProgress.set(false);
+          },
+        });
     };
-
-    // TODO: endpoint: POST /api/upload_product_image_admin
-    // this.http
-    //   .post<{ statuscode: string; status: string; image?: ProductImage }>(
-    //     `${environment.baseURL}/api/upload_product_image_admin`,
-    //     body,
-    //   )
-    //   .subscribe({
-    //     next: (res) => {
-    //       if (res.statuscode === '200' && res.image) {
-    //         this.galleryImages.update((imgs) =>
-    //           imgs.map((img) =>
-    //             img.id === tempId
-    //               ? { ...img, id: res.image!.id, image_url: res.image!.image_url, file: undefined }
-    //               : img,
-    //           ),
-    //         );
-    //       }
-    //       this.uploadInProgress.set(false);
-    //     },
-    //     error: (err) => {
-    //       console.error('Image upload failed:', err);
-    //       this.uploadInProgress.set(false);
-    //     },
-    //   });
-
-    this.uploadInProgress.set(false);
+    reader.onerror = () => {
+      console.error('Failed to read file:', file.name);
+      this.uploadInProgress.set(false);
+    };
+    reader.readAsDataURL(file);
   }
 
   requestDeleteImage(image: GalleryImage, event: MouseEvent): void {
@@ -801,14 +926,39 @@ export class Admin implements OnInit {
 
   confirmDeleteImage(): void {
     const target = this.deleteTargetImage();
-    if (!target) return;
+    const product = this.galleryProduct();
+    if (!target || !product) return;
 
-    if (target.objectUrl) {
-      URL.revokeObjectURL(target.objectUrl);
+    if (target.id.startsWith('new-')) {
+      if (target.objectUrl) URL.revokeObjectURL(target.objectUrl);
+      this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+      this.cancelDeleteImage();
+      return;
     }
 
-    this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
-    this.cancelDeleteImage();
+    const adminId = sessionStorage.getItem('user_id') ?? '';
+    const adminSessionToken =
+      this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    this.productService
+      .deleteProductImageAdmin(adminId, adminSessionToken, product.id, target.id)
+      .subscribe({
+        next: (res) => {
+          if (res.statuscode === '200') {
+            if (target.objectUrl) URL.revokeObjectURL(target.objectUrl);
+            this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+            this.productService.invalidateImageCache();
+            this.toastService.show('admin.gallery.image_deleted', 'success');
+          } else {
+            this.toastService.show('admin.gallery.delete_error', 'error');
+          }
+          this.cancelDeleteImage();
+        },
+        error: () => {
+          this.toastService.show('admin.gallery.delete_error', 'error');
+          this.cancelDeleteImage();
+        },
+      });
   }
 
   cancelDeleteImage(): void {

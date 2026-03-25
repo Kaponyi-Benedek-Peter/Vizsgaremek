@@ -16,12 +16,12 @@ export interface ReviewsApiResponse {
 }
 
 export interface ReviewWithHelpers extends Review {
-  ratingNumber: number;
+  rating_number: number;
 }
 
 export function enrichReview(review: Review): ReviewWithHelpers {
   return {
     ...review,
-    ratingNumber: parseFloat(review.rating?.replace(',', '.')) || 0,
+    rating_number: parseFloat(review.rating?.replace(',', '.')) || 0,
   };
 }

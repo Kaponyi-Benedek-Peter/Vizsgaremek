@@ -373,7 +373,9 @@
     "increase_quantity": "Increase quantity",
     "not_found": "Product not found",
     "not_found_desc": "The product you are looking for does not exist or has been removed.",
-    "back_to_products": "Back to products"
+    "back_to_products": "Back to products",
+    "image_deleted": "Image deleted successfully",
+    "delete_error": "Failed to delete image"
   },
   "common": {
     "next_page": "Next page",
@@ -393,7 +395,9 @@
     "clear": "Clear",
     "cancel": "Cancel",
     "scroll_right": "Scroll right",
-    "added_to_cart": "Added to cart"
+    "added_to_cart": "Added to cart",
+    "edit": "Edit",
+    "added": "Added!"
   },
   "home": {
     "featured": {
@@ -535,6 +539,40 @@
       "deleted": "User has been deleted.",
       "error": "Action failed. Please try again."
     },
+    "product_form": {
+      "add": "Add Product",
+      "add_title": "New Product",
+      "edit_title": "Edit Product",
+      "save": "Save Changes",
+      "create": "Create Product",
+      "delete": "Delete Product",
+      "tab_basic": "Basic",
+      "tab_pricing": "Pricing",
+      "tab_descriptions": "Descriptions",
+      "tab_details": "Details",
+      "names": "Product Names",
+      "name_hu": "Name (HU)",
+      "name_en": "Name (EN)",
+      "name_de": "Name (DE)",
+      "identification": "Identification",
+      "manufacturer": "Manufacturer",
+      "thumbnail_url": "Thumbnail URL",
+      "price_huf": "Price (HUF)",
+      "sale_pct": "Discount %",
+      "previews": "Preview Descriptions",
+      "full_descriptions": "Full Descriptions",
+      "active_ingredients": "Active Ingredients",
+      "packaging": "Packaging",
+      "featured": "Featured Product",
+      "confirm_delete_title": "Delete Product",
+      "confirm_delete_text": "Permanently delete \"{{name}}\"? This cannot be undone.",
+      "created": "Product created successfully.",
+      "updated": "Product updated successfully.",
+      "deleted": "Product deleted successfully.",
+      "save_error": "Failed to save product.",
+      "delete_error": "Failed to delete product.",
+      "error_name_required": "Product name (EN) is required."
+    },
     "stats": {
       "this_week": "this week",
       "low_stock": "low stock",
@@ -603,7 +641,8 @@
     "filters": "Filters",
     "advanced_filters": "Advanced filters",
     "toggle_filters": "Toggle filters",
-    "sort_by": "Sort by"
+    "sort_by": "Sort by",
+    "search_placeholder": "Search products..."
   },
   "checkout": {
     "invalid_phone": "Please enter a valid phone number.",
@@ -634,7 +673,14 @@
     "house_number_placeholder": "e.g. 42",
     "phone": "Phone Number",
     "note": "Order Notes",
-    "phone_placeholder": "+36 30 123 4567"
+    "phone_placeholder": "+36 30 123 4567",
+    "guest_notice": "You are checking out as a guest. Enter your email and name so we can send you the order confirmation.",
+    "email": "Email address",
+    "email_placeholder": "your@email.com",
+    "billing_name": "Full name",
+    "billing_name_placeholder": "John Doe",
+    "guest_fields_required": "Email and name are required for guest checkout.",
+    "invalid_email": "Please enter a valid email address."
   },
   "header": {
     "my_orders": "My Orders",

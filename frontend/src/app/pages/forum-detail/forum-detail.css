@@ -25,7 +25,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Hero image */
@@ -68,7 +70,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: var(--space-4);
-  background: rgba(6, 122, 69, 0.1);
+  background: var(--color-success-light);
   color: var(--color-primary);
 }
 
@@ -431,7 +433,7 @@
 .btn-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255,255,255,0.4);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;

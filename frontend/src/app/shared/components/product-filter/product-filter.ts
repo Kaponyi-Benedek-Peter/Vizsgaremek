@@ -1,6 +1,17 @@
-import { Component, computed, EventEmitter, Output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  EventEmitter,
+  inject,
+  Output,
+  signal,
+  DestroyRef,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ProductFilterOptions, SortOption } from '../../../core/models/product.model';
-import { CommonModule } from '@angular/common';
+import { ICONS } from '../../../core/constants/visuals';
+
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -8,13 +19,14 @@ interface FilterState {
   categories: string[];
   priceMin: number | null;
   priceMax: number | null;
-  inStockOnly: boolean;
-  sortBy: SortOption;
+  in_stock_only: boolean;
+  sort_by: SortOption;
+  search_query: string;
 }
 
 @Component({
   selector: 'app-product-filter',
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [FormsModule, TranslateModule],
   templateUrl: './product-filter.html',
   styleUrl: './product-filter.css',
 })
@@ -22,12 +34,18 @@ export class ProductFilter {
   @Output() filterChanged = new EventEmitter<ProductFilterOptions>();
   @Output() clearFilters = new EventEmitter<void>();
 
+  protected readonly icons = ICONS;
+
+  private destroyRef = inject(DestroyRef);
+  private searchSubject = new Subject<string>();
+
   filterState = signal<FilterState>({
     categories: [],
     priceMin: null,
     priceMax: null,
-    inStockOnly: false,
-    sortBy: 'popularity',
+    in_stock_only: false,
+    sort_by: 'popularity',
+    search_query: '',
   });
 
   isExpanded = signal(false);
@@ -48,22 +66,42 @@ export class ProductFilter {
       state.categories.length > 0 ||
       state.priceMin !== null ||
       state.priceMax !== null ||
-      state.inStockOnly ||
-      state.sortBy !== 'popularity'
+      state.in_stock_only ||
+      state.sort_by !== 'popularity'
     );
   });
+
+  hasSearchQuery = computed(() => this.filterState().search_query.trim().length > 0);
+
+  constructor() {
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((query) => {
+        this.filterState.update((state) => ({ ...state, search_query: query }));
+        this.emitFilters();
+      });
+  }
+
+  handleSearchInput(value: string): void {
+    this.searchSubject.next(value);
+  }
+
+  clearSearch(): void {
+    this.filterState.update((state) => ({ ...state, search_query: '' }));
+    this.emitFilters();
+  }
 
   toggleExpanded(): void {
     this.isExpanded.update((v) => !v);
   }
 
-  updateSortBy(sortBy: SortOption): void {
-    this.filterState.update((state) => ({ ...state, sortBy }));
+  updateSortBy(sort_by: SortOption): void {
+    this.filterState.update((state) => ({ ...state, sort_by }));
     this.emitFilters();
   }
 
   updateInStockOnly(): void {
-    this.filterState.update((state) => ({ ...state, inStockOnly: !state.inStockOnly }));
+    this.filterState.update((state) => ({ ...state, in_stock_only: !state.in_stock_only }));
     this.emitFilters();
   }
 
@@ -88,8 +126,9 @@ export class ProductFilter {
       categories: [],
       priceMin: null,
       priceMax: null,
-      inStockOnly: false,
-      sortBy: 'popularity',
+      in_stock_only: false,
+      sort_by: 'popularity',
+      search_query: '',
     });
     this.clearFilters.emit();
   }
@@ -98,12 +137,13 @@ export class ProductFilter {
     const state = this.filterState();
     const filters: ProductFilterOptions = {
       categories: state.categories,
-      priceRange:
+      price_range:
         state.priceMin !== null || state.priceMax !== null
           ? { min: state.priceMin ?? 0, max: state.priceMax ?? Infinity }
           : null,
-      inStockOnly: state.inStockOnly,
-      sortBy: state.sortBy,
+      in_stock_only: state.in_stock_only,
+      sort_by: state.sort_by,
+      search_query: state.search_query.trim() || undefined,
     };
 
     this.filterChanged.emit(filters);

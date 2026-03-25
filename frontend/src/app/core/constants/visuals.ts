@@ -127,8 +127,8 @@ export const ICONS = {
 
   // ── Forum / Blog ──────────────────────────────────────────────────────────
   forumSearch: `${ASSETS}/assets/icons/forum/search.webp`,
-  forumNewPost: `${ASSETS}/assets/icons/forum/new-post.webp`,
-  forumReadingTime: `${ASSETS}/assets/icons/forum/reading-time.webp`,
+  forumNewPost: `${ASSETS}/assets/icons/forum/new_post.webp`,
+  forumReadingTime: `${ASSETS}/assets/icons/forum/reading_time_white.webp`,
   forumDate: `${ASSETS}/assets/icons/forum/date.webp`,
   forumRetry: `${ASSETS}/assets/icons/forum/retry.webp`,
 
@@ -148,10 +148,10 @@ export const ICONS = {
   categoryDefault: `${ASSETS}/assets/icons/categories/default.webp`,
   categoryAll: `${ASSETS}/assets/icons/categories/all.webp`,
   categoryMedicines: `${ASSETS}/assets/icons/categories/medicines.webp`,
-  categoryNaturalRemedies: `${ASSETS}/assets/icons/categories/natural-remedies.webp`,
-  categoryBabyMother: `${ASSETS}/assets/icons/categories/baby-mother.webp`,
-  categoryLifestyle: `${ASSETS}/assets/icons/categories/healthy-lifestyle.webp`,
-  categorySeasonalHealth: `${ASSETS}/assets/icons/categories/seasonal-health.webp`,
+  categoryNaturalRemedies: `${ASSETS}/assets/icons/categories/natural_remedies.webp`,
+  categoryBabyMother: `${ASSETS}/assets/icons/categories/baby_mother.webp`,
+  categoryLifestyle: `${ASSETS}/assets/icons/categories/healthy_lifestyle.webp`,
+  categorySeasonalHealth: `${ASSETS}/assets/icons/categories/seasonal_health.webp`,
   categoryQa: `${ASSETS}/assets/icons/categories/qa.webp`,
   categoryGeneral: `${ASSETS}/assets/icons/categories/general.webp`,
 } as const;
@@ -187,9 +187,9 @@ export const IMAGES = {
   productDefault: PLACEHOLDERS.product(400, 400, 'Termék'),
 
   // ── Empty / error state illustrations ─────────────────────────────────────
-  stateError: `${ASSETS}/assets/images/states/error.webp`,
-  stateEmptyForum: `${ASSETS}/assets/images/states/empty-forum.webp`,
-  stateNoResults: `${ASSETS}/assets/images/states/no-results.webp`,
+  stateError: `${ASSETS}/assets/icons/states/error.webp`,
+  stateEmptyForum: `${ASSETS}/assets/icons/states/empty_forum.webp`,
+  stateNoResults: `${ASSETS}/assets/icons/states/no_results.webp`,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════

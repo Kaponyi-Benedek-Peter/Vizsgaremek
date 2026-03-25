@@ -19,9 +19,9 @@
       <img [src]="post.image_url" [alt]="post.title" loading="lazy" />
 
       @if (showCategory && categoryInfo) {
-        <div class="category-badge-overlay" [class]="categoryInfo.colorClass">
-          <img [src]="categoryInfo.iconSrc" [alt]="categoryInfo.displayName" class="badge-icon" />
-          <span class="category-name">{{ categoryInfo.displayName }}</span>
+        <div class="category-badge-overlay" [class]="categoryInfo.color_class">
+          <img [src]="categoryInfo.icon_src" [alt]="categoryInfo.display_name" class="badge-icon" />
+          <span class="category-name">{{ categoryInfo.display_name }}</span>
         </div>
       }
     </div>
@@ -30,9 +30,9 @@
   <div class="post-content">
     <div class="post-header">
       @if (showCategory && categoryInfo && !post.image_url) {
-        <div class="category-badge-inline" [class]="categoryInfo.colorClass">
-          <img [src]="categoryInfo.iconSrc" [alt]="categoryInfo.displayName" class="badge-icon" />
-          <span class="category-name">{{ categoryInfo.displayName }}</span>
+        <div class="category-badge-inline" [class]="categoryInfo.color_class">
+          <img [src]="categoryInfo.icon_src" [alt]="categoryInfo.display_name" class="badge-icon" />
+          <span class="category-name">{{ categoryInfo.display_name }}</span>
         </div>
       }
 

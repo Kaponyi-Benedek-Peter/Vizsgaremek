@@ -38,10 +38,23 @@
 
   --color-accent: var(--color-cyan);
   --color-accent-bright: var(--color-blue-bright);
+
+  /* Status Colors - Light Theme */
   --color-success: var(--color-green-primary);
+  --color-success-hover: var(--color-green-dark);
+  --color-success-light: rgba(6, 122, 69, 0.1);
+
   --color-error: #dc2626;
+  --color-error-hover: #b91c1c;
+  --color-error-light: rgba(220, 38, 38, 0.1);
+
   --color-warning: #f59e0b;
-  --color-info: var(--color-blue-bright);
+  --color-warning-hover: #d97706;
+  --color-warning-light: rgba(245, 158, 11, 0.1);
+
+  --color-info: #2563eb;
+  --color-info-hover: #1d4ed8;
+  --color-info-light: rgba(37, 99, 235, 0.1);
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -112,11 +125,13 @@
 
   /* Z-index layers */
   --z-base: 1;
-  --z-dropdown: 1;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
+  --z-above: 2;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 500;
+  --z-modal-backdrop: 1000;
   --z-modal: 1050;
   --z-popover: 1060;
   --z-tooltip: 1070;
+  --z-toast: 9999;
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
@@ -8,11 +8,12 @@ import { ToastService } from '../../core/services/toast.service';
 @Component({
   selector: 'app-password-reset',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [RouterModule, TranslateModule],
   templateUrl: './password-reset.html',
   styleUrl: './password-reset.css',
 })
 export class PasswordReset implements OnInit {
+  private router = inject(Router);
   private location = inject(Location);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
@@ -21,8 +22,6 @@ export class PasswordReset implements OnInit {
   isProcessing = signal(false);
   isSuccess = signal(false);
   errorMessage = signal('');
-
-  constructor(private router: Router) {}
 
   ngOnInit(): void {
     const raw = new URLSearchParams(window.location.search).get('chpass') || '';

@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, Input, OnInit } from '@angular/core';
+import { Directive, ElementRef, HostListener, Input, OnInit, inject } from '@angular/core';
 
 export type AnimationType =
   | 'fade'
@@ -20,9 +20,8 @@ export class ScrollRevealDirective implements OnInit {
   @Input() threshold: number = 0.1;
   @Input() autoPlay: boolean = false;
 
+  private el = inject(ElementRef);
   private hasAnimated = false;
-
-  constructor(private el: ElementRef) {}
 
   ngOnInit(): void {
     this.setupElement();

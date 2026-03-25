@@ -17,6 +17,7 @@ import {
   ApiErrorResponse,
   UserState,
   PasswordChangePromise,
+  JWTPayload,
 } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
@@ -107,10 +108,13 @@ export class AuthService {
       return of({ account_state: '', statuscode: '401', status: 'no_id' });
     }
 
-    return this.http.post<any>(`${this.API_URL}/api/get_user_state`, {
-      id: btoa(id),
-      session_token: btoa(sessionToken),
-    });
+    return this.http.post<{ account_state: string; statuscode: string; status: string }>(
+      `${this.API_URL}/api/get_user_state`,
+      {
+        id: btoa(id),
+        session_token: btoa(sessionToken),
+      },
+    );
   }
 
   checkUserStateGuard(): Observable<boolean> {
@@ -334,7 +338,7 @@ export class AuthService {
         responseType: 'text' as 'json',
       })
       .pipe(
-        tap((body: any) => {
+        tap((body: unknown) => {
           try {
             const response = (typeof body === 'string' ? JSON.parse(body) : body) as LoginResponse;
             if (response?.jwt_token) {
@@ -429,7 +433,7 @@ export class AuthService {
     return this.getStoredToken() !== null;
   }
 
-  private decodeJWT(token: string): any {
+  private decodeJWT(token: string): JWTPayload | null {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -463,18 +467,26 @@ export class AuthService {
       const decoded = this.decodeJWT(jwtToken);
       if (decoded) {
         userData = {
-          id: decoded.sub || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+          id:
+            decoded.sub ||
+            decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ||
+            '',
           email:
             decoded.email ||
-            decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-          firstname: decoded.firstname || '',
-          lastname: decoded.lastname || '',
+            decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ||
+            '',
+          firstname: (decoded.firstname as string) || '',
+          lastname: (decoded.lastname as string) || '',
         };
       }
     }
 
     const id = response.user_id ?? userData?.id ?? '';
     const role = response.user_state;
+
+    if (userData && userData.id !== id) {
+      userData = { ...userData, id };
+    }
 
     this.clearStorage();
     this.storeRole(role, stayLoggedIn);

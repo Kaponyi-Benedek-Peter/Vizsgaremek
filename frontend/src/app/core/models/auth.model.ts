@@ -103,6 +103,8 @@ export interface JWTPayload {
   sub?: string;
   email?: string;
   name?: string;
+  firstname?: string;
+  lastname?: string;
   exp?: number;
   iat?: number;
   iss?: string;
@@ -110,4 +112,5 @@ export interface JWTPayload {
   jti?: string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'?: string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string;
+  [key: string]: unknown;
 }

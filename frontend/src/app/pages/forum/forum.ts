@@ -1,5 +1,4 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -13,12 +12,12 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 @Component({
   selector: 'app-forum',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule, PostCardComponent],
+  imports: [RouterModule, FormsModule, TranslateModule, PostCardComponent],
   templateUrl: './forum.html',
   styleUrl: './forum.css',
 })
 export class Forum implements OnInit {
-  searchQuery = signal('');
+  search_query = signal('');
   selectedCategory = signal<PostCategory | 'all'>('all');
   selectedSort = signal<SortOption>('newest');
 
@@ -27,13 +26,12 @@ export class Forum implements OnInit {
 
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
+  forumService = inject(ForumService);
 
   isAuthenticated = computed(() => this.authService.isAuthenticated());
 
-  constructor(public forumService: ForumService) {}
-
   posts = computed(() => this.forumService.paginatedPosts());
-  totalPages = computed(() => this.forumService.totalPages());
+  total_pages = computed(() => this.forumService.total_pages());
   categories = computed(() => this.forumService.categories());
 
   sortOptions: { value: SortOption; translateKey: string }[] = [
@@ -50,8 +48,7 @@ export class Forum implements OnInit {
 
   applySearch(): void {
     const filters: PostFilters = {
-      search_query: this.searchQuery() || undefined,
-      // category_id alapján szűr (nem category — az nem létezik a Post modellben)
+      search_query: this.search_query() || undefined,
       category_id:
         this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
     };
@@ -63,18 +60,18 @@ export class Forum implements OnInit {
     this.applySearch();
   }
 
-  changeSort(sortBy: SortOption): void {
-    this.selectedSort.set(sortBy);
-    this.forumService.setSorting(sortBy);
+  changeSort(sort_by: SortOption): void {
+    this.selectedSort.set(sort_by);
+    this.forumService.setSorting(sort_by);
   }
 
   clearSearch(): void {
-    this.searchQuery.set('');
+    this.search_query.set('');
     this.applySearch();
   }
 
   resetFilters(): void {
-    this.searchQuery.set('');
+    this.search_query.set('');
     this.selectedCategory.set('all');
     this.forumService.setFilters({});
   }
@@ -85,18 +82,18 @@ export class Forum implements OnInit {
   }
 
   previousPage(): void {
-    const current = this.forumService.currentPage();
+    const current = this.forumService.current_page();
     if (current > 1) this.goToPage(current - 1);
   }
 
   nextPage(): void {
-    const current = this.forumService.currentPage();
-    if (current < this.totalPages()) this.goToPage(current + 1);
+    const current = this.forumService.current_page();
+    if (current < this.total_pages()) this.goToPage(current + 1);
   }
 
   getPageNumbers(): number[] {
-    const current = this.forumService.currentPage();
-    const total = this.totalPages();
+    const current = this.forumService.current_page();
+    const total = this.total_pages();
     const pages: number[] = [];
 
     pages.push(1);

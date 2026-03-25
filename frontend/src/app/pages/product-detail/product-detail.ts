@@ -1,10 +1,10 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers, ProductImage, enrichProduct } from '../../core/models/product.model';
 import { ReviewWithHelpers } from '../../core/models/review.model';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 import { ReviewService } from '../../core/services/review.service';
 import { CartService } from '../../core/services/cart.service';
 import { CurrencyService } from '../../core/services/currency.service';
@@ -17,7 +17,7 @@ import { ICONS } from '../../core/constants/visuals';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, TranslateModule, RouterLink],
+  imports: [DatePipe, TranslateModule, RouterLink],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
 })
@@ -53,7 +53,7 @@ export class ProductDetail implements OnInit, OnDestroy {
     () => this.product() !== null && this.selectedImageIndex() < this.product()!.images.length - 1,
   );
 
-  reviewCount = computed(() => this.reviews().length);
+  review_count = computed(() => this.reviews().length);
 
   get images(): string[] {
     return this.product()?.images ?? [];
@@ -63,8 +63,8 @@ export class ProductDetail implements OnInit, OnDestroy {
     return this.images[this.selectedImageIndex()] ?? '';
   }
 
-  get hasDiscount(): boolean {
-    return this.product()?.hasDiscount ?? false;
+  get has_discount(): boolean {
+    return this.product()?.has_discount ?? false;
   }
 
   formattedPrice = computed(() => {
@@ -88,7 +88,7 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   get canAddToCart(): boolean {
     const p = this.product();
-    return !!(p?.inStock && !p?.requiresPrescription && this.quantity() <= p.stockQuantity);
+    return !!(p?.in_stock && !p?.requires_prescription && this.quantity() <= p.stock_quantity);
   }
 
   get categoryName(): string {
@@ -144,8 +144,6 @@ export class ProductDetail implements OnInit, OnDestroy {
       const lang = this.currentLang();
       this.product.set(enrichProduct(rawProduct, lang, images));
       this.selectedImageIndex.set(0);
-
-      console.log(`Loaded ${images.length} gallery images for product ${productId}`);
     } catch (err) {
       console.warn('Could not load gallery images, thumbnail will be used', err);
     }
@@ -161,8 +159,8 @@ export class ProductDetail implements OnInit, OnDestroy {
     }
   }
 
-  getRatingStars(ratingNumber?: number): string {
-    const rating = ratingNumber ?? this.product()?.ratingNumber ?? 0;
+  getRatingStars(rating_number?: number): string {
+    const rating = rating_number ?? this.product()?.rating_number ?? 0;
     if (!rating) return '';
     const full = Math.floor(rating);
     const half = rating % 1 >= 0.5;
@@ -188,7 +186,7 @@ export class ProductDetail implements OnInit, OnDestroy {
 
   increaseQuantity(): void {
     const p = this.product();
-    if (p && this.quantity() < p.stockQuantity) {
+    if (p && this.quantity() < p.stock_quantity) {
       this.quantity.update((q) => q + 1);
     }
   }

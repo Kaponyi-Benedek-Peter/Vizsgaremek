@@ -21,7 +21,6 @@ export interface Product {
   stock: string;
   times_ordered: string;
 
-  // Backend sends category_id; older mock data may use category
   category_id?: string;
   category?: string;
 
@@ -30,7 +29,9 @@ export interface Product {
   rating: string;
   sku: string;
   active_ingredients: string;
-  packaging: string;
+  packaging_hu: string;
+  packaging_en: string;
+  packaging_de: string;
 
   thumbnail_url: string;
 
@@ -40,9 +41,17 @@ export interface Product {
   updated_at: string;
 }
 
-// ─── Raw backend shape ───────────────────────────────────────────────────────
-// Matches the product_categories table:
-//   id, category_en, category_hu, category_de, emoji, color, number_of_products
+export interface ProductImageGroup {
+  name: string;
+  files: string[];
+}
+
+export interface AllProductImagesApiResponse {
+  status: string;
+  statuscode: number | string;
+  images: ProductImageGroup[];
+}
+
 export interface ProductCategory {
   id: string;
   category_en: string;
@@ -53,7 +62,6 @@ export interface ProductCategory {
   number_of_products: string;
 }
 
-// ─── Frontend-friendly shape used by components ──────────────────────────────
 export interface Category {
   id: string;
   name_hu: string;
@@ -61,14 +69,9 @@ export interface Category {
   name_de: string;
   icon: string;
   color: string;
-  count: number; // computed from actual products, NOT from number_of_products
+  count: number;
 }
 
-/**
- * Maps a raw ProductCategory from the API to the frontend Category shape.
- * `count` is intentionally 0 here – ProductService.categories computed
- * signal overrides it with the real product count derived from allProductsSignal.
- */
 export function mapProductCategory(raw: ProductCategory): Category {
   return {
     id: raw.id,
@@ -110,34 +113,28 @@ export interface ProductImagesApiResponse {
 }
 
 export interface ProductWithHelpers extends Product {
-  priceNumber: number;
-  stockNumber: number;
-  salePercentageNumber: number;
-  ratingNumber: number;
+  price_number: number;
+  stock_number: number;
+  sale_percentage_number: number;
+  rating_number: number;
 
-  inStock: boolean;
-  hasDiscount: boolean;
-  requiresPrescription: boolean;
-  isFeatured: boolean;
+  in_stock: boolean;
+  has_discount: boolean;
+  requires_prescription: boolean;
+  is_featured: boolean;
 
   price: number;
-  discountPercentage: number;
-  stockQuantity: number;
-  reviewCount: number;
+  discount_percentage: number;
+  stock_quantity: number;
+  review_count: number;
 
   category: string;
 
-  nameHu: string;
-  nameEn: string;
-  nameDe: string;
-
+  // Language-resolved computed fields
   description: string;
-  descriptionHu: string;
-  descriptionEn: string;
-  descriptionDe: string;
-  activeIngredients: string;
+  packaging: string;
 
-  imageUrl: string;
+  image_url: string;
   images: string[];
 
   dosage?: string;
@@ -156,99 +153,97 @@ export type SortOption =
 
 export interface ProductFilterOptions {
   categories?: string[];
-  priceRange?: { min: number; max: number } | null;
-  minPrice?: number;
-  maxPrice?: number;
-  inStockOnly?: boolean;
-  hasDiscount?: boolean;
-  sortBy?: SortOption;
-  searchQuery?: string;
+  price_range?: { min: number; max: number } | null;
+  min_price?: number;
+  max_price?: number;
+  in_stock_only?: boolean;
+  has_discount?: boolean;
+  sort_by?: SortOption;
+  search_query?: string;
   manufacturers?: string[];
   brands?: string[];
+  search?: string;
 }
 
 export interface PaginationConfig {
-  currentPage: number;
-  itemsPerPage: number;
-  totalItems: number;
-  totalPages: number;
+  current_page: number;
+  items_per_page: number;
+  total_items: number;
+  total_pages: number;
 }
 
 export function enrichProduct(
   product: Product,
-  currentLang: 'hu' | 'en' | 'de' = 'hu',
-  galleryImages: ProductImage[] = [],
+  current_lang: 'hu' | 'en' | 'de' = 'hu',
+  gallery_images: ProductImage[] = [],
 ): ProductWithHelpers {
-  const priceNumber = parseFloat(product.price_huf?.replace(',', '.')) || 0;
-  const stockNumber = parseInt(product.stock) || 0;
-  const salePercentageNumber = parseFloat(product.sale_percentage?.replace(',', '.')) || 0;
-  const ratingNumber = parseFloat(product.rating?.replace(',', '.')) || 0;
+  const price_number = parseFloat(product.price_huf?.replace(',', '.')) || 0;
+  const stock_number = parseInt(product.stock) || 0;
+  const sale_percentage_number = parseFloat(product.sale_percentage?.replace(',', '.')) || 0;
+  const rating_number = parseFloat(product.rating?.replace(',', '.')) || 0;
 
-  const inStock = stockNumber > 0;
-  const hasDiscount = salePercentageNumber > 0;
-  const requiresPrescription = false;
-  const isFeatured = product.featured === '1';
+  const in_stock = stock_number > 0;
+  const has_discount = sale_percentage_number > 0;
+  const requires_prescription = false;
+  const is_featured = product.featured === '1';
 
-  const discountedPrice = hasDiscount
-    ? priceNumber * (1 - salePercentageNumber / 100)
-    : priceNumber;
+  const discounted_price = has_discount
+    ? price_number * (1 - sale_percentage_number / 100)
+    : price_number;
 
   let name = product.name || '';
   let description = '';
+  let packaging = '';
 
-  switch (currentLang) {
+  switch (current_lang) {
     case 'hu':
       name = product.name_hu || product.name;
       description = product.description_hu || '';
+      packaging = product.packaging_hu || '';
       break;
     case 'en':
       name = product.name_en || product.name;
       description = product.description_en || '';
+      packaging = product.packaging_en || '';
       break;
     case 'de':
       name = product.name_de || product.name;
       description = product.description_de || '';
+      packaging = product.packaging_de || '';
       break;
   }
 
-  const imageUrl = product.thumbnail_url || '';
+  const image_url = product.thumbnail_url || '';
   const images =
-    galleryImages.length > 0
-      ? galleryImages
+    gallery_images.length > 0
+      ? gallery_images
           .sort((a, b) => parseInt(a.sort_id) - parseInt(b.sort_id))
           .map((img) => img.image_url)
-      : imageUrl
-        ? [imageUrl]
+      : image_url
+        ? [image_url]
         : [];
 
-  const resolvedCategory = product.category_id ?? product.category ?? '';
+  const resolved_category = product.category_id ?? product.category ?? '';
 
   return {
     ...product,
     name,
-    priceNumber,
-    stockNumber,
-    salePercentageNumber,
-    ratingNumber,
-    inStock,
-    hasDiscount,
-    requiresPrescription,
-    isFeatured,
-    price: discountedPrice,
-    discountPercentage: salePercentageNumber,
-    stockQuantity: stockNumber,
-    reviewCount: 0,
-
-    category: resolvedCategory,
-    nameHu: product.name_hu,
-    nameEn: product.name_en,
-    nameDe: product.name_de,
+    price_number,
+    stock_number,
+    sale_percentage_number,
+    rating_number,
+    in_stock,
+    has_discount,
+    requires_prescription,
+    is_featured,
+    price: discounted_price,
+    discount_percentage: sale_percentage_number,
+    stock_quantity: stock_number,
+    review_count: 0,
+    category: resolved_category,
     description,
-    descriptionHu: product.description_hu,
-    descriptionEn: product.description_en,
-    descriptionDe: product.description_de,
-    activeIngredients: product.active_ingredients,
-    imageUrl,
+    packaging,
+    image_url,
     images,
     dosage: undefined,
   };

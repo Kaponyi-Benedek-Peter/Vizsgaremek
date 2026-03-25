@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TranslateModule } from '@ngx-translate/core';
 
 type LegalTab = 'terms' | 'privacy' | 'cookies';
@@ -7,7 +7,7 @@ type LegalTab = 'terms' | 'privacy' | 'cookies';
 @Component({
   selector: 'app-legal',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [TranslateModule],
   templateUrl: './legal.html',
   styleUrl: './legal.css',
 })

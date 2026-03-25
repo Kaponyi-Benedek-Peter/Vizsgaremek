@@ -534,3 +534,36 @@
     transition: none;
   }
 }
+
+.add-to-cart-button.added {
+  background: var(--color-success, #16a34a);
+  border-color: var(--color-success, #16a34a);
+  pointer-events: none;
+}
+
+.added-icon {
+  display: inline-block;
+  font-weight: bold;
+  animation: popIn 0.3s ease-out;
+}
+
+.cart-btn-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

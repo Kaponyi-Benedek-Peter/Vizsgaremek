@@ -70,7 +70,7 @@
 
 .form-input:focus {
   border-color: var(--color-border-focus);
-  box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.1);
+  box-shadow: 0 0 0 3px var(--color-success-light);
 }
 
 .form-input:disabled {
@@ -152,7 +152,7 @@
 
 .error-message {
   padding: var(--space-3) var(--space-4);
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: var(--color-error-light);
   color: var(--color-error);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
@@ -293,7 +293,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background-color: rgba(6, 122, 69, 0.1);
+  background-color: var(--color-success-light);
   display: flex;
   align-items: center;
   justify-content: center;

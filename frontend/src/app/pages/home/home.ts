@@ -1,5 +1,5 @@
-import { Component, inject, computed, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, computed, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,19 +9,12 @@ import { Featured } from '../../shared/components/featured/featured';
 import { FeaturedProductCard } from '../../shared/components/featured-product-card/featured-product-card';
 import { ScrollRevealDirective } from '../../shared/directives/scroll-reveal.directive';
 import { ICONS, IMAGES } from '../../core/constants/visuals';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [
-    CommonModule,
-    Slide,
-    Featured,
-    FeaturedProductCard,
-    ScrollRevealDirective,
-    TranslateModule,
-  ],
+  imports: [Slide, Featured, FeaturedProductCard, ScrollRevealDirective, TranslateModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -30,6 +23,7 @@ export class Home implements OnInit {
   private productService = inject(ProductService);
   private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
   IMAGES = IMAGES;
   ICONS = ICONS;
@@ -37,7 +31,7 @@ export class Home implements OnInit {
   featuredProducts = computed(() => this.productService.featuredProducts());
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       if (params['activate']) {
         const parts = params['activate'].split(';');
         if (parts.length === 2) {
@@ -45,7 +39,6 @@ export class Home implements OnInit {
           const token = parts[1].trim();
           this.authService.completeRegistration(id, token, true).subscribe({
             next: () => {
-              // successful activation
               this.router.navigate(['/home'], { replaceUrl: true });
             },
             error: () => {

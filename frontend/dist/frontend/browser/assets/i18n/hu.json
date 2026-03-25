@@ -373,7 +373,9 @@
     "increase_quantity": "Mennyiség növelése",
     "not_found": "A termék nem található",
     "not_found_desc": "A keresett termék nem létezik vagy eltávolításra került.",
-    "back_to_products": "Vissza a termékekhez"
+    "back_to_products": "Vissza a termékekhez",
+    "image_deleted": "Kép sikeresen törölve",
+    "delete_error": "Nem sikerült törölni a képet"
   },
   "common": {
     "next_page": "Következő oldal",
@@ -393,7 +395,9 @@
     "clear": "Törlés",
     "cancel": "Mégse",
     "scroll_right": "Görgetés jobbra",
-    "added_to_cart": "Kosárba helyezve"
+    "added_to_cart": "Kosárba helyezve",
+    "edit": "Szerkesztés",
+    "added": "Hozzáadva!"
   },
   "home": {
     "featured": {
@@ -445,7 +449,6 @@
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
     "comment_edited": "szerkesztve",
-
     "empty_title": "Még nincsenek posztok",
     "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
     "error_title": "Nem sikerült betölteni",
@@ -495,7 +498,8 @@
       "price": "Ár",
       "brand": "Márka",
       "billing": "Számlázás",
-      "view_images": "Képek megtekintése"
+      "view_images": "Képek megtekintése",
+      "images": "Képek"
     },
     "gallery": {
       "title": "Termék képek",
@@ -534,6 +538,40 @@
       "banned": "Felhasználó tiltva.",
       "deleted": "Felhasználó törölve.",
       "error": "A művelet sikertelen. Próbáld újra."
+    },
+    "product_form": {
+      "add": "Termék hozzáadása",
+      "add_title": "Új termék",
+      "edit_title": "Termék szerkesztése",
+      "save": "Mentés",
+      "create": "Termék létrehozása",
+      "delete": "Termék törlése",
+      "tab_basic": "Alapadatok",
+      "tab_pricing": "Árazás",
+      "tab_descriptions": "Leírások",
+      "tab_details": "Részletek",
+      "names": "Terméknevek",
+      "name_hu": "Név (HU)",
+      "name_en": "Név (EN)",
+      "name_de": "Név (DE)",
+      "identification": "Azonosítás",
+      "manufacturer": "Gyártó",
+      "thumbnail_url": "Bélyegkép URL",
+      "price_huf": "Ár (HUF)",
+      "sale_pct": "Kedvezmény %",
+      "previews": "Előnézet szövegek",
+      "full_descriptions": "Teljes leírások",
+      "active_ingredients": "Hatóanyagok",
+      "packaging": "Csomagolás",
+      "featured": "Kiemelt termék",
+      "confirm_delete_title": "Termék törlése",
+      "confirm_delete_text": "Véglegesen törlöd a(z) \"{{name}}\" terméket? Ez nem visszavonható.",
+      "created": "Termék sikeresen létrehozva.",
+      "updated": "Termék sikeresen frissítve.",
+      "deleted": "Termék sikeresen törölve.",
+      "save_error": "A termék mentése sikertelen.",
+      "delete_error": "A termék törlése sikertelen.",
+      "error_name_required": "A termék angol neve kötelező."
     },
     "stats": {
       "this_week": "ezen a héten",
@@ -603,7 +641,8 @@
     "filters": "Szűrők",
     "advanced_filters": "Részletes szűrés",
     "toggle_filters": "Szűrők megjelenítése/elrejtése",
-    "sort_by": "Rendezés"
+    "sort_by": "Rendezés",
+    "search_placeholder": "Termékek keresése..."
   },
   "checkout": {
     "invalid_phone": "Kérjük, adjon meg érvényes telefonszámot.",
@@ -634,7 +673,14 @@
     "house_number_placeholder": "pl. 42",
     "phone": "Telefonszám",
     "note": "Megjegyzés",
-    "phone_placeholder": "+36 30 123 4567"
+    "phone_placeholder": "+36 30 123 4567",
+    "guest_notice": "Vendégként vásárolsz. Add meg az email címed és a neved, hogy elküldhessük a rendelés visszaigazolást.",
+    "email": "Email cím",
+    "email_placeholder": "pelda@email.com",
+    "billing_name": "Teljes név",
+    "billing_name_placeholder": "Kovács Béla",
+    "guest_fields_required": "Vendég vásárláshoz email és név szükséges.",
+    "invalid_email": "Kérjük, adj meg egy érvényes email címet."
   },
   "header": {
     "my_orders": "Rendeléseim",

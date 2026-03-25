@@ -343,7 +343,9 @@
     "increase_quantity": "Menge erhöhen",
     "not_found": "Produkt nicht gefunden",
     "not_found_desc": "Das gesuchte Produkt existiert nicht oder wurde entfernt.",
-    "back_to_products": "Zurück zu den Produkten"
+    "back_to_products": "Zurück zu den Produkten",
+    "image_deleted": "Bild erfolgreich gelöscht",
+    "delete_error": "Bild konnte nicht gelöscht werden"
   },
   "common": {
     "next_page": "Nächste Seite",
@@ -363,7 +365,9 @@
     "clear": "Löschen",
     "cancel": "Abbrechen",
     "scroll_right": "Nach rechts scrollen",
-    "added_to_cart": "Zum Warenkorb hinzugefügt"
+    "added_to_cart": "Zum Warenkorb hinzugefügt",
+    "edit": "Bearbeiten",
+    "added": "Hinzugefügt!"
   },
   "home": {
     "featured": {
@@ -464,7 +468,8 @@
       "price": "Preis",
       "brand": "Marke",
       "billing": "Rechnungsstellung",
-      "view_images": "Bilder anzeigen"
+      "view_images": "Bilder anzeigen",
+      "images": "Bilder"
     },
     "gallery": {
       "title": "Produkt-Bilder",
@@ -503,6 +508,40 @@
       "banned": "Benutzer deaktiviert.",
       "deleted": "Benutzer gelöscht.",
       "error": "Fehler bei der Durchführung der Operation. Bitte versuchen Sie es erneut."
+    },
+    "product_form": {
+      "add": "Produkt hinzufügen",
+      "add_title": "Neues Produkt",
+      "edit_title": "Produkt bearbeiten",
+      "save": "Speichern",
+      "create": "Produkt erstellen",
+      "delete": "Produkt löschen",
+      "tab_basic": "Grunddaten",
+      "tab_pricing": "Preisgestaltung",
+      "tab_descriptions": "Beschreibungen",
+      "tab_details": "Details",
+      "names": "Produktnamen",
+      "name_hu": "Name (HU)",
+      "name_en": "Name (EN)",
+      "name_de": "Name (DE)",
+      "identification": "Identifikation",
+      "manufacturer": "Hersteller",
+      "thumbnail_url": "Vorschaubild-URL",
+      "price_huf": "Preis (HUF)",
+      "sale_pct": "Rabatt %",
+      "previews": "Vorschautexte",
+      "full_descriptions": "Vollständige Beschreibungen",
+      "active_ingredients": "Wirkstoffe",
+      "packaging": "Verpackung",
+      "featured": "Empfohlenes Produkt",
+      "confirm_delete_title": "Produkt löschen",
+      "confirm_delete_text": "Möchtest du das Produkt \"{{name}}\" endgültig löschen? Dies kann nicht rückgängig gemacht werden.",
+      "created": "Produkt erfolgreich erstellt.",
+      "updated": "Produkt erfolgreich aktualisiert.",
+      "deleted": "Produkt erfolgreich gelöscht.",
+      "save_error": "Das Produkt konnte nicht gespeichert werden.",
+      "delete_error": "Das Produkt konnte nicht gelöscht werden.",
+      "error_name_required": "Der englische Name des Produkts ist erforderlich."
     },
     "stats": {
       "this_week": "diese Woche",
@@ -572,7 +611,8 @@
     "filters": "Filter",
     "advanced_filters": "Erweiterte Filter",
     "toggle_filters": "Filter ein-/ausblenden",
-    "sort_by": "Sortieren nach"
+    "sort_by": "Sortieren nach",
+    "search_placeholder": "Produkte suchen..."
   },
   "checkout": {
     "invalid_phone": "Bitte geben Sie eine gültige Telefonnummer ein.",
@@ -603,7 +643,14 @@
     "house_number_placeholder": "z.B. 42",
     "phone": "Telefonnummer",
     "note": "Bestellhinweise",
-    "phone_placeholder": "+49 176 123 4567"
+    "phone_placeholder": "+49 176 123 4567",
+    "guest_notice": "Sie kaufen als Gast ein. Geben Sie Ihre E-Mail und Ihren Namen ein, damit wir Ihnen die Bestellbestätigung senden können.",
+    "email": "E-Mail-Adresse",
+    "email_placeholder": "ihre@email.de",
+    "billing_name": "Vollständiger Name",
+    "billing_name_placeholder": "Max Mustermann",
+    "guest_fields_required": "E-Mail und Name sind für den Gastkauf erforderlich.",
+    "invalid_email": "Bitte geben Sie eine gültige E-Mail-Adresse ein."
   },
   "header": {
     "my_orders": "Meine Bestellungen",
@@ -680,5 +727,35 @@
     "browse_products": "Produkte entdecken",
     "quick_links": "Oder springe zu",
     "quick_links_label": "Schnellnavigation"
+  },
+  "danger": {
+    "confirm_password": "Mit Passwort bestätigen",
+    "delete_account": "Konto löschen",
+    "delete_btn": "Kontolöschung anfordern",
+    "delete_desc": "Ihr Konto und alle zugehörigen Daten – einschließlich Bestellverlauf, Bewertungen und persönliche Informationen – werden dauerhaft gelöscht. Zur Bestätigung wird eine E-Mail gesendet.",
+    "email_sent_desc": "Überprüfen Sie Ihren Posteingang und klicken Sie auf den Link, um die Kontolöschung zu bestätigen. Der Link ist 7 Tage gültig.",
+    "email_sent_title": "Bestätigungs-E-Mail gesendet",
+    "password_hint": "Zur Bestätigung wird ein Link an Ihre E-Mail-Adresse gesendet. Ihr Konto wird erst nach dem Klick auf den Link gelöscht.",
+    "password_placeholder": "Geben Sie Ihr aktuelles Passwort ein",
+    "subtitle": "Unwiderrufliche Kontoaktionen",
+    "warning_banner": "Die Aktionen auf dieser Seite sind endgültig und können nicht rückgängig gemacht werden. Bitte gehen Sie mit Vorsicht vor."
+  },
+  "errors": {
+    "current_password_required": "Bitte geben Sie Ihr aktuelles Passwort ein.",
+    "delete_failed": "Die Löschanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "name_required": "Vorname und Nachname sind erforderlich.",
+    "new_password_too_short": "Das neue Passwort muss mindestens 6 Zeichen lang sein.",
+    "password_change_failed": "Passwortänderung fehlgeschlagen. Überprüfen Sie Ihr aktuelles Passwort und versuchen Sie es erneut.",
+    "passwords_do_not_match": "Die neuen Passwörter stimmen nicht überein.",
+    "update_failed": "Profilaktualisierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+  },
+  "orders": {
+    "browse_products": "Produkte durchstöbern",
+    "empty_desc": "Sie haben noch keine Bestellungen aufgegeben. Stöbern Sie in unserem Produktkatalog!",
+    "empty_title": "Noch keine Bestellungen",
+    "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung"
+  },
+  "success": {
+    "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
   }
 }

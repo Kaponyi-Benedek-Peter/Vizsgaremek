@@ -1,10 +1,13 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 import { interval } from 'rxjs';
-import { Category, ProductWithHelpers } from '../../../core/models/product.model';
-import { ProductService } from '../../../services/product.service';
+import {
+  Category,
+  ProductWithHelpers,
+  ProductFilterOptions,
+} from '../../../core/models/product.model';
+import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { CategoryBar } from '../category-bar/category-bar';
 import { ProductCard } from '../product-card/product-card';
@@ -12,17 +15,19 @@ import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
 import { ICONS } from '../../../core/constants/visuals';
 
+import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+
 const POLL_INTERVAL_MS = 60_000;
 
 @Component({
   selector: 'app-product-list',
   imports: [
-    CommonModule,
     TranslateModule,
     CategoryBar,
     ProductFilter,
     ProductCard,
     ProductPagination,
+    ScrollRevealDirective,
   ],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
@@ -35,6 +40,7 @@ export class ProductList {
   protected readonly icons = ICONS;
 
   products = this.productService.paginatedProducts;
+  isLoading = this.productService.isLoading;
   pagination = this.productService.paginationState;
   filters = this.productService.currentFilters;
   allProducts = this.productService.products;
@@ -68,7 +74,7 @@ export class ProductList {
     this.productService.setFilters({ categories: [] });
   }
 
-  handleFilterChanged(filters: any): void {
+  handleFilterChanged(filters: Partial<ProductFilterOptions>): void {
     this.productService.setFilters(filters);
   }
 

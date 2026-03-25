@@ -49,12 +49,12 @@
 
             <img [src]="selectedImage" [alt]="product()!.name" class="main-image" loading="eager" />
 
-            @if (product()!.requiresPrescription) {
+            @if (product()!.requires_prescription) {
               <span class="rx-badge" [title]="'product.requires_prescription' | translate">℞</span>
             }
 
-            @if (hasDiscount) {
-              <span class="discount-badge">-{{ product()!.discountPercentage }}%</span>
+            @if (has_discount) {
+              <span class="discount-badge">-{{ product()!.discount_percentage }}%</span>
             }
 
             @if (images.length > 1) {
@@ -96,13 +96,13 @@
 
             <h1 class="product-title">{{ product()!.name }}</h1>
 
-            @if (product()!.ratingNumber > 0) {
+            @if (product()!.rating_number > 0) {
               <div class="rating-row">
                 <span class="rating-stars">{{ getRatingStars() }}</span>
-                <span class="rating-value">{{ product()!.ratingNumber.toFixed(1) }}</span>
-                @if (reviewCount() > 0) {
+                <span class="rating-value">{{ product()!.rating_number.toFixed(1) }}</span>
+                @if (review_count() > 0) {
                   <span class="rating-count"
-                    >({{ reviewCount() }} {{ 'product.reviews' | translate }})</span
+                    >({{ review_count() }} {{ 'product.reviews' | translate }})</span
                   >
                 }
               </div>
@@ -110,7 +110,7 @@
           </div>
 
           <div class="price-block">
-            @if (hasDiscount) {
+            @if (has_discount) {
               <div class="price-with-discount">
                 <span class="original-price">{{ formattedPrice() }}</span>
                 <span class="discounted-price">{{ formattedDiscountedPrice() }}</span>
@@ -143,27 +143,27 @@
               <span class="meta-label">{{ 'product.availability' | translate }}</span>
               <span
                 class="meta-value availability"
-                [class.in-stock]="product()!.inStock"
-                [class.out-of-stock]="!product()!.inStock"
+                [class.in-stock]="product()!.in_stock"
+                [class.out-of-stock]="!product()!.in_stock"
               >
                 {{
-                  product()!.inStock
+                  product()!.in_stock
                     ? ('product.in_stock' | translate)
                     : ('product.out_of_stock' | translate)
                 }}
-                @if (product()!.inStock && product()!.stockQuantity) {
-                  ({{ product()!.stockQuantity }} {{ 'product.pieces' | translate }})
+                @if (product()!.in_stock && product()!.stock_quantity) {
+                  ({{ product()!.stock_quantity }} {{ 'product.pieces' | translate }})
                 }
               </span>
             </div>
           </div>
 
           <div class="cart-section">
-            <div class="quantity-controls" [class.disabled]="!product()!.inStock">
+            <div class="quantity-controls" [class.disabled]="!product()!.in_stock">
               <button
                 class="qty-btn"
                 (click)="decreaseQuantity()"
-                [disabled]="quantity() <= 1 || !product()!.inStock"
+                [disabled]="quantity() <= 1 || !product()!.in_stock"
                 [attr.aria-label]="'product.decrease_quantity' | translate"
               >
                 −
@@ -172,7 +172,7 @@
               <button
                 class="qty-btn"
                 (click)="increaseQuantity()"
-                [disabled]="quantity() >= product()!.stockQuantity || !product()!.inStock"
+                [disabled]="quantity() >= product()!.stock_quantity || !product()!.in_stock"
                 [attr.aria-label]="'product.increase_quantity' | translate"
               >
                 +
@@ -200,7 +200,7 @@
               }
             </button>
 
-            @if (product()!.requiresPrescription) {
+            @if (product()!.requires_prescription) {
               <div class="prescription-notice">
                 <!-- ℹ️ → infowhite.webp -->
                 <img [src]="icons.info" alt="" class="notice-icon-img" aria-hidden="true" />
@@ -214,14 +214,14 @@
             <p class="description-text">{{ product()!.description }}</p>
           </div>
 
-          @if (product()!.activeIngredients || product()!.dosage || product()!.packaging) {
+          @if (product()!.active_ingredients || product()!.dosage || product()!.packaging) {
             <div class="pharma-block">
               <h2 class="section-heading">{{ 'product.pharmaceutical_details' | translate }}</h2>
 
-              @if (product()!.activeIngredients) {
+              @if (product()!.active_ingredients) {
                 <div class="pharma-item">
                   <strong>{{ 'product.active_ingredients' | translate }}:</strong>
-                  <span>{{ product()!.activeIngredients }}</span>
+                  <span>{{ product()!.active_ingredients }}</span>
                 </div>
               }
               @if (product()!.dosage) {
@@ -263,7 +263,7 @@
                 @for (review of reviews(); track review.id) {
                   <div class="review-item">
                     <div class="review-header">
-                      <span class="review-stars">{{ getRatingStars(review.ratingNumber) }}</span>
+                      <span class="review-stars">{{ getRatingStars(review.rating_number) }}</span>
                       <span class="review-title">{{ review.title }}</span>
                       <span class="review-date">{{
                         review.created_at | date: 'yyyy. MM. dd.'

@@ -1,5 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
-import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import { Header } from './shared/components/header/header';
 import { Footer } from './shared/components/footer/footer';
 import { Toast } from './shared/components/toast/toast';
@@ -24,6 +25,10 @@ export class App {
   ) {}
 
   ngOnInit(): void {
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      window.scrollTo(0, 0);
+    });
+
     const chpass = new URLSearchParams(window.location.search).get('chpass');
     if (chpass) {
       this.router.navigate(['/password-reset'], {

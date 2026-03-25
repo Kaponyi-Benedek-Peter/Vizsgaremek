@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -12,7 +12,7 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 @Component({
   selector: 'app-forum-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslateModule],
   templateUrl: './forum-detail.html',
   styleUrl: './forum-detail.css',
 })
@@ -56,25 +56,28 @@ export class ForumDetail implements OnInit {
     this.comments.set([]);
     const userId = this.authService.currentUser()?.id ?? '';
     const sessToken = this.sessionToken;
+    const isAdmin = this.authService.isAdmin();
 
-    this.forumService.getPostById(id).subscribe((post) => {
-      this.post.set(post);
-      this.isLoading.set(false);
+    this.forumService
+      .getPostById(id, isAdmin, isAdmin ? userId : '', isAdmin ? sessToken : '')
+      .subscribe((post) => {
+        this.post.set(post);
+        this.isLoading.set(false);
 
-      if (post) {
-        if (this.authService.isAuthenticated()) {
-          this.forumService.incrementViews(post.id, userId, sessToken).subscribe();
+        if (post) {
+          if (this.authService.isAuthenticated()) {
+            this.forumService.incrementViews(post.id, userId, sessToken).subscribe();
+          }
+
+          this.forumService.getComments(post.id).subscribe((comments) => {
+            this.comments.set(comments);
+          });
+
+          this.forumService.getRelatedPosts(post.id, 6).subscribe((related) => {
+            this.relatedPosts.set(related);
+          });
         }
-
-        this.forumService.getComments(post.id).subscribe((comments) => {
-          this.comments.set(comments);
-        });
-
-        this.forumService.getRelatedPosts(post.id, 6).subscribe((related) => {
-          this.relatedPosts.set(related);
-        });
-      }
-    });
+      });
   }
 
   getCategoryInfo(categoryId: string): CategoryInfo | undefined {

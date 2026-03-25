@@ -23,7 +23,7 @@
         </app-icon-btn>
 
         @if (showUserMenu()) {
-          <div class="user-dropdown">
+          <div class="user-dropdown" role="menu" aria-label="User menu">
             <div class="user-dropdown-header">
               <p class="user-name">{{ currentUser?.firstname }} {{ currentUser?.lastname }}</p>
               <p class="user-email">{{ currentUser?.email }}</p>
@@ -37,15 +37,12 @@
               <img [src]="ICONS.basket" alt="orders" class="dropdown-icon" />
               {{ 'header.my_orders' | translate }}
             </a>
-            <a
-              *ngIf="isAdmin"
-              routerLink="/admin"
-              class="user-dropdown-item"
-              (click)="closeUserMenu()"
-            >
-              <img [src]="ICONS.admin" alt="orders" class="dropdown-icon" />
-              {{ 'header.admin' | translate }}
-            </a>
+            @if (isAdmin) {
+              <a routerLink="/admin" class="user-dropdown-item" (click)="closeUserMenu()">
+                <img [src]="ICONS.admin" alt="orders" class="dropdown-icon" />
+                {{ 'header.admin' | translate }}
+              </a>
+            }
             <div class="user-dropdown-divider"></div>
             <button class="user-dropdown-item logout-btn" (click)="logout()">
               <svg
@@ -81,12 +78,12 @@
       >
         <app-icon-btn [iconImg]="ICONS.basket"></app-icon-btn>
         @if (cartItemCount() > 0) {
-          <span class="cart-badge">{{ cartItemCount() }}</span>
+          <span class="cart-badge" [class.bounce]="cartBounce()">{{ cartItemCount() }}</span>
         }
       </button>
 
       @if (showCartDropdown()) {
-        <div class="cart-dropdown">
+        <div class="cart-dropdown" role="dialog" aria-label="Shopping cart">
           <div class="cart-dropdown-header">
             <h3>{{ 'cart.title' | translate }}</h3>
             <span class="cart-item-count"
@@ -104,7 +101,7 @@
               @for (item of cartItems(); track item.product.id) {
                 <div class="cart-item">
                   <img
-                    [src]="item.product.imageUrl"
+                    [src]="item.product.image_url"
                     [alt]="item.product.name"
                     class="cart-item-image"
                   />
@@ -141,7 +138,7 @@
                       <button
                         class="quantity-btn"
                         (click)="updateQuantity(item.product.id, item.quantity + 1)"
-                        [disabled]="item.quantity >= item.product.stockQuantity"
+                        [disabled]="item.quantity >= item.product.stock_quantity"
                       >
                         +
                       </button>

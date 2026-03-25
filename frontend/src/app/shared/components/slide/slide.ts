@@ -18,7 +18,7 @@ export class Slide implements OnInit, OnDestroy {
   isPaused = false;
   readonly autoplayDuration = 5000;
 
-  private intervalId: any = null;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
     this.startAutoplay();

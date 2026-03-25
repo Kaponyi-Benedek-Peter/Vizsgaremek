@@ -1,10 +1,9 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
-import { ProductService } from '../../../services/product.service';
+import { ProductService } from '../../../core/services/product.service';
 import { getImageUrl, getCategoryIcon, ICONS } from '../../../core/constants/visuals';
 import { TranslationService } from '../../../core/services/translation.service';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -12,7 +11,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [CommonModule, TranslateModule, RouterLink],
+  imports: [TranslateModule, RouterLink],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
 })
@@ -30,6 +29,7 @@ export class ProductCard {
   protected readonly icons = ICONS;
 
   quantity = signal(1);
+  addedToCart = signal(false);
 
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
@@ -39,8 +39,8 @@ export class ProductCard {
     initialValue: this.translationService.getCurrentLanguage(),
   });
 
-  get hasDiscount(): boolean {
-    return this.product.hasDiscount;
+  get has_discount(): boolean {
+    return this.product.has_discount;
   }
 
   get formattedPrice(): string {
@@ -53,14 +53,14 @@ export class ProductCard {
 
   get canAddToCart(): boolean {
     return (
-      this.product.inStock &&
-      !this.product.requiresPrescription &&
-      this.quantity() <= this.product.stockQuantity
+      this.product.in_stock &&
+      !this.product.requires_prescription &&
+      this.quantity() <= this.product.stock_quantity
     );
   }
 
   get hasRating(): boolean {
-    return this.product.ratingNumber > 0;
+    return this.product.rating_number > 0;
   }
 
   localizedName = computed(() => {
@@ -85,7 +85,7 @@ export class ProductCard {
   }
 
   getRatingStars(): string {
-    const rating = this.product.ratingNumber;
+    const rating = this.product.rating_number;
     if (!rating) return '';
     const full = Math.floor(rating);
     const half = rating % 1 >= 0.5;
@@ -94,7 +94,7 @@ export class ProductCard {
   }
 
   increaseQuantity(): void {
-    if (this.quantity() < this.product.stockQuantity) {
+    if (this.quantity() < this.product.stock_quantity) {
       this.quantity.update((q) => q + 1);
       this.quantityChange.emit({ product: this.product, quantity: this.quantity() });
     }
@@ -109,6 +109,8 @@ export class ProductCard {
 
   onAddToCart(): void {
     this.addToCart.emit({ product: this.product, quantity: this.quantity() });
+    this.addedToCart.set(true);
+    setTimeout(() => this.addedToCart.set(false), 1200);
   }
 
   onViewDetails(): void {

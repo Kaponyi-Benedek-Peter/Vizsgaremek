@@ -164,12 +164,19 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  updateUserStateAdmin(userId: string, newState: string): Observable<ApiResponse> {
-    const auth = this.buildAdminAuthBody();
+  updateUserStateAdmin(
+    admin_id: string,
+    admin_session_token: string,
+    target_user_id: string,
+    new_user_state: string,
+    reason: string,
+  ): Observable<ApiResponse> {
     const body = {
-      ...auth,
-      user_id: this.encodeBase64(userId),
-      new_account_state: this.encodeBase64(newState),
+      admin_id: this.encodeBase64(admin_id),
+      admin_session_token: this.encodeBase64(admin_session_token),
+      target_user_id: this.encodeBase64(target_user_id),
+      new_user_state: this.encodeBase64(new_user_state),
+      reason: this.encodeBase64(reason),
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/update_user_state_admin`, body)

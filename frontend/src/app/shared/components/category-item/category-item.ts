@@ -1,11 +1,10 @@
-import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Category } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-category-item',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './category-item.html',
   styleUrl: './category-item.css',
 })
@@ -20,7 +19,7 @@ export class CategoryItem {
    * Returns the category name in the currently active language.
    * Falls back to English if the localized name is missing.
    */
-  get displayName(): string {
+  get display_name(): string {
     const lang = this.translateService.currentLang || 'hu';
 
     switch (lang) {
