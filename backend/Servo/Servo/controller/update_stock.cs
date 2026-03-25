@@ -41,8 +41,8 @@ namespace Servo.controller
                 try
                 {
                     JObject jsonObj = JObject.Parse(lenyeg);
-                    admin_id = service.shared.b64dec(jsonObj["admin_user_id"].ToString());
-                    sesstoken = service.shared.b64dec(jsonObj["sesstoken"].ToString());
+                    admin_id = service.shared.b64dec(jsonObj["admin_id"].ToString());
+                    sesstoken = service.shared.b64dec(jsonObj["admin_session_token"].ToString());
                     product_id = service.shared.b64dec(jsonObj["product_id"].ToString());
                     new_stock_count = service.shared.b64dec(jsonObj["new_stock_count"].ToString());
 
@@ -124,7 +124,7 @@ namespace Servo.controller
                     string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                    data.Response.StatusCode = 200;
+                    data.Response.StatusCode = 403;
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
@@ -144,7 +144,7 @@ namespace Servo.controller
                     string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                    data.Response.StatusCode = 200;
+                    data.Response.StatusCode = 401;
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
@@ -175,7 +175,7 @@ namespace Servo.controller
                     string jsonrespon = JsonSerializer.Serialize(respon);
 
 
-                    data.Response.StatusCode = 403;
+                    data.Response.StatusCode = 500;
                     byte[] buffer = Encoding.UTF8.GetBytes(jsonrespon);
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
@@ -202,7 +202,7 @@ namespace Servo.controller
             }
             finally
             {
-                data.Response.OutputStream.Close();
+                controller.router.safe_close(data);
             }
         }
 

@@ -13,13 +13,15 @@ namespace Servo.model
 
 
 
-        static string connStr = model.shared.connStr;
-        static MySqlConnection conn = model.shared.conn;
+  
+         
         public static int communicate_delete_account(string id)
         {
-
+MySqlConnection conn = null;
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("delete_account_by_id", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -34,6 +36,13 @@ namespace Servo.model
             {
                 service.shared.log($"Error 1: {ex.Message} --model.delacc_promise.delete_account");
                 return 500;
+            }
+            finally
+            {
+                                if (conn != null)
+                {
+                    conn.Close();
+                }
             }
         }
 

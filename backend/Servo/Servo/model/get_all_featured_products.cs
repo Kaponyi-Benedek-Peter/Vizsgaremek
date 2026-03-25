@@ -11,14 +11,14 @@ namespace Servo.model
     internal class get_all_featured_products
     {
 
-        static MySqlConnection conn = model.shared.conn;
+        
 
 
 
 
 
         public static Dictionary<string, object> communicate_get_all_featured_products()
-        {
+        {MySqlConnection conn = null;
             var result = new Dictionary<string, object>
             {
                 { "statuscode", "200" },
@@ -28,6 +28,8 @@ namespace Servo.model
 
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("get_all_featured_products", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -44,7 +46,7 @@ namespace Servo.model
                             string[] fields = { "id","name_hu","name_en", "name_de","description_preview_hu","description_preview_en",  "description_preview_de", "price_huf", 
                                       "stock", "sale_percentage",
                                       "category_id", "manufacturer", "brand",
-                                      "rating", "packaging", "created_at",
+                                      "rating", "packaging_de", "packaging_hu", "packaging_en", "created_at",
                                       };
 
                             foreach (string field in fields)
@@ -54,7 +56,7 @@ namespace Servo.model
 
                             product["price_usd"] = service.shared.exchange(Convert.ToDouble(product["price_huf"]))[0].ToString();
                             product["price_eur"] = service.shared.exchange(Convert.ToDouble(product["price_huf"]))[1].ToString();
-                            product["thumbnail_url"] = service.shared.current_url+"assets/products/"+product["id"]+"/thumbnail.webp";
+                            product["thumbnail_url"] = service.shared.current_url+"assets/products/"+product["id"]+"/1.webp";
 
 
                             products.Add(product);
@@ -69,8 +71,15 @@ namespace Servo.model
             {
                 service.shared.log($"Error 1: {ex.Message} --model.get_all_featured_products.communicate_get_all_featured_products");
                 result["statuscode"] = "500";
-                result["status"] = "unknown error";
+                result["status"] = "internal_error";
 
+            }
+            finally
+            {
+                if (conn != null)
+                {
+                    conn.Close();
+                }
             }
 
             return result;

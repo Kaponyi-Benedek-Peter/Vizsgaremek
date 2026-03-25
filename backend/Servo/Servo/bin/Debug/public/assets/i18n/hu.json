@@ -393,7 +393,8 @@
     "clear": "Törlés",
     "cancel": "Mégse",
     "scroll_right": "Görgetés jobbra",
-    "added_to_cart": "Kosárba helyezve"
+    "added_to_cart": "Kosárba helyezve",
+    "edit": "Szerkesztés"
   },
   "home": {
     "featured": {
@@ -445,7 +446,6 @@
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
     "comment_edited": "szerkesztve",
-
     "empty_title": "Még nincsenek posztok",
     "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
     "error_title": "Nem sikerült betölteni",
@@ -492,7 +492,83 @@
       "category": "Kategória",
       "actions": "Műveletek",
       "items": "Tételek",
-      "price": "Ár"
+      "price": "Ár",
+      "brand": "Márka",
+      "billing": "Számlázás",
+      "view_images": "Képek megtekintése",
+      "images": "Képek"
+    },
+    "gallery": {
+      "title": "Termék képek",
+      "upload": "Feltöltés",
+      "delete_image": "Kép törlése",
+      "confirm_delete_title": "Biztosan törli a képeket?",
+      "confirm_delete_text": "Ez a művelet nem visszavonható. A kép teljesen törölve lesz.",
+      "details": "Kép részletek",
+      "download": "Letöltés",
+      "transparent": "Átlátszó",
+      "transparent_hint": "Bekapcsolva a backend automatikusan eltávolítja a kép hátterét",
+      "meta": {
+        "filename": "Fájlnév",
+        "type": "Típus",
+        "resolution": "Felbontás",
+        "size": "Fájl méret",
+        "modified": "Utoljára módosítva"
+      }
+    },
+    "user_actions": {
+      "actions": "Műveletek",
+      "set_role": "Jogosultság",
+      "ban": "Tiltás",
+      "unban": "Tiltás feloldása",
+      "delete": "Felhasználó törlése",
+      "you": "Te",
+      "confirm_role_title": "Jogosultság módosítása",
+      "confirm_role_text": "{{name}} jogosultságát módosítod: {{state}}?",
+      "confirm_ban_title": "Felhasználó tiltása",
+      "confirm_ban_text": "Tiltod {{name}} fiókját? Elveszíti a hozzáférését.",
+      "confirm_unban_title": "Tiltás feloldása",
+      "confirm_unban_text": "Feloldod {{name}} tiltását? A fiókja visszaáll verified állapotra.",
+      "confirm_delete_title": "Felhasználó törlése",
+      "confirm_delete_text": "Véglegesen törlöd {{name}} fiókját? Ez nem visszavonható.",
+      "success": "Felhasználó frissítve.",
+      "banned": "Felhasználó tiltva.",
+      "deleted": "Felhasználó törölve.",
+      "error": "A művelet sikertelen. Próbáld újra."
+    },
+    "product_form": {
+      "add": "Termék hozzáadása",
+      "add_title": "Új termék",
+      "edit_title": "Termék szerkesztése",
+      "save": "Mentés",
+      "create": "Termék létrehozása",
+      "delete": "Termék törlése",
+      "tab_basic": "Alapadatok",
+      "tab_pricing": "Árazás",
+      "tab_descriptions": "Leírások",
+      "tab_details": "Részletek",
+      "names": "Terméknevek",
+      "name_hu": "Név (HU)",
+      "name_en": "Név (EN)",
+      "name_de": "Név (DE)",
+      "identification": "Azonosítás",
+      "manufacturer": "Gyártó",
+      "thumbnail_url": "Bélyegkép URL",
+      "price_huf": "Ár (HUF)",
+      "sale_pct": "Kedvezmény %",
+      "previews": "Előnézet szövegek",
+      "full_descriptions": "Teljes leírások",
+      "active_ingredients": "Hatóanyagok",
+      "packaging": "Csomagolás",
+      "featured": "Kiemelt termék",
+      "confirm_delete_title": "Termék törlése",
+      "confirm_delete_text": "Véglegesen törlöd a(z) \"{{name}}\" terméket? Ez nem visszavonható.",
+      "created": "Termék sikeresen létrehozva.",
+      "updated": "Termék sikeresen frissítve.",
+      "deleted": "Termék sikeresen törölve.",
+      "save_error": "A termék mentése sikertelen.",
+      "delete_error": "A termék törlése sikertelen.",
+      "error_name_required": "A termék angol neve kötelező."
     },
     "stats": {
       "this_week": "ezen a héten",
@@ -521,7 +597,11 @@
     "search_orders": "Rendelések keresése...",
     "recent_orders": "Legutóbbi rendelések",
     "no_orders": "Nem találhatók rendelések.",
-    "greeting": "Üdvözöljük, {{name}}!"
+    "greeting": "Üdvözöljük, {{name}}!",
+    "errors": {
+      "orders_load_failed": "Hiba történt a termékek betöltésekor!",
+      "users_load_failed": "Hiba történt a felhasználók betöltésekor!"
+    }
   },
   "footer": {
     "contactInfo": "Kapcsolati információk",

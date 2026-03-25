@@ -393,7 +393,8 @@
     "clear": "Clear",
     "cancel": "Cancel",
     "scroll_right": "Scroll right",
-    "added_to_cart": "Added to cart"
+    "added_to_cart": "Added to cart",
+    "edit": "Edit"
   },
   "home": {
     "featured": {
@@ -491,7 +492,83 @@
       "category": "Category",
       "actions": "Actions",
       "items": "Items",
-      "price": "Price"
+      "price": "Price",
+      "brand": "Brand",
+      "billing": "Billing",
+      "images": "Images",
+      "view_images": "View images"
+    },
+    "gallery": {
+      "title": "Product Images",
+      "upload": "Upload",
+      "delete_image": "Delete image",
+      "confirm_delete_title": "Delete this image?",
+      "confirm_delete_text": "This action cannot be undone. The image will be permanently removed.",
+      "details": "Image Details",
+      "download": "Download",
+      "transparent": "Transparent",
+      "transparent_hint": "When enabled, the backend will remove the image background automatically",
+      "meta": {
+        "filename": "Filename",
+        "type": "Type",
+        "resolution": "Resolution",
+        "size": "File size",
+        "modified": "Last modified"
+      }
+    },
+    "user_actions": {
+      "actions": "Actions",
+      "set_role": "Set role",
+      "ban": "Ban user",
+      "unban": "Unban user",
+      "delete": "Delete user",
+      "you": "You",
+      "confirm_role_title": "Change role",
+      "confirm_role_text": "Change {{name}}'s role to {{state}}?",
+      "confirm_ban_title": "Ban user",
+      "confirm_ban_text": "Ban {{name}}? They will lose access to their account.",
+      "confirm_unban_title": "Unban user",
+      "confirm_unban_text": "Unban {{name}}? Their account will be restored to verified.",
+      "confirm_delete_title": "Delete user",
+      "confirm_delete_text": "Permanently delete {{name}}? This cannot be undone.",
+      "success": "User updated successfully.",
+      "banned": "User has been banned.",
+      "deleted": "User has been deleted.",
+      "error": "Action failed. Please try again."
+    },
+    "product_form": {
+      "add": "Add Product",
+      "add_title": "New Product",
+      "edit_title": "Edit Product",
+      "save": "Save Changes",
+      "create": "Create Product",
+      "delete": "Delete Product",
+      "tab_basic": "Basic",
+      "tab_pricing": "Pricing",
+      "tab_descriptions": "Descriptions",
+      "tab_details": "Details",
+      "names": "Product Names",
+      "name_hu": "Name (HU)",
+      "name_en": "Name (EN)",
+      "name_de": "Name (DE)",
+      "identification": "Identification",
+      "manufacturer": "Manufacturer",
+      "thumbnail_url": "Thumbnail URL",
+      "price_huf": "Price (HUF)",
+      "sale_pct": "Discount %",
+      "previews": "Preview Descriptions",
+      "full_descriptions": "Full Descriptions",
+      "active_ingredients": "Active Ingredients",
+      "packaging": "Packaging",
+      "featured": "Featured Product",
+      "confirm_delete_title": "Delete Product",
+      "confirm_delete_text": "Permanently delete \"{{name}}\"? This cannot be undone.",
+      "created": "Product created successfully.",
+      "updated": "Product updated successfully.",
+      "deleted": "Product deleted successfully.",
+      "save_error": "Failed to save product.",
+      "delete_error": "Failed to delete product.",
+      "error_name_required": "Product name (EN) is required."
     },
     "stats": {
       "this_week": "this week",
@@ -520,7 +597,11 @@
     "search_orders": "Search orders...",
     "recent_orders": "Recent Orders",
     "no_orders": "No orders found.",
-    "greeting": "Welcome, {{name}}!"
+    "greeting": "Welcome, {{name}}!",
+    "errors": {
+      "orders_load_failed": "There was an error loading the products!",
+      "users_load_failed": "There was an error loading the users!"
+    }
   },
   "footer": {
     "contactInfo": "Contact information",

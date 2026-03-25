@@ -131,8 +131,11 @@ namespace Servo.service
                   rating     = 0.0,
                   sku     = (i*1000).ToString(),
                   active_ingredient     = "active_ingredient",
-                  packaging     = "valami",
-                  thumbnail_url = $"http://192.168.11.213:90/assets/products/{i}/thumbnail.webp",
+                  packaging_de     = "valami",
+                    packaging_en = "something",
+                    packaging_hu = "schwarpfenpanzer",
+
+                    thumbnail_url = $"http://192.168.11.213:90/assets/products/{i}/thumbnail.webp",
 
                     featured = $"0"
                 };
@@ -175,7 +178,7 @@ namespace Servo.service
             for (int i = 0; i < 33; i++)
             {
 
-
+                /*
                 model.shared.order ord = new model.shared.order
                 {
                     user_id  = (user_id).ToString(),
@@ -189,10 +192,11 @@ namespace Servo.service
                     phone_number  = "112",
 
                 };
-
+                */
+                service.shared.log("test order in progrees");
                
 
-                model.shared.add_order(ord);
+               // model.shared.add_order(ord);
             }
 
 

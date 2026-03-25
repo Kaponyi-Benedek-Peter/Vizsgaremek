@@ -363,7 +363,8 @@
     "clear": "Löschen",
     "cancel": "Abbrechen",
     "scroll_right": "Nach rechts scrollen",
-    "added_to_cart": "Zum Warenkorb hinzugefügt"
+    "added_to_cart": "Zum Warenkorb hinzugefügt",
+    "edit": "Bearbeiten"
   },
   "home": {
     "featured": {
@@ -461,7 +462,83 @@
       "category": "Kategorie",
       "actions": "Aktionen",
       "items": "Artikel",
-      "price": "Preis"
+      "price": "Preis",
+      "brand": "Marke",
+      "billing": "Rechnungsstellung",
+      "view_images": "Bilder anzeigen",
+      "images": "Bilder"
+    },
+    "gallery": {
+      "title": "Produkt-Bilder",
+      "upload": "Uploaden",
+      "delete_image": "Bild löschen",
+      "confirm_delete_title": "Sind Sie sicher, dass Sie die Bilder löschen?",
+      "confirm_delete_text": "Diese Maßnahme darf nicht widerrufen werden. Bild wird vollständig gelöscht.",
+      "details": "Abbildung 1 Details",
+      "download": "Downloaden",
+      "transparent": "Transparent",
+      "transparent_hint": "Wenn aktiviert, entfernt das Backend automatisch den Bildhintergrund",
+      "meta": {
+        "filename": "Dateiname",
+        "type": "Typus",
+        "resolution": "Auflösung",
+        "size": "Dateigröße",
+        "modified": "zuletzt geändert"
+      }
+    },
+    "user_actions": {
+      "actions": "Aktionen",
+      "set_role": "Recht",
+      "ban": "Verbot",
+      "unban": "Verbot aufheben",
+      "delete": "Benutzer löschen",
+      "you": "Du",
+      "confirm_role_title": "Änderung der Berechtigung",
+      "confirm_role_text": "{{name}} Berechtigung ändern: {{state}}?",
+      "confirm_ban_title": "Benutzer deaktivieren",
+      "confirm_ban_text": "Gibt es ein Verbot von {{name}}? Sie verlieren den Zugang zu Ihrem Konto..",
+      "confirm_unban_title": "Benutzer auflösen",
+      "confirm_unban_text": "{{name}} Verbot auflösen? Ihr Benutzerkonto wird wieder auf Verified eingestellt.",
+      "confirm_delete_title": "Benutzer löschen",
+      "confirm_delete_text": "Wird {{name}} dauerhaft gelöscht? Kann nicht zurückgezogen werden.",
+      "success": "Benutzer erfolgreich aktualisiert.",
+      "banned": "Benutzer deaktiviert.",
+      "deleted": "Benutzer gelöscht.",
+      "error": "Fehler bei der Durchführung der Operation. Bitte versuchen Sie es erneut."
+    },
+    "product_form": {
+      "add": "Produkt hinzufügen",
+      "add_title": "Neues Produkt",
+      "edit_title": "Produkt bearbeiten",
+      "save": "Speichern",
+      "create": "Produkt erstellen",
+      "delete": "Produkt löschen",
+      "tab_basic": "Grunddaten",
+      "tab_pricing": "Preisgestaltung",
+      "tab_descriptions": "Beschreibungen",
+      "tab_details": "Details",
+      "names": "Produktnamen",
+      "name_hu": "Name (HU)",
+      "name_en": "Name (EN)",
+      "name_de": "Name (DE)",
+      "identification": "Identifikation",
+      "manufacturer": "Hersteller",
+      "thumbnail_url": "Vorschaubild-URL",
+      "price_huf": "Preis (HUF)",
+      "sale_pct": "Rabatt %",
+      "previews": "Vorschautexte",
+      "full_descriptions": "Vollständige Beschreibungen",
+      "active_ingredients": "Wirkstoffe",
+      "packaging": "Verpackung",
+      "featured": "Empfohlenes Produkt",
+      "confirm_delete_title": "Produkt löschen",
+      "confirm_delete_text": "Möchtest du das Produkt \"{{name}}\" endgültig löschen? Dies kann nicht rückgängig gemacht werden.",
+      "created": "Produkt erfolgreich erstellt.",
+      "updated": "Produkt erfolgreich aktualisiert.",
+      "deleted": "Produkt erfolgreich gelöscht.",
+      "save_error": "Das Produkt konnte nicht gespeichert werden.",
+      "delete_error": "Das Produkt konnte nicht gelöscht werden.",
+      "error_name_required": "Der englische Name des Produkts ist erforderlich."
     },
     "stats": {
       "this_week": "diese Woche",
@@ -490,7 +567,11 @@
     "search_orders": "Bestellungen suchen...",
     "recent_orders": "Neueste Bestellungen",
     "no_orders": "Keine Bestellungen gefunden.",
-    "greeting": "Willkommen, {{name}}!"
+    "greeting": "Willkommen, {{name}}!",
+    "errors": {
+      "orders_load_failed": "Fehler beim Laden der Produkte!",
+      "users_load_failed": "Fehler beim Laden der Benutzer!"
+    }
   },
   "footer": {
     "contactInfo": "Kontaktinformationen",
@@ -635,5 +716,35 @@
     "browse_products": "Produkte entdecken",
     "quick_links": "Oder springe zu",
     "quick_links_label": "Schnellnavigation"
+  },
+  "danger": {
+    "confirm_password": "Mit Passwort bestätigen",
+    "delete_account": "Konto löschen",
+    "delete_btn": "Kontolöschung anfordern",
+    "delete_desc": "Ihr Konto und alle zugehörigen Daten – einschließlich Bestellverlauf, Bewertungen und persönliche Informationen – werden dauerhaft gelöscht. Zur Bestätigung wird eine E-Mail gesendet.",
+    "email_sent_desc": "Überprüfen Sie Ihren Posteingang und klicken Sie auf den Link, um die Kontolöschung zu bestätigen. Der Link ist 7 Tage gültig.",
+    "email_sent_title": "Bestätigungs-E-Mail gesendet",
+    "password_hint": "Zur Bestätigung wird ein Link an Ihre E-Mail-Adresse gesendet. Ihr Konto wird erst nach dem Klick auf den Link gelöscht.",
+    "password_placeholder": "Geben Sie Ihr aktuelles Passwort ein",
+    "subtitle": "Unwiderrufliche Kontoaktionen",
+    "warning_banner": "Die Aktionen auf dieser Seite sind endgültig und können nicht rückgängig gemacht werden. Bitte gehen Sie mit Vorsicht vor."
+  },
+  "errors": {
+    "current_password_required": "Bitte geben Sie Ihr aktuelles Passwort ein.",
+    "delete_failed": "Die Löschanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "name_required": "Vorname und Nachname sind erforderlich.",
+    "new_password_too_short": "Das neue Passwort muss mindestens 6 Zeichen lang sein.",
+    "password_change_failed": "Passwortänderung fehlgeschlagen. Überprüfen Sie Ihr aktuelles Passwort und versuchen Sie es erneut.",
+    "passwords_do_not_match": "Die neuen Passwörter stimmen nicht überein.",
+    "update_failed": "Profilaktualisierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+  },
+  "orders": {
+    "browse_products": "Produkte durchstöbern",
+    "empty_desc": "Sie haben noch keine Bestellungen aufgegeben. Stöbern Sie in unserem Produktkatalog!",
+    "empty_title": "Noch keine Bestellungen",
+    "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung"
+  },
+  "success": {
+    "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
   }
 }
