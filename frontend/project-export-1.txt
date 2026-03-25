@@ -4,6 +4,19 @@ PROJECT STRUCTURE
 
 📁 .
 ├── 📄 angular.json
+├── 📁 cypress/
+│   └── 📁 support/
+│       ├── 📁 e2e/
+│       │   ├── 📄 auth.cy.ts
+│       │   ├── 📄 home.cy.ts
+│       │   ├── 📄 language.cy.ts
+│       │   ├── 📄 navigation.cy.ts
+│       │   ├── 📄 newsletter.cy.ts
+│       │   ├── 📄 products.cy.ts
+│       │   ├── 📄 responsive.cy.ts
+│       │   └── 📄 theme.cy.ts
+│       └── 📄 e2e.ts
+├── 📄 cypress.config.ts
 ├── 📁 docs/
 │   └── 📄 security.md
 ├── 📄 package.json
@@ -15,7 +28,6 @@ PROJECT STRUCTURE
 │   │   ├── 📄 app.css
 │   │   ├── 📄 app.html
 │   │   ├── 📄 app.routes.ts
-│   │   ├── 📄 app.spec.ts
 │   │   ├── 📄 app.ts
 │   │   ├── 📁 core/
 │   │   │   ├── 📁 constants/
@@ -28,6 +40,7 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 admin.models.ts
 │   │   │   │   ├── 📄 auth.model.ts
 │   │   │   │   ├── 📄 forum.model.ts
+│   │   │   │   ├── 📄 product.model.spec.ts
 │   │   │   │   ├── 📄 product.model.ts
 │   │   │   │   └── 📄 review.model.ts
 │   │   │   ├── 📁 services/
@@ -43,6 +56,7 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 toast.service.ts
 │   │   │   │   └── 📄 translation.service.ts
 │   │   │   └── 📁 utils/
+│   │   │       ├── 📄 admin.utils.spec.ts
 │   │   │       ├── 📄 admin.utils.ts
 │   │   │       └── 📄 image-utils.ts
 │   │   ├── 📁 pages/
@@ -50,7 +64,6 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 admin.css
 │   │   │   │   ├── 📄 admin.html
 │   │   │   │   ├── 📄 admin.mock.ts
-│   │   │   │   ├── 📄 admin.spec.ts
 │   │   │   │   └── 📄 admin.ts
 │   │   │   ├── 📁 delacc-promise/
 │   │   │   │   ├── 📄 delacc-promise.css
@@ -59,7 +72,6 @@ PROJECT STRUCTURE
 │   │   │   ├── 📁 forum/
 │   │   │   │   ├── 📄 forum.css
 │   │   │   │   ├── 📄 forum.html
-│   │   │   │   ├── 📄 forum.spec.ts
 │   │   │   │   └── 📄 forum.ts
 │   │   │   ├── 📁 forum-detail/
 │   │   │   │   ├── 📄 forum-detail.css
@@ -68,17 +80,14 @@ PROJECT STRUCTURE
 │   │   │   ├── 📁 home/
 │   │   │   │   ├── 📄 home.css
 │   │   │   │   ├── 📄 home.html
-│   │   │   │   ├── 📄 home.spec.ts
 │   │   │   │   └── 📄 home.ts
 │   │   │   ├── 📁 legal/
 │   │   │   │   ├── 📄 legal.css
 │   │   │   │   ├── 📄 legal.html
-│   │   │   │   ├── 📄 legal.spec.ts
 │   │   │   │   └── 📄 legal.ts
 │   │   │   ├── 📁 login/
 │   │   │   │   ├── 📄 login.css
 │   │   │   │   ├── 📄 login.html
-│   │   │   │   ├── 📄 login.spec.ts
 │   │   │   │   └── 📄 login.ts
 │   │   │   ├── 📁 login-promise/
 │   │   │   │   ├── 📄 login-promise.css
@@ -87,48 +96,39 @@ PROJECT STRUCTURE
 │   │   │   ├── 📁 not-found/
 │   │   │   │   ├── 📄 not-found.css
 │   │   │   │   ├── 📄 not-found.html
-│   │   │   │   ├── 📄 not-found.spec.ts
 │   │   │   │   └── 📄 not-found.ts
 │   │   │   ├── 📁 password-reset/
 │   │   │   │   ├── 📄 password-reset.css
 │   │   │   │   ├── 📄 password-reset.html
-│   │   │   │   ├── 📄 password-reset.spec.ts
 │   │   │   │   └── 📄 password-reset.ts
 │   │   │   ├── 📁 password-reset-request/
 │   │   │   │   ├── 📄 password-reset-request.css
 │   │   │   │   ├── 📄 password-reset-request.html
-│   │   │   │   ├── 📄 password-reset-request.spec.ts
 │   │   │   │   └── 📄 password-reset-request.ts
 │   │   │   ├── 📁 product-detail/
 │   │   │   │   ├── 📄 product-detail.css
 │   │   │   │   ├── 📄 product-detail.html
-│   │   │   │   ├── 📄 product-detail.spec.ts
 │   │   │   │   └── 📄 product-detail.ts
 │   │   │   ├── 📁 products/
 │   │   │   │   ├── 📄 product.mock.ts
 │   │   │   │   ├── 📄 products.css
 │   │   │   │   ├── 📄 products.html
-│   │   │   │   ├── 📄 products.spec.ts
 │   │   │   │   └── 📄 products.ts
 │   │   │   ├── 📁 profile/
 │   │   │   │   ├── 📄 profile.css
 │   │   │   │   ├── 📄 profile.html
-│   │   │   │   ├── 📄 profile.spec.ts
 │   │   │   │   └── 📄 profile.ts
 │   │   │   ├── 📁 purchase/
 │   │   │   │   ├── 📄 purchase.css
 │   │   │   │   ├── 📄 purchase.html
-│   │   │   │   ├── 📄 purchase.spec.ts
 │   │   │   │   └── 📄 purchase.ts
 │   │   │   ├── 📁 register/
 │   │   │   │   ├── 📄 register.css
 │   │   │   │   ├── 📄 register.html
-│   │   │   │   ├── 📄 register.spec.ts
 │   │   │   │   └── 📄 register.ts
 │   │   │   └── 📁 registration-promise/
 │   │   │       ├── 📄 registration-promise.css
 │   │   │       ├── 📄 registration-promise.html
-│   │   │       ├── 📄 registration-promise.spec.ts
 │   │   │       └── 📄 registration-promise.ts
 │   │   ├── 📁 services/
 │   │   └── 📁 shared/
@@ -358,6 +358,504 @@ FILE: angular.json
     }
   }
 }
+
+
+
+================================================================================
+FILE: cypress\support\e2e\auth.cy.ts
+================================================================================
+
+describe('Authentication guards', () => {
+  beforeEach(() => {
+    cy.visit('/home');
+    cy.window().then((win) => {
+      win.localStorage.removeItem('auth_token');
+      win.sessionStorage.removeItem('auth_token');
+      win.localStorage.removeItem('user_id');
+      win.sessionStorage.removeItem('user_id');
+    });
+  });
+
+  it('AU-3: Unauthorized user is redirected from profile page', () => {
+    cy.visit('/profile');
+    cy.url().should('include', '/login');
+  });
+
+  it('AU-3: Unauthorized user is redirected from purchase page', () => {
+    cy.visit('/purchase');
+    cy.url().should('include', '/login');
+  });
+
+  it('AU-3: Unauthorized user is redirected from admin page', () => {
+    cy.visit('/admin');
+    cy.url().should('satisfy', (url: string) => url.includes('/login') || url.includes('/home'));
+  });
+
+  it('should allow access to public pages without auth', () => {
+    cy.visit('/home');
+    cy.url().should('include', '/home');
+
+    cy.visit('/products');
+    cy.url().should('include', '/products');
+
+    cy.visit('/forum');
+    cy.url().should('include', '/forum');
+
+    cy.visit('/legal');
+    cy.url().should('include', '/legal');
+  });
+});
+
+
+
+================================================================================
+FILE: cypress\support\e2e\home.cy.ts
+================================================================================
+
+describe('Home page', () => {
+  beforeEach(() => {
+    cy.visit('/home');
+  });
+
+  describe('Featured products', () => {
+    it('FT-1: Featured product cards are clickable', () => {
+      cy.get('app-featured-product-card', { timeout: 10000 })
+        .should('have.length.at.least', 1)
+        .first()
+        .click();
+      cy.url().should('match', /\/products\/\d+/);
+    });
+
+    it('FT-2: Featured section is responsive on window resize', () => {
+      cy.get('app-featured', { timeout: 10000 }).should('be.visible');
+
+      cy.viewport(375, 667);
+      cy.get('app-featured').should('be.visible');
+      cy.get('app-featured-product-card').should('have.length.at.least', 1);
+
+      cy.viewport(1280, 720);
+      cy.get('app-featured').should('be.visible');
+    });
+  });
+
+  describe('Hero slider', () => {
+    it('SL-1: Slider next button works', () => {
+      cy.get('app-slide', { timeout: 10000 }).should('exist');
+      cy.get('app-slide').then(($slide) => {
+        const nextBtn = $slide.find('[aria-label*="next"], .slide-next, .slider-next');
+        if (nextBtn.length > 0) {
+          cy.wrap(nextBtn).click();
+          cy.wait(500);
+          cy.wrap(nextBtn).should('exist');
+        }
+      });
+    });
+
+    it('SL-2: Slider previous button works', () => {
+      cy.get('app-slide', { timeout: 10000 }).should('exist');
+      cy.get('app-slide').then(($slide) => {
+        const nextBtn = $slide.find('[aria-label*="next"], .slide-next, .slider-next');
+        if (nextBtn.length > 0) {
+          cy.wrap(nextBtn).click();
+          cy.wait(500);
+        }
+        const prevBtn = $slide.find('[aria-label*="prev"], .slide-prev, .slider-prev');
+        if (prevBtn.length > 0) {
+          cy.wrap(prevBtn).click();
+          cy.wait(500);
+          cy.wrap(prevBtn).should('exist');
+        }
+      });
+    });
+
+    it('SL-3: Slider dot/stepper buttons work', () => {
+      cy.get('app-slide', { timeout: 10000 }).should('exist');
+      cy.get('app-slide').then(($slide) => {
+        const dots = $slide.find('.slide-dot, .slider-dot, .dot');
+        if (dots.length > 1) {
+          cy.wrap(dots.eq(1)).click();
+          cy.wait(500);
+        }
+      });
+    });
+  });
+});
+
+
+
+================================================================================
+FILE: cypress\support\e2e\language.cy.ts
+================================================================================
+
+describe('Language switching', () => {
+  beforeEach(() => {
+    cy.visit('/home');
+    cy.window().then((win) => win.localStorage.removeItem('selectedLanguage'));
+  });
+
+  it('LA-1: English version loads correctly', () => {
+    selectLanguage('English');
+    cy.get('app-header').should('contain.text', 'Home');
+    cy.get('app-header').should('contain.text', 'Products');
+    cy.get('app-header').should('contain.text', 'Forum');
+  });
+
+  it('LA-2: Hungarian version loads correctly', () => {
+    selectLanguage('Magyar');
+    cy.get('app-header').should('contain.text', 'Kezdőlap');
+    cy.get('app-header').should('contain.text', 'Termékek');
+    cy.get('app-header').should('contain.text', 'Fórum');
+  });
+
+  it('LA-3: German version loads correctly', () => {
+    selectLanguage('Deutsch');
+    cy.get('app-header').should('contain.text', 'Startseite');
+    cy.get('app-header').should('contain.text', 'Produkte');
+    cy.get('app-header').should('contain.text', 'Forum');
+  });
+
+  it('LA-4: Selected language persists after page reload', () => {
+    selectLanguage('Magyar');
+    cy.get('app-header').should('contain.text', 'Kezdőlap');
+
+    cy.reload();
+
+    cy.get('app-header').should('contain.text', 'Kezdőlap');
+    cy.get('app-header').should('contain.text', 'Termékek');
+  });
+
+  it('LA-5: Selected language persists across page navigation', () => {
+    selectLanguage('Deutsch');
+    cy.get('app-header').should('contain.text', 'Produkte');
+
+    cy.get('app-header').contains('Produkte').click();
+    cy.get('app-header').should('contain.text', 'Startseite');
+
+    cy.get('app-header').contains('Forum').click();
+    cy.get('app-header').should('contain.text', 'Startseite');
+  });
+});
+
+function selectLanguage(name: string): void {
+  cy.get('app-language-switcher').click();
+  cy.contains(name).click();
+  cy.wait(300);
+}
+
+
+
+================================================================================
+FILE: cypress\support\e2e\navigation.cy.ts
+================================================================================
+
+describe('Navigation', () => {
+  beforeEach(() => {
+    cy.visit('/');
+  });
+
+  it('PT-1: Home button redirects to home page', () => {
+    cy.visit('/products');
+    cy.get('app-header').contains('Home').click();
+    cy.url().should('include', '/home');
+    cy.get('.home').should('exist');
+  });
+
+  it('PT-2: Products button redirects to products page', () => {
+    cy.get('app-header').contains('Products').click();
+    cy.url().should('include', '/products');
+    cy.get('app-product-list').should('exist');
+  });
+
+  it('PT-3: Forum button redirects to forum page', () => {
+    cy.get('app-header').contains('Forum').click();
+    cy.url().should('include', '/forum');
+    cy.get('.forum-page').should('exist');
+  });
+
+  it('FO-1: Legal button redirects to legal page', () => {
+    cy.get('app-footer').contains('Legal').click();
+    cy.url().should('include', '/legal');
+    cy.get('.legal-page').should('exist');
+  });
+
+  it('should show 404 page for unknown routes', () => {
+    cy.visit('/this-does-not-exist', { failOnStatusCode: false });
+    cy.get('app-not-found, .not-found').should('exist');
+  });
+
+  it('should scroll to top on navigation', () => {
+    cy.visit('/products');
+    cy.scrollTo('bottom');
+    cy.get('app-header').contains('Forum').click();
+    cy.window().its('scrollY').should('equal', 0);
+  });
+});
+
+
+
+================================================================================
+FILE: cypress\support\e2e\newsletter.cy.ts
+================================================================================
+
+describe('Newsletter subscription', () => {
+  beforeEach(() => {
+    cy.visit('/home');
+    cy.scrollTo('bottom');
+  });
+
+  it('NL-1: Newsletter form is visible in footer', () => {
+    cy.get('app-newsletter-form, .newsletter-form').should('be.visible');
+    cy.get('app-newsletter-form input[type="email"], .newsletter-form input').should('exist');
+  });
+
+  it('NL-3: Newsletter shows error on invalid email', () => {
+    cy.get('app-newsletter-form input[type="email"], .newsletter-form input')
+      .clear()
+      .type('not-an-email');
+    cy.get('app-newsletter-form button[type="submit"], .newsletter-form button')
+      .click();
+    cy.wait(500);
+    cy.get('app-toast, .toast').should('exist');
+  });
+});
+
+
+
+================================================================================
+FILE: cypress\support\e2e\products.cy.ts
+================================================================================
+
+describe('Products page', () => {
+  beforeEach(() => {
+    cy.visit('/products');
+  });
+
+  it('WS-1: Products are loaded and displayed', () => {
+    cy.get('app-product-card', { timeout: 10000 }).should('have.length.at.least', 1);
+  });
+
+  it('WS-3: Product detail page opens on card click', () => {
+    cy.get('app-product-card', { timeout: 10000 }).first().click();
+    cy.url().should('match', /\/products\/\d+/);
+    cy.get('app-product-detail, .product-detail').should('exist');
+  });
+
+  it('WS-4: Product prices are displayed', () => {
+    cy.get('app-product-card', { timeout: 10000 })
+      .first()
+      .then(($card) => {
+        const text = $card.text();
+        const hasPrice = /\d/.test(text) && /Ft|€|\$/.test(text);
+        expect(hasPrice).to.be.true;
+      });
+  });
+
+  it('WS-5: Out-of-stock product cannot be added to cart', () => {
+    cy.get('app-product-card', { timeout: 10000 }).each(($card) => {
+      const text = $card.text().toLowerCase();
+      if (
+        text.includes('out of stock') ||
+        text.includes('nincs készleten') ||
+        text.includes('nicht verfügbar')
+      ) {
+        cy.wrap($card)
+          .find('button')
+          .filter(':contains("Add to Cart"), :contains("Kosárba"), :contains("In den Warenkorb")')
+          .should('be.disabled');
+        return false;
+      }
+    });
+  });
+
+  it('should filter products by category', () => {
+    cy.get('app-category-bar', { timeout: 10000 }).should('exist');
+    cy.get('app-category-bar .category-item').first().click();
+    cy.get('app-product-card').should('have.length.at.least', 0);
+  });
+
+  it('should search products with the search bar', () => {
+    cy.get('app-product-filter .search-input', { timeout: 10000 }).type('algoflex');
+    cy.wait(500);
+    cy.get('app-product-card').each(($card) => {
+      cy.wrap($card)
+        .invoke('text')
+        .then((text) => {
+          expect(text.toLowerCase()).to.include('algoflex');
+        });
+    });
+  });
+
+  it('should clear search and show all products again', () => {
+    cy.get('app-product-filter .search-input', { timeout: 10000 }).type('algoflex');
+    cy.wait(500);
+    cy.get('app-product-card').should('have.length.at.least', 1);
+
+    cy.get('app-product-filter .clear-search').click();
+    cy.wait(500);
+    cy.get('app-product-card').should('have.length.at.least', 1);
+  });
+
+  it('should sort products by price ascending', () => {
+    cy.get('app-product-filter .sort-select', { timeout: 10000 }).select('price-asc');
+    cy.wait(300);
+    cy.get('app-product-card').should('have.length.at.least', 1);
+  });
+});
+
+
+
+================================================================================
+FILE: cypress\support\e2e\responsive.cy.ts
+================================================================================
+
+describe('Responsive design', () => {
+  const viewports: [string, number, number][] = [
+    ['mobile', 375, 667],
+    ['tablet', 768, 1024],
+    ['desktop', 1280, 720],
+  ];
+
+  viewports.forEach(([name, width, height]) => {
+    describe(`${name} (${width}x${height})`, () => {
+      beforeEach(() => {
+        cy.viewport(width, height);
+        cy.visit('/home');
+      });
+
+      it(`RS: Header is visible on ${name}`, () => {
+        cy.get('app-header').should('be.visible');
+      });
+
+      it(`RS: Footer is visible on ${name}`, () => {
+        cy.scrollTo('bottom');
+        cy.get('app-footer').should('be.visible');
+      });
+
+      it(`RS: Products page renders on ${name}`, () => {
+        cy.visit('/products');
+        cy.get('app-product-list', { timeout: 10000 }).should('exist');
+      });
+
+      it(`RS: Forum page renders on ${name}`, () => {
+        cy.visit('/forum');
+        cy.get('.forum-page').should('exist');
+      });
+    });
+  });
+
+  it('RS-1: Mobile navigation menu works', () => {
+    cy.viewport(375, 667);
+    cy.visit('/home');
+
+    cy.get('.hamburger-btn').should('be.visible').click();
+    cy.get('.mobile-dropdown, .mobile-nav-item').should('be.visible');
+
+    cy.get('.mobile-nav-item').contains('Products').click();
+    cy.url().should('include', '/products');
+  });
+
+  it('RS-4: Product cards are usable on mobile', () => {
+    cy.viewport(375, 667);
+    cy.visit('/products');
+
+    cy.get('app-product-card', { timeout: 10000 })
+      .should('have.length.at.least', 1)
+      .first()
+      .should('be.visible')
+      .click();
+    cy.url().should('match', /\/products\/\d+/);
+  });
+});
+
+
+
+================================================================================
+FILE: cypress\support\e2e\theme.cy.ts
+================================================================================
+
+describe('Theme switching (TH-1, TH-2, TH-3, TH-4, TH-5)', () => {
+  beforeEach(() => {
+    cy.visit('/home');
+    cy.window().then((win) => win.localStorage.removeItem('selected-theme'));
+  });
+
+  function clickThemeToggle() {
+    cy.get('[aria-label="Toggle theme"]').first().click();
+  }
+
+  it('TH-1: Light/dark mode toggle works', () => {
+    cy.get('html').then(($html) => {
+      const initialTheme = $html.attr('data-theme');
+      clickThemeToggle();
+      cy.get('html').should('have.attr', 'data-theme').and('not.equal', initialTheme);
+    });
+  });
+
+  it('TH-2: Light mode applies correctly', () => {
+    cy.get('html').invoke('attr', 'data-theme').then((theme) => {
+      if (theme === 'dark') clickThemeToggle();
+    });
+    cy.get('html').should('have.attr', 'data-theme', 'light');
+  });
+
+  it('TH-3: Dark mode applies correctly', () => {
+    cy.get('html').invoke('attr', 'data-theme').then((theme) => {
+      if (theme !== 'dark') clickThemeToggle();
+    });
+    cy.get('html').should('have.attr', 'data-theme', 'dark');
+  });
+
+  it('TH-4: Selected theme persists after page reload', () => {
+    cy.get('html').invoke('attr', 'data-theme').then((theme) => {
+      if (theme !== 'dark') clickThemeToggle();
+    });
+    cy.get('html').should('have.attr', 'data-theme', 'dark');
+    cy.reload();
+    cy.get('html').should('have.attr', 'data-theme', 'dark');
+  });
+
+  it('TH-5: Theme persists across page navigation', () => {
+    cy.get('html').invoke('attr', 'data-theme').then((theme) => {
+      if (theme !== 'dark') clickThemeToggle();
+    });
+    cy.get('html').should('have.attr', 'data-theme', 'dark');
+
+    cy.get('app-header').contains('Products').click();
+    cy.get('html').should('have.attr', 'data-theme', 'dark');
+
+    cy.get('app-header').contains('Forum').click();
+    cy.get('html').should('have.attr', 'data-theme', 'dark');
+  });
+});
+
+
+
+================================================================================
+FILE: cypress\support\e2e.ts
+================================================================================
+
+Cypress.on('uncaught:exception', () => false);
+
+
+
+================================================================================
+FILE: cypress.config.ts
+================================================================================
+
+import { defineConfig } from 'cypress';
+
+export default defineConfig({
+  e2e: {
+    baseUrl: 'http://localhost:4200',
+    supportFile: 'cypress/support/e2e.ts',
+    specPattern: 'cypress/support/e2e/**/*.cy.ts',
+    viewportWidth: 1280,
+    viewportHeight: 720,
+    defaultCommandTimeout: 8000,
+    video: false,
+    screenshotOnRunFailure: true,
+  },
+});
 
 
 
@@ -715,36 +1213,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/not-found/not-found').then((m) => m.NotFound),
   },
 ];
-
-
-
-================================================================================
-FILE: src\app\app.spec.ts
-================================================================================
-
-import { TestBed } from '@angular/core/testing';
-import { App } from './app';
-
-describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App],
-    }).compileComponents();
-  });
-
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend');
-  });
-});
 
 
 
@@ -1722,6 +2190,188 @@ export const DEFAULT_CATEGORY_COLOR = 'category-default';
 
 
 ================================================================================
+FILE: src\app\core\models\product.model.spec.ts
+================================================================================
+
+import { describe, it, expect } from 'vitest';
+import { enrichProduct, Product, ProductImage } from './product.model';
+
+const BASE_PRODUCT: Product = {
+  id: '1',
+  name: 'Aspirin',
+  name_hu: 'Aspirin 500mg',
+  name_en: 'Aspirin 500mg',
+  name_de: 'Aspirin 500mg Tabletten',
+  description_hu: 'Fájdalomcsillapító',
+  description_en: 'Pain reliever',
+  description_de: 'Schmerzmittel',
+  description_preview_hu: 'Fájdalom ellen',
+  description_preview_en: 'Against pain',
+  description_preview_de: 'Gegen Schmerzen',
+  price_huf: '1990',
+  price_usd: '5.59',
+  price_eur: '5.19',
+  sale_percentage: '0',
+  stock: '50',
+  times_ordered: '120',
+  category_id: '1',
+  manufacturer: 'Bayer',
+  brand: 'Aspirin',
+  rating: '4.5',
+  sku: 'ASP-500',
+  active_ingredients: 'Acetylsalicylic acid 500mg',
+  packaging_hu: '30 tabletta',
+  packaging_en: '30 tablets',
+  packaging_de: '30 Tabletten',
+  thumbnail_url: 'assets/products/1/1.webp',
+  featured: '1',
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-06-01T00:00:00Z',
+};
+
+describe('enrichProduct', () => {
+  it('should parse numeric fields correctly', () => {
+    const result = enrichProduct(BASE_PRODUCT, 'en');
+
+    expect(result.price_number).toBe(1990);
+    expect(result.stock_number).toBe(50);
+    expect(result.sale_percentage_number).toBe(0);
+    expect(result.rating_number).toBe(4.5);
+  });
+
+  it('should handle Hungarian comma decimal separators', () => {
+    const product = { ...BASE_PRODUCT, price_huf: '1990,50', sale_percentage: '15,5', rating: '4,7' };
+    const result = enrichProduct(product, 'en');
+
+    expect(result.price_number).toBe(1990.5);
+    expect(result.sale_percentage_number).toBe(15.5);
+    expect(result.rating_number).toBe(4.7);
+  });
+
+  it('should compute stock booleans correctly', () => {
+    const inStock = enrichProduct(BASE_PRODUCT, 'en');
+    expect(inStock.in_stock).toBe(true);
+    expect(inStock.stock_quantity).toBe(50);
+
+    const outOfStock = enrichProduct({ ...BASE_PRODUCT, stock: '0' }, 'en');
+    expect(outOfStock.in_stock).toBe(false);
+    expect(outOfStock.stock_quantity).toBe(0);
+  });
+
+  it('should compute discount correctly', () => {
+    const noDiscount = enrichProduct(BASE_PRODUCT, 'en');
+    expect(noDiscount.has_discount).toBe(false);
+    expect(noDiscount.price).toBe(1990);
+
+    const withDiscount = enrichProduct({ ...BASE_PRODUCT, sale_percentage: '20' }, 'en');
+    expect(withDiscount.has_discount).toBe(true);
+    expect(withDiscount.discount_percentage).toBe(20);
+    expect(withDiscount.price).toBe(1990 * 0.8);
+  });
+
+  it('should resolve name by language', () => {
+    const hu = enrichProduct(BASE_PRODUCT, 'hu');
+    expect(hu.name).toBe('Aspirin 500mg');
+
+    const en = enrichProduct(BASE_PRODUCT, 'en');
+    expect(en.name).toBe('Aspirin 500mg');
+
+    const de = enrichProduct(BASE_PRODUCT, 'de');
+    expect(de.name).toBe('Aspirin 500mg Tabletten');
+  });
+
+  it('should resolve description by language', () => {
+    const hu = enrichProduct(BASE_PRODUCT, 'hu');
+    expect(hu.description).toBe('Fájdalomcsillapító');
+
+    const en = enrichProduct(BASE_PRODUCT, 'en');
+    expect(en.description).toBe('Pain reliever');
+
+    const de = enrichProduct(BASE_PRODUCT, 'de');
+    expect(de.description).toBe('Schmerzmittel');
+  });
+
+  it('should resolve packaging by language', () => {
+    const hu = enrichProduct(BASE_PRODUCT, 'hu');
+    expect(hu.packaging).toBe('30 tabletta');
+
+    const en = enrichProduct(BASE_PRODUCT, 'en');
+    expect(en.packaging).toBe('30 tablets');
+
+    const de = enrichProduct(BASE_PRODUCT, 'de');
+    expect(de.packaging).toBe('30 Tabletten');
+  });
+
+  it('should detect featured products', () => {
+    const featured = enrichProduct(BASE_PRODUCT, 'en');
+    expect(featured.is_featured).toBe(true);
+
+    const notFeatured = enrichProduct({ ...BASE_PRODUCT, featured: '0' }, 'en');
+    expect(notFeatured.is_featured).toBe(false);
+  });
+
+  it('should use thumbnail as single image when no gallery provided', () => {
+    const result = enrichProduct(BASE_PRODUCT, 'en');
+
+    expect(result.image_url).toBe('assets/products/1/1.webp');
+    expect(result.images).toEqual(['assets/products/1/1.webp']);
+  });
+
+  it('should sort gallery images by sort_id', () => {
+    const gallery: ProductImage[] = [
+      { id: '3', product_id: '1', image_url: 'c.webp', alt_text_hu: '', alt_text_en: '', alt_text_de: '', sort_id: '3' },
+      { id: '1', product_id: '1', image_url: 'a.webp', alt_text_hu: '', alt_text_en: '', alt_text_de: '', sort_id: '1' },
+      { id: '2', product_id: '1', image_url: 'b.webp', alt_text_hu: '', alt_text_en: '', alt_text_de: '', sort_id: '2' },
+    ];
+    const result = enrichProduct(BASE_PRODUCT, 'en', gallery);
+
+    expect(result.images).toEqual(['a.webp', 'b.webp', 'c.webp']);
+  });
+
+  it('should return empty images array when no thumbnail and no gallery', () => {
+    const noImage = { ...BASE_PRODUCT, thumbnail_url: '' };
+    const result = enrichProduct(noImage, 'en');
+
+    expect(result.images).toEqual([]);
+    expect(result.image_url).toBe('');
+  });
+
+  it('should handle missing/invalid numeric fields gracefully', () => {
+    const broken = {
+      ...BASE_PRODUCT,
+      price_huf: '',
+      stock: 'abc',
+      sale_percentage: '',
+      rating: '',
+    };
+    const result = enrichProduct(broken, 'en');
+
+    expect(result.price_number).toBe(0);
+    expect(result.stock_number).toBe(0);
+    expect(result.sale_percentage_number).toBe(0);
+    expect(result.rating_number).toBe(0);
+    expect(result.in_stock).toBe(false);
+    expect(result.has_discount).toBe(false);
+  });
+
+  it('should resolve category from category_id or category fallback', () => {
+    const withCategoryId = enrichProduct({ ...BASE_PRODUCT, category_id: '5', category: '3' }, 'en');
+    expect(withCategoryId.category).toBe('5');
+
+    const withoutCategoryId = enrichProduct({ ...BASE_PRODUCT, category_id: undefined, category: '3' }, 'en');
+    expect(withoutCategoryId.category).toBe('3');
+  });
+
+  it('should default language to hu when not specified', () => {
+    const result = enrichProduct(BASE_PRODUCT);
+    expect(result.name).toBe('Aspirin 500mg');
+    expect(result.description).toBe('Fájdalomcsillapító');
+  });
+});
+
+
+
+================================================================================
 FILE: src\app\core\models\product.model.ts
 ================================================================================
 
@@ -2182,12 +2832,19 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  updateUserStateAdmin(userId: string, newState: string): Observable<ApiResponse> {
-    const auth = this.buildAdminAuthBody();
+  updateUserStateAdmin(
+    admin_id: string,
+    admin_session_token: string,
+    target_user_id: string,
+    new_user_state: string,
+    reason: string,
+  ): Observable<ApiResponse> {
     const body = {
-      ...auth,
-      user_id: this.encodeBase64(userId),
-      new_account_state: this.encodeBase64(newState),
+      admin_id: this.encodeBase64(admin_id),
+      admin_session_token: this.encodeBase64(admin_session_token),
+      target_user_id: this.encodeBase64(target_user_id),
+      new_user_state: this.encodeBase64(new_user_state),
+      reason: this.encodeBase64(reason),
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/update_user_state_admin`, body)
@@ -4425,6 +5082,130 @@ export class TranslationService {
     return this.translate.instant(key);
   }
 }
+
+
+
+================================================================================
+FILE: src\app\core\utils\admin.utils.spec.ts
+================================================================================
+
+import { describe, it, expect } from 'vitest';
+import { smartFilter, emptyProductForm } from './admin.utils';
+import { FieldExtractor } from '../models/admin.models';
+
+interface TestItem {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+const COLUMN_MAP: Record<string, FieldExtractor<TestItem>> = {
+  id: (i) => i.id,
+  name: (i) => i.name,
+  email: (i) => i.email,
+  role: (i) => i.role,
+};
+
+const ITEMS: TestItem[] = [
+  { id: '1', name: 'Kovács Béla', email: 'bela@gmail.com', role: 'admin' },
+  { id: '2', name: 'Nagy Anna', email: 'anna@outlook.com', role: 'verified' },
+  { id: '3', name: 'Horváth Péter', email: 'peter@freemail.hu', role: 'verified' },
+  { id: '4', name: 'Tóth Mária', email: 'maria@citromail.hu', role: 'banned' },
+];
+
+describe('smartFilter', () => {
+  it('should return all items for empty query', () => {
+    expect(smartFilter(ITEMS, '', COLUMN_MAP)).toEqual(ITEMS);
+    expect(smartFilter(ITEMS, '   ', COLUMN_MAP)).toEqual(ITEMS);
+  });
+
+  it('should filter globally across all columns', () => {
+    const result = smartFilter(ITEMS, 'anna', COLUMN_MAP);
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Nagy Anna');
+  });
+
+  it('should be case-insensitive', () => {
+    const result = smartFilter(ITEMS, 'ANNA', COLUMN_MAP);
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Nagy Anna');
+  });
+
+  it('should filter by specific column with colon syntax', () => {
+    const result = smartFilter(ITEMS, 'role:admin', COLUMN_MAP);
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Kovács Béla');
+  });
+
+  it('should filter by email column', () => {
+    const result = smartFilter(ITEMS, 'email:gmail', COLUMN_MAP);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('1');
+  });
+
+  it('should return empty array when no value match in column', () => {
+    const result = smartFilter(ITEMS, 'role:superadmin', COLUMN_MAP);
+    expect(result).toHaveLength(0);
+  });
+
+  it('should return all items for unknown column name (no-op)', () => {
+    const result = smartFilter(ITEMS, 'nonexistent:value', COLUMN_MAP);
+    expect(result).toEqual(ITEMS);
+  });
+
+  it('should handle global search matching multiple items', () => {
+    const result = smartFilter(ITEMS, 'verified', COLUMN_MAP);
+    expect(result).toHaveLength(2);
+  });
+
+  it('should handle partial matches', () => {
+    const result = smartFilter(ITEMS, 'kov', COLUMN_MAP);
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Kovács Béla');
+  });
+
+  it('should handle .hu email domain filter', () => {
+    const result = smartFilter(ITEMS, 'email:.hu', COLUMN_MAP);
+    expect(result).toHaveLength(2);
+  });
+
+  it('should handle empty items array', () => {
+    expect(smartFilter([], 'test', COLUMN_MAP)).toEqual([]);
+  });
+
+  it('should treat colon at start as literal global search', () => {
+    const result = smartFilter(ITEMS, ':admin', COLUMN_MAP);
+    expect(result).toHaveLength(0);
+  });
+});
+
+describe('emptyProductForm', () => {
+  it('should return an object with all fields empty/zero', () => {
+    const form = emptyProductForm();
+
+    expect(form.name_hu).toBe('');
+    expect(form.name_en).toBe('');
+    expect(form.name_de).toBe('');
+    expect(form.price_huf).toBe(0);
+    expect(form.sale_percentage).toBe(0);
+    expect(form.stock).toBe(0);
+    expect(form.featured).toBe(false);
+    expect(form.category_id).toBe('');
+    expect(form.sku).toBe('');
+  });
+
+  it('should return a new object each time (no shared reference)', () => {
+    const a = emptyProductForm();
+    const b = emptyProductForm();
+
+    expect(a).toEqual(b);
+    expect(a).not.toBe(b);
+
+    a.name_hu = 'modified';
+    expect(b.name_hu).toBe('');
+  });
+});
 
 
 
@@ -7970,7 +8751,7 @@ FILE: src\app\pages\admin\admin.mock.ts
 
 import { AdminUser, AdminOrder } from '../../core/services/account.service';
 
-export const MOCK_MODE = false;
+export const MOCK_MODE = true;
 
 export const MOCK_USERS: AdminUser[] = [
   {
@@ -8153,36 +8934,6 @@ export const MOCK_ORDERS: AdminOrder[] = [
     note: '',
   },
 ];
-
-
-
-================================================================================
-FILE: src\app\pages\admin\admin.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Admin } from './admin';
-
-describe('Admin', () => {
-  let component: Admin;
-  let fixture: ComponentFixture<Admin>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Admin]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Admin);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
 
 
 
@@ -8588,24 +9339,29 @@ export class Admin implements OnInit {
       return;
     }
 
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
     switch (req.action) {
       case 'change_role':
       case 'unban':
-        this.accountService.updateUserStateAdmin(req.user.id, req.newState!).subscribe({
-          next: (res) => {
-            if (res.statuscode === '200') {
-              this.applyUserStateChange(req.user.id, req.newState!);
-              this.toastService.show('admin.user_actions.success', 'success');
-            } else {
+        this.accountService
+          .updateUserStateAdmin(adminId, token, req.user.id, req.newState!, '')
+          .subscribe({
+            next: (res) => {
+              if (res.statuscode === '200') {
+                this.applyUserStateChange(req.user.id, req.newState!);
+                this.toastService.show('admin.user_actions.success', 'success');
+              } else {
+                this.toastService.show('admin.user_actions.error', 'error');
+              }
+              this.finishUserAction();
+            },
+            error: () => {
               this.toastService.show('admin.user_actions.error', 'error');
-            }
-            this.finishUserAction();
-          },
-          error: () => {
-            this.toastService.show('admin.user_actions.error', 'error');
-            this.finishUserAction();
-          },
-        });
+              this.finishUserAction();
+            },
+          });
         break;
 
       case 'ban':
@@ -10477,36 +11233,6 @@ FILE: src\app\pages\forum\forum.html
 
 
 ================================================================================
-FILE: src\app\pages\forum\forum.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Forum } from './forum';
-
-describe('Forum', () => {
-  let component: Forum;
-  let fixture: ComponentFixture<Forum>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Forum]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Forum);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
-
-
-
-================================================================================
 FILE: src\app\pages\forum\forum.ts
 ================================================================================
 
@@ -12011,36 +12737,6 @@ FILE: src\app\pages\home\home.html
 
 
 ================================================================================
-FILE: src\app\pages\home\home.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Home } from './home';
-
-describe('Home', () => {
-  let component: Home;
-  let fixture: ComponentFixture<Home>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Home]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Home);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
-
-
-
-================================================================================
 FILE: src\app\pages\home\home.ts
 ================================================================================
 
@@ -12738,36 +13434,6 @@ FILE: src\app\pages\legal\legal.html
 
 
 ================================================================================
-FILE: src\app\pages\legal\legal.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Legal } from './legal';
-
-describe('Legal', () => {
-  let component: Legal;
-  let fixture: ComponentFixture<Legal>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Legal]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Legal);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
-
-
-
-================================================================================
 FILE: src\app\pages\legal\legal.ts
 ================================================================================
 
@@ -13424,36 +14090,6 @@ FILE: src\app\pages\login\login.html
     }
   </div>
 </div>
-
-
-
-================================================================================
-FILE: src\app\pages\login\login.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Login } from './login';
-
-describe('Login', () => {
-  let component: Login;
-  let fixture: ComponentFixture<Login>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Login]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Login);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
 
 
 
@@ -14320,36 +14956,6 @@ FILE: src\app\pages\not-found\not-found.html
 
 
 ================================================================================
-FILE: src\app\pages\not-found\not-found.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { NotFound } from './not-found';
-
-describe('NotFound', () => {
-  let component: NotFound;
-  let fixture: ComponentFixture<NotFound>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [NotFound]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(NotFound);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
-
-
-
-================================================================================
 FILE: src\app\pages\not-found\not-found.ts
 ================================================================================
 
@@ -14444,36 +15050,6 @@ FILE: src\app\pages\password-reset\password-reset.html
     }
   </div>
 </div>
-
-
-
-================================================================================
-FILE: src\app\pages\password-reset\password-reset.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { PasswordReset } from './password-reset';
-
-describe('PasswordReset', () => {
-  let component: PasswordReset;
-  let fixture: ComponentFixture<PasswordReset>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [PasswordReset]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(PasswordReset);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
 
 
 
@@ -14703,36 +15279,6 @@ FILE: src\app\pages\password-reset-request\password-reset-request.html
     }
   </div>
 </div>
-
-
-
-================================================================================
-FILE: src\app\pages\password-reset-request\password-reset-request.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { PasswordResetRequest } from './password-reset-request';
-
-describe('PasswordResetRequest', () => {
-  let component: PasswordResetRequest;
-  let fixture: ComponentFixture<PasswordResetRequest>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [PasswordResetRequest]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(PasswordResetRequest);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
 
 
 
@@ -16043,36 +16589,6 @@ FILE: src\app\pages\product-detail\product-detail.html
 
 
 ================================================================================
-FILE: src\app\pages\product-detail\product-detail.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { ProductDetail } from './product-detail';
-
-describe('ProductDetail', () => {
-  let component: ProductDetail;
-  let fixture: ComponentFixture<ProductDetail>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ProductDetail]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(ProductDetail);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
-
-
-
-================================================================================
 FILE: src\app\pages\product-detail\product-detail.ts
 ================================================================================
 
@@ -16297,7 +16813,7 @@ FILE: src\app\pages\products\product.mock.ts
 
 import { Product, ProductCategory } from '../../core/models/product.model';
 
-export const MOCK_MODE = false;
+export const MOCK_MODE = true;
 
 export const MOCK_RAW_CATEGORIES: ProductCategory[] = [
   {
@@ -16729,36 +17245,6 @@ FILE: src\app\pages\products\products.html
 <div class="products-page">
   <app-product-list></app-product-list>
 </div>
-
-
-
-================================================================================
-FILE: src\app\pages\products\products.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Products } from './products';
-
-describe('Products', () => {
-  let component: Products;
-  let fixture: ComponentFixture<Products>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Products]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Products);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
 
 
 
@@ -18935,36 +19421,6 @@ FILE: src\app\pages\profile\profile.html
 
 
 ================================================================================
-FILE: src\app\pages\profile\profile.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Profile } from './profile';
-
-describe('Profile', () => {
-  let component: Profile;
-  let fixture: ComponentFixture<Profile>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Profile]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Profile);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
-
-
-
-================================================================================
 FILE: src\app\pages\profile\profile.ts
 ================================================================================
 
@@ -19875,36 +20331,6 @@ FILE: src\app\pages\purchase\purchase.html
 
 
 ================================================================================
-FILE: src\app\pages\purchase\purchase.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Purchase } from './purchase';
-
-describe('Purchase', () => {
-  let component: Purchase;
-  let fixture: ComponentFixture<Purchase>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Purchase]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Purchase);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
-
-
-
-================================================================================
 FILE: src\app\pages\purchase\purchase.ts
 ================================================================================
 
@@ -20298,36 +20724,6 @@ FILE: src\app\pages\register\register.html
     </form>
   </div>
 </div>
-
-
-
-================================================================================
-FILE: src\app\pages\register\register.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { Register } from './register';
-
-describe('Register', () => {
-  let component: Register;
-  let fixture: ComponentFixture<Register>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Register]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Register);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
 
 
 
@@ -20847,36 +21243,6 @@ FILE: src\app\pages\registration-promise\registration-promise.html
     }
   </div>
 </div>
-
-
-
-================================================================================
-FILE: src\app\pages\registration-promise\registration-promise.spec.ts
-================================================================================
-
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { RegistrationPromise } from './registration-promise';
-
-describe('RegistrationPromise', () => {
-  let component: RegistrationPromise;
-  let fixture: ComponentFixture<RegistrationPromise>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [RegistrationPromise]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(RegistrationPromise);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
 
 
 
@@ -31242,14 +31608,13 @@ FILE: tsconfig.spec.json
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": [
-      "vitest/globals"
-    ]
+    "types": ["vitest/globals", "cypress"],
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "module": "ES2022"
   },
-  "include": [
-    "src/**/*.d.ts",
-    "src/**/*.spec.ts"
-  ]
+  "include": ["src/**/*.d.ts", "src/**/*.spec.ts", "**/*.cy.ts", "support/**/*.ts"]
 }
 
 

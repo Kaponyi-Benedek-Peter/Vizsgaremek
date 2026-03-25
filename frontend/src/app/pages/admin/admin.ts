@@ -396,24 +396,29 @@ export class Admin implements OnInit {
       return;
     }
 
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
     switch (req.action) {
       case 'change_role':
       case 'unban':
-        this.accountService.updateUserStateAdmin(req.user.id, req.newState!).subscribe({
-          next: (res) => {
-            if (res.statuscode === '200') {
-              this.applyUserStateChange(req.user.id, req.newState!);
-              this.toastService.show('admin.user_actions.success', 'success');
-            } else {
+        this.accountService
+          .updateUserStateAdmin(adminId, token, req.user.id, req.newState!, '')
+          .subscribe({
+            next: (res) => {
+              if (res.statuscode === '200') {
+                this.applyUserStateChange(req.user.id, req.newState!);
+                this.toastService.show('admin.user_actions.success', 'success');
+              } else {
+                this.toastService.show('admin.user_actions.error', 'error');
+              }
+              this.finishUserAction();
+            },
+            error: () => {
               this.toastService.show('admin.user_actions.error', 'error');
-            }
-            this.finishUserAction();
-          },
-          error: () => {
-            this.toastService.show('admin.user_actions.error', 'error');
-            this.finishUserAction();
-          },
-        });
+              this.finishUserAction();
+            },
+          });
         break;
 
       case 'ban':
