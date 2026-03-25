@@ -4671,16 +4671,16 @@ export class ProductService {
   }
 
   uploadProductImageAdmin(
-    auth: Record<string, string>,
+    adminId: string,
+    adminSessionToken: string,
     productId: string,
-    fileName: string,
-    isTransparent: boolean,
+    imageBase64: string,
   ): Observable<{ statuscode: string; status: string; image?: ProductImage }> {
     const body = {
-      ...auth,
+      admin_id: btoa(adminId),
+      admin_session_token: btoa(adminSessionToken),
       product_id: btoa(productId),
-      image: btoa(fileName),
-      is_transparent: isTransparent ? 1 : 0,
+      image_b64: imageBase64,
     };
     return this.http
       .post<{
@@ -4688,6 +4688,26 @@ export class ProductService {
         status: string;
         image?: ProductImage;
       }>(`${this.API_URL}/api/upload_product_image_admin`, body)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteProductImageAdmin(
+    adminId: string,
+    adminSessionToken: string,
+    productId: string,
+    imageId: string,
+  ): Observable<{ statuscode: string; status: string }> {
+    const body = {
+      admin_id: btoa(adminId),
+      admin_session_token: btoa(adminSessionToken),
+      product_id: btoa(productId),
+      image_id: btoa(imageId),
+    };
+    return this.http
+      .post<{
+        statuscode: string;
+        status: string;
+      }>(`${this.API_URL}/api/delete_product_image_admin`, body)
       .pipe(catchError(this.handleError));
   }
 
@@ -9813,29 +9833,46 @@ export class Admin implements OnInit {
 
   private uploadImageToBackend(productId: string, file: File, tempId: string): void {
     this.uploadInProgress.set(true);
-    const auth = this.buildAdminAuth();
+    const adminId = sessionStorage.getItem('user_id') ?? '';
+    const adminSessionToken =
+      this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
 
-    this.productService
-      .uploadProductImageAdmin(auth, productId, file.name, this.uploadTransparent())
-      .subscribe({
-        next: (res) => {
-          if (res.statuscode === '200' && res.image) {
-            this.galleryImages.update((imgs) =>
-              imgs.map((img) =>
-                img.id === tempId
-                  ? { ...img, id: res.image!.id, image_url: res.image!.image_url, file: undefined }
-                  : img,
-              ),
-            );
-            this.productService.invalidateImageCache();
-          }
-          this.uploadInProgress.set(false);
-        },
-        error: (err) => {
-          console.error('Image upload failed:', err);
-          this.uploadInProgress.set(false);
-        },
-      });
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageBase64 = reader.result as string;
+
+      this.productService
+        .uploadProductImageAdmin(adminId, adminSessionToken, productId, imageBase64)
+        .subscribe({
+          next: (res) => {
+            if (res.statuscode === '200' && res.image) {
+              this.galleryImages.update((imgs) =>
+                imgs.map((img) =>
+                  img.id === tempId
+                    ? {
+                        ...img,
+                        id: res.image!.id,
+                        image_url: res.image!.image_url,
+                        file: undefined,
+                      }
+                    : img,
+                ),
+              );
+              this.productService.invalidateImageCache();
+            }
+            this.uploadInProgress.set(false);
+          },
+          error: (err) => {
+            console.error('Image upload failed:', err);
+            this.uploadInProgress.set(false);
+          },
+        });
+    };
+    reader.onerror = () => {
+      console.error('Failed to read file:', file.name);
+      this.uploadInProgress.set(false);
+    };
+    reader.readAsDataURL(file);
   }
 
   requestDeleteImage(image: GalleryImage, event: MouseEvent): void {
@@ -9846,15 +9883,39 @@ export class Admin implements OnInit {
 
   confirmDeleteImage(): void {
     const target = this.deleteTargetImage();
-    if (!target) return;
+    const product = this.galleryProduct();
+    if (!target || !product) return;
 
-    if (target.objectUrl) {
-      URL.revokeObjectURL(target.objectUrl);
+    if (target.id.startsWith('new-')) {
+      if (target.objectUrl) URL.revokeObjectURL(target.objectUrl);
+      this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+      this.cancelDeleteImage();
+      return;
     }
 
-    this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
-    this.productService.invalidateImageCache();
-    this.cancelDeleteImage();
+    const adminId = sessionStorage.getItem('user_id') ?? '';
+    const adminSessionToken =
+      this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    this.productService
+      .deleteProductImageAdmin(adminId, adminSessionToken, product.id, target.id)
+      .subscribe({
+        next: (res) => {
+          if (res.statuscode === '200') {
+            if (target.objectUrl) URL.revokeObjectURL(target.objectUrl);
+            this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+            this.productService.invalidateImageCache();
+            this.toastService.show('admin.gallery.image_deleted', 'success');
+          } else {
+            this.toastService.show('admin.gallery.delete_error', 'error');
+          }
+          this.cancelDeleteImage();
+        },
+        error: () => {
+          this.toastService.show('admin.gallery.delete_error', 'error');
+          this.cancelDeleteImage();
+        },
+      });
   }
 
   cancelDeleteImage(): void {
@@ -29114,7 +29175,9 @@ FILE: src\assets\i18n\de.json
     "increase_quantity": "Menge erhöhen",
     "not_found": "Produkt nicht gefunden",
     "not_found_desc": "Das gesuchte Produkt existiert nicht oder wurde entfernt.",
-    "back_to_products": "Zurück zu den Produkten"
+    "back_to_products": "Zurück zu den Produkten",
+    "image_deleted": "Bild erfolgreich gelöscht",
+    "delete_error": "Bild konnte nicht gelöscht werden"
   },
   "common": {
     "next_page": "Nächste Seite",
@@ -29902,7 +29965,9 @@ FILE: src\assets\i18n\en.json
     "increase_quantity": "Increase quantity",
     "not_found": "Product not found",
     "not_found_desc": "The product you are looking for does not exist or has been removed.",
-    "back_to_products": "Back to products"
+    "back_to_products": "Back to products",
+    "image_deleted": "Image deleted successfully",
+    "delete_error": "Failed to delete image"
   },
   "common": {
     "next_page": "Next page",
@@ -30660,7 +30725,9 @@ FILE: src\assets\i18n\hu.json
     "increase_quantity": "Mennyiség növelése",
     "not_found": "A termék nem található",
     "not_found_desc": "A keresett termék nem létezik vagy eltávolításra került.",
-    "back_to_products": "Vissza a termékekhez"
+    "back_to_products": "Vissza a termékekhez",
+    "image_deleted": "Kép sikeresen törölve",
+    "delete_error": "Nem sikerült törölni a képet"
   },
   "common": {
     "next_page": "Következő oldal",

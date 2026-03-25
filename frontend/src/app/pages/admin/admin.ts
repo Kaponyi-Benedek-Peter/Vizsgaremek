@@ -870,29 +870,46 @@ export class Admin implements OnInit {
 
   private uploadImageToBackend(productId: string, file: File, tempId: string): void {
     this.uploadInProgress.set(true);
-    const auth = this.buildAdminAuth();
+    const adminId = sessionStorage.getItem('user_id') ?? '';
+    const adminSessionToken =
+      this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
 
-    this.productService
-      .uploadProductImageAdmin(auth, productId, file.name, this.uploadTransparent())
-      .subscribe({
-        next: (res) => {
-          if (res.statuscode === '200' && res.image) {
-            this.galleryImages.update((imgs) =>
-              imgs.map((img) =>
-                img.id === tempId
-                  ? { ...img, id: res.image!.id, image_url: res.image!.image_url, file: undefined }
-                  : img,
-              ),
-            );
-            this.productService.invalidateImageCache();
-          }
-          this.uploadInProgress.set(false);
-        },
-        error: (err) => {
-          console.error('Image upload failed:', err);
-          this.uploadInProgress.set(false);
-        },
-      });
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageBase64 = reader.result as string;
+
+      this.productService
+        .uploadProductImageAdmin(adminId, adminSessionToken, productId, imageBase64)
+        .subscribe({
+          next: (res) => {
+            if (res.statuscode === '200' && res.image) {
+              this.galleryImages.update((imgs) =>
+                imgs.map((img) =>
+                  img.id === tempId
+                    ? {
+                        ...img,
+                        id: res.image!.id,
+                        image_url: res.image!.image_url,
+                        file: undefined,
+                      }
+                    : img,
+                ),
+              );
+              this.productService.invalidateImageCache();
+            }
+            this.uploadInProgress.set(false);
+          },
+          error: (err) => {
+            console.error('Image upload failed:', err);
+            this.uploadInProgress.set(false);
+          },
+        });
+    };
+    reader.onerror = () => {
+      console.error('Failed to read file:', file.name);
+      this.uploadInProgress.set(false);
+    };
+    reader.readAsDataURL(file);
   }
 
   requestDeleteImage(image: GalleryImage, event: MouseEvent): void {
@@ -903,15 +920,39 @@ export class Admin implements OnInit {
 
   confirmDeleteImage(): void {
     const target = this.deleteTargetImage();
-    if (!target) return;
+    const product = this.galleryProduct();
+    if (!target || !product) return;
 
-    if (target.objectUrl) {
-      URL.revokeObjectURL(target.objectUrl);
+    if (target.id.startsWith('new-')) {
+      if (target.objectUrl) URL.revokeObjectURL(target.objectUrl);
+      this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+      this.cancelDeleteImage();
+      return;
     }
 
-    this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
-    this.productService.invalidateImageCache();
-    this.cancelDeleteImage();
+    const adminId = sessionStorage.getItem('user_id') ?? '';
+    const adminSessionToken =
+      this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    this.productService
+      .deleteProductImageAdmin(adminId, adminSessionToken, product.id, target.id)
+      .subscribe({
+        next: (res) => {
+          if (res.statuscode === '200') {
+            if (target.objectUrl) URL.revokeObjectURL(target.objectUrl);
+            this.galleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+            this.productService.invalidateImageCache();
+            this.toastService.show('admin.gallery.image_deleted', 'success');
+          } else {
+            this.toastService.show('admin.gallery.delete_error', 'error');
+          }
+          this.cancelDeleteImage();
+        },
+        error: () => {
+          this.toastService.show('admin.gallery.delete_error', 'error');
+          this.cancelDeleteImage();
+        },
+      });
   }
 
   cancelDeleteImage(): void {

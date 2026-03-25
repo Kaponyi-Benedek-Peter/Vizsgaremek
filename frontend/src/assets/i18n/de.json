@@ -343,7 +343,9 @@
     "increase_quantity": "Menge erhöhen",
     "not_found": "Produkt nicht gefunden",
     "not_found_desc": "Das gesuchte Produkt existiert nicht oder wurde entfernt.",
-    "back_to_products": "Zurück zu den Produkten"
+    "back_to_products": "Zurück zu den Produkten",
+    "image_deleted": "Bild erfolgreich gelöscht",
+    "delete_error": "Bild konnte nicht gelöscht werden"
   },
   "common": {
     "next_page": "Nächste Seite",

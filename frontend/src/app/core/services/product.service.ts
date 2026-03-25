@@ -309,16 +309,16 @@ export class ProductService {
   }
 
   uploadProductImageAdmin(
-    auth: Record<string, string>,
+    adminId: string,
+    adminSessionToken: string,
     productId: string,
-    fileName: string,
-    isTransparent: boolean,
+    imageBase64: string,
   ): Observable<{ statuscode: string; status: string; image?: ProductImage }> {
     const body = {
-      ...auth,
+      admin_id: btoa(adminId),
+      admin_session_token: btoa(adminSessionToken),
       product_id: btoa(productId),
-      image: btoa(fileName),
-      is_transparent: isTransparent ? 1 : 0,
+      image_b64: imageBase64,
     };
     return this.http
       .post<{
@@ -326,6 +326,26 @@ export class ProductService {
         status: string;
         image?: ProductImage;
       }>(`${this.API_URL}/api/upload_product_image_admin`, body)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteProductImageAdmin(
+    adminId: string,
+    adminSessionToken: string,
+    productId: string,
+    imageId: string,
+  ): Observable<{ statuscode: string; status: string }> {
+    const body = {
+      admin_id: btoa(adminId),
+      admin_session_token: btoa(adminSessionToken),
+      product_id: btoa(productId),
+      image_id: btoa(imageId),
+    };
+    return this.http
+      .post<{
+        statuscode: string;
+        status: string;
+      }>(`${this.API_URL}/api/delete_product_image_admin`, body)
       .pipe(catchError(this.handleError));
   }
 

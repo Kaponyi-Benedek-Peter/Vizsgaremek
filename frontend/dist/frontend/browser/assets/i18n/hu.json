@@ -373,7 +373,9 @@
     "increase_quantity": "Mennyiség növelése",
     "not_found": "A termék nem található",
     "not_found_desc": "A keresett termék nem létezik vagy eltávolításra került.",
-    "back_to_products": "Vissza a termékekhez"
+    "back_to_products": "Vissza a termékekhez",
+    "image_deleted": "Kép sikeresen törölve",
+    "delete_error": "Nem sikerült törölni a képet"
   },
   "common": {
     "next_page": "Következő oldal",
