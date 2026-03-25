@@ -54,7 +54,7 @@ namespace Servo.service
             else if (type == "server") { f.InvokeOnUi(() => f.server_rtbox.AppendText(abc + Environment.NewLine)); }
 
             f.InvokeOnUi(() => f.all_rtbox.AppendText(abc + Environment.NewLine));
-
+            
         }
         private const int KeySize = 32;
         private const int Iterations = 1000;

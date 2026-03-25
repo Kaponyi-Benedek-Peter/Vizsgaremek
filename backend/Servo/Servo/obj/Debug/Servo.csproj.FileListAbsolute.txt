@@ -113,5 +113,7 @@ C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\obj\Debug\Servo.csproj
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\obj\Debug\Servo.exe
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\obj\Debug\Servo.pdb
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\obj\Debug\Servo.exe.config
+C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\SixLabors.ImageSharp.xml
+C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Text.Encoding.CodePages.xml
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\obj\Debug\Servo.csproj.Fody.CopyLocal.cache
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\obj\Debug\Servo.csproj.Fody.RuntimeCopyLocal.cache

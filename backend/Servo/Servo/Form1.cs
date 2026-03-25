@@ -75,55 +75,68 @@ namespace Servo
         }
         public void log(string abc)
         {
-
-            all_rtbox.Invoke(new Action(() =>
-             all_rtbox.AppendText(abc + Environment.NewLine) // task factory miatti hiba kikerülése
-         ));
+            /*
+            if (all_rtbox.IsHandleCreated)
+            {
+                all_rtbox.BeginInvoke(new Action(() =>
+                {
+                    all_rtbox.AppendText(abc + Environment.NewLine);
+                    // Optional: Auto-scroll to bottom
+                    all_rtbox.SelectionStart = all_rtbox.Text.Length;
+                    all_rtbox.ScrollToCaret();
+                }));
+            }*/
         }
-
-      
 
         public void updateapisserved()
         {
-            apis_box.Invoke(new Action(() =>
+            apis_box.BeginInvoke(new Action(() =>
             {
-                apis_box.Text = (int.Parse(apis_box.Text)+1).ToString();
+                if (int.TryParse(apis_box.Text, out int val))
+                    apis_box.Text = (val + 1).ToString();
             }));
         }
 
-        static int bandwidthcounter_bytes = 0;
+        static long bandwidthcounter_bytes = 0; 
         public void updatebandwidth(int incrementation)
         {
-            bandwidthcounter_bytes+=incrementation;
-            bandwidth_tbox.Invoke(new Action(() =>
+           
+            System.Threading.Interlocked.Add(ref bandwidthcounter_bytes, incrementation);
+
+            bandwidth_tbox.BeginInvoke(new Action(() =>
             {
-                bandwidth_tbox.Text = (bandwidthcounter_bytes/1000000).ToString();
+                bandwidth_tbox.Text = (bandwidthcounter_bytes / 1000000).ToString();
             }));
         }
 
         public void updatesusconns()
         {
-            denied_tbox.Invoke(new Action(() =>
+            denied_tbox.BeginInvoke(new Action(() =>
             {
-                denied_tbox.Text = (int.Parse(denied_tbox.Text) + 1).ToString();
+                if (int.TryParse(denied_tbox.Text, out int val))
+                    denied_tbox.Text = (val + 1).ToString();
             }));
         }
+
         public void updatefilesserved()
         {
-            files_tbox.Invoke(new Action(() =>
+            files_tbox.BeginInvoke(new Action(() =>
             {
-                files_tbox.Text = (int.Parse(files_tbox.Text) + 1).ToString();
+                if (int.TryParse(files_tbox.Text, out int val))
+                    files_tbox.Text = (val + 1).ToString();
             }));
         }
+
         public void updateconnections()
         {
-            conn_tbox.Invoke(new Action(() =>
+            conn_tbox.BeginInvoke(new Action(() =>
             {
-                conn_tbox.Text = (int.Parse(conn_tbox.Text) + 1).ToString();
+                if (int.TryParse(conn_tbox.Text, out int val))
+                    conn_tbox.Text = (val + 1).ToString();
             }));
         }
-       
-      
+
+
         public void button1_Click(object sender, EventArgs e)
         {
             startserver();
@@ -180,12 +193,16 @@ namespace Servo
 
         private void Form1_Load(object sender, EventArgs e)
         {
-           
+            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12 | System.Net.SecurityProtocolType.Tls13;
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
             all_rtbox.Clear();
+            server_rtbox.Clear();
+            static_rtbox.Clear();
+            api_rtbox.Clear();
+
             items_box.Text = "0";
             conn_tbox.Text = "0";
             files_tbox.Text = "0";
@@ -194,6 +211,7 @@ namespace Servo
             users_box.Text = "0";
             bandwidth_tbox.Text = "0";
             bandwidthcounter_bytes = 0;
+            controller.router._fileCache.Clear();
         }
 
         private void button6_Click(object sender, EventArgs e)

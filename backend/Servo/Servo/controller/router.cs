@@ -18,11 +18,11 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin","get_all_product","update_stock_admin","get_post_by_id"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin","get_all_product","update_stock_admin","get_post_by_id","upload_product_image_admin","delete_product_image_admin"
         };
 
 
-        private static ConcurrentDictionary<string, byte[]> _fileCache = new ConcurrentDictionary<string, byte[]> ();
+        public static ConcurrentDictionary<string, byte[]> _fileCache = new ConcurrentDictionary<string, byte[]> ();
 
 
         //public static Dictionary<string, int> connectioncounts = new Dictionary<string, int>();
@@ -65,7 +65,7 @@ namespace Servo.controller
             service.shared.log("[✖️]"); // connection_end
             return data;
         }
-        public static void main(HttpListenerContext data, string alap)
+        public static async void main(HttpListenerContext data, string alap)
         {
 
             string host = data.Request.Url.Host;
@@ -262,9 +262,24 @@ namespace Servo.controller
                  if (lenyeg.Contains("delete_post_comment_by_post_id_admin"))
                 {
 
-                    controller.delete_all_post_comments_by_post_id.main(data, lenyeg);
+                     controller.delete_all_post_comments_by_post_id.main(data, lenyeg);
 
                 }
+                else if (lenyeg.Contains("upload_product_image_admin"))
+                {
+
+                    controller.upload_product_image_admin.main(data, lenyeg);
+
+                }
+
+
+                else if (lenyeg.Contains("delete_product_image_admin"))
+                {
+
+                    controller.delete_image_by_id.main(data, lenyeg);
+
+                }
+
                 else if (lenyeg.Contains("update_post_comment_by_comment_id"))
                 {
 
@@ -654,6 +669,7 @@ namespace Servo.controller
                         byte[] buffer;
                         if (mime_response.Item2)
                         {
+                            
                             buffer = _fileCache.GetOrAdd(hely, path =>
                             {
                                 byte[] raw = File.ReadAllBytes(path);

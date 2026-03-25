@@ -19,7 +19,7 @@ namespace Servo
     public class shared
     {
 
-        public void start_server(int port)
+        public async Task start_server(int port)
         {
             //service.shared.log("[starting server 1.1]");
 
@@ -43,36 +43,40 @@ namespace Servo
             cts = new CancellationTokenSource();
             var token = cts.Token;
 
+
+            ThreadPool.SetMinThreads(100, 100); // no befagyas
+
+
             server_main = Task.Factory.StartNew(() =>
             {
-                service.shared.log("[! server started !]","server");
-                //service.shared.log("[starting server 3]");
-                while (!token.IsCancellationRequested)
+                service.shared.log("[! server started !]", "server");
+
+                while (isrunning)
                 {
                     try
                     {
-                      
-                        //service.shared.log("[starting server 4]");
-                        HttpListenerContext context = hallgatozo.GetContext();
-                        ThreadPool.QueueUserWorkItem(o => controller.router.main(context, service.shared.baseDir));
-
-                        //Form1.Instance.updateconnections();
-                        //service.shared.log("[starting server 5]");
                         
-                    }
-                    catch (HttpListenerException ex) when (token.IsCancellationRequested)
-                    {
+                        HttpListenerContext context = hallgatozo.GetContext();
 
-                        service.shared.log("[server stopped 1/1]", "server");
+                      
+                        ThreadPool.QueueUserWorkItem(o =>
+                        {
+                            try
+                            {
+                                controller.router.main(context, service.shared.baseDir);
+                            }
+                            catch { }
+                        });
                     }
                     catch (Exception ex)
                     {
-
-                        service.shared.log($"Error 1: {ex.Message} --lib.shared.start_server > server", "server");
+                        
+                        if (!isrunning) break;
+                        Thread.Sleep(100);
                     }
                 }
-                
-            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            }, TaskCreationOptions.LongRunning);
+
 
 
 
