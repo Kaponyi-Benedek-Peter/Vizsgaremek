@@ -879,7 +879,13 @@ export class Admin implements OnInit {
       const imageBase64 = reader.result as string;
 
       this.productService
-        .uploadProductImageAdmin(adminId, adminSessionToken, productId, imageBase64)
+        .uploadProductImageAdmin(
+          adminId,
+          adminSessionToken,
+          productId,
+          imageBase64,
+          this.uploadTransparent(),
+        )
         .subscribe({
           next: (res) => {
             if (res.statuscode === '200' && res.image) {

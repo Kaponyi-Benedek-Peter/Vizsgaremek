@@ -35,6 +35,7 @@ export class Header implements OnInit, OnDestroy {
   currencyService = inject(CurrencyService);
 
   private subs: Subscription[] = [];
+  private prevCartCount = 0;
 
   ICONS = ICONS;
   IMAGES = IMAGES;
@@ -45,6 +46,7 @@ export class Header implements OnInit, OnDestroy {
   showUserMenu = signal(false);
   showCartDropdown = signal(false);
   showMobileMenu = signal(false);
+  cartBounce = signal(false);
 
   cartItemCount = computed(() => this.cartService.itemCount());
   cartItems = computed(() => this.cartService.items());
@@ -61,6 +63,17 @@ export class Header implements OnInit, OnDestroy {
         this.isAdmin = state.role === 'admin';
       }),
     );
+
+    const checkBounce = setInterval(() => {
+      const count = this.cartItemCount();
+      if (count > this.prevCartCount) {
+        this.cartBounce.set(true);
+        setTimeout(() => this.cartBounce.set(false), 500);
+      }
+      this.prevCartCount = count;
+    }, 200);
+
+    this.subs.push({ unsubscribe: () => clearInterval(checkBounce) } as Subscription);
   }
 
   ngOnDestroy(): void {
@@ -124,6 +137,13 @@ export class Header implements OnInit, OnDestroy {
 
   goToCheckout(): void {
     this.closeCartDropdown();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.showUserMenu.set(false);
+    this.showCartDropdown.set(false);
+    this.showMobileMenu.set(false);
   }
 
   @HostListener('document:click', ['$event'])

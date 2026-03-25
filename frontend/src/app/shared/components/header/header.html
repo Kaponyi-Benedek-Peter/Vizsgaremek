@@ -23,7 +23,7 @@
         </app-icon-btn>
 
         @if (showUserMenu()) {
-          <div class="user-dropdown">
+          <div class="user-dropdown" role="menu" aria-label="User menu">
             <div class="user-dropdown-header">
               <p class="user-name">{{ currentUser?.firstname }} {{ currentUser?.lastname }}</p>
               <p class="user-email">{{ currentUser?.email }}</p>
@@ -78,12 +78,12 @@
       >
         <app-icon-btn [iconImg]="ICONS.basket"></app-icon-btn>
         @if (cartItemCount() > 0) {
-          <span class="cart-badge">{{ cartItemCount() }}</span>
+          <span class="cart-badge" [class.bounce]="cartBounce()">{{ cartItemCount() }}</span>
         }
       </button>
 
       @if (showCartDropdown()) {
-        <div class="cart-dropdown">
+        <div class="cart-dropdown" role="dialog" aria-label="Shopping cart">
           <div class="cart-dropdown-header">
             <h3>{{ 'cart.title' | translate }}</h3>
             <span class="cart-item-count"

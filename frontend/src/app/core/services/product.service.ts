@@ -313,11 +313,13 @@ export class ProductService {
     adminSessionToken: string,
     productId: string,
     imageBase64: string,
+    isTransparent: boolean,
   ): Observable<{ statuscode: string; status: string; image?: ProductImage }> {
     const body = {
       admin_id: btoa(adminId),
       admin_session_token: btoa(adminSessionToken),
       product_id: btoa(productId),
+      transparency: btoa(isTransparent ? '1' : '0'),
       image_b64: imageBase64,
     };
     return this.http

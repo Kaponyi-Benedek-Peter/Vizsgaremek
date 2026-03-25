@@ -366,7 +366,8 @@
     "cancel": "Abbrechen",
     "scroll_right": "Nach rechts scrollen",
     "added_to_cart": "Zum Warenkorb hinzugefügt",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "added": "Hinzugefügt!"
   },
   "home": {
     "featured": {
@@ -642,7 +643,14 @@
     "house_number_placeholder": "z.B. 42",
     "phone": "Telefonnummer",
     "note": "Bestellhinweise",
-    "phone_placeholder": "+49 176 123 4567"
+    "phone_placeholder": "+49 176 123 4567",
+    "guest_notice": "Sie kaufen als Gast ein. Geben Sie Ihre E-Mail und Ihren Namen ein, damit wir Ihnen die Bestellbestätigung senden können.",
+    "email": "E-Mail-Adresse",
+    "email_placeholder": "ihre@email.de",
+    "billing_name": "Vollständiger Name",
+    "billing_name_placeholder": "Max Mustermann",
+    "guest_fields_required": "E-Mail und Name sind für den Gastkauf erforderlich.",
+    "invalid_email": "Bitte geben Sie eine gültige E-Mail-Adresse ein."
   },
   "header": {
     "my_orders": "Meine Bestellungen",

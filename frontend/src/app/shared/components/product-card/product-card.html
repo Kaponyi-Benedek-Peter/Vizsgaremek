@@ -102,13 +102,17 @@
     <button
       class="add-to-cart-button"
       [class.compact]="compact"
-      [disabled]="!canAddToCart"
+      [class.added]="addedToCart()"
+      [disabled]="!canAddToCart || addedToCart()"
       (click)="onAddToCart()"
       [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName()"
     >
-      <!-- 🛒 → basketwhite.webp -->
-      <img [src]="icons.basket" alt="" class="button-icon" aria-hidden="true" />
-      {{ 'common.add_to_cart' | translate }}
+      @if (addedToCart()) {
+        <span class="added-icon">✓</span> {{ 'common.added' | translate }}
+      } @else {
+        <img [src]="icons.basket" alt="" class="cart-btn-icon" aria-hidden="true" />
+        {{ 'common.add_to_cart' | translate }}
+      }
     </button>
 
     @if (!compact) {

@@ -1,59 +1,87 @@
-# Frontend
+# Roy's Shack Est. 1888 — Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.2.
+Modern, multilingual pharmacy webshop built with Angular 21.
 
-## Development server
+## Tech stack
 
-To start a local development server, run:
+- **Framework:** Angular 21 (standalone components)
+- **Language:** TypeScript 5.9
+- **Styling:** CSS Custom Properties (light/dark theming)
+- **i18n:** ngx-translate (Hungarian, English, German)
+- **State:** Angular Signals + RxJS
+- **Testing:** Vitest (unit) + Cypress (E2E)
+- **Backend:** C# .NET custom HTTP server (port 90)
+- **Database:** MariaDB
+
+## Features
+
+- Product catalog with filtering, sorting, search, and pagination
+- Three-language support with automatic currency switching (HUF/USD/EUR)
+- Dark/light theme with localStorage persistence
+- User authentication (two-step email confirmation)
+- Shopping cart with guest checkout support
+- Forum/blog with categories, search, and comments
+- Admin panel (users, orders, products, image management)
+- Responsive design (mobile, tablet, desktop)
+- Scroll reveal animations
+- Skeleton loading states
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+
+- npm 11+
+- Backend server running on port 90
+
+### Install and run
 
 ```bash
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open http://localhost:4200
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Production build
 
 ```bash
-ng generate component component-name
+ng build -c production
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Output: `dist/frontend/browser/`
+
+### Run tests
 
 ```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
+# Unit tests (Vitest)
 ng test
+
+# E2E tests (Cypress) — requires ng serve running
+npx cypress open
 ```
 
-## Running end-to-end tests
+## Project structure
 
-For end-to-end (e2e) testing, run:
+src/
+├── app/
+│ ├── core/ # Services, models, guards, interceptors, constants
+│ ├── pages/ # Route-level page components
+│ └── shared/ # Reusable components, directives, pipes
+├── assets/
+│ ├── i18n/ # Translation files (hu/en/de.json)
+│ ├── icons/ # Icon set (.webp)
+│ ├── fonts/ # Inconsolata font
+│ └── products/ # Product images
+├── environments/ # Dev/prod config
+└── styles/ # Global CSS, variables, themes
 
-```bash
-ng e2e
-```
+## Team
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+- **Frontend:** Kaponyi Benedek Péter — Angular
+- **Backend:** Kerepesi Áron — C# Servo
+- **Database:** Katona Roland — MariaDB
 
-## Additional Resources
+## License
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Educational project — KKK Software Developer & Tester exam (vizsgaremek).

@@ -30,7 +30,6 @@ export const routes: Routes = [
   {
     path: 'purchase',
     loadComponent: () => import('./pages/purchase/purchase').then((m) => m.Purchase),
-    canActivate: [authGuard],
   },
   {
     path: 'legal',

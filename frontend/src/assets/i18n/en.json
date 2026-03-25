@@ -396,7 +396,8 @@
     "cancel": "Cancel",
     "scroll_right": "Scroll right",
     "added_to_cart": "Added to cart",
-    "edit": "Edit"
+    "edit": "Edit",
+    "added": "Added!"
   },
   "home": {
     "featured": {
@@ -672,7 +673,14 @@
     "house_number_placeholder": "e.g. 42",
     "phone": "Phone Number",
     "note": "Order Notes",
-    "phone_placeholder": "+36 30 123 4567"
+    "phone_placeholder": "+36 30 123 4567",
+    "guest_notice": "You are checking out as a guest. Enter your email and name so we can send you the order confirmation.",
+    "email": "Email address",
+    "email_placeholder": "your@email.com",
+    "billing_name": "Full name",
+    "billing_name_placeholder": "John Doe",
+    "guest_fields_required": "Email and name are required for guest checkout.",
+    "invalid_email": "Please enter a valid email address."
   },
   "header": {
     "my_orders": "My Orders",

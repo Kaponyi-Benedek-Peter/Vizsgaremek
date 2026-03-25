@@ -21,6 +21,7 @@ PROJECT STRUCTURE
 │   └── 📄 security.md
 ├── 📄 package.json
 ├── 📁 public/
+│   └── 📄 manifest.json
 ├── 📄 README.md
 ├── 📁 src/
 │   ├── 📁 app/
@@ -996,68 +997,125 @@ FILE: package.json
 
 
 ================================================================================
+FILE: public\manifest.json
+================================================================================
+
+{
+  "name": "Roy's Shack Est. 1888",
+  "short_name": "Roy's Shack",
+  "description": "Modern multilingual pharmacy webshop",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#067a45",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/images/ROYS_SHACK_WHITE.webp",
+      "sizes": "192x192",
+      "type": "image/webp"
+    },
+    {
+      "src": "/assets/images/ROYS_SHACK_WHITE.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ]
+}
+
+
+
+================================================================================
 FILE: README.md
 ================================================================================
 
-# Frontend
+# Roy's Shack Est. 1888 — Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.2.
+Modern, multilingual pharmacy webshop built with Angular 21.
 
-## Development server
+## Tech stack
 
-To start a local development server, run:
+- **Framework:** Angular 21 (standalone components)
+- **Language:** TypeScript 5.9
+- **Styling:** CSS Custom Properties (light/dark theming)
+- **i18n:** ngx-translate (Hungarian, English, German)
+- **State:** Angular Signals + RxJS
+- **Testing:** Vitest (unit) + Cypress (E2E)
+- **Backend:** C# .NET custom HTTP server (port 90)
+- **Database:** MariaDB
+
+## Features
+
+- Product catalog with filtering, sorting, search, and pagination
+- Three-language support with automatic currency switching (HUF/USD/EUR)
+- Dark/light theme with localStorage persistence
+- User authentication (two-step email confirmation)
+- Shopping cart with guest checkout support
+- Forum/blog with categories, search, and comments
+- Admin panel (users, orders, products, image management)
+- Responsive design (mobile, tablet, desktop)
+- Scroll reveal animations
+- Skeleton loading states
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+
+- npm 11+
+- Backend server running on port 90
+
+### Install and run
 
 ```bash
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open http://localhost:4200
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Production build
 
 ```bash
-ng generate component component-name
+ng build -c production
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Output: `dist/frontend/browser/`
+
+### Run tests
 
 ```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
+# Unit tests (Vitest)
 ng test
+
+# E2E tests (Cypress) — requires ng serve running
+npx cypress open
 ```
 
-## Running end-to-end tests
+## Project structure
 
-For end-to-end (e2e) testing, run:
+src/
+├── app/
+│ ├── core/ # Services, models, guards, interceptors, constants
+│ ├── pages/ # Route-level page components
+│ └── shared/ # Reusable components, directives, pipes
+├── assets/
+│ ├── i18n/ # Translation files (hu/en/de.json)
+│ ├── icons/ # Icon set (.webp)
+│ ├── fonts/ # Inconsolata font
+│ └── products/ # Product images
+├── environments/ # Dev/prod config
+└── styles/ # Global CSS, variables, themes
 
-```bash
-ng e2e
-```
+## Team
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+- **Frontend:** Kaponyi Benedek Péter — Angular
+- **Backend:** Kerepesi Áron — C# Servo
+- **Database:** Katona Roland — MariaDB
 
-## Additional Resources
+## License
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Educational project — KKK Software Developer & Tester exam (vizsgaremek).
 
 
 
@@ -1107,14 +1165,33 @@ main {
   overflow-x: hidden;
 }
 
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary);
+  color: white;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  z-index: 10000;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
 
 
 ================================================================================
 FILE: src\app\app.html
 ================================================================================
 
+<a class="skip-link" href="#main-content">Skip to content</a>
 <app-header />
-<main>
+<main id="main-content">
   <router-outlet />
 </main>
 <app-footer />
@@ -1158,7 +1235,6 @@ export const routes: Routes = [
   {
     path: 'purchase',
     loadComponent: () => import('./pages/purchase/purchase').then((m) => m.Purchase),
-    canActivate: [authGuard],
   },
   {
     path: 'legal',
@@ -4675,11 +4751,13 @@ export class ProductService {
     adminSessionToken: string,
     productId: string,
     imageBase64: string,
+    isTransparent: boolean,
   ): Observable<{ statuscode: string; status: string; image?: ProductImage }> {
     const body = {
       admin_id: btoa(adminId),
       admin_session_token: btoa(adminSessionToken),
       product_id: btoa(productId),
+      transparency: btoa(isTransparent ? '1' : '0'),
       image_b64: imageBase64,
     };
     return this.http
@@ -8771,7 +8849,7 @@ FILE: src\app\pages\admin\admin.mock.ts
 
 import { AdminUser, AdminOrder } from '../../core/services/account.service';
 
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 export const MOCK_USERS: AdminUser[] = [
   {
@@ -9842,7 +9920,13 @@ export class Admin implements OnInit {
       const imageBase64 = reader.result as string;
 
       this.productService
-        .uploadProductImageAdmin(adminId, adminSessionToken, productId, imageBase64)
+        .uploadProductImageAdmin(
+          adminId,
+          adminSessionToken,
+          productId,
+          imageBase64,
+          this.uploadTransparent(),
+        )
         .subscribe({
           next: (res) => {
             if (res.statuscode === '200' && res.image) {
@@ -16874,7 +16958,7 @@ FILE: src\app\pages\products\product.mock.ts
 
 import { Product, ProductCategory } from '../../core/models/product.model';
 
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 export const MOCK_RAW_CATEGORIES: ProductCategory[] = [
   {
@@ -20155,6 +20239,20 @@ FILE: src\app\pages\purchase\purchase.css
   }
 }
 
+.guest-notice {
+  background: var(--color-info-light, rgba(59, 130, 246, 0.08));
+  border: 1px solid var(--color-info, #3b82f6);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+}
+
+.guest-notice p {
+  margin: 0;
+}
+
 
 
 ================================================================================
@@ -20265,6 +20363,37 @@ FILE: src\app\pages\purchase\purchase.html
       @if (cartItems().length > 0) {
         <div class="checkout-section checkout-form">
           <h2 class="section-title">{{ 'checkout.shipping_info' | translate }}</h2>
+
+          @if (isGuest()) {
+            <div class="guest-notice">
+              <p>{{ 'checkout.guest_notice' | translate }}</p>
+            </div>
+
+            <div class="form-group-row">
+              <div class="form-group">
+                <label for="email">{{ 'checkout.email' | translate }} *</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  [(ngModel)]="form.email"
+                  [placeholder]="'checkout.email_placeholder' | translate"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="billingName">{{ 'checkout.billing_name' | translate }} *</label>
+                <input
+                  type="text"
+                  id="billingName"
+                  name="billingName"
+                  [(ngModel)]="form.billingName"
+                  [placeholder]="'checkout.billing_name_placeholder' | translate"
+                  required
+                />
+              </div>
+            </div>
+          }
 
           <form (ngSubmit)="submitOrder()" #checkoutForm="ngForm">
             <div class="form-row">
@@ -20410,6 +20539,8 @@ import { ToastService } from '../../core/services/toast.service';
 import { Product } from '../../core/models/product.model';
 
 interface CheckoutForm {
+  email: string;
+  billingName: string;
   city: string;
   zipcode: string;
   address: string;
@@ -20443,6 +20574,8 @@ export class Purchase implements OnInit {
   successMessage = signal<string | null>(null);
 
   form: CheckoutForm = {
+    email: '',
+    billingName: '',
     city: '',
     zipcode: '',
     address: '',
@@ -20452,12 +20585,15 @@ export class Purchase implements OnInit {
     note: '',
   };
 
+  isGuest = signal(false);
+
   ngOnInit(): void {
-    if (!this.authService.isUserAuthenticated()) {
-      this.router.navigate(['/login'], {
-        queryParams: { returnUrl: '/purchase' },
-      });
-      return;
+    this.isGuest.set(!this.authService.isUserAuthenticated());
+
+    if (!this.isGuest()) {
+      const user = this.authService.currentUser();
+      this.form.email = user?.email ?? '';
+      this.form.billingName = `${user?.firstname ?? ''} ${user?.lastname ?? ''}`.trim();
     }
 
     if (this.cartItems().length === 0) {
@@ -20493,17 +20629,19 @@ export class Purchase implements OnInit {
 
     try {
       const user = this.authService.currentUser();
+      const isGuest = this.isGuest();
+
       const orderData: CreateOrderRequest = {
         order: {
-          user_id: btoa(user?.id ?? ''),
-          session_token: btoa(this.authService.getSessionToken() ?? ''),
-          email: btoa(user?.email ?? ''),
-          billing_name: btoa(`${user?.firstname} ${user?.lastname}`),
-          shipping_name: btoa(`${user?.firstname} ${user?.lastname}`),
+          user_id: btoa(isGuest ? '0' : (user?.id ?? '')),
+          session_token: btoa(isGuest ? '' : (this.authService.getSessionToken() ?? '')),
+          email: btoa(this.form.email),
+          billing_name: btoa(this.form.billingName),
+          shipping_name: btoa(this.form.billingName),
           shipping_company: btoa(''),
           price: btoa(String(this.cartTotal())),
           city: btoa(this.form.city),
-          guest: btoa('0'),
+          guest: btoa(isGuest ? '1' : '0'),
           zipcode: btoa(this.form.zipcode),
           address: btoa(this.form.address),
           apartment_number: btoa(this.form.apartmentNumber ?? '0'),
@@ -20525,7 +20663,7 @@ export class Purchase implements OnInit {
         this.cartService.clearCart();
 
         setTimeout(() => {
-          this.router.navigate(['/profile']);
+          this.router.navigate([isGuest ? '/home' : '/profile']);
         }, 2000);
       } else {
         this.errorMessage.set('checkout.error');
@@ -20541,6 +20679,17 @@ export class Purchase implements OnInit {
   }
 
   private validateForm(): boolean {
+    if (this.isGuest()) {
+      if (!this.form.email || !this.form.billingName) {
+        this.errorMessage.set('checkout.guest_fields_required');
+        return false;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email)) {
+        this.errorMessage.set('checkout.invalid_email');
+        return false;
+      }
+    }
+
     if (
       !this.form.city ||
       !this.form.zipcode ||
@@ -23944,6 +24093,31 @@ FILE: src\app\shared\components\header\header.css
   }
 }
 
+@keyframes cartBounce {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.35);
+  }
+  60% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cart-badge.bounce {
+  animation: cartBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-badge.bounce {
+    animation: none;
+  }
+}
+
 
 
 ================================================================================
@@ -23975,7 +24149,7 @@ FILE: src\app\shared\components\header\header.html
         </app-icon-btn>
 
         @if (showUserMenu()) {
-          <div class="user-dropdown">
+          <div class="user-dropdown" role="menu" aria-label="User menu">
             <div class="user-dropdown-header">
               <p class="user-name">{{ currentUser?.firstname }} {{ currentUser?.lastname }}</p>
               <p class="user-email">{{ currentUser?.email }}</p>
@@ -24030,12 +24204,12 @@ FILE: src\app\shared\components\header\header.html
       >
         <app-icon-btn [iconImg]="ICONS.basket"></app-icon-btn>
         @if (cartItemCount() > 0) {
-          <span class="cart-badge">{{ cartItemCount() }}</span>
+          <span class="cart-badge" [class.bounce]="cartBounce()">{{ cartItemCount() }}</span>
         }
       </button>
 
       @if (showCartDropdown()) {
-        <div class="cart-dropdown">
+        <div class="cart-dropdown" role="dialog" aria-label="Shopping cart">
           <div class="cart-dropdown-header">
             <h3>{{ 'cart.title' | translate }}</h3>
             <span class="cart-item-count"
@@ -24219,6 +24393,7 @@ export class Header implements OnInit, OnDestroy {
   currencyService = inject(CurrencyService);
 
   private subs: Subscription[] = [];
+  private prevCartCount = 0;
 
   ICONS = ICONS;
   IMAGES = IMAGES;
@@ -24229,6 +24404,7 @@ export class Header implements OnInit, OnDestroy {
   showUserMenu = signal(false);
   showCartDropdown = signal(false);
   showMobileMenu = signal(false);
+  cartBounce = signal(false);
 
   cartItemCount = computed(() => this.cartService.itemCount());
   cartItems = computed(() => this.cartService.items());
@@ -24245,6 +24421,17 @@ export class Header implements OnInit, OnDestroy {
         this.isAdmin = state.role === 'admin';
       }),
     );
+
+    const checkBounce = setInterval(() => {
+      const count = this.cartItemCount();
+      if (count > this.prevCartCount) {
+        this.cartBounce.set(true);
+        setTimeout(() => this.cartBounce.set(false), 500);
+      }
+      this.prevCartCount = count;
+    }, 200);
+
+    this.subs.push({ unsubscribe: () => clearInterval(checkBounce) } as Subscription);
   }
 
   ngOnDestroy(): void {
@@ -24308,6 +24495,13 @@ export class Header implements OnInit, OnDestroy {
 
   goToCheckout(): void {
     this.closeCartDropdown();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.showUserMenu.set(false);
+    this.showCartDropdown.set(false);
+    this.showMobileMenu.set(false);
   }
 
   @HostListener('document:click', ['$event'])
@@ -24580,7 +24774,7 @@ FILE: src\app\shared\components\language-switcher\language-switcher.html
   </button>
 
   @if (isOpen) {
-    <div class="lang-dropdown">
+    <div class="lang-dropdown" role="listbox" aria-label="Language selection">
       <div class="lang-list">
         @for (lang of languages; track lang.code) {
           <button
@@ -25943,6 +26137,39 @@ FILE: src\app\shared\components\product-card\product-card.css
   }
 }
 
+.add-to-cart-button.added {
+  background: var(--color-success, #16a34a);
+  border-color: var(--color-success, #16a34a);
+  pointer-events: none;
+}
+
+.added-icon {
+  display: inline-block;
+  font-weight: bold;
+  animation: popIn 0.3s ease-out;
+}
+
+.cart-btn-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 
 
 ================================================================================
@@ -26053,13 +26280,17 @@ FILE: src\app\shared\components\product-card\product-card.html
     <button
       class="add-to-cart-button"
       [class.compact]="compact"
-      [disabled]="!canAddToCart"
+      [class.added]="addedToCart()"
+      [disabled]="!canAddToCart || addedToCart()"
       (click)="onAddToCart()"
       [attr.aria-label]="('common.add_to_cart' | translate) + ': ' + localizedName()"
     >
-      <!-- 🛒 → basketwhite.webp -->
-      <img [src]="icons.basket" alt="" class="button-icon" aria-hidden="true" />
-      {{ 'common.add_to_cart' | translate }}
+      @if (addedToCart()) {
+        <span class="added-icon">✓</span> {{ 'common.added' | translate }}
+      } @else {
+        <img [src]="icons.basket" alt="" class="cart-btn-icon" aria-hidden="true" />
+        {{ 'common.add_to_cart' | translate }}
+      }
     </button>
 
     @if (!compact) {
@@ -26111,6 +26342,7 @@ export class ProductCard {
   protected readonly icons = ICONS;
 
   quantity = signal(1);
+  addedToCart = signal(false);
 
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
@@ -26190,6 +26422,8 @@ export class ProductCard {
 
   onAddToCart(): void {
     this.addToCart.emit({ product: this.product, quantity: this.quantity() });
+    this.addedToCart.set(true);
+    setTimeout(() => this.addedToCart.set(false), 1200);
   }
 
   onViewDetails(): void {
@@ -27049,6 +27283,99 @@ FILE: src\app\shared\components\product-list\product-list.css
   }
 }
 
+.skeleton-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.skeleton-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--color-neutral-100);
+}
+
+.skeleton-content {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.skeleton-line {
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-100);
+}
+
+.skeleton-category {
+  width: 35%;
+  height: 14px;
+}
+
+.skeleton-title {
+  width: 80%;
+  height: 20px;
+}
+
+.skeleton-desc {
+  width: 100%;
+  height: 14px;
+}
+
+.skeleton-price {
+  width: 40%;
+  height: 24px;
+  margin-top: var(--space-2);
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+[data-theme='dark'] .skeleton-image,
+[data-theme='dark'] .skeleton-line {
+  background: var(--color-neutral-800);
+}
+
+[data-theme='dark'] .shimmer::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer::after {
+    animation: none;
+  }
+}
+
 
 
 ================================================================================
@@ -27071,13 +27398,32 @@ FILE: src\app\shared\components\product-list\product-list.html
   </section>
 
   <section class="products-section">
-    @if (products().length > 0) {
+    @if (isLoading()) {
+      <div class="products-grid">
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+          <div class="skeleton-card">
+            <div class="skeleton-image shimmer"></div>
+            <div class="skeleton-content">
+              <div class="skeleton-line skeleton-category shimmer"></div>
+              <div class="skeleton-line skeleton-title shimmer"></div>
+              <div class="skeleton-line skeleton-desc shimmer"></div>
+              <div class="skeleton-line skeleton-price shimmer"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (products().length > 0) {
       <div class="products-grid">
         @for (product of products(); track product.id) {
           <app-product-card
             [product]="product"
             (addToCart)="handleAddToCart($event)"
             (viewDetails)="handleViewDetails($event)"
+            appScrollReveal
+            [animationType]="'slide-up'"
+            [animationDelay]="$index * 80"
+            [animationDuration]="500"
+            [threshold]="0.05"
           />
         }
       </div>
@@ -27138,11 +27484,20 @@ import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
 import { ICONS } from '../../../core/constants/visuals';
 
+import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+
 const POLL_INTERVAL_MS = 60_000;
 
 @Component({
   selector: 'app-product-list',
-  imports: [TranslateModule, CategoryBar, ProductFilter, ProductCard, ProductPagination],
+  imports: [
+    TranslateModule,
+    CategoryBar,
+    ProductFilter,
+    ProductCard,
+    ProductPagination,
+    ScrollRevealDirective,
+  ],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
 })
@@ -27154,6 +27509,7 @@ export class ProductList {
   protected readonly icons = ICONS;
 
   products = this.productService.paginatedProducts;
+  isLoading = this.productService.isLoading;
   pagination = this.productService.paginationState;
   filters = this.productService.currentFilters;
   allProducts = this.productService.products;
@@ -28403,7 +28759,7 @@ FILE: src\app\shared\components\toast\toast.css
 FILE: src\app\shared\components\toast\toast.html
 ================================================================================
 
-<div class="toast-container">
+<div class="toast-container" aria-live="polite" role="status">
   @for (toast of toasts(); track toast.id) {
     <div class="toast toast-{{ toast.type }}" [@slideIn]>
       <div class="toast-icon">
@@ -29198,7 +29554,8 @@ FILE: src\assets\i18n\de.json
     "cancel": "Abbrechen",
     "scroll_right": "Nach rechts scrollen",
     "added_to_cart": "Zum Warenkorb hinzugefügt",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "added": "Hinzugefügt!"
   },
   "home": {
     "featured": {
@@ -29474,7 +29831,14 @@ FILE: src\assets\i18n\de.json
     "house_number_placeholder": "z.B. 42",
     "phone": "Telefonnummer",
     "note": "Bestellhinweise",
-    "phone_placeholder": "+49 176 123 4567"
+    "phone_placeholder": "+49 176 123 4567",
+    "guest_notice": "Sie kaufen als Gast ein. Geben Sie Ihre E-Mail und Ihren Namen ein, damit wir Ihnen die Bestellbestätigung senden können.",
+    "email": "E-Mail-Adresse",
+    "email_placeholder": "ihre@email.de",
+    "billing_name": "Vollständiger Name",
+    "billing_name_placeholder": "Max Mustermann",
+    "guest_fields_required": "E-Mail und Name sind für den Gastkauf erforderlich.",
+    "invalid_email": "Bitte geben Sie eine gültige E-Mail-Adresse ein."
   },
   "header": {
     "my_orders": "Meine Bestellungen",
@@ -29988,7 +30352,8 @@ FILE: src\assets\i18n\en.json
     "cancel": "Cancel",
     "scroll_right": "Scroll right",
     "added_to_cart": "Added to cart",
-    "edit": "Edit"
+    "edit": "Edit",
+    "added": "Added!"
   },
   "home": {
     "featured": {
@@ -30264,7 +30629,14 @@ FILE: src\assets\i18n\en.json
     "house_number_placeholder": "e.g. 42",
     "phone": "Phone Number",
     "note": "Order Notes",
-    "phone_placeholder": "+36 30 123 4567"
+    "phone_placeholder": "+36 30 123 4567",
+    "guest_notice": "You are checking out as a guest. Enter your email and name so we can send you the order confirmation.",
+    "email": "Email address",
+    "email_placeholder": "your@email.com",
+    "billing_name": "Full name",
+    "billing_name_placeholder": "John Doe",
+    "guest_fields_required": "Email and name are required for guest checkout.",
+    "invalid_email": "Please enter a valid email address."
   },
   "header": {
     "my_orders": "My Orders",
@@ -30748,7 +31120,8 @@ FILE: src\assets\i18n\hu.json
     "cancel": "Mégse",
     "scroll_right": "Görgetés jobbra",
     "added_to_cart": "Kosárba helyezve",
-    "edit": "Szerkesztés"
+    "edit": "Szerkesztés",
+    "added": "Hozzáadva!"
   },
   "home": {
     "featured": {
@@ -31024,7 +31397,14 @@ FILE: src\assets\i18n\hu.json
     "house_number_placeholder": "pl. 42",
     "phone": "Telefonszám",
     "note": "Megjegyzés",
-    "phone_placeholder": "+36 30 123 4567"
+    "phone_placeholder": "+36 30 123 4567",
+    "guest_notice": "Vendégként vásárolsz. Add meg az email címed és a neved, hogy elküldhessük a rendelés visszaigazolást.",
+    "email": "Email cím",
+    "email_placeholder": "pelda@email.com",
+    "billing_name": "Teljes név",
+    "billing_name_placeholder": "Kovács Béla",
+    "guest_fields_required": "Vendég vásárláshoz email és név szükséges.",
+    "invalid_email": "Kérjük, adj meg egy érvényes email címet."
   },
   "header": {
     "my_orders": "Rendeléseim",
@@ -31146,6 +31526,16 @@ FILE: src\index.html
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="roy_icon_green.ico" />
+
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#067a45" />
+    <meta
+      name="description"
+      content="Roy's Shack Est. 1888 — Modern multilingual pharmacy webshop"
+    />
+
+    <link rel="apple-touch-icon" sizes="192x192" href="/assets/images/ROYS_SHACK_WHITE.webp" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/assets/images/ROYS_SHACK_WHITE.webp" />
   </head>
   <body>
     <app-root></app-root>

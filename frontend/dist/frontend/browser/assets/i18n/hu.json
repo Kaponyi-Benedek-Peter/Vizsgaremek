@@ -396,7 +396,8 @@
     "cancel": "Mégse",
     "scroll_right": "Görgetés jobbra",
     "added_to_cart": "Kosárba helyezve",
-    "edit": "Szerkesztés"
+    "edit": "Szerkesztés",
+    "added": "Hozzáadva!"
   },
   "home": {
     "featured": {
@@ -672,7 +673,14 @@
     "house_number_placeholder": "pl. 42",
     "phone": "Telefonszám",
     "note": "Megjegyzés",
-    "phone_placeholder": "+36 30 123 4567"
+    "phone_placeholder": "+36 30 123 4567",
+    "guest_notice": "Vendégként vásárolsz. Add meg az email címed és a neved, hogy elküldhessük a rendelés visszaigazolást.",
+    "email": "Email cím",
+    "email_placeholder": "pelda@email.com",
+    "billing_name": "Teljes név",
+    "billing_name_placeholder": "Kovács Béla",
+    "guest_fields_required": "Vendég vásárláshoz email és név szükséges.",
+    "invalid_email": "Kérjük, adj meg egy érvényes email címet."
   },
   "header": {
     "my_orders": "Rendeléseim",

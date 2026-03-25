@@ -29,6 +29,7 @@ export class ProductCard {
   protected readonly icons = ICONS;
 
   quantity = signal(1);
+  addedToCart = signal(false);
 
   private currencyService = inject(CurrencyService);
   private productService = inject(ProductService);
@@ -108,6 +109,8 @@ export class ProductCard {
 
   onAddToCart(): void {
     this.addToCart.emit({ product: this.product, quantity: this.quantity() });
+    this.addedToCart.set(true);
+    setTimeout(() => this.addedToCart.set(false), 1200);
   }
 
   onViewDetails(): void {

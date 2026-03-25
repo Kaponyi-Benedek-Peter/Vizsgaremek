@@ -18,7 +18,7 @@
   </button>
 
   @if (isOpen) {
-    <div class="lang-dropdown">
+    <div class="lang-dropdown" role="listbox" aria-label="Language selection">
       <div class="lang-list">
         @for (lang of languages; track lang.code) {
           <button

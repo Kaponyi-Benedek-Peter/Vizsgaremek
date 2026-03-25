@@ -13,6 +13,8 @@ import { ToastService } from '../../core/services/toast.service';
 import { Product } from '../../core/models/product.model';
 
 interface CheckoutForm {
+  email: string;
+  billingName: string;
   city: string;
   zipcode: string;
   address: string;
@@ -46,6 +48,8 @@ export class Purchase implements OnInit {
   successMessage = signal<string | null>(null);
 
   form: CheckoutForm = {
+    email: '',
+    billingName: '',
     city: '',
     zipcode: '',
     address: '',
@@ -55,12 +59,15 @@ export class Purchase implements OnInit {
     note: '',
   };
 
+  isGuest = signal(false);
+
   ngOnInit(): void {
-    if (!this.authService.isUserAuthenticated()) {
-      this.router.navigate(['/login'], {
-        queryParams: { returnUrl: '/purchase' },
-      });
-      return;
+    this.isGuest.set(!this.authService.isUserAuthenticated());
+
+    if (!this.isGuest()) {
+      const user = this.authService.currentUser();
+      this.form.email = user?.email ?? '';
+      this.form.billingName = `${user?.firstname ?? ''} ${user?.lastname ?? ''}`.trim();
     }
 
     if (this.cartItems().length === 0) {
@@ -96,17 +103,19 @@ export class Purchase implements OnInit {
 
     try {
       const user = this.authService.currentUser();
+      const isGuest = this.isGuest();
+
       const orderData: CreateOrderRequest = {
         order: {
-          user_id: btoa(user?.id ?? ''),
-          session_token: btoa(this.authService.getSessionToken() ?? ''),
-          email: btoa(user?.email ?? ''),
-          billing_name: btoa(`${user?.firstname} ${user?.lastname}`),
-          shipping_name: btoa(`${user?.firstname} ${user?.lastname}`),
+          user_id: btoa(isGuest ? '0' : (user?.id ?? '')),
+          session_token: btoa(isGuest ? '' : (this.authService.getSessionToken() ?? '')),
+          email: btoa(this.form.email),
+          billing_name: btoa(this.form.billingName),
+          shipping_name: btoa(this.form.billingName),
           shipping_company: btoa(''),
           price: btoa(String(this.cartTotal())),
           city: btoa(this.form.city),
-          guest: btoa('0'),
+          guest: btoa(isGuest ? '1' : '0'),
           zipcode: btoa(this.form.zipcode),
           address: btoa(this.form.address),
           apartment_number: btoa(this.form.apartmentNumber ?? '0'),
@@ -128,7 +137,7 @@ export class Purchase implements OnInit {
         this.cartService.clearCart();
 
         setTimeout(() => {
-          this.router.navigate(['/profile']);
+          this.router.navigate([isGuest ? '/home' : '/profile']);
         }, 2000);
       } else {
         this.errorMessage.set('checkout.error');
@@ -144,6 +153,17 @@ export class Purchase implements OnInit {
   }
 
   private validateForm(): boolean {
+    if (this.isGuest()) {
+      if (!this.form.email || !this.form.billingName) {
+        this.errorMessage.set('checkout.guest_fields_required');
+        return false;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email)) {
+        this.errorMessage.set('checkout.invalid_email');
+        return false;
+      }
+    }
+
     if (
       !this.form.city ||
       !this.form.zipcode ||

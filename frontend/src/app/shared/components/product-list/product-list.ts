@@ -15,11 +15,20 @@ import { ProductFilter } from '../product-filter/product-filter';
 import { ProductPagination } from '../product-pagination/product-pagination';
 import { ICONS } from '../../../core/constants/visuals';
 
+import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+
 const POLL_INTERVAL_MS = 60_000;
 
 @Component({
   selector: 'app-product-list',
-  imports: [TranslateModule, CategoryBar, ProductFilter, ProductCard, ProductPagination],
+  imports: [
+    TranslateModule,
+    CategoryBar,
+    ProductFilter,
+    ProductCard,
+    ProductPagination,
+    ScrollRevealDirective,
+  ],
   templateUrl: './product-list.html',
   styleUrl: './product-list.css',
 })
@@ -31,6 +40,7 @@ export class ProductList {
   protected readonly icons = ICONS;
 
   products = this.productService.paginatedProducts;
+  isLoading = this.productService.isLoading;
   pagination = this.productService.paginationState;
   filters = this.productService.currentFilters;
   allProducts = this.productService.products;
