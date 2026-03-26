@@ -5,6 +5,7 @@ import { catchError, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { User } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
+import { SupportedLanguage } from './translation.service';
 
 export interface UpdateProfileRequest {
   firstname?: string;
@@ -15,6 +16,7 @@ export interface UpdateProfileRequest {
 export interface DeleteAccountRequest {
   id: string;
   password: string;
+  language: SupportedLanguage;
 }
 
 export interface ApiResponse<T = any> {
@@ -133,10 +135,15 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  deleteAccountRequest(userId: string, password: string): Observable<ApiResponse> {
+  deleteAccountRequest(
+    userId: string,
+    password: string,
+    language: SupportedLanguage,
+  ): Observable<ApiResponse> {
     const request: DeleteAccountRequest = {
       id: this.encodeBase64(userId),
       password: this.encodeBase64(password),
+      language: this.encodeBase64(language) as SupportedLanguage,
     };
 
     return this.http

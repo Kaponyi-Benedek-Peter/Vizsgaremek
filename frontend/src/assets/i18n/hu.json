@@ -778,5 +778,9 @@
     "browse_products": "Termékek böngészése",
     "quick_links": "Vagy ugorj ide",
     "quick_links_label": "Gyors navigáció"
+  },
+  "account": {
+    "bad_request": "Hibás kérés",
+    "empty_fields": "Néhány mezőt üresen hagytál"
   }
 }

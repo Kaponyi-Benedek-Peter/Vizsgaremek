@@ -176,7 +176,7 @@ export class Profile implements OnInit {
 
     this.isDeletingAccount.set(true);
 
-    this.accountService.deleteAccountRequest(userId, password).subscribe({
+    this.accountService.deleteAccountRequest(userId, password, this.language()).subscribe({
       next: () => {
         this.isDeletingAccount.set(false);
         this.deleteConfirmationSent.set(true);
