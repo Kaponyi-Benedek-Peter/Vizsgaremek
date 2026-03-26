@@ -778,5 +778,9 @@
     "browse_products": "Browse Products",
     "quick_links": "Or jump to",
     "quick_links_label": "Quick navigation"
+  },
+  "account": {
+    "bad_request": "Bad request",
+    "empty_fields": "Some fields are left empty"
   }
 }

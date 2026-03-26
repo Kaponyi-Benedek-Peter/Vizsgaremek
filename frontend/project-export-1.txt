@@ -2757,6 +2757,7 @@ import { catchError, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { User } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
+import { SupportedLanguage } from './translation.service';
 
 export interface UpdateProfileRequest {
   firstname?: string;
@@ -2767,6 +2768,7 @@ export interface UpdateProfileRequest {
 export interface DeleteAccountRequest {
   id: string;
   password: string;
+  language: SupportedLanguage;
 }
 
 export interface ApiResponse<T = any> {
@@ -2885,10 +2887,15 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  deleteAccountRequest(userId: string, password: string): Observable<ApiResponse> {
+  deleteAccountRequest(
+    userId: string,
+    password: string,
+    language: SupportedLanguage,
+  ): Observable<ApiResponse> {
     const request: DeleteAccountRequest = {
       id: this.encodeBase64(userId),
       password: this.encodeBase64(password),
+      language: this.encodeBase64(language) as SupportedLanguage,
     };
 
     return this.http
@@ -20453,7 +20460,7 @@ export class Profile implements OnInit {
 
     this.isDeletingAccount.set(true);
 
-    this.accountService.deleteAccountRequest(userId, password).subscribe({
+    this.accountService.deleteAccountRequest(userId, password, this.language()).subscribe({
       next: () => {
         this.isDeletingAccount.set(false);
         this.deleteConfirmationSent.set(true);
@@ -30936,6 +30943,10 @@ FILE: src\assets\i18n\de.json
   },
   "success": {
     "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
+  },
+  "account": {
+    "empty_fields": "Du hast ein paar Felder leer gelassen.",
+    "bad_request": "Ungültige Anfrage"
   }
 }
 
@@ -31725,6 +31736,10 @@ FILE: src\assets\i18n\en.json
     "browse_products": "Browse Products",
     "quick_links": "Or jump to",
     "quick_links_label": "Quick navigation"
+  },
+  "account": {
+    "bad_request": "Bad request",
+    "empty_fields": "Some fields are left empty"
   }
 }
 
@@ -32514,6 +32529,10 @@ FILE: src\assets\i18n\hu.json
     "browse_products": "Termékek böngészése",
     "quick_links": "Vagy ugorj ide",
     "quick_links_label": "Gyors navigáció"
+  },
+  "account": {
+    "bad_request": "Hibás kérés",
+    "empty_fields": "Néhány mezőt üresen hagytál"
   }
 }
 

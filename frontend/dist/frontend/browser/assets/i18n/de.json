@@ -778,5 +778,9 @@
   },
   "success": {
     "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
+  },
+  "account": {
+    "empty_fields": "Du hast ein paar Felder leer gelassen.",
+    "bad_request": "Ungültige Anfrage"
   }
 }
