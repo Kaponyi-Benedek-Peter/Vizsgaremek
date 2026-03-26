@@ -56,7 +56,6 @@ export interface AdminUser {
   created_at: string;
   first_name: string;
   last_name: string;
-  /** unverified | verified | admin | banned | deleted */
   account_state: string;
 }
 
@@ -64,6 +63,20 @@ export interface AdminUsersResponse {
   statuscode: string;
   status: string;
   users: AdminUser[];
+}
+
+export interface OrderProductDetail {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: string;
+  price: string;
+  unit_price: string;
+  product_name_hu: string;
+  product_name_en: string;
+  product_name_de: string;
+  thumbnail_url: string;
+  sku: string;
 }
 
 export interface AdminOrder {
@@ -81,6 +94,8 @@ export interface AdminOrder {
   apartment_number: string;
   phone_number: string;
   note: string;
+  tracking_token?: string;
+  products?: OrderProductDetail[];
 }
 
 export interface AdminOrdersResponse {
@@ -129,7 +144,6 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  // encodedId and encodedToken comes from url, already b64
   confirmAccountDeletion(encodedId: string, encodedToken: string): Observable<ApiResponse> {
     const request = {
       id: encodedId,
@@ -183,18 +197,6 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  banUserAdmin(userId: string, reason = ''): Observable<ApiResponse> {
-    const auth = this.buildAdminAuthBody();
-    const body = {
-      ...auth,
-      user_id: this.encodeBase64(userId),
-      ban_reason: this.encodeBase64(reason),
-    };
-    return this.http
-      .post<ApiResponse>(`${this.API_URL}/api/ban_user_admin`, body)
-      .pipe(catchError(this.handleError));
-  }
-
   deleteUserAdmin(userId: string): Observable<ApiResponse> {
     const auth = this.buildAdminAuthBody();
     const body = {
@@ -207,8 +209,9 @@ export class AccountService {
   }
 
   getOrderHistory(): Observable<ApiResponse<any[]>> {
+    const body = this.buildAdminAuthBody();
     return this.http
-      .get<ApiResponse<any[]>>(`${this.API_URL}/api/orders`)
+      .post<ApiResponse<any[]>>(`${this.API_URL}/api/get_all_orders_user`, body)
       .pipe(catchError(this.handleError));
   }
 
@@ -232,8 +235,19 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
+  updateOrderStatusAdmin(orderId: string, newStatus: string): Observable<ApiResponse> {
+    const body = {
+      ...this.buildAdminAuthBody(),
+      order_id: this.encodeBase64(orderId),
+      new_status: this.encodeBase64(newStatus),
+    };
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/update_order_status_admin`, body)
+      .pipe(catchError(this.handleError));
+  }
+
   private buildAdminAuthBody(): AdminAuthBody {
-    const storedId = sessionStorage.getItem('user_id') ?? '';
+    const storedId = sessionStorage.getItem('user_id') ?? localStorage.getItem('user_id') ?? '';
     const sessionToken = this.authService.getSessionToken();
     const jwtToken = this.authService.getToken();
 

@@ -17,6 +17,35 @@
   border-color: var(--color-primary);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   ICON SIZING (ViewEncapsulation needs these locally)
+   ══════════════════════════════════════════════════════════════ */
+
+.badge-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.stat-icon-img {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.55;
+}
+
+[data-theme='dark'] .stat-icon-img {
+  filter: var(--icon-filter, brightness(0) invert(1));
+  opacity: 0.65;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BADGES
+   ══════════════════════════════════════════════════════════════ */
+
 .pinned-badge,
 .featured-badge {
   position: absolute;
@@ -38,6 +67,14 @@
 .pinned-badge {
   background: var(--color-secondary);
 }
+
+.featured-badge .badge-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   POST IMAGE
+   ══════════════════════════════════════════════════════════════ */
 
 .post-image {
   position: relative;
@@ -115,6 +152,10 @@
   background: rgba(0, 0, 0, 0.8);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   POST CONTENT
+   ══════════════════════════════════════════════════════════════ */
+
 .post-content {
   padding: var(--space-4);
   display: flex;
@@ -143,6 +184,10 @@
 
 [data-theme='dark'] .category-badge-inline {
   background: var(--color-neutral-800);
+}
+
+.category-name {
+  white-space: nowrap;
 }
 
 .post-meta {
@@ -185,6 +230,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   AUTHOR
+   ══════════════════════════════════════════════════════════════ */
 
 .post-author {
   display: flex;
@@ -264,6 +313,10 @@
   color: var(--color-neutral-300);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   STATS
+   ══════════════════════════════════════════════════════════════ */
+
 .post-stats {
   display: flex;
   align-items: center;
@@ -280,13 +333,13 @@
   color: var(--color-text-secondary);
 }
 
-.stat-icon {
-  font-size: 14px;
-}
-
 .stat-value {
   font-weight: var(--font-medium);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   TAGS
+   ══════════════════════════════════════════════════════════════ */
 
 .post-tags {
   display: flex;
@@ -320,6 +373,10 @@
   background: rgba(16, 185, 129, 0.25);
   border-color: var(--color-success);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   CATEGORY COLORS
+   ══════════════════════════════════════════════════════════════ */
 
 .category-medicines {
   color: var(--color-error);
@@ -356,6 +413,10 @@
   border-color: #6b7280;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   COMPACT MODE
+   ══════════════════════════════════════════════════════════════ */
+
 .post-card.compact {
   flex-direction: row;
   height: auto;
@@ -382,6 +443,10 @@
   line-clamp: 2;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+
 @media (max-width: 768px) {
   .post-card.compact {
     flex-direction: column;
@@ -404,6 +469,11 @@
   .category-badge-inline {
     font-size: 10px;
     padding: var(--space-1) var(--space-2);
+  }
+
+  .badge-icon {
+    width: 13px;
+    height: 13px;
   }
 }
 

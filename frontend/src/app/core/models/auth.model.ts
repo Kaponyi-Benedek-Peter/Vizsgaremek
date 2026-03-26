@@ -58,7 +58,6 @@ export interface RegistrationResponse {
   user?: User;
 }
 
-// chpass_request
 export interface PasswordChangeRequest {
   email: string;
   password: string;
@@ -88,7 +87,7 @@ export interface ApiErrorResponse {
   statusCode?: number;
 }
 
-export type UserState = 'admin' | 'verified' | 'superadmin';
+export type UserState = 'superadmin' | 'admin' | 'verified' | 'unverified' | 'banned';
 
 export interface AuthState {
   isAuthenticated: boolean;

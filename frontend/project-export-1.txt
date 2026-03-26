@@ -51,6 +51,7 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 currency.service.ts
 │   │   │   │   ├── 📄 forum.service.ts
 │   │   │   │   ├── 📄 image-cache.service.ts
+│   │   │   │   ├── 📄 pdf-export.service.ts
 │   │   │   │   ├── 📄 product.service.ts
 │   │   │   │   ├── 📄 review.service.ts
 │   │   │   │   ├── 📄 theme.service.ts
@@ -979,6 +980,8 @@ FILE: package.json
     "@angular/router": "^21.0.0",
     "@ngx-translate/core": "^16.0.4",
     "@ngx-translate/http-loader": "^16.0.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.16.0"
@@ -2006,6 +2009,12 @@ export type FieldExtractor<T> = (item: T) => string;
 
 export const ACCOUNT_STATES = ['verified', 'unverified', 'admin', 'superadmin'] as const;
 
+// Admin can only assign these roles (cannot promote to admin or superadmin)
+export const ADMIN_ASSIGNABLE_STATES = ['verified', 'unverified'] as const;
+
+// Superadmin can also promote to admin (but superadmin is DB-only, never assignable from frontend)
+export const SUPERADMIN_ASSIGNABLE_STATES = ['verified', 'unverified', 'admin'] as const;
+
 export const ORDER_COLUMNS: Record<string, FieldExtractor<AdminOrder>> = {
   id: (o) => o.id,
   email: (o) => o.email || '',
@@ -2107,7 +2116,6 @@ export interface RegistrationResponse {
   user?: User;
 }
 
-// chpass_request
 export interface PasswordChangeRequest {
   email: string;
   password: string;
@@ -2137,7 +2145,7 @@ export interface ApiErrorResponse {
   statusCode?: number;
 }
 
-export type UserState = 'admin' | 'verified' | 'superadmin';
+export type UserState = 'superadmin' | 'admin' | 'verified' | 'unverified' | 'banned';
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -2800,7 +2808,6 @@ export interface AdminUser {
   created_at: string;
   first_name: string;
   last_name: string;
-  /** unverified | verified | admin | banned | deleted */
   account_state: string;
 }
 
@@ -2808,6 +2815,20 @@ export interface AdminUsersResponse {
   statuscode: string;
   status: string;
   users: AdminUser[];
+}
+
+export interface OrderProductDetail {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: string;
+  price: string;
+  unit_price: string;
+  product_name_hu: string;
+  product_name_en: string;
+  product_name_de: string;
+  thumbnail_url: string;
+  sku: string;
 }
 
 export interface AdminOrder {
@@ -2825,6 +2846,8 @@ export interface AdminOrder {
   apartment_number: string;
   phone_number: string;
   note: string;
+  tracking_token?: string;
+  products?: OrderProductDetail[];
 }
 
 export interface AdminOrdersResponse {
@@ -2873,7 +2896,6 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  // encodedId and encodedToken comes from url, already b64
   confirmAccountDeletion(encodedId: string, encodedToken: string): Observable<ApiResponse> {
     const request = {
       id: encodedId,
@@ -2927,18 +2949,6 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  banUserAdmin(userId: string, reason = ''): Observable<ApiResponse> {
-    const auth = this.buildAdminAuthBody();
-    const body = {
-      ...auth,
-      user_id: this.encodeBase64(userId),
-      ban_reason: this.encodeBase64(reason),
-    };
-    return this.http
-      .post<ApiResponse>(`${this.API_URL}/api/ban_user_admin`, body)
-      .pipe(catchError(this.handleError));
-  }
-
   deleteUserAdmin(userId: string): Observable<ApiResponse> {
     const auth = this.buildAdminAuthBody();
     const body = {
@@ -2951,8 +2961,9 @@ export class AccountService {
   }
 
   getOrderHistory(): Observable<ApiResponse<any[]>> {
+    const body = this.buildAdminAuthBody();
     return this.http
-      .get<ApiResponse<any[]>>(`${this.API_URL}/api/orders`)
+      .post<ApiResponse<any[]>>(`${this.API_URL}/api/get_all_orders_user`, body)
       .pipe(catchError(this.handleError));
   }
 
@@ -2976,8 +2987,19 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
+  updateOrderStatusAdmin(orderId: string, newStatus: string): Observable<ApiResponse> {
+    const body = {
+      ...this.buildAdminAuthBody(),
+      order_id: this.encodeBase64(orderId),
+      new_status: this.encodeBase64(newStatus),
+    };
+    return this.http
+      .post<ApiResponse>(`${this.API_URL}/api/update_order_status_admin`, body)
+      .pipe(catchError(this.handleError));
+  }
+
   private buildAdminAuthBody(): AdminAuthBody {
-    const storedId = sessionStorage.getItem('user_id') ?? '';
+    const storedId = sessionStorage.getItem('user_id') ?? localStorage.getItem('user_id') ?? '';
     const sessionToken = this.authService.getSessionToken();
     const jwtToken = this.authService.getToken();
 
@@ -3270,7 +3292,6 @@ export class AuthService {
     return now.getTime() >= expirationTime.getTime() - fiveMinutes;
   }
 
-  // Stage 1: email + password -> email
   loginRequest(email: string, password: string, language: SupportedLanguage) {
     const request: LoginRequest = {
       email: this.encodeBase64(email),
@@ -3283,7 +3304,6 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  // Stage 2: id and confirmation_token b64 from url
   loginPromise(
     id: string,
     confirmationToken: string,
@@ -3302,7 +3322,6 @@ export class AuthService {
     );
   }
 
-  // registration_request: b64 string
   register(
     email: string,
     password: string,
@@ -3323,7 +3342,6 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  // id and token b64 from url
   completeRegistration(
     id: string,
     token: string,
@@ -3338,18 +3356,19 @@ export class AuthService {
       .post<RegistrationResponse>(`${this.API_URL}/api/registration_promise`, request)
       .pipe(
         tap((response) => {
-          this.handleLoginSuccess(
-            response as unknown as LoginResponse,
-            stayLoggedIn,
-            response.user,
-            true, // skipNavigation
-          );
+          const mappedResponse: LoginResponse = {
+            user_id: response.user?.id ?? id,
+            jwt_token: response.jwt_token,
+            session_token: response.session_token,
+            jwt_token_expiration: response.jwt_token_expiration,
+            user_state: (response.user?.account_state as UserState) ?? 'verified',
+          };
+          this.handleLoginSuccess(mappedResponse, stayLoggedIn, response.user, true);
         }),
         catchError(this.handleError.bind(this)),
       );
   }
 
-  // chpass_request: b64 string
   requestPasswordChange(email: string, newPassword: string, language: SupportedLanguage) {
     const request: PasswordChangeRequest = {
       email: this.encodeBase64(email),
@@ -3467,6 +3486,18 @@ export class AuthService {
 
   hasStoredSession(): boolean {
     return this.getStoredToken() !== null;
+  }
+
+  patchCurrentUser(partial: Partial<User>): void {
+    const current = this.authStateSignal();
+    if (!current.user) return;
+
+    const updated = { ...current.user, ...partial };
+    this.updateAuthState({ ...current, user: updated });
+
+    const stayLoggedIn = localStorage.getItem(this.STORAGE_TYPE_KEY) === 'local';
+    const storage = stayLoggedIn ? localStorage : sessionStorage;
+    storage.setItem(this.USER_KEY, JSON.stringify(updated));
   }
 
   private decodeJWT(token: string): JWTPayload | null {
@@ -4427,6 +4458,140 @@ export class ImageCacheService {
       chunks.push(arr.slice(i, i + size));
     }
     return chunks;
+  }
+}
+
+
+
+================================================================================
+FILE: src\app\core\services\pdf-export.service.ts
+================================================================================
+
+import { Injectable } from '@angular/core';
+
+@Injectable({ providedIn: 'root' })
+export class PdfExportService {
+  private async loadJsPdf(): Promise<{ jsPDF: any; autoTable: any }> {
+    const jspdfModule = await import('jspdf');
+    const autoTableModule = await import('jspdf-autotable');
+    return {
+      jsPDF: jspdfModule.default,
+      autoTable: autoTableModule.default,
+    };
+  }
+
+  async exportTable(
+    title: string,
+    headers: string[],
+    rows: string[][],
+    filename: string,
+  ): Promise<void> {
+    const { jsPDF, autoTable } = await this.loadJsPdf();
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text(title, 14, 20);
+
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Generated: ${new Date().toLocaleString('hu-HU')}`, 14, 28);
+    doc.text(`Roy's Shack Est. 1888 — Admin Panel`, 14, 33);
+    doc.setTextColor(0, 0, 0);
+
+    autoTable(doc, {
+      head: [headers],
+      body: rows,
+      startY: 40,
+      styles: {
+        fontSize: 7.5,
+        cellPadding: 3,
+        overflow: 'linebreak',
+      },
+      headStyles: {
+        fillColor: [6, 122, 69],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 8,
+      },
+      alternateRowStyles: {
+        fillColor: [245, 247, 250],
+      },
+      margin: { left: 14, right: 14 },
+    });
+
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(160, 160, 160);
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        doc.internal.pageSize.getWidth() - 30,
+        doc.internal.pageSize.getHeight() - 10,
+      );
+    }
+
+    doc.save(filename);
+  }
+
+  async exportDashboardStats(
+    stats: { label: string; value: string | number }[],
+    recentOrders: { headers: string[]; rows: string[][] },
+    filename: string,
+  ): Promise<void> {
+    const { jsPDF, autoTable } = await this.loadJsPdf();
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Roy's Shack Est. 1888", 14, 20);
+
+    doc.setFontSize(13);
+    doc.setTextColor(60, 60, 60);
+    doc.text('Admin Dashboard Report', 14, 28);
+
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Generated: ${new Date().toLocaleString('hu-HU')}`, 14, 35);
+    doc.setTextColor(0, 0, 0);
+
+    doc.setDrawColor(6, 122, 69);
+    doc.setLineWidth(0.5);
+    doc.line(14, 39, 196, 39);
+
+    let y = 48;
+    doc.setFontSize(12);
+    doc.text('Summary', 14, y);
+    y += 8;
+
+    stats.forEach((stat) => {
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      doc.text(stat.label, 18, y);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont(undefined!, 'bold');
+      doc.text(String(stat.value), 80, y);
+      doc.setFont(undefined!, 'normal');
+      y += 7;
+    });
+
+    y += 6;
+
+    if (recentOrders.rows.length > 0) {
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Recent Orders', 14, y);
+
+      autoTable(doc, {
+        head: [recentOrders.headers],
+        body: recentOrders.rows,
+        startY: y + 5,
+        styles: { fontSize: 7.5, cellPadding: 3 },
+        headStyles: { fillColor: [6, 122, 69], fontSize: 8 },
+        margin: { left: 14, right: 14 },
+      });
+    }
+
+    doc.save(filename);
   }
 }
 
@@ -7524,6 +7689,161 @@ FILE: src\app\pages\admin\admin.css
   }
 }
 
+.order-status-select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 110px;
+  transition: border-color 0.2s ease;
+}
+
+.order-status-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.order-status-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancel-order-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-error);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-order-btn:hover {
+  background: var(--color-error);
+  color: white;
+  border-color: var(--color-error);
+}
+
+tr.cancelled-row {
+  opacity: 0.55;
+}
+
+tr.cancelled-row .order-status-select {
+  color: var(--color-error);
+}
+
+.export-pdf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.export-pdf-btn:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.export-pdf-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.order-id-link {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.order-id-link:hover {
+  color: var(--color-primary-dark);
+  text-decoration-style: solid;
+}
+
+.modal-wide {
+  max-width: 650px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-4);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.modal-close:hover {
+  background: var(--color-neutral-100);
+}
+
+.order-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--space-4);
+  font-size: 0.85rem;
+}
+
+.order-detail-total {
+  text-align: right;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-3);
+  font-size: 1.05rem;
+}
+
+.product-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-item-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+}
+
 
 
 ================================================================================
@@ -7605,8 +7925,11 @@ FILE: src\app\pages\admin\admin.html
 
     @if (activeSection() === 'dashboard') {
       <div class="section-content">
-        <div class="dashboard-greeting">
-          <h2>{{ 'admin.greeting' | translate: { name: adminName() } }}</h2>
+        <div class="section-toolbar">
+          <button class="export-pdf-btn" (click)="exportDashboardPdf()">📄 Export PDF</button>
+          <div class="dashboard-greeting">
+            <h2>{{ 'admin.greeting' | translate: { name: adminName() } }}</h2>
+          </div>
         </div>
 
         <div class="stats-grid">
@@ -7710,7 +8033,11 @@ FILE: src\app\pages\admin\admin.html
                 <tbody>
                   @for (order of recentOrders(); track order.id) {
                     <tr>
-                      <td class="order-id">#{{ order.id }}</td>
+                      <td class="order-id">
+                        <button class="order-id-link" (click)="openOrderDetail(order)">
+                          #{{ order.id }}
+                        </button>
+                      </td>
                       <td class="muted">{{ order.email || order.user_id }}</td>
                       <td class="muted">{{ formatDate(order.created_at) }}</td>
                       <td>{{ getOrderAddressSummary(order) }}</td>
@@ -7744,6 +8071,13 @@ FILE: src\app\pages\admin\admin.html
               "
             />
           </div>
+          <button
+            class="export-pdf-btn"
+            (click)="exportOrdersPdf()"
+            [disabled]="filteredOrders().length === 0"
+          >
+            📄 Export PDF
+          </button>
           <button class="retry-btn" (click)="loadOrders()" [disabled]="ordersLoading()">
             🔄 {{ 'common.refresh' | translate }}
           </button>
@@ -7779,12 +8113,17 @@ FILE: src\app\pages\admin\admin.html
                       <th>{{ 'admin.table.total' | translate }}</th>
                       <th>{{ 'admin.table.status' | translate }}</th>
                       <th>{{ 'admin.table.note' | translate }}</th>
+                      <th>{{ 'admin.table.actions' | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (order of filteredOrders(); track order.id) {
-                      <tr>
-                        <td class="order-id">#{{ order.id }}</td>
+                      <tr [class.cancelled-row]="order.order_status === 'cancelled'">
+                        <td class="order-id">
+                          <button class="order-id-link" (click)="openOrderDetail(order)">
+                            #{{ order.id }}
+                          </button>
+                        </td>
                         <td class="muted">{{ order.email || '—' }}</td>
                         <td>{{ order.billing_name || '—' }}</td>
                         <td class="muted">{{ formatDate(order.created_at) }}</td>
@@ -7792,11 +8131,39 @@ FILE: src\app\pages\admin\admin.html
                         <td class="muted">{{ order.phone_number || '—' }}</td>
                         <td class="font-bold">{{ formatRevenue(order.price) }}</td>
                         <td>
-                          <span [class]="getOrderStatusClass(order.order_status)">
-                            {{ order.order_status }}
-                          </span>
+                          <select
+                            class="order-status-select"
+                            [class]="getOrderStatusClass(order.order_status)"
+                            [ngModel]="order.order_status"
+                            (ngModelChange)="updateOrderStatus(order, $event)"
+                            [disabled]="
+                              order.order_status === 'cancelled' ||
+                              order.order_status === 'delivered'
+                            "
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
                         </td>
                         <td class="muted note-cell">{{ order.note || '—' }}</td>
+                        <td>
+                          @if (
+                            order.order_status !== 'cancelled' && order.order_status !== 'delivered'
+                          ) {
+                            <button
+                              class="cancel-order-btn"
+                              (click)="requestCancelOrder(order)"
+                              [attr.aria-label]="'admin.order_actions.cancel' | translate"
+                            >
+                              ✕
+                            </button>
+                          } @else {
+                            <span class="muted">—</span>
+                          }
+                        </td>
                       </tr>
                     }
                   </tbody>
@@ -7820,6 +8187,13 @@ FILE: src\app\pages\admin\admin.html
               [placeholder]="('admin.search_users' | translate) + '   (role:admin, email:gmail)'"
             />
           </div>
+          <button
+            class="export-pdf-btn"
+            (click)="exportUsersPdf()"
+            [disabled]="filteredUsers().length === 0"
+          >
+            📄 Export PDF
+          </button>
           <button class="retry-btn" (click)="loadUsers()" [disabled]="usersLoading()">
             🔄 {{ 'common.refresh' | translate }}
           </button>
@@ -7875,7 +8249,7 @@ FILE: src\app\pages\admin\admin.html
                         <td class="muted">{{ formatDate(user.created_at) }}</td>
                         <td class="muted">#{{ user.id }}</td>
                         <td>
-                          @if (!isSelf(user) && user.account_state !== 'deleted') {
+                          @if (canManageUser(user) && user.account_state !== 'deleted') {
                             <div class="user-actions-wrapper">
                               <button
                                 class="action-menu-btn"
@@ -7963,6 +8337,13 @@ FILE: src\app\pages\admin\admin.html
           </div>
           <button class="add-btn" (click)="openProductForm()">
             + {{ 'admin.product_form.add' | translate }}
+          </button>
+          <button
+            class="export-pdf-btn"
+            (click)="exportProductsPdf()"
+            [disabled]="filteredProducts().length === 0"
+          >
+            📄 Export PDF
           </button>
           <button class="retry-btn" (click)="loadProducts()" [disabled]="productsLoading()">
             🔄 {{ 'common.refresh' | translate }}
@@ -8055,7 +8436,8 @@ FILE: src\app\pages\admin\admin.html
                         <td>
                           <span
                             [class]="
-                              'status-badge status-' + (product.in_stock ? 'delivered' : 'cancelled')
+                              'status-badge status-' +
+                              (product.in_stock ? 'delivered' : 'cancelled')
                             "
                           >
                             {{
@@ -8328,6 +8710,64 @@ FILE: src\app\pages\admin\admin.html
               </button>
             </div>
           }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (orderDetailOpen() && orderDetailOrder()) {
+  <div class="modal-overlay" (click)="closeOrderDetail()">
+    <div class="modal-content modal-wide" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Order #{{ orderDetailOrder()!.id }} — Items</h3>
+        <button class="modal-close" (click)="closeOrderDetail()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="order-detail-info">
+          <p><strong>Email:</strong> {{ orderDetailOrder()!.email }}</p>
+          <p><strong>Billing:</strong> {{ orderDetailOrder()!.billing_name }}</p>
+          <p><strong>Status:</strong> {{ orderDetailOrder()!.order_status }}</p>
+          @if (orderDetailOrder()!.tracking_token) {
+            <p><strong>Tracking:</strong> {{ orderDetailOrder()!.tracking_token }}</p>
+          }
+        </div>
+
+        @if (!orderDetailOrder()!.products || orderDetailOrder()!.products!.length === 0) {
+          <p class="muted">No items found.</p>
+        } @else {
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of orderDetailOrder()!.products!; track item.product_id) {
+                <tr>
+                  <td class="product-name-cell">
+                    @if (item.thumbnail_url) {
+                      <img [src]="item.thumbnail_url" alt="" class="order-item-thumb" />
+                    }
+                    <span>{{ getProductName(item) }}</span>
+                  </td>
+                  <td class="muted">{{ item.sku || '—' }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ formatRevenue(item.unit_price) }}</td>
+                  <td class="font-bold">{{ formatRevenue(item.price) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        <div class="order-detail-total">
+          <strong>Total: {{ formatRevenue(orderDetailOrder()!.price) }}</strong>
         </div>
       </div>
     </div>
@@ -8840,6 +9280,25 @@ FILE: src\app\pages\admin\admin.html
     </div>
   </div>
 }
+@if (orderCancelConfirm()) {
+  <div class="modal-overlay" (click)="cancelCancelOrder()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>{{ 'admin.order_actions.cancel_title' | translate }}</h3>
+      <p>
+        {{ 'admin.order_actions.cancel_text' | translate }}
+        <strong>#{{ orderCancelConfirm()!.id }}</strong>
+      </p>
+      <div class="modal-actions">
+        <button class="modal-cancel-btn" (click)="cancelCancelOrder()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="confirm-delete-btn" (click)="confirmCancelOrder()">
+          {{ 'admin.order_actions.confirm_cancel' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
 
 
 
@@ -9044,7 +9503,12 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
-import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
+import {
+  AccountService,
+  AdminUser,
+  AdminOrder,
+  OrderProductDetail,
+} from '../../core/services/account.service';
 import { ProductService } from '../../core/services/product.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
@@ -9052,6 +9516,7 @@ import { ICONS } from '../../core/constants/visuals';
 import { ResizableTableDirective } from '../../shared/directives/resizable-table.directive';
 import { formatFileSize } from '../../core/utils/image-utils';
 import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS } from './admin.mock';
+import { PdfExportService } from '../../core/services/pdf-export.service';
 
 import {
   AdminSection,
@@ -9063,6 +9528,8 @@ import {
   UserActionType,
   UserActionRequest,
   ACCOUNT_STATES,
+  ADMIN_ASSIGNABLE_STATES,
+  SUPERADMIN_ASSIGNABLE_STATES,
   ORDER_COLUMNS,
   USER_COLUMNS,
   PRODUCT_COLUMNS,
@@ -9083,6 +9550,7 @@ export class Admin implements OnInit {
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
   private router = inject(Router);
+  private pdfService = inject(PdfExportService);
 
   protected readonly icons = ICONS;
   protected readonly ACCOUNT_STATES = ACCOUNT_STATES;
@@ -9153,6 +9621,11 @@ export class Admin implements OnInit {
   productFormSaving = signal(false);
   productDeleteConfirm = signal<ProductWithHelpers | null>(null);
   productDeleteLoading = signal(false);
+  orderCancelConfirm = signal<AdminOrder | null>(null);
+  orderActionLoading = signal(false);
+
+  orderDetailOpen = signal(false);
+  orderDetailOrder = signal<AdminOrder | null>(null);
 
   productFormIsEdit = computed(() => this.productFormEditId() !== null);
 
@@ -9316,6 +9789,97 @@ export class Admin implements OnInit {
     this.router.navigate(['/login']);
   }
 
+  openOrderDetail(order: AdminOrder): void {
+    this.orderDetailOrder.set(order);
+    this.orderDetailOpen.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeOrderDetail(): void {
+    this.orderDetailOpen.set(false);
+    this.orderDetailOrder.set(null);
+    document.body.style.overflow = '';
+  }
+
+  exportOrdersPdf(): void {
+    const headers = ['ID', 'Email', 'Billing', 'City', 'Price', 'Status', 'Date'];
+    const rows = this.filteredOrders().map((o) => [
+      '#' + o.id,
+      o.email || '—',
+      o.billing_name || '—',
+      o.city || '—',
+      this.formatRevenue(o.price),
+      o.order_status,
+      this.formatDate(o.created_at),
+    ]);
+    this.pdfService.exportTable(
+      'Orders Report',
+      headers,
+      rows,
+      `orders-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+    );
+  }
+
+  exportUsersPdf(): void {
+    const headers = ['ID', 'Name', 'Email', 'Role', 'Registered'];
+    const rows = this.filteredUsers().map((u) => [
+      '#' + u.id,
+      this.getUserFullName(u),
+      u.email,
+      u.account_state,
+      this.formatDate(u.created_at),
+    ]);
+    this.pdfService.exportTable(
+      'Users Report',
+      headers,
+      rows,
+      `users-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+    );
+  }
+
+  exportProductsPdf(): void {
+    const headers = ['ID', 'Name', 'Brand', 'Category', 'Price', 'Stock', 'SKU'];
+    const rows = this.filteredProducts().map((p) => [
+      '#' + p.id,
+      p.name || '—',
+      p.brand || '—',
+      p.category || '—',
+      this.formatRevenue(p.price_number || 0),
+      String(p.stock_number ?? 0),
+      p.sku || '—',
+    ]);
+    this.pdfService.exportTable(
+      'Products Report',
+      headers,
+      rows,
+      `products-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+    );
+  }
+
+  exportDashboardPdf(): void {
+    const s = this.stats();
+    const stats = [
+      { label: 'Total Orders', value: s.totalOrders },
+      { label: 'Revenue', value: this.formatRevenue(s.revenue) },
+      { label: 'Total Users', value: s.totalUsers },
+      { label: 'Total Products', value: s.totalProducts },
+      { label: 'Low Stock Items', value: s.lowStock },
+    ];
+    const recentHeaders = ['ID', 'Email', 'Address', 'Price', 'Status'];
+    const recentRows = this.recentOrders().map((o) => [
+      '#' + o.id,
+      o.email || '—',
+      this.getOrderAddressSummary(o),
+      this.formatRevenue(o.price),
+      o.order_status,
+    ]);
+    this.pdfService.exportDashboardStats(
+      stats,
+      { headers: recentHeaders, rows: recentRows },
+      `dashboard-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+    );
+  }
+
   formatRevenue(amount: number | string): string {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('hu-HU', {
@@ -9336,6 +9900,13 @@ export class Admin implements OnInit {
     } catch {
       return dateStr;
     }
+  }
+
+  getProductName(product: OrderProductDetail): string {
+    const lang = this.translate.currentLang || 'en';
+    if (lang === 'hu' && product.product_name_hu) return product.product_name_hu;
+    if (lang === 'de' && product.product_name_de) return product.product_name_de;
+    return product.product_name_en || product.product_name_hu || '—';
   }
 
   getUserFullName(user: AdminUser): string {
@@ -9381,6 +9952,60 @@ export class Admin implements OnInit {
     return 'status-badge ' + (map[status] ?? 'status-pending');
   }
 
+  updateOrderStatus(order: AdminOrder, newStatus: string): void {
+    if (MOCK_MODE) {
+      this.apiOrders.update((orders) =>
+        orders.map((o) =>
+          o.id === order.id ? { ...o, order_status: newStatus as AdminOrder['order_status'] } : o,
+        ),
+      );
+      this.toastService.show('admin.order_actions.status_updated', 'success');
+      return;
+    }
+
+    this.orderActionLoading.set(true);
+
+    this.accountService.updateOrderStatusAdmin(order.id, newStatus).subscribe({
+      next: (res) => {
+        if (res.statuscode === '200') {
+          this.apiOrders.update((orders) =>
+            orders.map((o) =>
+              o.id === order.id
+                ? { ...o, order_status: newStatus as AdminOrder['order_status'] }
+                : o,
+            ),
+          );
+          this.toastService.show('admin.order_actions.status_updated', 'success');
+        } else {
+          this.toastService.show('admin.order_actions.error', 'error');
+          this.loadOrders();
+        }
+        this.orderActionLoading.set(false);
+      },
+      error: () => {
+        this.toastService.show('admin.order_actions.error', 'error');
+        this.loadOrders();
+        this.orderActionLoading.set(false);
+      },
+    });
+  }
+
+  requestCancelOrder(order: AdminOrder): void {
+    this.orderCancelConfirm.set(order);
+  }
+
+  cancelCancelOrder(): void {
+    this.orderCancelConfirm.set(null);
+  }
+
+  confirmCancelOrder(): void {
+    const order = this.orderCancelConfirm();
+    if (!order) return;
+
+    this.orderCancelConfirm.set(null);
+    this.updateOrderStatus(order, 'cancelled');
+  }
+
   trackById(_index: number, item: { id: string }): string {
     return item.id;
   }
@@ -9393,13 +10018,30 @@ export class Admin implements OnInit {
     return user.id === this.currentAdminId();
   }
 
+  canManageUser(user: AdminUser): boolean {
+    if (this.isSelf(user)) return false;
+
+    const myRole = this.authService.authState().role;
+    const targetRole = user.account_state;
+
+    if (myRole === 'superadmin') return true;
+    if (myRole === 'admin') {
+      return targetRole !== 'admin' && targetRole !== 'superadmin';
+    }
+    return false;
+  }
+
   toggleUserMenu(userId: string, event: MouseEvent): void {
     event.stopPropagation();
     this.activeUserMenu.update((current) => (current === userId ? null : userId));
   }
 
   getAvailableStates(user: AdminUser): string[] {
-    return ACCOUNT_STATES.filter((s) => s !== user.account_state);
+    const myRole = this.authService.authState().role;
+    const assignable =
+      myRole === 'superadmin' ? SUPERADMIN_ASSIGNABLE_STATES : ADMIN_ASSIGNABLE_STATES;
+
+    return [...assignable].filter((s) => s !== user.account_state);
   }
 
   requestChangeRole(user: AdminUser, newState: string): void {
@@ -9463,21 +10105,23 @@ export class Admin implements OnInit {
         break;
 
       case 'ban':
-        this.accountService.banUserAdmin(req.user.id).subscribe({
-          next: (res) => {
-            if (res.statuscode === '200') {
-              this.applyUserStateChange(req.user.id, 'banned');
-              this.toastService.show('admin.user_actions.banned', 'success');
-            } else {
+        this.accountService
+          .updateUserStateAdmin(adminId, token, req.user.id, 'banned', '')
+          .subscribe({
+            next: (res) => {
+              if (res.statuscode === '200') {
+                this.applyUserStateChange(req.user.id, 'banned');
+                this.toastService.show('admin.user_actions.banned', 'success');
+              } else {
+                this.toastService.show('admin.user_actions.error', 'error');
+              }
+              this.finishUserAction();
+            },
+            error: () => {
               this.toastService.show('admin.user_actions.error', 'error');
-            }
-            this.finishUserAction();
-          },
-          error: () => {
-            this.toastService.show('admin.user_actions.error', 'error');
-            this.finishUserAction();
-          },
-        });
+              this.finishUserAction();
+            },
+          });
         break;
 
       case 'delete':
@@ -10433,6 +11077,43 @@ FILE: src\app\pages\forum\forum.css
   padding: var(--space-8) var(--space-4);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   ICON SIZING (ViewEncapsulation needs these locally)
+   ══════════════════════════════════════════════════════════════ */
+
+.search-icon-img {
+  position: absolute;
+  left: var(--space-3);
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.5;
+}
+
+[data-theme='dark'] .search-icon-img {
+  filter: var(--icon-filter, brightness(0) invert(1));
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.category-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SEARCH + TOOLBAR
+   ══════════════════════════════════════════════════════════════ */
+
 .search-filters {
   display: flex;
   flex-direction: column;
@@ -10451,15 +11132,6 @@ FILE: src\app\pages\forum\forum.css
   flex: 1;
   display: flex;
   align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-3);
-  font-size: 18px;
-  pointer-events: none;
-  color: var(--color-text-secondary);
-  line-height: 1;
 }
 
 .search-input {
@@ -10603,6 +11275,10 @@ FILE: src\app\pages\forum\forum.css
   box-shadow: var(--shadow-sm);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   CATEGORY CHIPS
+   ══════════════════════════════════════════════════════════════ */
+
 .category-filters {
   display: flex;
   flex-wrap: wrap;
@@ -10643,6 +11319,10 @@ FILE: src\app\pages\forum\forum.css
   border-color: var(--color-primary);
 }
 
+.category-chip.active .category-icon-img {
+  filter: brightness(0) invert(1);
+}
+
 .category-chip.category-medicines.active {
   background: var(--color-error);
   border-color: var(--color-error);
@@ -10678,6 +11358,10 @@ FILE: src\app\pages\forum\forum.css
   border-color: #6b7280;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   LOADING
+   ══════════════════════════════════════════════════════════════ */
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -10703,6 +11387,10 @@ FILE: src\app\pages\forum\forum.css
   }
 }
 
+/* ══════════════════════════════════════════════════════════════
+   POSTS GRID
+   ══════════════════════════════════════════════════════════════ */
+
 .posts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -10710,32 +11398,47 @@ FILE: src\app\pages\forum\forum.css
   margin-bottom: var(--space-8);
 }
 
-.no-results {
+/* ══════════════════════════════════════════════════════════════
+   EMPTY / ERROR / NO-RESULTS STATES
+   ══════════════════════════════════════════════════════════════ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   padding: var(--space-16) var(--space-4);
+  gap: var(--space-3);
 }
 
-.no-results-icon {
-  font-size: 64px;
-  margin-bottom: var(--space-4);
-  opacity: 0.5;
-  display: block;
+.empty-state-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  opacity: 0.6;
+  margin-bottom: var(--space-2);
 }
 
-.no-results-title {
+.empty-state-title {
   font-size: var(--text-2xl);
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
-  margin: 0 0 var(--space-2) 0;
+  margin: 0;
 }
 
-.no-results-description {
+.empty-state-description {
   font-size: var(--text-base);
   color: var(--color-text-secondary);
-  margin: 0 0 var(--space-6) 0;
+  margin: 0;
+  max-width: 420px;
+  line-height: var(--leading-relaxed);
 }
 
-.reset-filters-button {
+.empty-state-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
   padding: var(--space-3) var(--space-6);
   background: var(--color-primary);
   color: white;
@@ -10750,10 +11453,18 @@ FILE: src\app\pages\forum\forum.css
   min-height: 44px;
 }
 
-.reset-filters-button:hover {
+.empty-state-action:hover {
   background: var(--color-primary-dark);
   transform: translateY(-1px);
 }
+
+.empty-state-action .btn-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PAGINATION
+   ══════════════════════════════════════════════════════════════ */
 
 .pagination {
   display: flex;
@@ -10828,6 +11539,10 @@ FILE: src\app\pages\forum\forum.css
   pointer-events: none;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+
 @media (max-width: 768px) {
   .forum-hero {
     padding: var(--space-10) var(--space-4) var(--space-8);
@@ -10878,6 +11593,11 @@ FILE: src\app\pages\forum\forum.css
     justify-content: center;
     flex-wrap: wrap;
   }
+
+  .empty-state-img {
+    width: 90px;
+    height: 90px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -10892,8 +11612,9 @@ FILE: src\app\pages\forum\forum.css
     gap: var(--space-1);
   }
 
-  .category-icon {
-    font-size: 14px;
+  .category-icon-img {
+    width: 14px;
+    height: 14px;
   }
 
   .page-number,
@@ -10901,6 +11622,10 @@ FILE: src\app\pages\forum\forum.css
     min-width: 36px;
     height: 36px;
     font-size: 13px;
+  }
+
+  .empty-state-title {
+    font-size: var(--text-xl);
   }
 }
 
@@ -10912,15 +11637,11 @@ FILE: src\app\pages\forum\forum.css
   .search-input {
     font-size: var(--text-sm);
   }
-
-  .no-results-icon {
-    font-size: 48px;
-  }
-
-  .no-results-title {
-    font-size: var(--text-xl);
-  }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   DARK THEME
+   ══════════════════════════════════════════════════════════════ */
 
 [data-theme='dark'] .forum-hero {
   background: linear-gradient(
@@ -10983,6 +11704,10 @@ FILE: src\app\pages\forum\forum.css
   color: var(--color-neutral-100);
 }
 
+[data-theme='dark'] .empty-state-img {
+  filter: brightness(0.85);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spinner {
     animation: none;
@@ -10996,180 +11721,6 @@ FILE: src\app\pages\forum\forum.css
   .page-number,
   .pagination-button {
     transition: none;
-  }
-}
-
-/* ========== Blog hero + featured (type='blog') ========== */
-
-.blog-hero {
-  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-dark) 100%);
-  color: white;
-  padding: var(--space-16) var(--space-4) var(--space-8);
-}
-
-.blog-hero .hero-content {
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center;
-  margin-bottom: var(--space-10);
-}
-
-.featured-posts {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.featured-title {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  margin: 0 0 var(--space-6) 0;
-  text-align: center;
-}
-
-.featured-carousel {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: var(--space-6);
-}
-
-.featured-card {
-  background: white;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-lg);
-}
-
-.featured-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-}
-
-[data-theme='dark'] .featured-card {
-  background: var(--color-neutral-800);
-}
-
-.featured-image {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background: var(--color-neutral-100);
-}
-
-.featured-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform var(--transition-normal);
-}
-
-.featured-card:hover .featured-image img {
-  transform: scale(1.1);
-}
-
-.featured-content {
-  padding: var(--space-5);
-}
-
-.featured-category {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  margin-bottom: var(--space-2);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.featured-post-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-3) 0;
-  line-height: var(--leading-tight);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-[data-theme='dark'] .featured-post-title {
-  color: white;
-}
-
-.featured-excerpt {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-normal);
-  margin: 0 0 var(--space-4) 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-[data-theme='dark'] .featured-excerpt {
-  color: var(--color-neutral-400);
-}
-
-.featured-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-border);
-}
-
-[data-theme='dark'] .featured-meta {
-  color: var(--color-neutral-400);
-  border-color: var(--color-neutral-700);
-}
-
-.author {
-  font-weight: var(--font-medium);
-  color: var(--color-text-primary);
-}
-
-[data-theme='dark'] .author {
-  color: white;
-}
-
-.reading-time {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.results-count {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-secondary);
-}
-
-[data-theme='dark'] .blog-hero {
-  background: linear-gradient(135deg, var(--color-secondary) 0%, #065f46 100%);
-}
-
-@media (max-width: 768px) {
-  .blog-hero {
-    padding: var(--space-10) var(--space-4) var(--space-6);
-  }
-
-  .blog-hero .hero-content {
-    margin-bottom: var(--space-6);
-  }
-
-  .featured-title {
-    font-size: var(--text-xl);
-  }
-
-  .featured-carousel {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
   }
 }
 
@@ -11511,7 +12062,49 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   background: var(--color-background);
 }
 
-/* Loading */
+/* ══════════════════════════════════════════════════════════════
+   ICON SIZING (ViewEncapsulation needs these locally)
+   ══════════════════════════════════════════════════════════════ */
+
+.stat-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.6;
+}
+
+[data-theme='dark'] .stat-icon-img {
+  filter: var(--icon-filter, brightness(0) invert(1));
+  opacity: 0.7;
+}
+
+.category-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.meta-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: middle;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.5;
+}
+
+[data-theme='dark'] .meta-icon {
+  filter: var(--icon-filter, brightness(0) invert(1));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LOADING
+   ══════════════════════════════════════════════════════════════ */
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -11519,13 +12112,13 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   justify-content: center;
   min-height: 60vh;
   gap: 1rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--border-color);
+  border: 3px solid var(--color-border);
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -11537,7 +12130,10 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   }
 }
 
-/* Hero image */
+/* ══════════════════════════════════════════════════════════════
+   HERO IMAGE
+   ══════════════════════════════════════════════════════════════ */
+
 .article-hero {
   position: relative;
   width: 100%;
@@ -11557,7 +12153,10 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.4) 100%);
 }
 
-/* Article */
+/* ══════════════════════════════════════════════════════════════
+   ARTICLE
+   ══════════════════════════════════════════════════════════════ */
+
 .article-container {
   max-width: 800px;
   margin: 0 auto;
@@ -11584,7 +12183,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 .article-title {
   font-size: clamp(1.5rem, 4vw, 2.25rem);
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   line-height: 1.3;
   margin: 0 0 var(--space-5);
 }
@@ -11596,7 +12195,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   flex-wrap: wrap;
   gap: var(--space-4);
   padding-bottom: var(--space-5);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .meta-author {
@@ -11635,7 +12234,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 
 .author-name {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 0.95rem;
 }
 
@@ -11654,17 +12253,26 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 
 .author-role {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 
 .meta-details {
   display: flex;
   gap: var(--space-4);
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 
-/* Article body */
+.meta-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ARTICLE BODY
+   ══════════════════════════════════════════════════════════════ */
+
 .article-body {
   position: relative;
 }
@@ -11688,7 +12296,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 .article-excerpt {
   font-size: 1.15rem;
   line-height: 1.7;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-weight: 500;
   margin-bottom: var(--space-5);
 }
@@ -11696,14 +12304,19 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 .article-content {
   font-size: 1rem;
   line-height: 1.8;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .article-content p {
   margin-bottom: var(--space-4);
 }
 
-/* Read more */
+/* ══════════════════════════════════════════════════════════════
+   READ MORE
+   ══════════════════════════════════════════════════════════════ */
+
 .read-more-section {
   text-align: center;
   padding: var(--space-6) 0;
@@ -11715,7 +12328,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   align-items: center;
   gap: 6px;
   background: none;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
   padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-lg, 12px);
   cursor: pointer;
@@ -11736,13 +12349,16 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   line-height: 1;
 }
 
-/* Stats */
+/* ══════════════════════════════════════════════════════════════
+   STATS
+   ══════════════════════════════════════════════════════════════ */
+
 .article-stats {
   display: flex;
   gap: var(--space-6);
   padding: var(--space-5) 0;
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   margin: var(--space-6) 0;
 }
 
@@ -11751,14 +12367,13 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   align-items: center;
   gap: 6px;
   font-size: 0.95rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 
-.stat-icon {
-  font-size: 1.1rem;
-}
+/* ══════════════════════════════════════════════════════════════
+   TAGS
+   ══════════════════════════════════════════════════════════════ */
 
-/* Tags */
 .article-tags {
   display: flex;
   flex-wrap: wrap;
@@ -11768,20 +12383,32 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 
 .tag {
   padding: 4px 12px;
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--border-color);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 20px;
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--color-secondary);
   font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.tag:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: var(--color-secondary);
+}
+
+[data-theme='dark'] .tag {
+  color: var(--color-success);
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
 }
 
 /* ══════════════════════════════════════════════════════════════
-   KOMMENTEK
+   COMMENTS
    ══════════════════════════════════════════════════════════════ */
 
 .comments-section {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--color-border);
   background: var(--color-surface-elevated, var(--color-background));
   padding: var(--space-10) 0;
 }
@@ -11795,7 +12422,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 .comments-title {
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   margin: 0 0 var(--space-6);
 }
 
@@ -11828,7 +12455,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 .comment-body {
   flex: 1;
   background: var(--color-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg, 12px);
   padding: var(--space-4);
 }
@@ -11843,21 +12470,23 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 
 .comment-author {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 0.9rem;
 }
 
 .comment-date {
   font-size: 0.78rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   margin-left: auto;
 }
 
 .comment-content {
   font-size: 0.95rem;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   line-height: 1.6;
   margin: 0 0 var(--space-3);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .comment-footer {
@@ -11865,7 +12494,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   align-items: center;
   gap: var(--space-4);
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 
 .comment-likes {
@@ -11878,16 +12507,19 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   font-style: italic;
 }
 
-/* Új komment */
+/* ══════════════════════════════════════════════════════════════
+   NEW COMMENT
+   ══════════════════════════════════════════════════════════════ */
+
 .new-comment {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--color-border);
   padding-top: var(--space-6);
 }
 
 .new-comment-title {
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   margin: 0 0 var(--space-4);
 }
 
@@ -11898,7 +12530,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   border-radius: var(--radius-lg, 12px);
   font-size: 0.95rem;
   background: var(--color-surface);
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   resize: vertical;
   transition: border-color 0.2s ease;
   box-sizing: border-box;
@@ -11947,12 +12579,12 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 }
 
 .login-to-comment {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--color-border);
   padding-top: var(--space-6);
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
 }
 
@@ -11967,13 +12599,13 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 }
 
 /* ══════════════════════════════════════════════════════════════
-   TOVÁBBI BEJEGYZÉSEK SLIDER
+   RELATED POSTS SLIDER
    ══════════════════════════════════════════════════════════════ */
 
 .related-section {
   background: var(--color-surface-elevated, var(--color-background));
   padding: var(--space-10) 0;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--color-border);
 }
 
 .related-container {
@@ -11985,7 +12617,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 .related-title {
   font-size: 1.4rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   margin-bottom: var(--space-6);
   text-align: center;
 }
@@ -12003,7 +12635,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   border-radius: 50%;
   border: 2px solid var(--color-border);
   background: var(--color-surface);
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 1.5rem;
   font-weight: 700;
   cursor: pointer;
@@ -12035,7 +12667,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 
 .related-card {
   background: var(--color-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg, 12px);
   overflow: hidden;
   text-decoration: none;
@@ -12078,7 +12710,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 .related-post-title {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   line-height: 1.4;
   margin: 0;
   display: -webkit-box;
@@ -12089,7 +12721,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
 
 .related-excerpt {
   font-size: 0.82rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -12102,13 +12734,16 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: var(--text-tertiary);
+  color: var(--color-text-secondary);
   margin-top: auto;
   padding-top: 8px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--color-border);
 }
 
-/* Back link */
+/* ══════════════════════════════════════════════════════════════
+   BACK LINK + NOT FOUND
+   ══════════════════════════════════════════════════════════════ */
+
 .back-section {
   max-width: 800px;
   margin: 0 auto;
@@ -12130,7 +12765,6 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   opacity: 0.7;
 }
 
-/* Not found */
 .not-found {
   display: flex;
   flex-direction: column;
@@ -12138,7 +12772,7 @@ FILE: src\app\pages\forum-detail\forum-detail.css
   justify-content: center;
   min-height: 60vh;
   gap: var(--space-4);
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -13345,6 +13979,30 @@ FILE: src\app\pages\legal\legal.css
     animation: none;
   }
 }
+.withdrawal-highlight {
+  background: var(--color-success-light);
+  border-left: 4px solid var(--color-primary);
+  padding: var(--space-4) var(--space-5);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin: var(--space-4) 0;
+}
+
+.withdrawal-highlight strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: var(--space-2);
+  color: var(--color-primary);
+}
+
+.legal-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.legal-link:hover {
+  color: var(--color-primary-dark);
+}
 
 
 
@@ -13445,6 +14103,31 @@ FILE: src\app\pages\legal\legal.html
           </section>
 
           <section class="legal-block">
+            <h3>{{ 'legal.terms.withdrawal_title' | translate }}</h3>
+            <p>{{ 'legal.terms.withdrawal_text' | translate }}</p>
+            <div class="withdrawal-highlight">
+              <strong>{{ 'legal.terms.withdrawal_period' | translate }}</strong>
+              <p>{{ 'legal.terms.withdrawal_details' | translate }}</p>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.terms.complaints_title' | translate }}</h3>
+            <p>{{ 'legal.terms.complaints_text' | translate }}</p>
+            <p>
+              {{ 'legal.terms.odr_text' | translate }}
+              <a
+                href="https://ec.europa.eu/consumers/odr"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="legal-link"
+              >
+                https://ec.europa.eu/consumers/odr
+              </a>
+            </p>
+          </section>
+
+          <section class="legal-block">
             <h3>{{ 'legal.terms.section6_title' | translate }}</h3>
             <p>{{ 'legal.terms.section6_text' | translate }}</p>
           </section>
@@ -13495,11 +14178,26 @@ FILE: src\app\pages\legal\legal.html
             <h3>{{ 'legal.privacy.section3_title' | translate }}</h3>
             <p>{{ 'legal.privacy.section3_text' | translate }}</p>
             <ul>
-              <li><strong>{{ 'legal.privacy.right_access' | translate }}</strong> – {{ 'legal.privacy.right_access_desc' | translate }}</li>
-              <li><strong>{{ 'legal.privacy.right_rectification' | translate }}</strong> – {{ 'legal.privacy.right_rectification_desc' | translate }}</li>
-              <li><strong>{{ 'legal.privacy.right_erasure' | translate }}</strong> – {{ 'legal.privacy.right_erasure_desc' | translate }}</li>
-              <li><strong>{{ 'legal.privacy.right_portability' | translate }}</strong> – {{ 'legal.privacy.right_portability_desc' | translate }}</li>
-              <li><strong>{{ 'legal.privacy.right_objection' | translate }}</strong> – {{ 'legal.privacy.right_objection_desc' | translate }}</li>
+              <li>
+                <strong>{{ 'legal.privacy.right_access' | translate }}</strong> –
+                {{ 'legal.privacy.right_access_desc' | translate }}
+              </li>
+              <li>
+                <strong>{{ 'legal.privacy.right_rectification' | translate }}</strong> –
+                {{ 'legal.privacy.right_rectification_desc' | translate }}
+              </li>
+              <li>
+                <strong>{{ 'legal.privacy.right_erasure' | translate }}</strong> –
+                {{ 'legal.privacy.right_erasure_desc' | translate }}
+              </li>
+              <li>
+                <strong>{{ 'legal.privacy.right_portability' | translate }}</strong> –
+                {{ 'legal.privacy.right_portability_desc' | translate }}
+              </li>
+              <li>
+                <strong>{{ 'legal.privacy.right_objection' | translate }}</strong> –
+                {{ 'legal.privacy.right_objection_desc' | translate }}
+              </li>
             </ul>
           </section>
 
@@ -13529,8 +14227,12 @@ FILE: src\app\pages\legal\legal.html
 
             <div class="cookie-card essential">
               <div class="cookie-card-header">
-                <span class="cookie-type-badge essential">{{ 'legal.cookies.essential_badge' | translate }}</span>
-                <span class="cookie-required">{{ 'legal.cookies.essential_always_active' | translate }}</span>
+                <span class="cookie-type-badge essential">{{
+                  'legal.cookies.essential_badge' | translate
+                }}</span>
+                <span class="cookie-required">{{
+                  'legal.cookies.essential_always_active' | translate
+                }}</span>
               </div>
               <h4>{{ 'legal.cookies.essential_title' | translate }}</h4>
               <p>{{ 'legal.cookies.essential_text' | translate }}</p>
@@ -13543,7 +14245,9 @@ FILE: src\app\pages\legal\legal.html
 
             <div class="cookie-card analytics">
               <div class="cookie-card-header">
-                <span class="cookie-type-badge analytics">{{ 'legal.cookies.analytics_badge' | translate }}</span>
+                <span class="cookie-type-badge analytics">{{
+                  'legal.cookies.analytics_badge' | translate
+                }}</span>
               </div>
               <h4>{{ 'legal.cookies.analytics_title' | translate }}</h4>
               <p>{{ 'legal.cookies.analytics_text' | translate }}</p>
@@ -13555,7 +14259,9 @@ FILE: src\app\pages\legal\legal.html
 
             <div class="cookie-card preferences">
               <div class="cookie-card-header">
-                <span class="cookie-type-badge preferences">{{ 'legal.cookies.preferences_badge' | translate }}</span>
+                <span class="cookie-type-badge preferences">{{
+                  'legal.cookies.preferences_badge' | translate
+                }}</span>
               </div>
               <h4>{{ 'legal.cookies.preferences_title' | translate }}</h4>
               <p>{{ 'legal.cookies.preferences_text' | translate }}</p>
@@ -19682,6 +20388,8 @@ export class Profile implements OnInit {
       next: () => {
         this.isUpdatingProfile.set(false);
         this.profileEditSuccess.set(true);
+        this.authService.patchCurrentUser({ firstname, lastname });
+        this.loadPersonalInfoIntoForm();
         this.toastService.success('profile.success.profile_updated');
       },
       error: (err) => {
@@ -20253,6 +20961,39 @@ FILE: src\app\pages\purchase\purchase.css
   margin: 0;
 }
 
+.terms-group {
+  margin: var(--space-4) 0;
+}
+
+.terms-label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+
+.terms-label input[type='checkbox'] {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.terms-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.terms-link:hover {
+  color: var(--color-primary-dark);
+}
+
 
 
 ================================================================================
@@ -20270,6 +21011,18 @@ FILE: src\app\pages\purchase\purchase.html
           <polyline points="22 4 12 14.01 9 11.01"></polyline>
         </svg>
         <span>{{ successMessage() || '' | translate }}</span>
+      </div>
+    }
+
+    @if (showDownloadConfirmation()) {
+      <div class="download-notice">
+        <p>{{ 'checkout.pdf_downloaded' | translate }}</p>
+        <button
+          class="download-again-btn"
+          (click)="generateOrderConfirmationPdf(lastTrackingToken())"
+        >
+          📄 {{ 'checkout.download_again' | translate }}
+        </button>
       </div>
     }
 
@@ -20489,6 +21242,24 @@ FILE: src\app\pages\purchase\purchase.html
               ></textarea>
             </div>
 
+            <div class="form-group terms-group">
+              <label class="terms-label">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="acceptedTerms"
+                  name="acceptedTerms"
+                  [disabled]="isSubmitting()"
+                />
+                <span>
+                  {{ 'checkout.accept_terms_prefix' | translate }}
+                  <a routerLink="/legal" target="_blank" class="terms-link">
+                    {{ 'checkout.accept_terms_link' | translate }}
+                  </a>
+                  {{ 'checkout.accept_terms_suffix' | translate }}
+                </span>
+              </label>
+            </div>
+
             <div class="form-actions">
               <button
                 type="button"
@@ -20501,7 +21272,7 @@ FILE: src\app\pages\purchase\purchase.html
               <button
                 type="submit"
                 class="btn-primary"
-                [disabled]="isSubmitting() || !checkoutForm.valid"
+                [disabled]="isSubmitting() || !checkoutForm.valid || !acceptedTerms"
               >
                 @if (isSubmitting()) {
                   <span class="spinner"></span>
@@ -20572,6 +21343,8 @@ export class Purchase implements OnInit {
   isSubmitting = signal(false);
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
+  showDownloadConfirmation = signal(false);
+  lastTrackingToken = signal('');
 
   form: CheckoutForm = {
     email: '',
@@ -20584,6 +21357,8 @@ export class Purchase implements OnInit {
     phoneNumber: '',
     note: '',
   };
+
+  acceptedTerms = false;
 
   isGuest = signal(false);
 
@@ -20619,6 +21394,120 @@ export class Purchase implements OnInit {
 
   getFormattedItemTotal(product: Product, quantity: number): string {
     return this.currencyService.formatPrice(this.cartService.getItemTotal(product, quantity));
+  }
+
+  async generateOrderConfirmationPdf(trackingToken: string): Promise<void> {
+    const jspdfModule = await import('jspdf');
+    const autoTableModule = await import('jspdf-autotable');
+    const jsPDF = jspdfModule.default;
+    const autoTable = autoTableModule.default;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    doc.setFontSize(18);
+    doc.setFont(undefined!, 'bold');
+    doc.text("Roy's Shack Est. 1888", 14, 22);
+
+    doc.setFontSize(12);
+    doc.setFont(undefined!, 'normal');
+    doc.setTextColor(6, 122, 69);
+    doc.text('Order Confirmation / Rendelés visszaigazolás', 14, 32);
+    doc.setTextColor(0, 0, 0);
+
+    doc.setDrawColor(6, 122, 69);
+    doc.setLineWidth(0.8);
+    doc.line(14, 36, pageWidth - 14, 36);
+
+    let y = 45;
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+
+    const infoLines = [
+      [
+        'Date / Dátum:',
+        new Date().toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' }),
+      ],
+      ['Tracking:', trackingToken || '—'],
+      ['Name / Név:', this.form.billingName],
+      ['Email:', this.form.email],
+      [
+        'Address / Cím:',
+        `${this.form.zipcode} ${this.form.city}, ${this.form.address} ${this.form.houseNumber}${this.form.apartmentNumber ? '/' + this.form.apartmentNumber : ''}`,
+      ],
+      ['Phone / Telefon:', this.form.phoneNumber],
+    ];
+
+    infoLines.forEach(([label, value]) => {
+      doc.setFont(undefined!, 'bold');
+      doc.setTextColor(80, 80, 80);
+      doc.text(label, 14, y);
+      doc.setFont(undefined!, 'normal');
+      doc.setTextColor(0, 0, 0);
+      doc.text(value, 55, y);
+      y += 6;
+    });
+
+    y += 4;
+
+    const headers = ['Product', 'Qty', 'Unit Price', 'Total'];
+    const rows = this.cartItems().map((item) => [
+      item.product.name || '—',
+      String(item.quantity),
+      this.getFormattedUnitPrice(item.product),
+      this.getFormattedItemTotal(item.product, item.quantity),
+    ]);
+
+    autoTable(doc, {
+      head: [headers],
+      body: rows,
+      startY: y,
+      styles: { fontSize: 8.5, cellPadding: 4 },
+      headStyles: {
+        fillColor: [6, 122, 69],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        0: { cellWidth: 80 },
+        1: { halign: 'center', cellWidth: 20 },
+        2: { halign: 'right', cellWidth: 35 },
+        3: { halign: 'right', cellWidth: 35 },
+      },
+      margin: { left: 14, right: 14 },
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY + 8;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(pageWidth - 85, finalY, pageWidth - 14, finalY);
+
+    doc.setFontSize(11);
+    doc.setFont(undefined!, 'bold');
+    doc.text('Total:', pageWidth - 85, finalY + 8);
+    doc.text(this.currencyService.formatPrice(this.cartTotal()), pageWidth - 14, finalY + 8, {
+      align: 'right',
+    });
+
+    if (this.form.note) {
+      doc.setFontSize(8);
+      doc.setFont(undefined!, 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Note: ${this.form.note}`, 14, finalY + 20);
+    }
+
+    const disclaimerY = doc.internal.pageSize.getHeight() - 25;
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text('This document is an order confirmation, not a fiscal invoice.', 14, disclaimerY);
+    doc.text('Ez a dokumentum rendelés visszaigazolás, nem adóügyi számla.', 14, disclaimerY + 4);
+    doc.text(
+      'Dieses Dokument ist eine Bestellbestätigung, keine Steuerrechnung.',
+      14,
+      disclaimerY + 8,
+    );
+
+    doc.save(`order-confirmation-${trackingToken || Date.now()}.pdf`);
   }
 
   async submitOrder(): Promise<void> {
@@ -20660,11 +21549,18 @@ export class Purchase implements OnInit {
       if (response.statuscode === '200') {
         this.successMessage.set('checkout.success');
         this.toastService.success('checkout.success');
+
+        const trackingToken = response.tracking_token ?? '';
+        this.lastTrackingToken.set(trackingToken);
+        this.showDownloadConfirmation.set(true);
+
+        await this.generateOrderConfirmationPdf(trackingToken);
+
         this.cartService.clearCart();
 
         setTimeout(() => {
-          this.router.navigate([isGuest ? '/home' : '/profile']);
-        }, 2000);
+          this.router.navigate([this.isGuest() ? '/home' : '/profile']);
+        }, 3500);
       } else {
         this.errorMessage.set('checkout.error');
         this.toastService.error('checkout.error');
@@ -20679,6 +21575,10 @@ export class Purchase implements OnInit {
   }
 
   private validateForm(): boolean {
+    if (!this.acceptedTerms) {
+      this.errorMessage.set('checkout.terms_required');
+      return false;
+    }
     if (this.isGuest()) {
       if (!this.form.email || !this.form.billingName) {
         this.errorMessage.set('checkout.guest_fields_required');
@@ -24920,6 +25820,35 @@ FILE: src\app\shared\components\post-card\post-card.css
   border-color: var(--color-primary);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   ICON SIZING (ViewEncapsulation needs these locally)
+   ══════════════════════════════════════════════════════════════ */
+
+.badge-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.stat-icon-img {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: var(--icon-filter, brightness(0) saturate(100%));
+  opacity: 0.55;
+}
+
+[data-theme='dark'] .stat-icon-img {
+  filter: var(--icon-filter, brightness(0) invert(1));
+  opacity: 0.65;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BADGES
+   ══════════════════════════════════════════════════════════════ */
+
 .pinned-badge,
 .featured-badge {
   position: absolute;
@@ -24941,6 +25870,14 @@ FILE: src\app\shared\components\post-card\post-card.css
 .pinned-badge {
   background: var(--color-secondary);
 }
+
+.featured-badge .badge-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   POST IMAGE
+   ══════════════════════════════════════════════════════════════ */
 
 .post-image {
   position: relative;
@@ -25018,6 +25955,10 @@ FILE: src\app\shared\components\post-card\post-card.css
   background: rgba(0, 0, 0, 0.8);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   POST CONTENT
+   ══════════════════════════════════════════════════════════════ */
+
 .post-content {
   padding: var(--space-4);
   display: flex;
@@ -25046,6 +25987,10 @@ FILE: src\app\shared\components\post-card\post-card.css
 
 [data-theme='dark'] .category-badge-inline {
   background: var(--color-neutral-800);
+}
+
+.category-name {
+  white-space: nowrap;
 }
 
 .post-meta {
@@ -25088,6 +26033,10 @@ FILE: src\app\shared\components\post-card\post-card.css
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   AUTHOR
+   ══════════════════════════════════════════════════════════════ */
 
 .post-author {
   display: flex;
@@ -25167,6 +26116,10 @@ FILE: src\app\shared\components\post-card\post-card.css
   color: var(--color-neutral-300);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   STATS
+   ══════════════════════════════════════════════════════════════ */
+
 .post-stats {
   display: flex;
   align-items: center;
@@ -25183,13 +26136,13 @@ FILE: src\app\shared\components\post-card\post-card.css
   color: var(--color-text-secondary);
 }
 
-.stat-icon {
-  font-size: 14px;
-}
-
 .stat-value {
   font-weight: var(--font-medium);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   TAGS
+   ══════════════════════════════════════════════════════════════ */
 
 .post-tags {
   display: flex;
@@ -25223,6 +26176,10 @@ FILE: src\app\shared\components\post-card\post-card.css
   background: rgba(16, 185, 129, 0.25);
   border-color: var(--color-success);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   CATEGORY COLORS
+   ══════════════════════════════════════════════════════════════ */
 
 .category-medicines {
   color: var(--color-error);
@@ -25259,6 +26216,10 @@ FILE: src\app\shared\components\post-card\post-card.css
   border-color: #6b7280;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   COMPACT MODE
+   ══════════════════════════════════════════════════════════════ */
+
 .post-card.compact {
   flex-direction: row;
   height: auto;
@@ -25285,6 +26246,10 @@ FILE: src\app\shared\components\post-card\post-card.css
   line-clamp: 2;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+
 @media (max-width: 768px) {
   .post-card.compact {
     flex-direction: column;
@@ -25307,6 +26272,11 @@ FILE: src\app\shared\components\post-card\post-card.css
   .category-badge-inline {
     font-size: 10px;
     padding: var(--space-1) var(--space-2);
+  }
+
+  .badge-icon {
+    width: 13px;
+    height: 13px;
   }
 }
 
@@ -29378,7 +30348,14 @@ FILE: src\assets\i18n\de.json
       "section4_title": "4. Preise und Zahlung",
       "section2_title": "2. Angaben zum Anbieter",
       "section1_title": "1. Geltungsbereich der AGB",
-      "info_email_value": "info@roysshack.hu"
+      "info_email_value": "info@roysshack.hu",
+      "withdrawal_title": "5a. Widerrufsrecht",
+      "withdrawal_text": "Gemäß der EU-Verbraucherrechterichtlinie (2011/83/EU) haben Verbraucher das Recht, von Fernabsatzverträgen zurückzutreten.",
+      "withdrawal_period": "14-tägiges Widerrufsrecht",
+      "withdrawal_details": "Sie können Ihre Vertragserklärung innerhalb von 14 Tagen ohne Angabe von Gründen widerrufen. Die Widerrufsfrist beträgt 14 Tage ab dem Tag, an dem Sie die Waren in Besitz genommen haben. Um Ihr Widerrufsrecht auszuüben, müssen Sie uns mittels einer eindeutigen Erklärung (z.B. per E-Mail) informieren.",
+      "complaints_title": "5b. Beschwerden und Streitbeilegung",
+      "complaints_text": "Beschwerden richten Sie bitte an support@roysshack.hu. Wir antworten innerhalb von 30 Tagen.",
+      "odr_text": "Europäische Verbraucher können auch die EU-Plattform zur Online-Streitbeilegung nutzen:"
     },
     "cookies": {
       "preferences_badge": "Einstellungen",
@@ -29631,6 +30608,14 @@ FILE: src\assets\i18n\de.json
     "items": "Artikel"
   },
   "admin": {
+    "order_actions": {
+      "cancel": "Bestellung zurücksetzen",
+      "cancel_title": "Bestellung zurücksetzen",
+      "cancel_text": "Sind Sie sicher, dass Sie die Bestellung absagen?",
+      "confirm_cancel": "Ja, ich werde die Bestellung absagen.",
+      "status_updated": "Bestellstatus aktualisiert.",
+      "error": "Die Bestellung kann nicht aktualisiert werden. Bitte versuchen Sie es noch einmal."
+    },
     "toggle_sidebar": "Seitenleiste umschalten",
     "table": {
       "orders": "Bestellungen",
@@ -29838,7 +30823,13 @@ FILE: src\assets\i18n\de.json
     "billing_name": "Vollständiger Name",
     "billing_name_placeholder": "Max Mustermann",
     "guest_fields_required": "E-Mail und Name sind für den Gastkauf erforderlich.",
-    "invalid_email": "Bitte geben Sie eine gültige E-Mail-Adresse ein."
+    "invalid_email": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "pdf_downloaded": "Über die Bestätigung der Bestellung wurde pdf heruntergeladen",
+    "download_again": "Herunterladen nochmal",
+    "accept_terms_prefix": "Ich habe die",
+    "accept_terms_link": "AGB und Datenschutzerklärung",
+    "accept_terms_suffix": "gelesen und akzeptiere sie.",
+    "terms_required": "Sie müssen die AGB akzeptieren, um eine Bestellung aufzugeben."
   },
   "header": {
     "my_orders": "Meine Bestellungen",
@@ -30146,7 +31137,14 @@ FILE: src\assets\i18n\en.json
       "section4_title": "4. Prices and Payment",
       "section2_title": "2. Service Provider Information",
       "section1_title": "1. Scope of Terms and Conditions",
-      "info_email_value": "info@roysshack.hu"
+      "info_email_value": "info@roysshack.hu",
+      "withdrawal_title": "5a. Right of Withdrawal",
+      "withdrawal_text": "In accordance with the EU Consumer Rights Directive (2011/83/EU) and Hungarian Government Decree 45/2014 (II. 26.), consumers have the right to withdraw from distance contracts.",
+      "withdrawal_period": "14-Day Cooling Off Period",
+      "withdrawal_details": "You may withdraw from this contract within 14 days without giving any reason. The withdrawal period expires 14 days from the day on which you acquire physical possession of the goods. To exercise the right of withdrawal, you must inform us of your decision by means of a clear statement (e.g., a letter sent by post or email). Upon valid withdrawal, we will reimburse all payments received, including the cost of standard delivery, within 14 days.",
+      "complaints_title": "5b. Complaints and Dispute Resolution",
+      "complaints_text": "If you have any complaints regarding our products or services, please contact us at support@roysshack.hu. We will respond within 30 days.",
+      "odr_text": "European consumers may also use the EU Online Dispute Resolution platform:"
     },
     "cookies": {
       "preferences_badge": "Preferences",
@@ -30429,6 +31427,14 @@ FILE: src\assets\i18n\en.json
     "items": "items"
   },
   "admin": {
+    "order_actions": {
+      "cancel": "Cancel order",
+      "cancel_title": "Cancel Order",
+      "cancel_text": "Are you sure you want to cancel order",
+      "confirm_cancel": "Yes, cancel order",
+      "status_updated": "Order status updated.",
+      "error": "Failed to update order. Please try again."
+    },
     "toggle_sidebar": "Toggle sidebar",
     "table": {
       "orders": "Orders",
@@ -30636,7 +31642,13 @@ FILE: src\assets\i18n\en.json
     "billing_name": "Full name",
     "billing_name_placeholder": "John Doe",
     "guest_fields_required": "Email and name are required for guest checkout.",
-    "invalid_email": "Please enter a valid email address."
+    "invalid_email": "Please enter a valid email address.",
+    "pdf_downloaded": "Your order confirmation PDF has been downloaded.",
+    "download_again": "Download again",
+    "accept_terms_prefix": "I have read and accept the",
+    "accept_terms_link": "Terms & Conditions and Privacy Policy",
+    "accept_terms_suffix": "",
+    "terms_required": "You must accept the Terms & Conditions to place an order."
   },
   "header": {
     "my_orders": "My Orders",
@@ -30914,7 +31926,14 @@ FILE: src\assets\i18n\hu.json
       "section4_title": "4. Árak és fizetés",
       "section2_title": "2. A szolgáltató adatai",
       "section1_title": "1. Az általános szerződési feltételek hatálya",
-      "info_email_value": "info@roysshack.hu"
+      "info_email_value": "info@roysshack.hu",
+      "withdrawal_title": "5a. Elállási jog",
+      "withdrawal_text": "Az EU 2011/83/EU fogyasztóvédelmi irányelve és a 45/2014. (II. 26.) Korm. rendelet értelmében a fogyasztónak joga van a távollévők között kötött szerződéstől elállni.",
+      "withdrawal_period": "14 napos elállási jog",
+      "withdrawal_details": "A termék kézhezvételétől számított 14 napon belül indoklás nélkül elállhat a szerződéstől. Elállási szándékát egyértelmű nyilatkozattal (pl. e-mail útján) kell jeleznie. Érvényes elállás esetén az átvételtől számított 14 napon belül visszatérítjük a kifizetett összeget, beleértve a standard szállítási költséget.",
+      "complaints_title": "5b. Panaszkezelés és vitarendezés",
+      "complaints_text": "Panaszait a support@roysshack.hu e-mail címen jelezheti. Panaszára 30 napon belül válaszolunk.",
+      "odr_text": "Európai fogyasztók az EU online vitarendezési platformját is igénybe vehetik:"
     },
     "cookies": {
       "preferences_badge": "Beállítások",
@@ -31197,6 +32216,14 @@ FILE: src\assets\i18n\hu.json
     "items": "termék"
   },
   "admin": {
+    "order_actions": {
+      "cancel": "Rendelés lemondása",
+      "cancel_title": "Rendelés lemondása",
+      "cancel_text": "Biztosan lemondja a rendelést?",
+      "confirm_cancel": "Igen, lemondom a rendelést",
+      "status_updated": "Rendelés állapota frissült.",
+      "error": "Nem sikerült frissíteni a rendelését. Kérjük próbálja újra."
+    },
     "toggle_sidebar": "Oldalsáv váltás",
     "table": {
       "orders": "Rendelések",
@@ -31404,7 +32431,13 @@ FILE: src\assets\i18n\hu.json
     "billing_name": "Teljes név",
     "billing_name_placeholder": "Kovács Béla",
     "guest_fields_required": "Vendég vásárláshoz email és név szükséges.",
-    "invalid_email": "Kérjük, adj meg egy érvényes email címet."
+    "invalid_email": "Kérjük, adj meg egy érvényes email címet.",
+    "pdf_downloaded": "A rendelés visszaigazolásáról a pdf le lett töltve",
+    "download_again": "Letöltés újra",
+    "accept_terms_prefix": "Elolvastam és elfogadom az",
+    "accept_terms_link": "Általános Szerződési Feltételeket és az Adatvédelmi tájékoztatót",
+    "accept_terms_suffix": "",
+    "terms_required": "A rendelés leadásához el kell fogadnia az ÁSZF-et."
   },
   "header": {
     "my_orders": "Rendeléseim",

@@ -91,6 +91,31 @@
           </section>
 
           <section class="legal-block">
+            <h3>{{ 'legal.terms.withdrawal_title' | translate }}</h3>
+            <p>{{ 'legal.terms.withdrawal_text' | translate }}</p>
+            <div class="withdrawal-highlight">
+              <strong>{{ 'legal.terms.withdrawal_period' | translate }}</strong>
+              <p>{{ 'legal.terms.withdrawal_details' | translate }}</p>
+            </div>
+          </section>
+
+          <section class="legal-block">
+            <h3>{{ 'legal.terms.complaints_title' | translate }}</h3>
+            <p>{{ 'legal.terms.complaints_text' | translate }}</p>
+            <p>
+              {{ 'legal.terms.odr_text' | translate }}
+              <a
+                href="https://ec.europa.eu/consumers/odr"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="legal-link"
+              >
+                https://ec.europa.eu/consumers/odr
+              </a>
+            </p>
+          </section>
+
+          <section class="legal-block">
             <h3>{{ 'legal.terms.section6_title' | translate }}</h3>
             <p>{{ 'legal.terms.section6_text' | translate }}</p>
           </section>
@@ -141,11 +166,26 @@
             <h3>{{ 'legal.privacy.section3_title' | translate }}</h3>
             <p>{{ 'legal.privacy.section3_text' | translate }}</p>
             <ul>
-              <li><strong>{{ 'legal.privacy.right_access' | translate }}</strong> – {{ 'legal.privacy.right_access_desc' | translate }}</li>
-              <li><strong>{{ 'legal.privacy.right_rectification' | translate }}</strong> – {{ 'legal.privacy.right_rectification_desc' | translate }}</li>
-              <li><strong>{{ 'legal.privacy.right_erasure' | translate }}</strong> – {{ 'legal.privacy.right_erasure_desc' | translate }}</li>
-              <li><strong>{{ 'legal.privacy.right_portability' | translate }}</strong> – {{ 'legal.privacy.right_portability_desc' | translate }}</li>
-              <li><strong>{{ 'legal.privacy.right_objection' | translate }}</strong> – {{ 'legal.privacy.right_objection_desc' | translate }}</li>
+              <li>
+                <strong>{{ 'legal.privacy.right_access' | translate }}</strong> –
+                {{ 'legal.privacy.right_access_desc' | translate }}
+              </li>
+              <li>
+                <strong>{{ 'legal.privacy.right_rectification' | translate }}</strong> –
+                {{ 'legal.privacy.right_rectification_desc' | translate }}
+              </li>
+              <li>
+                <strong>{{ 'legal.privacy.right_erasure' | translate }}</strong> –
+                {{ 'legal.privacy.right_erasure_desc' | translate }}
+              </li>
+              <li>
+                <strong>{{ 'legal.privacy.right_portability' | translate }}</strong> –
+                {{ 'legal.privacy.right_portability_desc' | translate }}
+              </li>
+              <li>
+                <strong>{{ 'legal.privacy.right_objection' | translate }}</strong> –
+                {{ 'legal.privacy.right_objection_desc' | translate }}
+              </li>
             </ul>
           </section>
 
@@ -175,8 +215,12 @@
 
             <div class="cookie-card essential">
               <div class="cookie-card-header">
-                <span class="cookie-type-badge essential">{{ 'legal.cookies.essential_badge' | translate }}</span>
-                <span class="cookie-required">{{ 'legal.cookies.essential_always_active' | translate }}</span>
+                <span class="cookie-type-badge essential">{{
+                  'legal.cookies.essential_badge' | translate
+                }}</span>
+                <span class="cookie-required">{{
+                  'legal.cookies.essential_always_active' | translate
+                }}</span>
               </div>
               <h4>{{ 'legal.cookies.essential_title' | translate }}</h4>
               <p>{{ 'legal.cookies.essential_text' | translate }}</p>
@@ -189,7 +233,9 @@
 
             <div class="cookie-card analytics">
               <div class="cookie-card-header">
-                <span class="cookie-type-badge analytics">{{ 'legal.cookies.analytics_badge' | translate }}</span>
+                <span class="cookie-type-badge analytics">{{
+                  'legal.cookies.analytics_badge' | translate
+                }}</span>
               </div>
               <h4>{{ 'legal.cookies.analytics_title' | translate }}</h4>
               <p>{{ 'legal.cookies.analytics_text' | translate }}</p>
@@ -201,7 +247,9 @@
 
             <div class="cookie-card preferences">
               <div class="cookie-card-header">
-                <span class="cookie-type-badge preferences">{{ 'legal.cookies.preferences_badge' | translate }}</span>
+                <span class="cookie-type-badge preferences">{{
+                  'legal.cookies.preferences_badge' | translate
+                }}</span>
               </div>
               <h4>{{ 'legal.cookies.preferences_title' | translate }}</h4>
               <p>{{ 'legal.cookies.preferences_text' | translate }}</p>
