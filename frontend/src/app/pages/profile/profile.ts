@@ -111,6 +111,8 @@ export class Profile implements OnInit {
       next: () => {
         this.isUpdatingProfile.set(false);
         this.profileEditSuccess.set(true);
+        this.authService.patchCurrentUser({ firstname, lastname });
+        this.loadPersonalInfoIntoForm();
         this.toastService.success('profile.success.profile_updated');
       },
       error: (err) => {

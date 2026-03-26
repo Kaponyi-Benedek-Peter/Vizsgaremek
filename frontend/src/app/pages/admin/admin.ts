@@ -3,7 +3,12 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
-import { AccountService, AdminUser, AdminOrder } from '../../core/services/account.service';
+import {
+  AccountService,
+  AdminUser,
+  AdminOrder,
+  OrderProductDetail,
+} from '../../core/services/account.service';
 import { ProductService } from '../../core/services/product.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
@@ -11,6 +16,7 @@ import { ICONS } from '../../core/constants/visuals';
 import { ResizableTableDirective } from '../../shared/directives/resizable-table.directive';
 import { formatFileSize } from '../../core/utils/image-utils';
 import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS } from './admin.mock';
+import { PdfExportService } from '../../core/services/pdf-export.service';
 
 import {
   AdminSection,
@@ -22,6 +28,8 @@ import {
   UserActionType,
   UserActionRequest,
   ACCOUNT_STATES,
+  ADMIN_ASSIGNABLE_STATES,
+  SUPERADMIN_ASSIGNABLE_STATES,
   ORDER_COLUMNS,
   USER_COLUMNS,
   PRODUCT_COLUMNS,
@@ -42,6 +50,7 @@ export class Admin implements OnInit {
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
   private router = inject(Router);
+  private pdfService = inject(PdfExportService);
 
   protected readonly icons = ICONS;
   protected readonly ACCOUNT_STATES = ACCOUNT_STATES;
@@ -112,6 +121,11 @@ export class Admin implements OnInit {
   productFormSaving = signal(false);
   productDeleteConfirm = signal<ProductWithHelpers | null>(null);
   productDeleteLoading = signal(false);
+  orderCancelConfirm = signal<AdminOrder | null>(null);
+  orderActionLoading = signal(false);
+
+  orderDetailOpen = signal(false);
+  orderDetailOrder = signal<AdminOrder | null>(null);
 
   productFormIsEdit = computed(() => this.productFormEditId() !== null);
 
@@ -275,6 +289,97 @@ export class Admin implements OnInit {
     this.router.navigate(['/login']);
   }
 
+  openOrderDetail(order: AdminOrder): void {
+    this.orderDetailOrder.set(order);
+    this.orderDetailOpen.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeOrderDetail(): void {
+    this.orderDetailOpen.set(false);
+    this.orderDetailOrder.set(null);
+    document.body.style.overflow = '';
+  }
+
+  exportOrdersPdf(): void {
+    const headers = ['ID', 'Email', 'Billing', 'City', 'Price', 'Status', 'Date'];
+    const rows = this.filteredOrders().map((o) => [
+      '#' + o.id,
+      o.email || '—',
+      o.billing_name || '—',
+      o.city || '—',
+      this.formatRevenue(o.price),
+      o.order_status,
+      this.formatDate(o.created_at),
+    ]);
+    this.pdfService.exportTable(
+      'Orders Report',
+      headers,
+      rows,
+      `orders-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+    );
+  }
+
+  exportUsersPdf(): void {
+    const headers = ['ID', 'Name', 'Email', 'Role', 'Registered'];
+    const rows = this.filteredUsers().map((u) => [
+      '#' + u.id,
+      this.getUserFullName(u),
+      u.email,
+      u.account_state,
+      this.formatDate(u.created_at),
+    ]);
+    this.pdfService.exportTable(
+      'Users Report',
+      headers,
+      rows,
+      `users-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+    );
+  }
+
+  exportProductsPdf(): void {
+    const headers = ['ID', 'Name', 'Brand', 'Category', 'Price', 'Stock', 'SKU'];
+    const rows = this.filteredProducts().map((p) => [
+      '#' + p.id,
+      p.name || '—',
+      p.brand || '—',
+      p.category || '—',
+      this.formatRevenue(p.price_number || 0),
+      String(p.stock_number ?? 0),
+      p.sku || '—',
+    ]);
+    this.pdfService.exportTable(
+      'Products Report',
+      headers,
+      rows,
+      `products-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+    );
+  }
+
+  exportDashboardPdf(): void {
+    const s = this.stats();
+    const stats = [
+      { label: 'Total Orders', value: s.totalOrders },
+      { label: 'Revenue', value: this.formatRevenue(s.revenue) },
+      { label: 'Total Users', value: s.totalUsers },
+      { label: 'Total Products', value: s.totalProducts },
+      { label: 'Low Stock Items', value: s.lowStock },
+    ];
+    const recentHeaders = ['ID', 'Email', 'Address', 'Price', 'Status'];
+    const recentRows = this.recentOrders().map((o) => [
+      '#' + o.id,
+      o.email || '—',
+      this.getOrderAddressSummary(o),
+      this.formatRevenue(o.price),
+      o.order_status,
+    ]);
+    this.pdfService.exportDashboardStats(
+      stats,
+      { headers: recentHeaders, rows: recentRows },
+      `dashboard-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+    );
+  }
+
   formatRevenue(amount: number | string): string {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('hu-HU', {
@@ -295,6 +400,13 @@ export class Admin implements OnInit {
     } catch {
       return dateStr;
     }
+  }
+
+  getProductName(product: OrderProductDetail): string {
+    const lang = this.translate.currentLang || 'en';
+    if (lang === 'hu' && product.product_name_hu) return product.product_name_hu;
+    if (lang === 'de' && product.product_name_de) return product.product_name_de;
+    return product.product_name_en || product.product_name_hu || '—';
   }
 
   getUserFullName(user: AdminUser): string {
@@ -340,6 +452,60 @@ export class Admin implements OnInit {
     return 'status-badge ' + (map[status] ?? 'status-pending');
   }
 
+  updateOrderStatus(order: AdminOrder, newStatus: string): void {
+    if (MOCK_MODE) {
+      this.apiOrders.update((orders) =>
+        orders.map((o) =>
+          o.id === order.id ? { ...o, order_status: newStatus as AdminOrder['order_status'] } : o,
+        ),
+      );
+      this.toastService.show('admin.order_actions.status_updated', 'success');
+      return;
+    }
+
+    this.orderActionLoading.set(true);
+
+    this.accountService.updateOrderStatusAdmin(order.id, newStatus).subscribe({
+      next: (res) => {
+        if (res.statuscode === '200') {
+          this.apiOrders.update((orders) =>
+            orders.map((o) =>
+              o.id === order.id
+                ? { ...o, order_status: newStatus as AdminOrder['order_status'] }
+                : o,
+            ),
+          );
+          this.toastService.show('admin.order_actions.status_updated', 'success');
+        } else {
+          this.toastService.show('admin.order_actions.error', 'error');
+          this.loadOrders();
+        }
+        this.orderActionLoading.set(false);
+      },
+      error: () => {
+        this.toastService.show('admin.order_actions.error', 'error');
+        this.loadOrders();
+        this.orderActionLoading.set(false);
+      },
+    });
+  }
+
+  requestCancelOrder(order: AdminOrder): void {
+    this.orderCancelConfirm.set(order);
+  }
+
+  cancelCancelOrder(): void {
+    this.orderCancelConfirm.set(null);
+  }
+
+  confirmCancelOrder(): void {
+    const order = this.orderCancelConfirm();
+    if (!order) return;
+
+    this.orderCancelConfirm.set(null);
+    this.updateOrderStatus(order, 'cancelled');
+  }
+
   trackById(_index: number, item: { id: string }): string {
     return item.id;
   }
@@ -352,13 +518,30 @@ export class Admin implements OnInit {
     return user.id === this.currentAdminId();
   }
 
+  canManageUser(user: AdminUser): boolean {
+    if (this.isSelf(user)) return false;
+
+    const myRole = this.authService.authState().role;
+    const targetRole = user.account_state;
+
+    if (myRole === 'superadmin') return true;
+    if (myRole === 'admin') {
+      return targetRole !== 'admin' && targetRole !== 'superadmin';
+    }
+    return false;
+  }
+
   toggleUserMenu(userId: string, event: MouseEvent): void {
     event.stopPropagation();
     this.activeUserMenu.update((current) => (current === userId ? null : userId));
   }
 
   getAvailableStates(user: AdminUser): string[] {
-    return ACCOUNT_STATES.filter((s) => s !== user.account_state);
+    const myRole = this.authService.authState().role;
+    const assignable =
+      myRole === 'superadmin' ? SUPERADMIN_ASSIGNABLE_STATES : ADMIN_ASSIGNABLE_STATES;
+
+    return [...assignable].filter((s) => s !== user.account_state);
   }
 
   requestChangeRole(user: AdminUser, newState: string): void {
@@ -422,21 +605,23 @@ export class Admin implements OnInit {
         break;
 
       case 'ban':
-        this.accountService.banUserAdmin(req.user.id).subscribe({
-          next: (res) => {
-            if (res.statuscode === '200') {
-              this.applyUserStateChange(req.user.id, 'banned');
-              this.toastService.show('admin.user_actions.banned', 'success');
-            } else {
+        this.accountService
+          .updateUserStateAdmin(adminId, token, req.user.id, 'banned', '')
+          .subscribe({
+            next: (res) => {
+              if (res.statuscode === '200') {
+                this.applyUserStateChange(req.user.id, 'banned');
+                this.toastService.show('admin.user_actions.banned', 'success');
+              } else {
+                this.toastService.show('admin.user_actions.error', 'error');
+              }
+              this.finishUserAction();
+            },
+            error: () => {
               this.toastService.show('admin.user_actions.error', 'error');
-            }
-            this.finishUserAction();
-          },
-          error: () => {
-            this.toastService.show('admin.user_actions.error', 'error');
-            this.finishUserAction();
-          },
-        });
+              this.finishUserAction();
+            },
+          });
         break;
 
       case 'delete':

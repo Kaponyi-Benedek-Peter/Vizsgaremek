@@ -73,8 +73,11 @@
 
     @if (activeSection() === 'dashboard') {
       <div class="section-content">
-        <div class="dashboard-greeting">
-          <h2>{{ 'admin.greeting' | translate: { name: adminName() } }}</h2>
+        <div class="section-toolbar">
+          <button class="export-pdf-btn" (click)="exportDashboardPdf()">📄 Export PDF</button>
+          <div class="dashboard-greeting">
+            <h2>{{ 'admin.greeting' | translate: { name: adminName() } }}</h2>
+          </div>
         </div>
 
         <div class="stats-grid">
@@ -178,7 +181,11 @@
                 <tbody>
                   @for (order of recentOrders(); track order.id) {
                     <tr>
-                      <td class="order-id">#{{ order.id }}</td>
+                      <td class="order-id">
+                        <button class="order-id-link" (click)="openOrderDetail(order)">
+                          #{{ order.id }}
+                        </button>
+                      </td>
                       <td class="muted">{{ order.email || order.user_id }}</td>
                       <td class="muted">{{ formatDate(order.created_at) }}</td>
                       <td>{{ getOrderAddressSummary(order) }}</td>
@@ -212,6 +219,13 @@
               "
             />
           </div>
+          <button
+            class="export-pdf-btn"
+            (click)="exportOrdersPdf()"
+            [disabled]="filteredOrders().length === 0"
+          >
+            📄 Export PDF
+          </button>
           <button class="retry-btn" (click)="loadOrders()" [disabled]="ordersLoading()">
             🔄 {{ 'common.refresh' | translate }}
           </button>
@@ -247,12 +261,17 @@
                       <th>{{ 'admin.table.total' | translate }}</th>
                       <th>{{ 'admin.table.status' | translate }}</th>
                       <th>{{ 'admin.table.note' | translate }}</th>
+                      <th>{{ 'admin.table.actions' | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (order of filteredOrders(); track order.id) {
-                      <tr>
-                        <td class="order-id">#{{ order.id }}</td>
+                      <tr [class.cancelled-row]="order.order_status === 'cancelled'">
+                        <td class="order-id">
+                          <button class="order-id-link" (click)="openOrderDetail(order)">
+                            #{{ order.id }}
+                          </button>
+                        </td>
                         <td class="muted">{{ order.email || '—' }}</td>
                         <td>{{ order.billing_name || '—' }}</td>
                         <td class="muted">{{ formatDate(order.created_at) }}</td>
@@ -260,11 +279,39 @@
                         <td class="muted">{{ order.phone_number || '—' }}</td>
                         <td class="font-bold">{{ formatRevenue(order.price) }}</td>
                         <td>
-                          <span [class]="getOrderStatusClass(order.order_status)">
-                            {{ order.order_status }}
-                          </span>
+                          <select
+                            class="order-status-select"
+                            [class]="getOrderStatusClass(order.order_status)"
+                            [ngModel]="order.order_status"
+                            (ngModelChange)="updateOrderStatus(order, $event)"
+                            [disabled]="
+                              order.order_status === 'cancelled' ||
+                              order.order_status === 'delivered'
+                            "
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
                         </td>
                         <td class="muted note-cell">{{ order.note || '—' }}</td>
+                        <td>
+                          @if (
+                            order.order_status !== 'cancelled' && order.order_status !== 'delivered'
+                          ) {
+                            <button
+                              class="cancel-order-btn"
+                              (click)="requestCancelOrder(order)"
+                              [attr.aria-label]="'admin.order_actions.cancel' | translate"
+                            >
+                              ✕
+                            </button>
+                          } @else {
+                            <span class="muted">—</span>
+                          }
+                        </td>
                       </tr>
                     }
                   </tbody>
@@ -288,6 +335,13 @@
               [placeholder]="('admin.search_users' | translate) + '   (role:admin, email:gmail)'"
             />
           </div>
+          <button
+            class="export-pdf-btn"
+            (click)="exportUsersPdf()"
+            [disabled]="filteredUsers().length === 0"
+          >
+            📄 Export PDF
+          </button>
           <button class="retry-btn" (click)="loadUsers()" [disabled]="usersLoading()">
             🔄 {{ 'common.refresh' | translate }}
           </button>
@@ -343,7 +397,7 @@
                         <td class="muted">{{ formatDate(user.created_at) }}</td>
                         <td class="muted">#{{ user.id }}</td>
                         <td>
-                          @if (!isSelf(user) && user.account_state !== 'deleted') {
+                          @if (canManageUser(user) && user.account_state !== 'deleted') {
                             <div class="user-actions-wrapper">
                               <button
                                 class="action-menu-btn"
@@ -431,6 +485,13 @@
           </div>
           <button class="add-btn" (click)="openProductForm()">
             + {{ 'admin.product_form.add' | translate }}
+          </button>
+          <button
+            class="export-pdf-btn"
+            (click)="exportProductsPdf()"
+            [disabled]="filteredProducts().length === 0"
+          >
+            📄 Export PDF
           </button>
           <button class="retry-btn" (click)="loadProducts()" [disabled]="productsLoading()">
             🔄 {{ 'common.refresh' | translate }}
@@ -523,7 +584,8 @@
                         <td>
                           <span
                             [class]="
-                              'status-badge status-' + (product.in_stock ? 'delivered' : 'cancelled')
+                              'status-badge status-' +
+                              (product.in_stock ? 'delivered' : 'cancelled')
                             "
                           >
                             {{
@@ -796,6 +858,64 @@
               </button>
             </div>
           }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (orderDetailOpen() && orderDetailOrder()) {
+  <div class="modal-overlay" (click)="closeOrderDetail()">
+    <div class="modal-content modal-wide" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Order #{{ orderDetailOrder()!.id }} — Items</h3>
+        <button class="modal-close" (click)="closeOrderDetail()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="order-detail-info">
+          <p><strong>Email:</strong> {{ orderDetailOrder()!.email }}</p>
+          <p><strong>Billing:</strong> {{ orderDetailOrder()!.billing_name }}</p>
+          <p><strong>Status:</strong> {{ orderDetailOrder()!.order_status }}</p>
+          @if (orderDetailOrder()!.tracking_token) {
+            <p><strong>Tracking:</strong> {{ orderDetailOrder()!.tracking_token }}</p>
+          }
+        </div>
+
+        @if (!orderDetailOrder()!.products || orderDetailOrder()!.products!.length === 0) {
+          <p class="muted">No items found.</p>
+        } @else {
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of orderDetailOrder()!.products!; track item.product_id) {
+                <tr>
+                  <td class="product-name-cell">
+                    @if (item.thumbnail_url) {
+                      <img [src]="item.thumbnail_url" alt="" class="order-item-thumb" />
+                    }
+                    <span>{{ getProductName(item) }}</span>
+                  </td>
+                  <td class="muted">{{ item.sku || '—' }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ formatRevenue(item.unit_price) }}</td>
+                  <td class="font-bold">{{ formatRevenue(item.price) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        <div class="order-detail-total">
+          <strong>Total: {{ formatRevenue(orderDetailOrder()!.price) }}</strong>
         </div>
       </div>
     </div>
@@ -1303,6 +1423,25 @@
           } @else {
             {{ getUserActionTitle() | translate }}
           }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+@if (orderCancelConfirm()) {
+  <div class="modal-overlay" (click)="cancelCancelOrder()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>{{ 'admin.order_actions.cancel_title' | translate }}</h3>
+      <p>
+        {{ 'admin.order_actions.cancel_text' | translate }}
+        <strong>#{{ orderCancelConfirm()!.id }}</strong>
+      </p>
+      <div class="modal-actions">
+        <button class="modal-cancel-btn" (click)="cancelCancelOrder()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="confirm-delete-btn" (click)="confirmCancelOrder()">
+          {{ 'admin.order_actions.confirm_cancel' | translate }}
         </button>
       </div>
     </div>

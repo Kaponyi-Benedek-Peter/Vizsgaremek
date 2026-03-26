@@ -234,7 +234,6 @@ export class AuthService {
     return now.getTime() >= expirationTime.getTime() - fiveMinutes;
   }
 
-  // Stage 1: email + password -> email
   loginRequest(email: string, password: string, language: SupportedLanguage) {
     const request: LoginRequest = {
       email: this.encodeBase64(email),
@@ -247,7 +246,6 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  // Stage 2: id and confirmation_token b64 from url
   loginPromise(
     id: string,
     confirmationToken: string,
@@ -266,7 +264,6 @@ export class AuthService {
     );
   }
 
-  // registration_request: b64 string
   register(
     email: string,
     password: string,
@@ -287,7 +284,6 @@ export class AuthService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  // id and token b64 from url
   completeRegistration(
     id: string,
     token: string,
@@ -302,18 +298,19 @@ export class AuthService {
       .post<RegistrationResponse>(`${this.API_URL}/api/registration_promise`, request)
       .pipe(
         tap((response) => {
-          this.handleLoginSuccess(
-            response as unknown as LoginResponse,
-            stayLoggedIn,
-            response.user,
-            true, // skipNavigation
-          );
+          const mappedResponse: LoginResponse = {
+            user_id: response.user?.id ?? id,
+            jwt_token: response.jwt_token,
+            session_token: response.session_token,
+            jwt_token_expiration: response.jwt_token_expiration,
+            user_state: (response.user?.account_state as UserState) ?? 'verified',
+          };
+          this.handleLoginSuccess(mappedResponse, stayLoggedIn, response.user, true);
         }),
         catchError(this.handleError.bind(this)),
       );
   }
 
-  // chpass_request: b64 string
   requestPasswordChange(email: string, newPassword: string, language: SupportedLanguage) {
     const request: PasswordChangeRequest = {
       email: this.encodeBase64(email),
@@ -431,6 +428,18 @@ export class AuthService {
 
   hasStoredSession(): boolean {
     return this.getStoredToken() !== null;
+  }
+
+  patchCurrentUser(partial: Partial<User>): void {
+    const current = this.authStateSignal();
+    if (!current.user) return;
+
+    const updated = { ...current.user, ...partial };
+    this.updateAuthState({ ...current, user: updated });
+
+    const stayLoggedIn = localStorage.getItem(this.STORAGE_TYPE_KEY) === 'local';
+    const storage = stayLoggedIn ? localStorage : sessionStorage;
+    storage.setItem(this.USER_KEY, JSON.stringify(updated));
   }
 
   private decodeJWT(token: string): JWTPayload | null {

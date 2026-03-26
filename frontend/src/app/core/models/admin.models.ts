@@ -71,6 +71,12 @@ export type FieldExtractor<T> = (item: T) => string;
 
 export const ACCOUNT_STATES = ['verified', 'unverified', 'admin', 'superadmin'] as const;
 
+// Admin can only assign these roles (cannot promote to admin or superadmin)
+export const ADMIN_ASSIGNABLE_STATES = ['verified', 'unverified'] as const;
+
+// Superadmin can also promote to admin (but superadmin is DB-only, never assignable from frontend)
+export const SUPERADMIN_ASSIGNABLE_STATES = ['verified', 'unverified', 'admin'] as const;
+
 export const ORDER_COLUMNS: Record<string, FieldExtractor<AdminOrder>> = {
   id: (o) => o.id,
   email: (o) => o.email || '',
