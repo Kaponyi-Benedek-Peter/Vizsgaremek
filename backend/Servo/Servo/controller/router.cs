@@ -18,7 +18,7 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin","get_all_product","update_stock_admin","get_post_by_id","upload_product_image_admin","delete_product_image_admin"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin","get_all_product","update_stock_admin","get_post_by_id","upload_product_image_admin","delete_product_image_admin","get_all_orders_user","get_user_data","delete_product_by_id_admin"
         };
 
 
@@ -32,6 +32,9 @@ namespace Servo.controller
 
 
         public static ConcurrentDictionary<string, int> connectioncounts = new ConcurrentDictionary<string, int> { };
+        public static ConcurrentDictionary<string, int> connectioncounts_static = new ConcurrentDictionary<string, int> { };
+
+
         public static ConcurrentBag<string> honeypot_ips = new ConcurrentBag<string> { };
 
 
@@ -67,6 +70,10 @@ namespace Servo.controller
         }
         public static async void main(HttpListenerContext data, string alap)
         {
+
+
+
+
 
             string host = data.Request.Url.Host;
             if (data.Request.HttpMethod == "OPTIONS")
@@ -144,9 +151,24 @@ namespace Servo.controller
 
             string ip = data.Request.RemoteEndPoint.Address.ToString();
 
+
+            connectioncounts_static.TryGetValue(ip, out int count);
+            count++;
+            connectioncounts_static[ip] = count;
+
+
+
+            /*
+             *  ddos vedelem itt
+             * 
+            
+            
             connectioncounts.TryGetValue(ip, out int count);
             count++;
             connectioncounts[ip] = count;
+
+
+
 
 
 
@@ -161,10 +183,10 @@ namespace Servo.controller
                 f1.updatesusconns();
                 return;
             }
-               
+               */
 
 
-            
+
 
             f1.updateconnections();
 
@@ -265,13 +287,27 @@ namespace Servo.controller
                      controller.delete_all_post_comments_by_post_id.main(data, lenyeg);
 
                 }
+                else if (lenyeg.Contains("get_all_orders_admin"))
+                {
+
+                    controller.get_all_orders.main(data, lenyeg);
+
+
+
+
+                }
                 else if (lenyeg.Contains("upload_product_image_admin"))
                 {
 
                     controller.upload_product_image_admin.main(data, lenyeg);
 
                 }
+                else if (lenyeg.Contains("get_all_orders_user"))
+                {
 
+                    controller.get_all_orders_user.main(data, lenyeg);
+
+                }
 
                 else if (lenyeg.Contains("delete_product_image_admin"))
                 {
@@ -279,6 +315,14 @@ namespace Servo.controller
                     controller.delete_image_by_id.main(data, lenyeg);
 
                 }
+
+                else if (lenyeg.Contains("delete_product_by_id_admin"))
+                {
+
+                    controller.delete_product_by_id.main(data, lenyeg);
+
+                }
+
 
                 else if (lenyeg.Contains("update_post_comment_by_comment_id"))
                 {
@@ -400,16 +444,16 @@ namespace Servo.controller
 
 
                 }
-
-                else if (lenyeg.Contains("get_all_orders_admin"))
+                else if (lenyeg.Contains("get_user_data"))
                 {
 
-                    controller.get_all_orders.main(data, lenyeg);
+                    controller.get_user_data.main(data, lenyeg);
 
 
 
 
                 }
+
                 else if (lenyeg.Contains("newsletter_subscription"))
                 {
 

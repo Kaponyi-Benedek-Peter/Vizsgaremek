@@ -92,7 +92,7 @@ namespace Servo.controller
 
                     var respon = new
                     {
-                        status = "wrong_password",
+                        status = "incorrect_token",
                         statuscode = "401"
                     };
 

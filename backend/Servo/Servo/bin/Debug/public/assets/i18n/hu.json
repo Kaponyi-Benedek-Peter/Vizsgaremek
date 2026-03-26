@@ -190,7 +190,14 @@
       "section4_title": "4. Árak és fizetés",
       "section2_title": "2. A szolgáltató adatai",
       "section1_title": "1. Az általános szerződési feltételek hatálya",
-      "info_email_value": "info@roysshack.hu"
+      "info_email_value": "info@roysshack.hu",
+      "withdrawal_title": "5a. Elállási jog",
+      "withdrawal_text": "Az EU 2011/83/EU fogyasztóvédelmi irányelve és a 45/2014. (II. 26.) Korm. rendelet értelmében a fogyasztónak joga van a távollévők között kötött szerződéstől elállni.",
+      "withdrawal_period": "14 napos elállási jog",
+      "withdrawal_details": "A termék kézhezvételétől számított 14 napon belül indoklás nélkül elállhat a szerződéstől. Elállási szándékát egyértelmű nyilatkozattal (pl. e-mail útján) kell jeleznie. Érvényes elállás esetén az átvételtől számított 14 napon belül visszatérítjük a kifizetett összeget, beleértve a standard szállítási költséget.",
+      "complaints_title": "5b. Panaszkezelés és vitarendezés",
+      "complaints_text": "Panaszait a support@roysshack.hu e-mail címen jelezheti. Panaszára 30 napon belül válaszolunk.",
+      "odr_text": "Európai fogyasztók az EU online vitarendezési platformját is igénybe vehetik:"
     },
     "cookies": {
       "preferences_badge": "Beállítások",
@@ -373,7 +380,9 @@
     "increase_quantity": "Mennyiség növelése",
     "not_found": "A termék nem található",
     "not_found_desc": "A keresett termék nem létezik vagy eltávolításra került.",
-    "back_to_products": "Vissza a termékekhez"
+    "back_to_products": "Vissza a termékekhez",
+    "image_deleted": "Kép sikeresen törölve",
+    "delete_error": "Nem sikerült törölni a képet"
   },
   "common": {
     "next_page": "Következő oldal",
@@ -394,7 +403,8 @@
     "cancel": "Mégse",
     "scroll_right": "Görgetés jobbra",
     "added_to_cart": "Kosárba helyezve",
-    "edit": "Szerkesztés"
+    "edit": "Szerkesztés",
+    "added": "Hozzáadva!"
   },
   "home": {
     "featured": {
@@ -470,6 +480,14 @@
     "items": "termék"
   },
   "admin": {
+    "order_actions": {
+      "cancel": "Rendelés lemondása",
+      "cancel_title": "Rendelés lemondása",
+      "cancel_text": "Biztosan lemondja a rendelést?",
+      "confirm_cancel": "Igen, lemondom a rendelést",
+      "status_updated": "Rendelés állapota frissült.",
+      "error": "Nem sikerült frissíteni a rendelését. Kérjük próbálja újra."
+    },
     "toggle_sidebar": "Oldalsáv váltás",
     "table": {
       "orders": "Rendelések",
@@ -670,7 +688,20 @@
     "house_number_placeholder": "pl. 42",
     "phone": "Telefonszám",
     "note": "Megjegyzés",
-    "phone_placeholder": "+36 30 123 4567"
+    "phone_placeholder": "+36 30 123 4567",
+    "guest_notice": "Vendégként vásárolsz. Add meg az email címed és a neved, hogy elküldhessük a rendelés visszaigazolást.",
+    "email": "Email cím",
+    "email_placeholder": "pelda@email.com",
+    "billing_name": "Teljes név",
+    "billing_name_placeholder": "Kovács Béla",
+    "guest_fields_required": "Vendég vásárláshoz email és név szükséges.",
+    "invalid_email": "Kérjük, adj meg egy érvényes email címet.",
+    "pdf_downloaded": "A rendelés visszaigazolásáról a pdf le lett töltve",
+    "download_again": "Letöltés újra",
+    "accept_terms_prefix": "Elolvastam és elfogadom az",
+    "accept_terms_link": "Általános Szerződési Feltételeket és az Adatvédelmi tájékoztatót",
+    "accept_terms_suffix": "",
+    "terms_required": "A rendelés leadásához el kell fogadnia az ÁSZF-et."
   },
   "header": {
     "my_orders": "Rendeléseim",

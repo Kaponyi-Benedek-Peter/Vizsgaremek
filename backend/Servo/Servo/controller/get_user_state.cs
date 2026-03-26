@@ -153,7 +153,7 @@ namespace Servo.controller
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error 1: {ex.Message} --controller.update_name_by_id.main");
+                service.shared.log($"Error 1: {ex.Message} --controller.get_user_state.main");
 
 
 

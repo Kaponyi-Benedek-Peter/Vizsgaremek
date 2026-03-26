@@ -605,6 +605,9 @@ tags
             }
         }
 
+
+       
+
         public static string get_passhash_by_id(string id)
         {
             try
@@ -1412,6 +1415,69 @@ tags
                 return 500;
             }
         }
+
+
+        public static int update_product_state_by_id(string product_id, string new_state)
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("update_product_state_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_id", product_id);
+                    cmd.Parameters.AddWithValue("@p_new_state", new_state);
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.update_name_by_id");
+                return 500;
+            }
+        }
+
+        public static string get_product_state_by_id(string id)
+        {
+            try
+            {
+
+
+                string toreturn = null;
+
+                using (MySqlCommand cmd = new MySqlCommand("get_product_state_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_id", id);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+
+                            toreturn = reader["user_id"]?.ToString();
+                        }
+                    }
+                }
+
+                if (toreturn != null)
+                    return toreturn;
+                else
+                    return "404";
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.get_email_by_id");
+                return "500";
+            }
+
+        }
+
+
 
 
 

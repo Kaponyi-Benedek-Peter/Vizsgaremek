@@ -190,7 +190,14 @@
       "section4_title": "4. Preise und Zahlung",
       "section2_title": "2. Angaben zum Anbieter",
       "section1_title": "1. Geltungsbereich der AGB",
-      "info_email_value": "info@roysshack.hu"
+      "info_email_value": "info@roysshack.hu",
+      "withdrawal_title": "5a. Widerrufsrecht",
+      "withdrawal_text": "Gemäß der EU-Verbraucherrechterichtlinie (2011/83/EU) haben Verbraucher das Recht, von Fernabsatzverträgen zurückzutreten.",
+      "withdrawal_period": "14-tägiges Widerrufsrecht",
+      "withdrawal_details": "Sie können Ihre Vertragserklärung innerhalb von 14 Tagen ohne Angabe von Gründen widerrufen. Die Widerrufsfrist beträgt 14 Tage ab dem Tag, an dem Sie die Waren in Besitz genommen haben. Um Ihr Widerrufsrecht auszuüben, müssen Sie uns mittels einer eindeutigen Erklärung (z.B. per E-Mail) informieren.",
+      "complaints_title": "5b. Beschwerden und Streitbeilegung",
+      "complaints_text": "Beschwerden richten Sie bitte an support@roysshack.hu. Wir antworten innerhalb von 30 Tagen.",
+      "odr_text": "Europäische Verbraucher können auch die EU-Plattform zur Online-Streitbeilegung nutzen:"
     },
     "cookies": {
       "preferences_badge": "Einstellungen",
@@ -343,7 +350,9 @@
     "increase_quantity": "Menge erhöhen",
     "not_found": "Produkt nicht gefunden",
     "not_found_desc": "Das gesuchte Produkt existiert nicht oder wurde entfernt.",
-    "back_to_products": "Zurück zu den Produkten"
+    "back_to_products": "Zurück zu den Produkten",
+    "image_deleted": "Bild erfolgreich gelöscht",
+    "delete_error": "Bild konnte nicht gelöscht werden"
   },
   "common": {
     "next_page": "Nächste Seite",
@@ -364,7 +373,8 @@
     "cancel": "Abbrechen",
     "scroll_right": "Nach rechts scrollen",
     "added_to_cart": "Zum Warenkorb hinzugefügt",
-    "edit": "Bearbeiten"
+    "edit": "Bearbeiten",
+    "added": "Hinzugefügt!"
   },
   "home": {
     "featured": {
@@ -440,6 +450,14 @@
     "items": "Artikel"
   },
   "admin": {
+    "order_actions": {
+      "cancel": "Bestellung zurücksetzen",
+      "cancel_title": "Bestellung zurücksetzen",
+      "cancel_text": "Sind Sie sicher, dass Sie die Bestellung absagen?",
+      "confirm_cancel": "Ja, ich werde die Bestellung absagen.",
+      "status_updated": "Bestellstatus aktualisiert.",
+      "error": "Die Bestellung kann nicht aktualisiert werden. Bitte versuchen Sie es noch einmal."
+    },
     "toggle_sidebar": "Seitenleiste umschalten",
     "table": {
       "orders": "Bestellungen",
@@ -640,7 +658,20 @@
     "house_number_placeholder": "z.B. 42",
     "phone": "Telefonnummer",
     "note": "Bestellhinweise",
-    "phone_placeholder": "+49 176 123 4567"
+    "phone_placeholder": "+49 176 123 4567",
+    "guest_notice": "Sie kaufen als Gast ein. Geben Sie Ihre E-Mail und Ihren Namen ein, damit wir Ihnen die Bestellbestätigung senden können.",
+    "email": "E-Mail-Adresse",
+    "email_placeholder": "ihre@email.de",
+    "billing_name": "Vollständiger Name",
+    "billing_name_placeholder": "Max Mustermann",
+    "guest_fields_required": "E-Mail und Name sind für den Gastkauf erforderlich.",
+    "invalid_email": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "pdf_downloaded": "Über die Bestätigung der Bestellung wurde pdf heruntergeladen",
+    "download_again": "Herunterladen nochmal",
+    "accept_terms_prefix": "Ich habe die",
+    "accept_terms_link": "AGB und Datenschutzerklärung",
+    "accept_terms_suffix": "gelesen und akzeptiere sie.",
+    "terms_required": "Sie müssen die AGB akzeptieren, um eine Bestellung aufzugeben."
   },
   "header": {
     "my_orders": "Meine Bestellungen",

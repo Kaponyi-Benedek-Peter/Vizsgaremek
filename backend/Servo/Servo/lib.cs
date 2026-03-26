@@ -185,16 +185,28 @@ namespace Servo
 
 
 
-            anti_ddos = Task.Factory.StartNew(() =>
+            /* anti_ddos = Task.Factory.StartNew(() =>
+             {
+                 while (!token.IsCancellationRequested)
+                 {
+                     router.connectioncounts.Clear();
+
+                     Thread.Sleep(10000);
+                 }
+             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            */
+
+
+             iplog = Task.Factory.StartNew(() =>
             {
                 while (!token.IsCancellationRequested)
                 {
                     router.connectioncounts.Clear();
-
+                    
                     Thread.Sleep(10000);
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-
+           
 
 
         }
@@ -211,7 +223,11 @@ namespace Servo
         public Task honeypotport;
 
         public Task exchange_rates;
-        public Task anti_ddos;
+        
+        //public Task anti_ddos;
+
+        public Task iplog;
+
 
 
         public CancellationTokenSource cts;

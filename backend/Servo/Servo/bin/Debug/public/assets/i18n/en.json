@@ -190,7 +190,14 @@
       "section4_title": "4. Prices and Payment",
       "section2_title": "2. Service Provider Information",
       "section1_title": "1. Scope of Terms and Conditions",
-      "info_email_value": "info@roysshack.hu"
+      "info_email_value": "info@roysshack.hu",
+      "withdrawal_title": "5a. Right of Withdrawal",
+      "withdrawal_text": "In accordance with the EU Consumer Rights Directive (2011/83/EU) and Hungarian Government Decree 45/2014 (II. 26.), consumers have the right to withdraw from distance contracts.",
+      "withdrawal_period": "14-Day Cooling Off Period",
+      "withdrawal_details": "You may withdraw from this contract within 14 days without giving any reason. The withdrawal period expires 14 days from the day on which you acquire physical possession of the goods. To exercise the right of withdrawal, you must inform us of your decision by means of a clear statement (e.g., a letter sent by post or email). Upon valid withdrawal, we will reimburse all payments received, including the cost of standard delivery, within 14 days.",
+      "complaints_title": "5b. Complaints and Dispute Resolution",
+      "complaints_text": "If you have any complaints regarding our products or services, please contact us at support@roysshack.hu. We will respond within 30 days.",
+      "odr_text": "European consumers may also use the EU Online Dispute Resolution platform:"
     },
     "cookies": {
       "preferences_badge": "Preferences",
@@ -373,7 +380,9 @@
     "increase_quantity": "Increase quantity",
     "not_found": "Product not found",
     "not_found_desc": "The product you are looking for does not exist or has been removed.",
-    "back_to_products": "Back to products"
+    "back_to_products": "Back to products",
+    "image_deleted": "Image deleted successfully",
+    "delete_error": "Failed to delete image"
   },
   "common": {
     "next_page": "Next page",
@@ -394,7 +403,8 @@
     "cancel": "Cancel",
     "scroll_right": "Scroll right",
     "added_to_cart": "Added to cart",
-    "edit": "Edit"
+    "edit": "Edit",
+    "added": "Added!"
   },
   "home": {
     "featured": {
@@ -470,6 +480,14 @@
     "items": "items"
   },
   "admin": {
+    "order_actions": {
+      "cancel": "Cancel order",
+      "cancel_title": "Cancel Order",
+      "cancel_text": "Are you sure you want to cancel order",
+      "confirm_cancel": "Yes, cancel order",
+      "status_updated": "Order status updated.",
+      "error": "Failed to update order. Please try again."
+    },
     "toggle_sidebar": "Toggle sidebar",
     "table": {
       "orders": "Orders",
@@ -670,7 +688,20 @@
     "house_number_placeholder": "e.g. 42",
     "phone": "Phone Number",
     "note": "Order Notes",
-    "phone_placeholder": "+36 30 123 4567"
+    "phone_placeholder": "+36 30 123 4567",
+    "guest_notice": "You are checking out as a guest. Enter your email and name so we can send you the order confirmation.",
+    "email": "Email address",
+    "email_placeholder": "your@email.com",
+    "billing_name": "Full name",
+    "billing_name_placeholder": "John Doe",
+    "guest_fields_required": "Email and name are required for guest checkout.",
+    "invalid_email": "Please enter a valid email address.",
+    "pdf_downloaded": "Your order confirmation PDF has been downloaded.",
+    "download_again": "Download again",
+    "accept_terms_prefix": "I have read and accept the",
+    "accept_terms_link": "Terms & Conditions and Privacy Policy",
+    "accept_terms_suffix": "",
+    "terms_required": "You must accept the Terms & Conditions to place an order."
   },
   "header": {
     "my_orders": "My Orders",
