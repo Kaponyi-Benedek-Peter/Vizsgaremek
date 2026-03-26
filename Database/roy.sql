@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 26, 2026 at 09:05 AM
+-- Generation Time: Mar 26, 2026 at 02:29 PM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -908,6 +908,12 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `update_order_item_quantity` (IN `p_
     WHERE id = p_id;
 
     CALL calculate_order_price(v_order_id);
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_order_status_by_id` (IN `p_id` INT, IN `p_order_status` VARCHAR(255))   BEGIN
+	UPDATE roy.order
+    SET order_status = p_order_status
+    WHERE id = p_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `update_password_by_id` (IN `p_id` INT, IN `p_new_passhash` VARCHAR(255))   BEGIN 
