@@ -14,7 +14,7 @@
 .post-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--color-primary);
+  border-color: var(--color-brand-primary);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -51,7 +51,7 @@
   position: absolute;
   top: var(--space-3);
   right: var(--space-3);
-  background: var(--color-primary);
+  background: var(--color-brand-primary);
   color: white;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
@@ -139,7 +139,7 @@
 }
 
 .question-badge {
-  color: var(--color-primary);
+  color: var(--color-brand-primary);
 }
 
 .answered-badge {
@@ -258,7 +258,7 @@
 }
 
 .author-avatar-placeholder {
-  background: var(--color-primary);
+  background: var(--color-brand-primary);
   color: white;
   display: flex;
   align-items: center;
@@ -280,7 +280,7 @@
 }
 
 .verified-icon {
-  color: var(--color-primary);
+  color: var(--color-brand-primary);
   font-weight: bold;
 }
 
@@ -479,7 +479,7 @@
 
 @media (hover: hover) {
   .post-card:hover .post-title {
-    color: var(--color-primary);
+    color: var(--color-brand-primary);
   }
 }
 
@@ -488,6 +488,6 @@
 }
 
 [data-theme='dark'] .post-card:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-brand-primary);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }

@@ -8,18 +8,18 @@
   height: 35px;
   padding: 0 12px;
   border: none;
-  background-color: var(--input-bg);
-  color: var(--input-text);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
   font-family: inherit;
-  transition: background-color var(--transition-speed) var(--transition-ease);
+  transition: background-color var(--transition-normal);
 }
 
 .newsletter input::placeholder {
-  color: var(--input-placeholder);
+  color: var(--color-text-placeholder);
 }
 
 .newsletter input:focus {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-brand-primary);
   outline-offset: -2px;
 }
 
@@ -49,7 +49,7 @@
 
 .newsletter p {
   margin-bottom: 6px;
-  color: var(--text-inverse);
+  color: var(--color-text-on-brand);
 }
 
 .social-icons {
@@ -119,14 +119,14 @@
   bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 0.75rem;
   white-space: nowrap;
   box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
   animation: tooltipFadeIn 0.2s ease;
   z-index: 10;
 }
@@ -138,7 +138,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: var(--bg-primary);
+  border-top-color: var(--color-surface);
 }
 
 @keyframes tooltipFadeIn {
@@ -166,7 +166,7 @@
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 6px;
-  color: var(--text-inverse);
+  color: var(--color-text-on-brand);
   font-family: inherit;
   font-size: 0.85rem;
   cursor: pointer;
@@ -207,8 +207,8 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   box-shadow: var(--shadow-md);
   overflow: hidden;
@@ -236,7 +236,7 @@
   padding: 8px 12px;
   background: none;
   border: none;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-family: inherit;
   font-size: 0.875rem;
   cursor: pointer;
@@ -245,13 +245,13 @@
 }
 
 .newsletter-lang-item:hover {
-  background: var(--bg-secondary);
+  background: var(--color-surface-subtle);
 }
 
 .newsletter-lang-item.active {
-  background: var(--bg-secondary);
+  background: var(--color-surface-subtle);
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-brand-primary);
 }
 
 @media (max-width: 480px) {
@@ -277,7 +277,7 @@
 }
 
 [data-theme='dark'] .newsletter button[type='submit'] {
-  color: var(--text-inverse);
+  color: var(--color-text-on-brand);
   background-color: #111;
 }
 

@@ -25,6 +25,7 @@ import {
   MOCK_MODE,
   MOCK_RAW_PRODUCTS,
   MOCK_RAW_CATEGORIES,
+  MOCK_PRODUCT_IMAGES,
 } from '../../pages/products/product.mock';
 
 @Injectable({
@@ -280,6 +281,22 @@ export class ProductService {
   }
 
   getProductImages(productId: string): Observable<ProductImage[]> {
+    if (MOCK_MODE) {
+      const group = MOCK_PRODUCT_IMAGES.find((g) => g.name === productId);
+      if (!group) return of([]);
+      return of(
+        group.files.map((url, i) => ({
+          id: `${productId}-${i + 1}`,
+          product_id: productId,
+          image_url: url,
+          alt_text_hu: '',
+          alt_text_en: '',
+          alt_text_de: '',
+          sort_id: `${i + 1}`,
+        })),
+      );
+    }
+
     return this.getAllProductImages().pipe(
       map((groups) => {
         const group = groups.find((g) => g.name === productId);
@@ -403,6 +420,26 @@ export class ProductService {
       `${this.API_URL}/api/delete_product_admin`,
       body,
     );
+  }
+
+  updateProductStatusAdmin(
+    adminId: string,
+    adminSessionToken: string,
+    targetProductId: string,
+    newProductStatus: string,
+  ): Observable<{ statuscode: string; status: string }> {
+    const body = {
+      admin_id: btoa(adminId),
+      admin_session_token: btoa(adminSessionToken),
+      target_product_id: btoa(targetProductId),
+      new_product_status: btoa(newProductStatus),
+    };
+    return this.http
+      .post<{
+        statuscode: string;
+        status: string;
+      }>(`${this.API_URL}/api/update_product_status_admin`, body)
+      .pipe(catchError(this.handleError));
   }
 
   saveProductAdmin(

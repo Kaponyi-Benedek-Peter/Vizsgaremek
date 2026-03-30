@@ -17,8 +17,8 @@
 }
 
 .category-item:hover {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary);
+  background: var(--color-brand-primary-light);
+  border-color: var(--color-brand-primary);
   transform: translateY(-1px);
 }
 
@@ -27,9 +27,9 @@
 }
 
 .category-item.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-text-on-primary);
+  background: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
   box-shadow: var(--shadow-md);
 }
 

@@ -1,6 +1,24 @@
-import { Product, ProductCategory } from '../../core/models/product.model';
+import { Product, ProductCategory, ProductImageGroup } from '../../core/models/product.model';
 
-export const MOCK_MODE = false;
+export const MOCK_MODE = true;
+
+// Mock image gallery per product ID.
+// Add new entries here as you add more images to assets/products/<id>/.
+export const MOCK_PRODUCT_IMAGES: ProductImageGroup[] = [
+  {
+    name: '1',
+    files: ['assets/products/1/1.webp', 'assets/products/1/2.webp', 'assets/products/1/3.webp'],
+  },
+  { name: '2', files: ['assets/products/2/1.webp'] },
+  { name: '3', files: ['assets/products/3/1.webp'] },
+  { name: '4', files: ['assets/products/4/1.webp'] },
+  { name: '5', files: ['assets/products/5/1.webp'] },
+  { name: '6', files: ['assets/products/6/1.webp'] },
+  { name: '7', files: ['assets/products/7/1.webp'] },
+  { name: '8', files: ['assets/products/8/1.webp'] },
+  { name: '9', files: ['assets/products/9/1.webp'] },
+  { name: '10', files: ['assets/products/10/1.webp'] },
+];
 
 export const MOCK_RAW_CATEGORIES: ProductCategory[] = [
   {

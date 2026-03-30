@@ -21,7 +21,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--gradient-primary);
+  background: var(--gradient-brand);
   opacity: 0;
   transition: opacity var(--transition-normal);
   z-index: 1;
@@ -31,9 +31,9 @@
   .product-card:hover {
     box-shadow:
       var(--shadow-xl),
-      0 0 0 1px var(--color-primary-mid);
+      0 0 0 1px var(--color-brand-primary-mid);
     transform: translateY(-6px);
-    border-color: var(--color-primary);
+    border-color: var(--color-brand-primary);
   }
 
   .product-card:hover::before {
@@ -51,7 +51,7 @@
 
 @media (hover: none) {
   .product-card:active {
-    border-color: var(--color-primary);
+    border-color: var(--color-brand-primary);
     box-shadow: var(--shadow-md);
   }
 }
@@ -153,7 +153,7 @@
 }
 
 .prescription-badge {
-  background: var(--gradient-primary);
+  background: var(--gradient-brand);
   color: white;
   width: 34px;
   height: 34px;
@@ -163,7 +163,7 @@
   justify-content: center;
   font-size: var(--text-lg);
   padding: 0;
-  box-shadow: var(--shadow-primary);
+  box-shadow: var(--shadow-brand);
 }
 
 .out-of-stock-badge {
@@ -210,7 +210,7 @@
 .product-category {
   font-size: 0.68rem;
   text-transform: uppercase;
-  color: var(--color-primary);
+  color: var(--color-brand-primary);
   font-weight: var(--font-bold);
   letter-spacing: 0.08em;
 }
@@ -290,7 +290,7 @@
 .price {
   font-size: var(--text-2xl);
   font-weight: var(--font-extrabold);
-  color: var(--color-primary);
+  color: var(--color-brand-primary);
   line-height: 1;
 }
 
@@ -358,8 +358,8 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-md);
-  background: var(--gradient-primary);
-  color: var(--color-text-on-primary);
+  background: var(--gradient-brand);
+  color: var(--color-text-on-brand);
   border: none;
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
@@ -375,9 +375,9 @@
 
 @media (hover: hover) and (pointer: fine) {
   .quantity-btn:hover:not(:disabled) {
-    background: var(--gradient-primary-hover);
+    background: var(--gradient-brand-hover);
     transform: scale(1.08);
-    box-shadow: var(--shadow-primary);
+    box-shadow: var(--shadow-brand);
   }
 }
 
@@ -400,8 +400,8 @@
 .add-to-cart-button {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  background: var(--gradient-primary);
-  color: var(--color-text-on-primary);
+  background: var(--gradient-brand);
+  color: var(--color-text-on-brand);
   border: none;
   border-radius: var(--radius-lg);
   font-size: var(--text-base);
@@ -414,7 +414,7 @@
   gap: var(--space-2);
   font-family: var(--font-primary);
   min-height: 44px;
-  box-shadow: var(--shadow-primary);
+  box-shadow: var(--shadow-brand);
   letter-spacing: 0.01em;
 }
 
@@ -434,8 +434,8 @@
 
 @media (hover: hover) and (pointer: fine) {
   .add-to-cart-button:hover:not(:disabled) {
-    background: var(--gradient-primary-hover);
-    box-shadow: var(--shadow-primary-lg);
+    background: var(--gradient-brand-hover);
+    box-shadow: var(--shadow-brand-lg);
     transform: translateY(-2px);
   }
 }
@@ -457,8 +457,8 @@
   width: 100%;
   padding: var(--space-2) var(--space-4);
   background: transparent;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
+  color: var(--color-brand-primary);
+  border: 2px solid var(--color-brand-primary);
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
@@ -470,9 +470,9 @@
 
 @media (hover: hover) and (pointer: fine) {
   .details-button:hover {
-    background: var(--color-primary);
+    background: var(--color-brand-primary);
     color: white;
-    box-shadow: var(--shadow-primary);
+    box-shadow: var(--shadow-brand);
     transform: translateY(-1px);
   }
 }

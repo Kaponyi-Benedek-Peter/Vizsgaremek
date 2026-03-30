@@ -45,7 +45,7 @@
 .particle {
   position: absolute;
   border-radius: 50%;
-  background: var(--color-green-primary);
+  background: var(--color-brand-primary);
   opacity: 0.08;
   animation: particle-float linear infinite;
 }
@@ -164,7 +164,7 @@
   letter-spacing: -0.03em;
 
   /* Green gradient fill */
-  background: var(--gradient-primary, linear-gradient(135deg, #067a45, #0a9e5a));
+  background: var(--gradient-brand, linear-gradient(135deg, #067a45, #0a9e5a));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -243,7 +243,7 @@
 
 .nf-divider-icon {
   font-size: 0.75rem;
-  color: var(--color-green-primary);
+  color: var(--color-brand-primary);
   opacity: 0.6;
 }
 
@@ -299,21 +299,21 @@
 }
 
 .nf-btn:focus-visible {
-  outline: 2px solid var(--color-green-primary);
+  outline: 2px solid var(--color-brand-primary);
   outline-offset: 3px;
 }
 
 /* Primary — filled green */
 .nf-btn--primary {
-  background: var(--gradient-primary, linear-gradient(135deg, #067a45, #0a9e5a));
+  background: var(--gradient-brand, linear-gradient(135deg, #067a45, #0a9e5a));
   color: #fff;
-  box-shadow: var(--shadow-primary, 0 6px 20px rgba(6, 122, 69, 0.35));
+  box-shadow: var(--shadow-brand, 0 6px 20px rgba(6, 122, 69, 0.35));
 }
 
 @media (hover: hover) and (pointer: fine) {
   .nf-btn--primary:hover {
-    background: var(--gradient-primary-hover, linear-gradient(135deg, #055c34, #067a45));
-    box-shadow: var(--shadow-primary-lg, 0 8px 28px rgba(6, 122, 69, 0.5));
+    background: var(--gradient-brand-hover, linear-gradient(135deg, #055c34, #067a45));
+    box-shadow: var(--shadow-brand-lg, 0 8px 28px rgba(6, 122, 69, 0.5));
     transform: translateY(-2px);
   }
 
@@ -325,8 +325,8 @@
 /* Secondary — outlined */
 .nf-btn--secondary {
   background: transparent;
-  color: var(--color-green-primary);
-  border: 1.5px solid var(--color-green-primary);
+  color: var(--color-brand-primary);
+  border: 1.5px solid var(--color-brand-primary);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -383,12 +383,12 @@
 
 @media (hover: hover) and (pointer: fine) {
   .nf-quick-link:hover {
-    color: var(--color-green-primary);
+    color: var(--color-brand-primary);
   }
 }
 
 .nf-quick-link:focus-visible {
-  outline: 2px solid var(--color-green-primary);
+  outline: 2px solid var(--color-brand-primary);
   border-radius: 2px;
   outline-offset: 2px;
 }
