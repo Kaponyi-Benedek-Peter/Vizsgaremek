@@ -1938,8 +1938,9 @@ FILE: src\app\core\models\admin.models.ts
 
 import { AdminUser, AdminOrder } from '../../core/services/account.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
+import { Post } from '../../core/models/forum.model';
 
-export type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
+export type AdminSection = 'dashboard' | 'orders' | 'users' | 'products' | 'posts';
 
 export interface NavItem {
   id: AdminSection;
@@ -1997,6 +1998,22 @@ export interface ProductFormData {
   featured: boolean;
 }
 
+export type PostFormTab = 'basic' | 'content' | 'images';
+
+export type PostStatus = 'draft' | 'published' | 'archived' | 'hidden';
+
+export interface PostFormData {
+  title: string;
+  excerpt: string;
+  content: string;
+  image_url: string;
+  category_id: string;
+  tags: string;
+  status: PostStatus;
+  is_featured: boolean;
+  slug: string;
+}
+
 export type UserActionType = 'change_role' | 'ban' | 'unban' | 'delete';
 
 export interface UserActionRequest {
@@ -2009,10 +2026,8 @@ export type FieldExtractor<T> = (item: T) => string;
 
 export const ACCOUNT_STATES = ['verified', 'unverified', 'admin', 'superadmin'] as const;
 
-// Admin can only assign these roles (cannot promote to admin or superadmin)
 export const ADMIN_ASSIGNABLE_STATES = ['verified', 'unverified'] as const;
 
-// Superadmin can also promote to admin (but superadmin is DB-only, never assignable from frontend)
 export const SUPERADMIN_ASSIGNABLE_STATES = ['verified', 'unverified', 'admin'] as const;
 
 export const ORDER_COLUMNS: Record<string, FieldExtractor<AdminOrder>> = {
@@ -2048,6 +2063,15 @@ export const PRODUCT_COLUMNS: Record<string, FieldExtractor<ProductWithHelpers>>
   stock: (p) => String(p.stock_number ?? ''),
   rating: (p) => String(p.rating_number ?? ''),
   status: (p) => (p.in_stock ? 'active' : 'inactive'),
+};
+
+export const POST_COLUMNS: Record<string, FieldExtractor<Post>> = {
+  id: (p) => p.id,
+  title: (p) => p.title || '',
+  excerpt: (p) => p.excerpt || '',
+  tags: (p) => p.tags || '',
+  status: (p) => p.status || '',
+  category: (p) => p.category_id || '',
 };
 
 
@@ -4061,6 +4085,7 @@ import {
   CATEGORY_COLOR_MAP,
   DEFAULT_CATEGORY_COLOR,
 } from '../models/forum.model';
+import { GalleryImage } from '../models/admin.models';
 import { getCategoryIcon } from '../constants/visuals';
 import { environment } from '../../../environments/environment';
 
@@ -4278,6 +4303,164 @@ export class ForumService {
   setPosts(posts: Post[]): void {
     this.postsSignal.set(posts);
     this.current_pageSignal.set(1);
+  }
+
+  getAllPostsAdmin(_adminId: string, _sessionToken: string) {
+    return this.fetchPosts();
+  }
+
+  createPostAdmin(
+    userId: string,
+    sessionToken: string,
+    data: {
+      title: string;
+      content: string;
+      excerpt: string;
+      slug: string;
+      image_url: string;
+      category_id: string;
+      tags: string;
+      status: string;
+      is_featured: boolean;
+    },
+  ) {
+    const body = {
+      user_id: btoa(userId),
+      session_token: btoa(sessionToken),
+      title: btoa(data.title),
+      content: btoa(data.content),
+      image_url: btoa(data.image_url),
+      category_id: btoa(data.category_id),
+      slug: btoa(data.slug),
+      except: btoa(data.excerpt),
+      status: btoa(data.status),
+      views: btoa('0'),
+      likes: btoa('0'),
+      comment_count: btoa('0'),
+      is_featured: btoa(data.is_featured ? '1' : '0'),
+      tags: btoa(data.tags),
+    };
+    return this.http
+      .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/create_post`, body)
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of({ status: 'error', statuscode: 500 })),
+      );
+  }
+
+  updatePostAdmin(
+    userId: string,
+    sessionToken: string,
+    postId: string,
+    data: {
+      title: string;
+      content: string;
+      excerpt: string;
+      slug: string;
+      image_url: string;
+      category_id: string;
+      tags: string;
+      status: string;
+      is_featured: boolean;
+      views?: number;
+      likes?: number;
+      comment_count?: number;
+    },
+  ) {
+    const body = {
+      user_id: btoa(userId),
+      session_token: btoa(sessionToken),
+      post_id: btoa(postId),
+      title: btoa(data.title),
+      content: btoa(data.content),
+      image_url: btoa(data.image_url),
+      category_id: btoa(data.category_id),
+      slug: btoa(data.slug),
+      except: btoa(data.excerpt),
+      status: btoa(data.status),
+      views: btoa(String(data.views ?? 0)),
+      likes: btoa(String(data.likes ?? 0)),
+      comment_count: btoa(String(data.comment_count ?? 0)),
+      is_featured: btoa(data.is_featured ? '1' : '0'),
+      tags: btoa(data.tags),
+    };
+    return this.http
+      .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/update_post_by_id`, body)
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of({ status: 'error', statuscode: 500 })),
+      );
+  }
+
+  deletePostAdmin(adminId: string, sessionToken: string, postId: string) {
+    return this.http
+      .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/delete_post_by_id`, {
+        admin_id: btoa(adminId),
+        session_token: btoa(sessionToken),
+        post_id: btoa(postId),
+      })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of({ status: 'error', statuscode: 500 })),
+      );
+  }
+
+  getPostImagesAdmin(adminId: string, adminSessionToken: string, postId: string) {
+    return this.http
+      .post<{ status: string; statuscode: number; images: GalleryImage[] }>(
+        `${this.API_URL}/api/get_post_images_admin`,
+        {
+          admin_id: btoa(adminId),
+          admin_session_token: btoa(adminSessionToken),
+          post_id: btoa(postId),
+        },
+      )
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => (res?.status === 'success' ? res.images : [])),
+        catchError(() => of([] as GalleryImage[])),
+      );
+  }
+
+  uploadPostImageAdmin(
+    adminId: string,
+    adminSessionToken: string,
+    postId: string,
+    imageBase64: string,
+  ) {
+    return this.http
+      .post<{ statuscode: string; status: string; image?: GalleryImage }>(
+        `${this.API_URL}/api/upload_post_image_admin`,
+        {
+          admin_id: btoa(adminId),
+          admin_session_token: btoa(adminSessionToken),
+          post_id: btoa(postId),
+          image_b64: imageBase64,
+        },
+      )
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of({ statuscode: '500', status: 'error' })),
+      );
+  }
+
+  deletePostImageAdmin(
+    adminId: string,
+    adminSessionToken: string,
+    postId: string,
+    imageId: string,
+  ) {
+    return this.http
+      .post<{ statuscode: string; status: string }>(`${this.API_URL}/api/delete_post_image_admin`, {
+        admin_id: btoa(adminId),
+        admin_session_token: btoa(adminSessionToken),
+        post_id: btoa(postId),
+        image_id: btoa(imageId),
+      })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of({ statuscode: '500', status: 'error' })),
+      );
   }
 
   private applyFilters(posts: Post[], filters: PostFilters): Post[] {
@@ -5523,7 +5706,7 @@ describe('emptyProductForm', () => {
 FILE: src\app\core\utils\admin.utils.ts
 ================================================================================
 
-import { FieldExtractor, ProductFormData } from '../models/admin.models';
+import { FieldExtractor, PostFormData, ProductFormData } from '../models/admin.models';
 
 export function emptyProductForm(): ProductFormData {
   return {
@@ -5550,6 +5733,31 @@ export function emptyProductForm(): ProductFormData {
     thumbnail_url: '',
     featured: false,
   };
+}
+
+export function emptyPostForm(): PostFormData {
+  return {
+    title: '',
+    excerpt: '',
+    content: '',
+    image_url: '',
+    category_id: '',
+    tags: '',
+    status: 'draft',
+    is_featured: false,
+    slug: '',
+  };
+}
+
+export function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 }
 
 interface SearchQuery {
@@ -7891,6 +8099,213 @@ tr.cancelled-row .order-status-select {
   border: 1px solid var(--color-border);
 }
 
+.post-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.post-status-published {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.post-status-draft {
+  background: var(--color-neutral-100);
+  color: var(--text-secondary);
+}
+
+.post-status-hidden {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.post-status-archived {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+}
+
+.action-buttons {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  transition: background var(--transition-fast);
+  line-height: 1;
+}
+
+.action-btn:hover {
+  background: var(--bg-secondary);
+}
+
+.delete-btn:hover {
+  background: var(--color-error-light);
+}
+
+.post-form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  backdrop-filter: blur(2px);
+}
+
+.pf-input-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.pf-input-row .pf-input {
+  flex: 1;
+}
+
+.pf-slug-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+
+.pf-slug-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+.pf-cover-preview {
+  margin-top: var(--space-3);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  max-height: 200px;
+  border: 1px solid var(--color-border);
+}
+
+.pf-cover-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.pf-content-area {
+  font-family: 'Inconsolata', 'Courier New', monospace;
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  min-height: 400px;
+  resize: vertical;
+}
+
+.pf-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pf-toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  border: 2px solid var(--color-border);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.pf-toggle-on {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.pf-info-box {
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--color-border);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.pf-open-gallery-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  transition: background var(--transition-fast);
+}
+
+.pf-open-gallery-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+.gallery-copy-btn {
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: white;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.85rem;
+  transition: opacity var(--transition-fast);
+}
+
+.gallery-copy-btn:hover {
+  opacity: 0.85;
+}
+
+.gallery-copy-hint {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin: 0;
+  align-self: center;
+}
+
+.featured-badge {
+  display: inline-block;
+  font-size: var(--text-xs);
+  color: var(--color-warning);
+  margin-top: 2px;
+}
+
 
 
 ================================================================================
@@ -9187,6 +9602,587 @@ FILE: src\app\pages\admin\admin.html
   </div>
 }
 
+@if (activeSection() === 'posts') {
+  <div class="section-content">
+    <div class="section-toolbar">
+      <div class="search-input-wrapper">
+        <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
+        <input
+          type="search"
+          class="admin-search"
+          [(ngModel)]="postSearch"
+          [placeholder]="'admin.posts_form.search_placeholder' | translate"
+        />
+      </div>
+      <button class="add-product-btn" (click)="openPostForm()">
+        + {{ 'admin.posts_form.add' | translate }}
+      </button>
+    </div>
+
+    @if (postsLoading()) {
+      <div class="loading-state">
+        <span class="spinner">⏳</span>
+        <span>{{ 'admin.loading' | translate }}</span>
+      </div>
+    } @else if (postsError()) {
+      <div class="error-state">
+        <span>⚠️ {{ postsError()! | translate }}</span>
+        <button class="retry-btn" (click)="loadPostsForAdmin()">
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+    } @else {
+      <div class="admin-card">
+        <div class="table-wrapper">
+          @if (filteredPosts().length === 0) {
+            <div class="empty-state">{{ 'admin.posts_form.no_posts' | translate }}</div>
+          } @else {
+            <table class="admin-table" appResizableTable="posts">
+              <thead>
+                <tr>
+                  <th>{{ 'admin.posts_form.col_title' | translate }}</th>
+                  <th>{{ 'admin.table.category' | translate }}</th>
+                  <th>{{ 'admin.table.status' | translate }}</th>
+                  <th>{{ 'admin.posts_form.col_views' | translate }}</th>
+                  <th>{{ 'admin.posts_form.col_likes' | translate }}</th>
+                  <th>{{ 'admin.posts_form.col_comments' | translate }}</th>
+                  <th>{{ 'admin.table.date' | translate }}</th>
+                  <th>{{ 'admin.table.actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (post of filteredPosts(); track post.id) {
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        @if (post.image_url) {
+                          <div class="product-thumb">
+                            <img
+                              [src]="post.image_url"
+                              [alt]="post.title"
+                              class="product-thumb-img"
+                              loading="lazy"
+                            />
+                          </div>
+                        }
+                        <div class="product-cell-info">
+                          <span class="product-name">{{ post.title }}</span>
+                          @if (post.is_featured) {
+                            <span class="featured-badge"
+                              >⭐ {{ 'admin.posts_form.featured' | translate }}</span
+                            >
+                          }
+                        </div>
+                      </div>
+                    </td>
+                    <td class="muted">
+                      {{ getPostCategoryName(post.category_id) }}
+                    </td>
+                    <td>
+                      <span [class]="getPostStatusClass(post.status)">
+                        {{ 'admin.posts_form.status_' + post.status | translate }}
+                      </span>
+                    </td>
+                    <td class="muted">{{ post.views }}</td>
+                    <td class="muted">{{ post.likes }}</td>
+                    <td class="muted">{{ post.comment_count }}</td>
+                    <td class="muted">{{ formatDate(post.created_at) }}</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button
+                          class="images-btn"
+                          (click)="openPostGallery(post)"
+                          [attr.title]="'admin.posts_form.manage_images' | translate"
+                        >
+                          🖼
+                        </button>
+                        <button
+                          class="action-btn edit-btn"
+                          (click)="openPostForm(post)"
+                          [attr.title]="'common.edit' | translate"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          class="action-btn delete-btn"
+                          (click)="requestDeletePost(post, $event)"
+                          [attr.title]="'admin.posts_form.delete' | translate"
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}
+
+@if (postDeleteConfirm()) {
+  <div class="confirm-overlay" (click)="cancelDeletePost()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-wrapper">
+        <svg
+          class="confirm-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          />
+        </svg>
+      </div>
+      <h3 class="confirm-title">{{ 'admin.posts_form.confirm_delete_title' | translate }}</h3>
+      <p class="confirm-text">
+        {{
+          'admin.posts_form.confirm_delete_text' | translate: { title: postDeleteConfirm()!.title }
+        }}
+      </p>
+      <div class="confirm-actions">
+        <button
+          class="confirm-cancel-btn"
+          (click)="cancelDeletePost()"
+          [disabled]="postDeleteLoading()"
+        >
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button
+          class="confirm-delete-btn"
+          (click)="confirmDeletePost()"
+          [disabled]="postDeleteLoading()"
+        >
+          @if (postDeleteLoading()) {
+            <span class="btn-spinner"></span>
+          }
+          {{ 'admin.posts_form.delete' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (postFormOpen()) {
+  <div class="post-form-overlay" (click)="onPostFormOverlayClick($event)">
+    <div class="product-form-modal">
+      <div class="product-form-header">
+        <h2 class="product-form-title">
+          {{
+            (postFormIsEdit() ? 'admin.posts_form.edit_title' : 'admin.posts_form.add_title')
+              | translate
+          }}
+        </h2>
+        <button class="gallery-close-btn" (click)="closePostForm()">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="product-form-tabs">
+        @for (tab of postFormTabs; track tab.id) {
+          <button
+            [class]="'pf-tab' + (postFormTab() === tab.id ? ' pf-tab-active' : '')"
+            (click)="setPostFormTab(tab.id)"
+          >
+            {{ tab.label | translate }}
+          </button>
+        }
+      </div>
+
+      <div class="product-form-body">
+        @if (postFormTab() === 'basic') {
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.posts_form.section_meta' | translate }}</h3>
+
+            <div class="pf-field">
+              <label class="pf-label">{{ 'admin.posts_form.title' | translate }} *</label>
+              <input
+                class="pf-input"
+                [ngModel]="postFormData().title"
+                (ngModelChange)="updatePostField('title', $event)"
+                [placeholder]="'admin.posts_form.title_placeholder' | translate"
+              />
+            </div>
+
+            <div class="pf-field" style="margin-top: var(--space-4)">
+              <label class="pf-label">{{ 'admin.posts_form.slug' | translate }}</label>
+              <div class="pf-input-row">
+                <input
+                  class="pf-input"
+                  [ngModel]="postFormData().slug"
+                  (ngModelChange)="updatePostField('slug', $event)"
+                  placeholder="pl-vitaminok-telen"
+                />
+                <button
+                  class="pf-slug-btn"
+                  (click)="regenerateSlug()"
+                  type="button"
+                  [title]="'admin.posts_form.regenerate_slug' | translate"
+                >
+                  ↺
+                </button>
+              </div>
+            </div>
+
+            <div class="pf-field" style="margin-top: var(--space-4)">
+              <label class="pf-label">{{ 'admin.posts_form.excerpt' | translate }}</label>
+              <textarea
+                class="pf-input pf-textarea"
+                rows="3"
+                [ngModel]="postFormData().excerpt"
+                (ngModelChange)="updatePostField('excerpt', $event)"
+                [placeholder]="'admin.posts_form.excerpt_placeholder' | translate"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.posts_form.section_settings' | translate }}</h3>
+            <div class="pf-grid-2">
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.table.category' | translate }}</label>
+                <select
+                  class="pf-select"
+                  [ngModel]="postFormData().category_id"
+                  (ngModelChange)="updatePostField('category_id', $event)"
+                >
+                  <option value="">—</option>
+                  @for (cat of availablePostCategories(); track cat.id) {
+                    <option [value]="cat.id">{{ cat.display_name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.table.status' | translate }}</label>
+                <select
+                  class="pf-select"
+                  [ngModel]="postFormData().status"
+                  (ngModelChange)="updatePostField('status', $event)"
+                >
+                  <option value="draft">{{ 'admin.posts_form.status_draft' | translate }}</option>
+                  <option value="published">
+                    {{ 'admin.posts_form.status_published' | translate }}
+                  </option>
+                  <option value="hidden">{{ 'admin.posts_form.status_hidden' | translate }}</option>
+                  <option value="archived">
+                    {{ 'admin.posts_form.status_archived' | translate }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="pf-field" style="margin-top: var(--space-4)">
+              <label class="pf-label">{{ 'admin.posts_form.tags' | translate }}</label>
+              <input
+                class="pf-input"
+                [ngModel]="postFormData().tags"
+                (ngModelChange)="updatePostField('tags', $event)"
+                placeholder="vitamin,egészség,tél"
+              />
+              <span class="pf-hint">{{ 'admin.posts_form.tags_hint' | translate }}</span>
+            </div>
+
+            <div class="pf-field pf-toggle-row" style="margin-top: var(--space-4)">
+              <span class="pf-label">{{ 'admin.posts_form.featured' | translate }}</span>
+              <button
+                [class]="'pf-toggle' + (postFormData().is_featured ? ' pf-toggle-on' : '')"
+                (click)="togglePostFeatured()"
+                type="button"
+              >
+                {{ postFormData().is_featured ? '✓' : '○' }}
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (postFormTab() === 'content') {
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.posts_form.section_content' | translate }}</h3>
+
+            <div class="pf-field">
+              <label class="pf-label">{{ 'admin.posts_form.cover_image_url' | translate }}</label>
+              <input
+                class="pf-input"
+                [ngModel]="postFormData().image_url"
+                (ngModelChange)="updatePostField('image_url', $event)"
+                placeholder="https://..."
+              />
+              @if (postFormData().image_url) {
+                <div class="pf-cover-preview">
+                  <img
+                    [src]="postFormData().image_url"
+                    alt="Borítókép előnézet"
+                    class="pf-cover-img"
+                    loading="lazy"
+                  />
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <div class="pf-field">
+              <label class="pf-label">{{ 'admin.posts_form.content' | translate }}</label>
+              <p class="pf-hint">{{ 'admin.posts_form.content_hint' | translate }}</p>
+              <textarea
+                class="pf-input pf-textarea pf-content-area"
+                rows="20"
+                [ngModel]="postFormData().content"
+                (ngModelChange)="updatePostField('content', $event)"
+                [placeholder]="'admin.posts_form.content_placeholder' | translate"
+              ></textarea>
+            </div>
+          </div>
+        }
+
+        @if (postFormTab() === 'images') {
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.posts_form.section_images' | translate }}</h3>
+            <p class="pf-hint">{{ 'admin.posts_form.images_hint' | translate }}</p>
+
+            @if (postFormIsEdit()) {
+              <button class="pf-open-gallery-btn" (click)="openPostGalleryFromForm()">
+                🖼 {{ 'admin.posts_form.open_gallery' | translate }}
+              </button>
+            } @else {
+              <div class="pf-info-box">
+                {{ 'admin.posts_form.save_first_for_images' | translate }}
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="product-form-footer">
+        <button class="pf-cancel-btn" (click)="closePostForm()" [disabled]="postFormSaving()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="pf-save-btn" (click)="savePost()" [disabled]="postFormSaving()">
+          @if (postFormSaving()) {
+            <span class="btn-spinner"></span>
+          }
+          {{ (postFormIsEdit() ? 'admin.posts_form.save' : 'admin.posts_form.create') | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (postGalleryOpen()) {
+  <div class="gallery-overlay" (click)="onPostGalleryOverlayClick($event)">
+    <div class="gallery-panel" (click)="$event.stopPropagation()">
+      <div class="gallery-header">
+        <div class="gallery-title-block">
+          <h2 class="gallery-title">
+            {{ 'admin.posts_form.gallery_title' | translate }}
+            @if (postGalleryPost()) {
+              — <span class="gallery-product-name">{{ postGalleryPost()!.title }}</span>
+            }
+          </h2>
+          <span class="gallery-count">
+            {{ postGalleryImages().length }} {{ 'admin.gallery.title' | translate }}
+          </span>
+        </div>
+        <button class="gallery-close-btn" (click)="closePostGallery()">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="gallery-toolbar">
+        <button
+          class="gallery-upload-btn"
+          (click)="triggerPostFileUpload()"
+          [disabled]="postUploadInProgress()"
+        >
+          @if (postUploadInProgress()) {
+            <span class="btn-spinner"></span>
+          } @else {
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="upload-icon"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          }
+          {{ 'admin.gallery.upload' | translate }}
+        </button>
+        <p class="gallery-copy-hint">{{ 'admin.posts_form.copy_url_hint' | translate }}</p>
+      </div>
+
+      @if (postGalleryLoading()) {
+        <div class="gallery-loading">
+          <span class="spinner">⏳</span>
+        </div>
+      } @else if (postGalleryImages().length === 0) {
+        <div class="gallery-empty">
+          <p>{{ 'admin.posts_form.no_images_yet' | translate }}</p>
+        </div>
+      } @else {
+        <div class="gallery-grid">
+          @for (img of postGalleryImages(); track img.id) {
+            <div class="gallery-item" (click)="openPostImageDetail(img)">
+              <img
+                [src]="img.image_url"
+                [alt]="img.alt_text_en"
+                class="gallery-thumb"
+                loading="lazy"
+              />
+              <div class="gallery-item-overlay">
+                <button
+                  class="gallery-copy-btn"
+                  (click)="copyImageUrl(img.image_url); $event.stopPropagation()"
+                  [title]="'admin.posts_form.copy_url' | translate"
+                >
+                  @if (copiedImageUrl() === img.image_url) {
+                    ✓
+                  } @else {
+                    📋
+                  }
+                </button>
+                <button
+                  class="gallery-delete-btn"
+                  (click)="requestDeletePostImage(img, $event)"
+                  [title]="'admin.gallery.delete_image' | translate"
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
+
+@if (postDeleteImageConfirmOpen()) {
+  <div class="confirm-overlay" (click)="cancelDeletePostImage()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-wrapper">
+        <svg
+          class="confirm-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          />
+        </svg>
+      </div>
+      <h3 class="confirm-title">{{ 'admin.gallery.confirm_delete_title' | translate }}</h3>
+      <p class="confirm-text">{{ 'admin.gallery.confirm_delete_text' | translate }}</p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel-btn" (click)="cancelDeletePostImage()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="confirm-delete-btn" (click)="confirmDeletePostImage()">
+          {{ 'admin.gallery.delete_image' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (postImageDetailOpen() && postImageDetailImage()) {
+  <div class="detail-overlay" (click)="closePostImageDetail()">
+    <div class="detail-panel" (click)="$event.stopPropagation()">
+      <button class="gallery-close-btn detail-close" (click)="closePostImageDetail()">✕</button>
+      <div class="detail-image-wrapper">
+        <img
+          [src]="postImageDetailImage()!.image_url"
+          [alt]="postImageDetailImage()!.alt_text_en"
+          class="detail-image"
+          (load)="onPostDetailImageLoad($event)"
+        />
+      </div>
+      @if (postImageDetailMeta(); as meta) {
+        <div class="detail-meta">
+          <h3 class="detail-meta-title">{{ 'admin.gallery.details' | translate }}</h3>
+          <div class="detail-meta-row">
+            <span class="detail-meta-label">{{ 'admin.gallery.meta.filename' | translate }}</span>
+            <span class="detail-meta-value">{{ meta.name }}</span>
+          </div>
+          <div class="detail-meta-row">
+            <span class="detail-meta-label">{{ 'admin.gallery.meta.type' | translate }}</span>
+            <span class="detail-meta-value">{{ meta.type }}</span>
+          </div>
+          <div class="detail-meta-row">
+            <span class="detail-meta-label">{{ 'admin.gallery.meta.resolution' | translate }}</span>
+            <span class="detail-meta-value">{{ meta.resolution }}</span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="detail-download-btn" (click)="downloadPostImage(postImageDetailImage()!)">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            {{ 'admin.gallery.download' | translate }}
+          </button>
+          <button
+            class="detail-download-btn"
+            (click)="copyImageUrl(postImageDetailImage()!.image_url)"
+          >
+            {{
+              copiedImageUrl() === postImageDetailImage()!.image_url
+                ? '✓ Másolva!'
+                : '📋 URL másolása'
+            }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
 @if (productDeleteConfirm(); as product) {
   <div class="confirm-overlay" (click)="cancelDeleteProduct()">
     <div class="confirm-dialog" (click)="$event.stopPropagation()">
@@ -9354,6 +10350,7 @@ FILE: src\app\pages\admin\admin.mock.ts
 ================================================================================
 
 import { AdminUser, AdminOrder } from '../../core/services/account.service';
+import { Post } from '../../core/models/forum.model';
 
 export const MOCK_MODE = true;
 
@@ -9539,6 +10536,64 @@ export const MOCK_ORDERS: AdminOrder[] = [
   },
 ];
 
+export const MOCK_POSTS: Post[] = [
+  {
+    id: '1',
+    title: 'Tesztposzt – Vitaminok télen',
+    slug: 'tesztposzt-vitaminok-telen',
+    excerpt: 'Rövid összefoglaló a téli vitaminpótlásról.',
+    content: '<p>Bővebb tartalom ide kerül...</p>',
+    user_id: '1',
+    category_id: '1',
+    tags: 'vitamin,tél,immunrendszer',
+    image_url: '',
+    status: 'published',
+    views: 120,
+    likes: 14,
+    comment_count: 3,
+    is_featured: 1,
+    created_at: '2026-03-01T10:00:00',
+    updated_at: '2026-03-01T10:00:00',
+    published_at: '2026-03-01T10:00:00',
+  },
+  {
+    id: '2',
+    title: 'Draft cikk – Vérnyomás és életmód',
+    slug: 'draft-cikk-vernyomas-es-eletmod',
+    excerpt: 'Draft poszt, még nem publikált.',
+    content: '<p>Tartalom írás alatt...</p>',
+    user_id: '1',
+    category_id: '2',
+    tags: 'vérnyomás,egészség',
+    image_url: '',
+    status: 'draft',
+    views: 0,
+    likes: 0,
+    comment_count: 0,
+    is_featured: 0,
+    created_at: '2026-03-15T09:00:00',
+    updated_at: '2026-03-15T09:00:00',
+  },
+  {
+    id: '3',
+    title: 'Rejtett poszt – Szezális egészség',
+    slug: 'rejtett-poszt-szezonalis-egeszseg',
+    excerpt: 'Hidden státuszú bejegyzés.',
+    content: '<p>Ez a poszt rejtett.</p>',
+    user_id: '1',
+    category_id: '3',
+    tags: 'szezonális',
+    image_url: '',
+    status: 'hidden',
+    views: 5,
+    likes: 0,
+    comment_count: 0,
+    is_featured: 0,
+    created_at: '2026-03-20T12:00:00',
+    updated_at: '2026-03-20T12:00:00',
+  },
+];
+
 
 
 ================================================================================
@@ -9546,7 +10601,7 @@ FILE: src\app\pages\admin\admin.ts
 ================================================================================
 
 import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
@@ -9557,12 +10612,15 @@ import {
   OrderProductDetail,
 } from '../../core/services/account.service';
 import { ProductService } from '../../core/services/product.service';
+import { ForumService } from '../../core/services/forum.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
+import { ProductImage } from '../../core/models/product.model';
+import { Post } from '../../core/models/forum.model';
 import { ICONS } from '../../core/constants/visuals';
 import { ResizableTableDirective } from '../../shared/directives/resizable-table.directive';
 import { formatFileSize } from '../../core/utils/image-utils';
-import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS } from './admin.mock';
+import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS, MOCK_POSTS } from './admin.mock';
 import { PdfExportService } from '../../core/services/pdf-export.service';
 
 import {
@@ -9572,6 +10630,8 @@ import {
   GalleryImage,
   ProductFormTab,
   ProductFormData,
+  PostFormTab,
+  PostFormData,
   UserActionType,
   UserActionRequest,
   ACCOUNT_STATES,
@@ -9580,8 +10640,14 @@ import {
   ORDER_COLUMNS,
   USER_COLUMNS,
   PRODUCT_COLUMNS,
+  POST_COLUMNS,
 } from '../../core/models/admin.models';
-import { emptyProductForm, smartFilter } from '../../core/utils/admin.utils';
+import {
+  emptyProductForm,
+  emptyPostForm,
+  generateSlug,
+  smartFilter,
+} from '../../core/utils/admin.utils';
 
 @Component({
   selector: 'app-admin',
@@ -9594,9 +10660,11 @@ export class Admin implements OnInit {
   private authService = inject(AuthService);
   private accountService = inject(AccountService);
   private productService = inject(ProductService);
+  private forumService = inject(ForumService);
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private pdfService = inject(PdfExportService);
 
   protected readonly icons = ICONS;
@@ -9630,6 +10698,7 @@ export class Admin implements OnInit {
   orderStatusFilter = 'all';
   userSearch = '';
   productSearch = '';
+  postSearch = '';
 
   usersLoading = signal(false);
   usersError = signal<string | null>(null);
@@ -9637,9 +10706,12 @@ export class Admin implements OnInit {
   ordersError = signal<string | null>(null);
   productsLoading = signal(false);
   productsError = signal<string | null>(null);
+  postsLoading = signal(false);
+  postsError = signal<string | null>(null);
 
   apiUsers = signal<AdminUser[]>([]);
   apiOrders = signal<AdminOrder[]>([]);
+  apiPosts = signal<Post[]>([]);
 
   galleryOpen = signal(false);
   galleryProduct = signal<ProductWithHelpers | null>(null);
@@ -9656,6 +10728,23 @@ export class Admin implements OnInit {
 
   deleteConfirmOpen = signal(false);
   deleteTargetImage = signal<GalleryImage | null>(null);
+
+  postGalleryOpen = signal(false);
+  postGalleryPost = signal<Post | null>(null);
+  postGalleryImages = signal<GalleryImage[]>([]);
+  postGalleryLoading = signal(false);
+  postUploadInProgress = signal(false);
+
+  postImageDetailOpen = signal(false);
+  postImageDetailImage = signal<GalleryImage | null>(null);
+  postImageDetailMeta = signal<ImageMeta | null>(null);
+  postImageDetailNaturalWidth = signal(0);
+  postImageDetailNaturalHeight = signal(0);
+
+  postDeleteImageConfirmOpen = signal(false);
+  postDeleteTargetImage = signal<GalleryImage | null>(null);
+
+  copiedImageUrl = signal<string | null>(null);
 
   activeUserMenu = signal<string | null>(null);
   userActionConfirm = signal<UserActionRequest | null>(null);
@@ -9674,9 +10763,19 @@ export class Admin implements OnInit {
   orderDetailOpen = signal(false);
   orderDetailOrder = signal<AdminOrder | null>(null);
 
+  postFormOpen = signal(false);
+  postFormTab = signal<PostFormTab>('basic');
+  postFormData = signal<PostFormData>(emptyPostForm());
+  postFormEditId = signal<string | null>(null);
+  postFormSaving = signal(false);
+  postDeleteConfirm = signal<Post | null>(null);
+  postDeleteLoading = signal(false);
+
   productFormIsEdit = computed(() => this.productFormEditId() !== null);
+  postFormIsEdit = computed(() => this.postFormEditId() !== null);
 
   availableCategories = computed(() => this.productService.categories());
+  availablePostCategories = computed(() => this.forumService.categories());
 
   adminName = computed(() => {
     const user = this.authService.currentUser();
@@ -9709,6 +10808,7 @@ export class Admin implements OnInit {
     { id: 'orders', icon: ICONS.order, label: 'admin.nav.orders' },
     { id: 'users', icon: ICONS.customers, label: 'admin.nav.users' },
     { id: 'products', icon: ICONS.sale, label: 'admin.nav.products' },
+    { id: 'posts', icon: ICONS.forumNewPost, label: 'admin.nav.posts' },
   ];
 
   productFormTabs: { id: ProductFormTab; label: string }[] = [
@@ -9716,6 +10816,12 @@ export class Admin implements OnInit {
     { id: 'pricing', label: 'admin.product_form.tab_pricing' },
     { id: 'descriptions', label: 'admin.product_form.tab_descriptions' },
     { id: 'details', label: 'admin.product_form.tab_details' },
+  ];
+
+  postFormTabs: { id: PostFormTab; label: string }[] = [
+    { id: 'basic', label: 'admin.posts_form.tab_basic' },
+    { id: 'content', label: 'admin.posts_form.tab_content' },
+    { id: 'images', label: 'admin.posts_form.tab_images' },
   ];
 
   filteredOrders = computed(() => {
@@ -9728,6 +10834,10 @@ export class Admin implements OnInit {
 
   filteredProducts = computed(() => {
     return smartFilter(this.productService.products(), this.productSearch, PRODUCT_COLUMNS);
+  });
+
+  filteredPosts = computed(() => {
+    return smartFilter(this.apiPosts(), this.postSearch, POST_COLUMNS);
   });
 
   recentOrders = computed(() => this.apiOrders().slice(0, 5));
@@ -9746,6 +10856,17 @@ export class Admin implements OnInit {
     this.loadUsers();
     this.loadOrders();
     this.loadProducts();
+    this.loadPostsForAdmin();
+
+    this.route.queryParams.subscribe((params) => {
+      if (params['section'] === 'posts') {
+        this.activeSection.set('posts');
+        if (params['action'] === 'new') {
+          // Kis delay, hogy az oldal betöltsön
+          setTimeout(() => this.openPostForm(), 100);
+        }
+      }
+    });
   }
 
   loadUsers(): void {
@@ -9813,6 +10934,33 @@ export class Admin implements OnInit {
         console.error('Admin products load error:', err);
         this.productsError.set('admin.errors.products_load_failed');
         this.productsLoading.set(false);
+      });
+  }
+
+  loadPostsForAdmin(): void {
+    if (MOCK_MODE) {
+      this.apiPosts.set(MOCK_POSTS);
+      return;
+    }
+
+    this.postsLoading.set(true);
+    this.postsError.set(null);
+    this.forumService
+      .getAllPostsAdmin(
+        this.currentAdminId(),
+        this.authService.getSessionToken() ?? this.authService.getToken() ?? '',
+      )
+      .subscribe({
+        next: (posts) => {
+          this.apiPosts.set(posts);
+          this.postsLoading.set(false);
+        },
+        error: () => {
+          // Fallback: public endpoint
+          this.apiPosts.set(this.forumService.posts());
+          this.postsError.set('admin.errors.posts_load_failed');
+          this.postsLoading.set(false);
+        },
       });
   }
 
@@ -9977,6 +11125,27 @@ export class Admin implements OnInit {
     return map[state] ?? 'role-user';
   }
 
+  getOrderStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      pending: 'status-pending',
+      processing: 'status-processing',
+      shipped: 'status-shipped',
+      delivered: 'status-delivered',
+      cancelled: 'status-cancelled',
+    };
+    return 'status-badge ' + (map[status] ?? 'status-pending');
+  }
+
+  getPostStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      published: 'post-status-published',
+      draft: 'post-status-draft',
+      archived: 'post-status-archived',
+      hidden: 'post-status-hidden',
+    };
+    return 'post-status-badge ' + (map[status] ?? 'post-status-draft');
+  }
+
   getOrderAddressSummary(order: AdminOrder): string {
     const parts = [
       order.city,
@@ -9988,15 +11157,34 @@ export class Admin implements OnInit {
     return parts.join(' ') || '—';
   }
 
-  getOrderStatusClass(status: string): string {
-    const map: Record<string, string> = {
-      pending: 'status-pending',
-      processing: 'status-processing',
-      shipped: 'status-shipped',
-      delivered: 'status-delivered',
-      cancelled: 'status-cancelled',
-    };
-    return 'status-badge ' + (map[status] ?? 'status-pending');
+  getProductImageCount(product: ProductWithHelpers): number {
+    const count = product.images?.length ?? 0;
+    return count > 0 ? count : product.thumbnail_url ? 1 : 0;
+  }
+
+  trackById(_index: number, item: { id: string }): string {
+    return item.id;
+  }
+
+  trackByProductId(_index: number, item: ProductWithHelpers): string {
+    return item.id;
+  }
+
+  isSelf(user: AdminUser): boolean {
+    return user.id === this.currentAdminId();
+  }
+
+  canManageUser(user: AdminUser): boolean {
+    if (this.isSelf(user)) return false;
+
+    const myRole = this.authService.authState().role;
+    const targetRole = user.account_state;
+
+    if (myRole === 'superadmin') return true;
+    if (myRole === 'admin') {
+      return targetRole !== 'admin' && targetRole !== 'superadmin';
+    }
+    return false;
   }
 
   updateOrderStatus(order: AdminOrder, newStatus: string): void {
@@ -10048,34 +11236,8 @@ export class Admin implements OnInit {
   confirmCancelOrder(): void {
     const order = this.orderCancelConfirm();
     if (!order) return;
-
     this.orderCancelConfirm.set(null);
     this.updateOrderStatus(order, 'cancelled');
-  }
-
-  trackById(_index: number, item: { id: string }): string {
-    return item.id;
-  }
-
-  trackByProductId(_index: number, item: ProductWithHelpers): string {
-    return item.id;
-  }
-
-  isSelf(user: AdminUser): boolean {
-    return user.id === this.currentAdminId();
-  }
-
-  canManageUser(user: AdminUser): boolean {
-    if (this.isSelf(user)) return false;
-
-    const myRole = this.authService.authState().role;
-    const targetRole = user.account_state;
-
-    if (myRole === 'superadmin') return true;
-    if (myRole === 'admin') {
-      return targetRole !== 'admin' && targetRole !== 'superadmin';
-    }
-    return false;
   }
 
   toggleUserMenu(userId: string, event: MouseEvent): void {
@@ -10087,7 +11249,6 @@ export class Admin implements OnInit {
     const myRole = this.authService.authState().role;
     const assignable =
       myRole === 'superadmin' ? SUPERADMIN_ASSIGNABLE_STATES : ADMIN_ASSIGNABLE_STATES;
-
     return [...assignable].filter((s) => s !== user.account_state);
   }
 
@@ -10191,6 +11352,71 @@ export class Admin implements OnInit {
     }
   }
 
+  getUserActionTitle(): string {
+    const req = this.userActionConfirm();
+    if (!req) return '';
+    switch (req.action) {
+      case 'change_role':
+        return 'admin.user_actions.confirm_role_title';
+      case 'ban':
+        return 'admin.user_actions.confirm_ban_title';
+      case 'unban':
+        return 'admin.user_actions.confirm_unban_title';
+      case 'delete':
+        return 'admin.user_actions.confirm_delete_title';
+    }
+  }
+
+  getUserActionText(): string {
+    const req = this.userActionConfirm();
+    if (!req) return '';
+    switch (req.action) {
+      case 'change_role':
+        return 'admin.user_actions.confirm_role_text';
+      case 'ban':
+        return 'admin.user_actions.confirm_ban_text';
+      case 'unban':
+        return 'admin.user_actions.confirm_unban_text';
+      case 'delete':
+        return 'admin.user_actions.confirm_delete_text';
+    }
+  }
+
+  getUserActionBtnClass(): string {
+    const req = this.userActionConfirm();
+    if (!req) return '';
+    return req.action === 'delete' || req.action === 'ban'
+      ? 'confirm-delete-btn'
+      : 'confirm-action-btn';
+  }
+
+  private executeMockUserAction(req: UserActionRequest): void {
+    switch (req.action) {
+      case 'change_role':
+      case 'unban':
+        this.applyUserStateChange(req.user.id, req.newState!);
+        break;
+      case 'ban':
+        this.applyUserStateChange(req.user.id, 'banned');
+        break;
+      case 'delete':
+        this.apiUsers.update((users) => users.filter((u) => u.id !== req.user.id));
+        break;
+    }
+    this.finishUserAction();
+  }
+
+  private applyUserStateChange(userId: string, newState: string): void {
+    this.apiUsers.update((users) =>
+      users.map((u) => (u.id === userId ? { ...u, account_state: newState } : u)),
+    );
+  }
+
+  private finishUserAction(): void {
+    this.userActionLoading.set(false);
+    this.userActionConfirm.set(null);
+  }
+
   requestDeleteProduct(product: ProductWithHelpers, event: MouseEvent): void {
     event.stopPropagation();
     this.productDeleteConfirm.set(product);
@@ -10241,9 +11467,9 @@ export class Admin implements OnInit {
         name_hu: product.name_hu || '',
         name_en: product.name_en || '',
         name_de: product.name_de || '',
-        description_hu: product.description_hu || product.description_hu || '',
-        description_en: product.description_en || product.description_en || '',
-        description_de: product.description_de || product.description_de || '',
+        description_hu: product.description_hu || '',
+        description_en: product.description_en || '',
+        description_de: product.description_de || '',
         description_preview_hu: product.description_preview_hu || '',
         description_preview_en: product.description_preview_en || '',
         description_preview_de: product.description_preview_de || '',
@@ -10254,7 +11480,7 @@ export class Admin implements OnInit {
         manufacturer: product.manufacturer || '',
         brand: product.brand || '',
         sku: product.sku || '',
-        active_ingredients: product.active_ingredients || product.active_ingredients || '',
+        active_ingredients: product.active_ingredients || '',
         packaging_hu: product.packaging_hu ?? '',
         packaging_en: product.packaging_en ?? '',
         packaging_de: product.packaging_de ?? '',
@@ -10379,78 +11605,475 @@ export class Admin implements OnInit {
     return body;
   }
 
-  private buildAdminAuth(): { id: string; session_token: string } {
-    const storedId = sessionStorage.getItem('user_id') ?? '';
+  openPostForm(post?: Post): void {
+    if (post) {
+      this.postFormEditId.set(post.id);
+      this.postFormData.set({
+        title: post.title || '',
+        excerpt: post.excerpt || '',
+        content: post.content || '',
+        image_url: post.image_url || '',
+        category_id: post.category_id || '',
+        tags: post.tags || '',
+        status: (post.status as PostFormData['status']) || 'draft',
+        is_featured: !!post.is_featured,
+        slug: post.slug || '',
+      });
+    } else {
+      this.postFormEditId.set(null);
+      this.postFormData.set(emptyPostForm());
+    }
+    this.postFormTab.set('basic');
+    this.postFormOpen.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closePostForm(): void {
+    this.postFormOpen.set(false);
+    this.postFormEditId.set(null);
+    this.postFormData.set(emptyPostForm());
+    document.body.style.overflow = '';
+  }
+
+  onPostFormOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('post-form-overlay')) {
+      this.closePostForm();
+    }
+  }
+
+  setPostFormTab(tab: PostFormTab): void {
+    this.postFormTab.set(tab);
+  }
+
+  updatePostField<K extends keyof PostFormData>(key: K, value: PostFormData[K]): void {
+    this.postFormData.update((data) => ({ ...data, [key]: value }));
+    if (key === 'title' && !this.postFormIsEdit()) {
+      const slug = generateSlug(value as string);
+      this.postFormData.update((data) => ({ ...data, slug }));
+    }
+  }
+
+  togglePostFeatured(): void {
+    this.postFormData.update((data) => ({ ...data, is_featured: !data.is_featured }));
+  }
+
+  regenerateSlug(): void {
+    const title = this.postFormData().title;
+    this.postFormData.update((data) => ({ ...data, slug: generateSlug(title) }));
+  }
+
+  savePost(): void {
+    const data = this.postFormData();
+    const editId = this.postFormEditId();
+
+    if (!data.title.trim()) {
+      this.toastService.show('admin.posts_form.error_title_required', 'error');
+      this.postFormTab.set('basic');
+      return;
+    }
+
+    this.postFormSaving.set(true);
+
+    if (MOCK_MODE) {
+      if (editId) {
+        this.apiPosts.update((posts) =>
+          posts.map((p) =>
+            p.id === editId
+              ? {
+                  ...p,
+                  title: data.title,
+                  excerpt: data.excerpt,
+                  content: data.content,
+                  image_url: data.image_url,
+                  category_id: data.category_id,
+                  tags: data.tags,
+                  status: data.status,
+                  is_featured: data.is_featured ? 1 : 0,
+                  slug: data.slug,
+                  updated_at: new Date().toISOString(),
+                }
+              : p,
+          ),
+        );
+      } else {
+        const newPost: Post = {
+          id: String(Date.now()),
+          title: data.title,
+          excerpt: data.excerpt,
+          content: data.content,
+          image_url: data.image_url,
+          category_id: data.category_id,
+          tags: data.tags,
+          status: data.status,
+          is_featured: data.is_featured ? 1 : 0,
+          slug: data.slug,
+          user_id: this.currentAdminId(),
+          views: 0,
+          likes: 0,
+          comment_count: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          published_at: data.status === 'published' ? new Date().toISOString() : undefined,
+        };
+        this.apiPosts.update((posts) => [newPost, ...posts]);
+      }
+      this.toastService.show(
+        editId ? 'admin.posts_form.updated' : 'admin.posts_form.created',
+        'success',
+      );
+      this.postFormSaving.set(false);
+      this.closePostForm();
+      return;
+    }
+
+    const adminId = this.currentAdminId();
     const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
-    return {
-      id: btoa(storedId),
-      session_token: btoa(token),
+
+    const payload = {
+      title: data.title,
+      content: data.content,
+      excerpt: data.excerpt,
+      slug: data.slug,
+      image_url: data.image_url,
+      category_id: data.category_id,
+      tags: data.tags,
+      status: data.status,
+      is_featured: data.is_featured,
+      // Update esetén megőrizzük az eredeti views/likes/comment_count értékeket
+      views: editId ? (this.apiPosts().find((p) => p.id === editId)?.views ?? 0) : 0,
+      likes: editId ? (this.apiPosts().find((p) => p.id === editId)?.likes ?? 0) : 0,
+      comment_count: editId
+        ? (this.apiPosts().find((p) => p.id === editId)?.comment_count ?? 0)
+        : 0,
     };
+
+    const request$ = editId
+      ? this.forumService.updatePostAdmin(adminId, token, editId, payload)
+      : this.forumService.createPostAdmin(adminId, token, payload);
+
+    request$.subscribe({
+      next: (res) => {
+        if (res.statuscode === 200 || res.statuscode.toString() === '200') {
+          this.toastService.show(
+            editId ? 'admin.posts_form.updated' : 'admin.posts_form.created',
+            'success',
+          );
+          this.closePostForm();
+          this.loadPostsForAdmin();
+        } else {
+          this.toastService.show('admin.posts_form.save_error', 'error');
+        }
+        this.postFormSaving.set(false);
+      },
+      error: () => {
+        this.toastService.show('admin.posts_form.save_error', 'error');
+        this.postFormSaving.set(false);
+      },
+    });
   }
 
-  private executeMockUserAction(req: UserActionRequest): void {
-    switch (req.action) {
-      case 'change_role':
-      case 'unban':
-        this.applyUserStateChange(req.user.id, req.newState!);
-        break;
-      case 'ban':
-        this.applyUserStateChange(req.user.id, 'banned');
-        break;
-      case 'delete':
-        this.apiUsers.update((users) => users.filter((u) => u.id !== req.user.id));
-        break;
+  requestDeletePost(post: Post, event: MouseEvent): void {
+    event.stopPropagation();
+    this.postDeleteConfirm.set(post);
+  }
+
+  cancelDeletePost(): void {
+    this.postDeleteConfirm.set(null);
+  }
+
+  confirmDeletePost(): void {
+    const post = this.postDeleteConfirm();
+    if (!post) return;
+
+    this.postDeleteLoading.set(true);
+
+    if (MOCK_MODE) {
+      this.apiPosts.update((posts) => posts.filter((p) => p.id !== post.id));
+      this.toastService.show('admin.posts_form.deleted', 'success');
+      this.postDeleteLoading.set(false);
+      this.postDeleteConfirm.set(null);
+      return;
     }
-    this.finishUserAction();
+
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    this.forumService.deletePostAdmin(adminId, token, post.id).subscribe({
+      next: (res) => {
+        if (res.statuscode === 200 || res.statuscode.toString() === '200') {
+          this.apiPosts.update((posts) => posts.filter((p) => p.id !== post.id));
+          this.toastService.show('admin.posts_form.deleted', 'success');
+        } else {
+          this.toastService.show('admin.posts_form.delete_error', 'error');
+        }
+        this.postDeleteLoading.set(false);
+        this.postDeleteConfirm.set(null);
+      },
+      error: () => {
+        this.toastService.show('admin.posts_form.delete_error', 'error');
+        this.postDeleteLoading.set(false);
+        this.postDeleteConfirm.set(null);
+      },
+    });
   }
 
-  private applyUserStateChange(userId: string, newState: string): void {
-    this.apiUsers.update((users) =>
-      users.map((u) => (u.id === userId ? { ...u, account_state: newState } : u)),
-    );
+  openPostGallery(post: Post): void {
+    this.postGalleryPost.set(post);
+    this.postGalleryImages.set([]);
+    this.postGalleryOpen.set(true);
+    this.postGalleryLoading.set(true);
+    document.body.style.overflow = 'hidden';
+
+    if (MOCK_MODE) {
+      const mockImages: GalleryImage[] = [];
+      if (post.image_url) {
+        mockImages.push({
+          id: 'mock-cover',
+          product_id: post.id,
+          image_url: post.image_url,
+          alt_text_hu: post.title,
+          alt_text_en: post.title,
+          alt_text_de: post.title,
+          sort_id: '1',
+        });
+      }
+      this.postGalleryImages.set(mockImages);
+      this.postGalleryLoading.set(false);
+      return;
+    }
+
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    this.forumService.getPostImagesAdmin(adminId, token, post.id).subscribe({
+      next: (images) => {
+        this.postGalleryImages.set(images);
+        this.postGalleryLoading.set(false);
+      },
+      error: () => {
+        this.postGalleryLoading.set(false);
+      },
+    });
   }
 
-  private finishUserAction(): void {
-    this.userActionLoading.set(false);
-    this.userActionConfirm.set(null);
-  }
-
-  getUserActionTitle(): string {
-    const req = this.userActionConfirm();
-    if (!req) return '';
-    switch (req.action) {
-      case 'change_role':
-        return 'admin.user_actions.confirm_role_title';
-      case 'ban':
-        return 'admin.user_actions.confirm_ban_title';
-      case 'unban':
-        return 'admin.user_actions.confirm_unban_title';
-      case 'delete':
-        return 'admin.user_actions.confirm_delete_title';
+  closePostGallery(): void {
+    this.postGalleryImages().forEach((img) => {
+      if (img.objectUrl) URL.revokeObjectURL(img.objectUrl);
+    });
+    this.postGalleryOpen.set(false);
+    this.postGalleryPost.set(null);
+    this.postGalleryImages.set([]);
+    if (!this.postImageDetailOpen()) {
+      document.body.style.overflow = '';
     }
   }
 
-  getUserActionText(): string {
-    const req = this.userActionConfirm();
-    if (!req) return '';
-    switch (req.action) {
-      case 'change_role':
-        return 'admin.user_actions.confirm_role_text';
-      case 'ban':
-        return 'admin.user_actions.confirm_ban_text';
-      case 'unban':
-        return 'admin.user_actions.confirm_unban_text';
-      case 'delete':
-        return 'admin.user_actions.confirm_delete_text';
+  onPostGalleryOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('gallery-overlay')) {
+      this.closePostGallery();
     }
   }
 
-  getUserActionBtnClass(): string {
-    const req = this.userActionConfirm();
-    if (!req) return '';
-    return req.action === 'delete' || req.action === 'ban'
-      ? 'confirm-delete-btn'
-      : 'confirm-action-btn';
+  triggerPostFileUpload(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = (e: Event) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) this.handlePostFileUpload(files);
+    };
+    input.click();
+  }
+
+  private async handlePostFileUpload(files: FileList): Promise<void> {
+    const post = this.postGalleryPost();
+    if (!post) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const objectUrl = URL.createObjectURL(file);
+
+      const img = new Image();
+      const dims = await new Promise<{ w: number; h: number }>((resolve) => {
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = () => resolve({ w: 0, h: 0 });
+        img.src = objectUrl;
+      });
+
+      const newImage: GalleryImage = {
+        id: `new-${Date.now()}-${i}`,
+        product_id: post.id,
+        image_url: objectUrl,
+        alt_text_hu: file.name,
+        alt_text_en: file.name,
+        alt_text_de: file.name,
+        sort_id: `${this.postGalleryImages().length + 1}`,
+        file,
+        objectUrl,
+        meta: {
+          name: file.name,
+          size: formatFileSize(file.size),
+          type: file.type || 'unknown',
+          width: dims.w,
+          height: dims.h,
+          resolution: dims.w > 0 ? `${dims.w} × ${dims.h}` : '—',
+          lastModified: new Date(file.lastModified).toLocaleDateString('hu-HU'),
+        },
+      };
+
+      this.postGalleryImages.update((imgs) => [...imgs, newImage]);
+
+      if (!MOCK_MODE) {
+        this.uploadPostImageToBackend(post.id, file, newImage.id);
+      }
+    }
+  }
+
+  private uploadPostImageToBackend(postId: string, file: File, tempId: string): void {
+    this.postUploadInProgress.set(true);
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageBase64 = reader.result as string;
+
+      this.forumService.uploadPostImageAdmin(adminId, token, postId, imageBase64).subscribe({
+        next: (res) => {
+          if (res.statuscode === '200' && 'image' in res) {
+            const uploaded = (res as { statuscode: string; status: string; image: GalleryImage })
+              .image;
+            if (uploaded) {
+              this.postGalleryImages.update((imgs) =>
+                imgs.map((img) =>
+                  img.id === tempId
+                    ? { ...img, id: uploaded.id, image_url: uploaded.image_url, file: undefined }
+                    : img,
+                ),
+              );
+            }
+          }
+          this.postUploadInProgress.set(false);
+        },
+        error: () => {
+          this.postUploadInProgress.set(false);
+        },
+      });
+    };
+    reader.onerror = () => {
+      this.postUploadInProgress.set(false);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  copyImageUrl(url: string): void {
+    navigator.clipboard.writeText(url).then(() => {
+      this.copiedImageUrl.set(url);
+      setTimeout(() => this.copiedImageUrl.set(null), 2000);
+    });
+  }
+
+  requestDeletePostImage(image: GalleryImage, event: MouseEvent): void {
+    event.stopPropagation();
+    this.postDeleteTargetImage.set(image);
+    this.postDeleteImageConfirmOpen.set(true);
+  }
+
+  confirmDeletePostImage(): void {
+    const target = this.postDeleteTargetImage();
+    const post = this.postGalleryPost();
+    if (!target || !post) return;
+
+    if (target.id.startsWith('new-')) {
+      if (target.objectUrl) URL.revokeObjectURL(target.objectUrl);
+      this.postGalleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+      this.cancelDeletePostImage();
+      return;
+    }
+
+    if (MOCK_MODE) {
+      this.postGalleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+      this.toastService.show('admin.gallery.image_deleted', 'success');
+      this.cancelDeletePostImage();
+      return;
+    }
+
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    this.forumService.deletePostImageAdmin(adminId, token, post.id, target.id).subscribe({
+      next: (res) => {
+        if (res.statuscode === '200') {
+          if (target.objectUrl) URL.revokeObjectURL(target.objectUrl);
+          this.postGalleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+          this.toastService.show('admin.gallery.image_deleted', 'success');
+        } else {
+          this.toastService.show('admin.gallery.delete_error', 'error');
+        }
+        this.cancelDeletePostImage();
+      },
+      error: () => {
+        this.toastService.show('admin.gallery.delete_error', 'error');
+        this.cancelDeletePostImage();
+      },
+    });
+  }
+
+  cancelDeletePostImage(): void {
+    this.postDeleteImageConfirmOpen.set(false);
+    this.postDeleteTargetImage.set(null);
+  }
+
+  openPostImageDetail(image: GalleryImage): void {
+    this.postImageDetailImage.set(image);
+    this.postImageDetailNaturalWidth.set(0);
+    this.postImageDetailNaturalHeight.set(0);
+
+    if (image.meta) {
+      this.postImageDetailMeta.set(image.meta);
+    } else {
+      this.postImageDetailMeta.set({
+        name: this.extractFileName(image.image_url),
+        size: '—',
+        type: this.guessImageType(image.image_url),
+        width: 0,
+        height: 0,
+        resolution: '...',
+        lastModified: '—',
+      });
+    }
+
+    this.postImageDetailOpen.set(true);
+  }
+
+  onPostDetailImageLoad(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    this.postImageDetailNaturalWidth.set(img.naturalWidth);
+    this.postImageDetailNaturalHeight.set(img.naturalHeight);
+    const meta = this.postImageDetailMeta();
+    if (meta) {
+      this.postImageDetailMeta.set({
+        ...meta,
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+        resolution: `${img.naturalWidth} × ${img.naturalHeight}`,
+      });
+    }
+  }
+
+  closePostImageDetail(): void {
+    this.postImageDetailOpen.set(false);
+    this.postImageDetailImage.set(null);
+    this.postImageDetailMeta.set(null);
+  }
+
+  downloadPostImage(image: GalleryImage): void {
+    const link = document.createElement('a');
+    link.href = image.objectUrl || image.image_url;
+    link.download = this.extractFileName(image.image_url);
+    link.target = '_blank';
+    link.click();
   }
 
   openGallery(product: ProductWithHelpers): void {
@@ -10464,24 +12087,18 @@ export class Admin implements OnInit {
 
     if (MOCK_MODE) {
       this.loadMockGalleryImages(product);
-    } else {
-      this.productService.getProductImages(product.id).subscribe({
-        next: (images) => {
-          this.galleryImages.set(
-            images.map((img) => ({
-              ...img,
-              objectUrl: undefined,
-              file: undefined,
-              meta: undefined,
-            })),
-          );
-          this.galleryLoading.set(false);
-        },
-        error: () => {
-          this.galleryLoading.set(false);
-        },
-      });
+      return;
     }
+
+    this.productService.getProductImages(product.id).subscribe({
+      next: (images: ProductImage[]) => {
+        this.galleryImages.set(images as GalleryImage[]);
+        this.galleryLoading.set(false);
+      },
+      error: () => {
+        this.galleryLoading.set(false);
+      },
+    });
   }
 
   private loadMockGalleryImages(product: ProductWithHelpers): void {
@@ -10533,11 +12150,6 @@ export class Admin implements OnInit {
     if ((event.target as HTMLElement).classList.contains('gallery-overlay')) {
       this.closeGallery();
     }
-  }
-
-  getProductImageCount(product: ProductWithHelpers): number {
-    const count = product.images?.length ?? 0;
-    return count > 0 ? count : product.thumbnail_url ? 1 : 0;
   }
 
   toggleTransparent(): void {
@@ -10637,14 +12249,12 @@ export class Admin implements OnInit {
             }
             this.uploadInProgress.set(false);
           },
-          error: (err) => {
-            console.error('Image upload failed:', err);
+          error: () => {
             this.uploadInProgress.set(false);
           },
         });
     };
     reader.onerror = () => {
-      console.error('Failed to read file:', file.name);
       this.uploadInProgress.set(false);
     };
     reader.readAsDataURL(file);
@@ -10724,7 +12334,6 @@ export class Admin implements OnInit {
     const img = event.target as HTMLImageElement;
     this.detailNaturalWidth.set(img.naturalWidth);
     this.detailNaturalHeight.set(img.naturalHeight);
-
     const meta = this.detailMeta();
     if (meta) {
       this.detailMeta.set({
@@ -10736,10 +12345,21 @@ export class Admin implements OnInit {
     }
   }
 
-  closeImageDetail(): void {
-    this.detailOpen.set(false);
-    this.detailImage.set(null);
-    this.detailMeta.set(null);
+  downloadImage(image: GalleryImage): void {
+    const link = document.createElement('a');
+    link.href = image.objectUrl || image.image_url;
+    link.download = this.extractFileName(image.image_url);
+    link.target = '_blank';
+    link.click();
+  }
+
+  private buildAdminAuth(): { id: string; session_token: string } {
+    const storedId = sessionStorage.getItem('user_id') ?? '';
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+    return {
+      id: btoa(storedId),
+      session_token: btoa(token),
+    };
   }
 
   onDetailOverlayClick(event: MouseEvent): void {
@@ -10748,32 +12368,49 @@ export class Admin implements OnInit {
     }
   }
 
-  extractFileName(url: string): string {
-    const parts = url.split('/');
-    return parts[parts.length - 1] || 'image';
+  closeImageDetail(): void {
+    this.detailOpen.set(false);
+    this.detailImage.set(null);
+    this.detailMeta.set(null);
+  }
+
+  closeDetail(): void {
+    this.closeImageDetail();
+  }
+
+  getPostCategoryName(categoryId: string): string {
+    const cat = this.availablePostCategories().find((c) => c.id === categoryId);
+    return cat ? cat.display_name : categoryId;
+  }
+
+  openPostGalleryFromForm(): void {
+    const editId = this.postFormEditId();
+    if (!editId) return;
+    const post = this.apiPosts().find((p) => p.id === editId);
+    if (!post) return;
+    this.closePostForm();
+    this.openPostGallery(post);
+  }
+
+  protected extractFileName(url: string): string {
+    try {
+      return url.split('/').pop()?.split('?')[0] || 'image';
+    } catch {
+      return 'image';
+    }
   }
 
   private guessImageType(url: string): string {
     const ext = url.split('.').pop()?.toLowerCase();
     const map: Record<string, string> = {
-      webp: 'image/webp',
       jpg: 'image/jpeg',
       jpeg: 'image/jpeg',
       png: 'image/png',
+      webp: 'image/webp',
       gif: 'image/gif',
       svg: 'image/svg+xml',
     };
-    return map[ext ?? ''] ?? 'image/*';
-  }
-
-  downloadImage(image: GalleryImage): void {
-    const link = document.createElement('a');
-    link.href = image.objectUrl || image.image_url;
-    link.download = this.extractFileName(image.image_url);
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    return map[ext ?? ''] || 'image/*';
   }
 }
 
@@ -11786,7 +13423,6 @@ FILE: src\app\pages\forum\forum.html
   </section>
 
   <div class="forum-container">
-    <!-- ── Search + Sort ── -->
     <section class="search-filters">
       <div class="search-bar">
         <div class="search-input-wrapper">
@@ -11828,8 +13464,8 @@ FILE: src\app\pages\forum\forum.html
           </select>
         </div>
 
-        @if (isAuthenticated()) {
-          <button class="new-post-button" routerLink="/forum/new">
+        @if (isAdmin()) {
+          <button class="new-post-button" (click)="navigateToNewPost()">
             <img [src]="ICONS.forumNewPost" alt="" class="btn-icon" aria-hidden="true" />
             {{ 'forum.new_post' | translate }}
           </button>
@@ -11837,7 +13473,6 @@ FILE: src\app\pages\forum\forum.html
       </div>
     </section>
 
-    <!-- ── Category chips ── -->
     @if (categories().length > 0) {
       <section
         class="category-filters"
@@ -11861,14 +13496,17 @@ FILE: src\app\pages\forum\forum.html
             "
             (click)="selectCategory(category.id)"
           >
-            <img [src]="category.icon_src" [alt]="category.display_name" class="category-icon-img" />
+            <img
+              [src]="category.icon_src"
+              [alt]="category.display_name"
+              class="category-icon-img"
+            />
             <span class="category-name">{{ category.display_name }}</span>
           </button>
         }
       </section>
     }
 
-    <!-- ── Loading ── -->
     @if (forumService.isLoading()) {
       <div class="loading-container" role="status" [attr.aria-label]="'common.loading' | translate">
         <div class="spinner"></div>
@@ -11876,7 +13514,6 @@ FILE: src\app\pages\forum\forum.html
       </div>
     }
 
-    <!-- ── Error state: backend unreachable ── -->
     @if (!forumService.isLoading() && forumService.loadError()) {
       <div class="empty-state">
         <img [src]="IMAGES.stateError" alt="" class="empty-state-img" aria-hidden="true" />
@@ -11889,7 +13526,6 @@ FILE: src\app\pages\forum\forum.html
       </div>
     }
 
-    <!-- ── Content ── -->
     @if (!forumService.isLoading() && !forumService.loadError()) {
       @if (posts().length > 0) {
         <section class="posts-grid">
@@ -11901,7 +13537,6 @@ FILE: src\app\pages\forum\forum.html
               [showCategory]="true"
               [showAuthor]="true"
               [showStats]="true"
-              (cardClick)="onPostClick($event)"
             />
           }
         </section>
@@ -11911,7 +13546,7 @@ FILE: src\app\pages\forum\forum.html
             <button
               class="pagination-button"
               [disabled]="forumService.current_page() === 1"
-              (click)="previousPage()"
+              (click)="prevPage()"
               [attr.aria-label]="'common.previous_page' | translate"
             >
               ‹ {{ 'pagination.previous' | translate }}
@@ -11919,19 +13554,14 @@ FILE: src\app\pages\forum\forum.html
 
             <div class="page-numbers">
               @for (pageNum of getPageNumbers(); track pageNum) {
-                @if (pageNum === -1) {
-                  <span class="pagination-ellipsis">...</span>
-                } @else {
-                  <button
-                    class="page-number"
-                    [class.active]="forumService.current_page() === pageNum"
-                    (click)="goToPage(pageNum)"
-                    [attr.aria-label]="getPageAriaLabel(pageNum)"
-                    [attr.aria-current]="forumService.current_page() === pageNum ? 'page' : null"
-                  >
-                    {{ pageNum }}
-                  </button>
-                }
+                <button
+                  class="page-number"
+                  [class.active]="forumService.current_page() === pageNum"
+                  (click)="goToPage(pageNum)"
+                  [attr.aria-current]="forumService.current_page() === pageNum ? 'page' : null"
+                >
+                  {{ pageNum }}
+                </button>
               }
             </div>
 
@@ -11946,7 +13576,6 @@ FILE: src\app\pages\forum\forum.html
           </nav>
         }
       } @else if (search_query() || selectedCategory() !== 'all') {
-        <!-- ── No results (active search/filter) ── -->
         <div class="empty-state">
           <img [src]="IMAGES.stateNoResults" alt="" class="empty-state-img" aria-hidden="true" />
           <h3 class="empty-state-title">{{ 'forum.no_results_title' | translate }}</h3>
@@ -11956,13 +13585,12 @@ FILE: src\app\pages\forum\forum.html
           </button>
         </div>
       } @else {
-        <!-- ── Truly empty: no posts on the forum yet ── -->
         <div class="empty-state">
           <img [src]="IMAGES.stateEmptyForum" alt="" class="empty-state-img" aria-hidden="true" />
           <h3 class="empty-state-title">{{ 'forum.empty_title' | translate }}</h3>
           <p class="empty-state-description">{{ 'forum.empty_description' | translate }}</p>
-          @if (isAuthenticated()) {
-            <button class="empty-state-action" routerLink="/forum/new">
+          @if (isAdmin()) {
+            <button class="empty-state-action" (click)="navigateToNewPost()">
               <img [src]="ICONS.forumNewPost" alt="" class="btn-icon" aria-hidden="true" />
               {{ 'forum.new_post' | translate }}
             </button>
@@ -11980,7 +13608,7 @@ FILE: src\app\pages\forum\forum.ts
 ================================================================================
 
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -12007,9 +13635,11 @@ export class Forum implements OnInit {
 
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
+  private router = inject(Router);
   forumService = inject(ForumService);
 
   isAuthenticated = computed(() => this.authService.isAuthenticated());
+  isAdmin = computed(() => this.authService.isAdmin());
 
   posts = computed(() => this.forumService.paginatedPosts());
   total_pages = computed(() => this.forumService.total_pages());
@@ -12027,28 +13657,36 @@ export class Forum implements OnInit {
     this.forumService.loadPosts();
   }
 
+  navigateToNewPost(): void {
+    this.router.navigate(['/admin'], { queryParams: { section: 'posts', action: 'new' } });
+  }
+
   applySearch(): void {
     const filters: PostFilters = {
       search_query: this.search_query() || undefined,
-      category_id:
-        this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
+      category_id: this.selectedCategory() !== 'all' ? this.selectedCategory() : undefined,
     };
     this.forumService.setFilters(filters);
-  }
-
-  selectCategory(category: PostCategory | 'all'): void {
-    this.selectedCategory.set(category);
-    this.applySearch();
-  }
-
-  changeSort(sort_by: SortOption): void {
-    this.selectedSort.set(sort_by);
-    this.forumService.setSorting(sort_by);
+    this.forumService.setSorting(this.selectedSort());
   }
 
   clearSearch(): void {
     this.search_query.set('');
-    this.applySearch();
+    this.forumService.setFilters({});
+  }
+
+  changeSort(value: SortOption): void {
+    this.selectedSort.set(value);
+    this.forumService.setSorting(value);
+  }
+
+  selectCategory(categoryId: PostCategory | 'all'): void {
+    this.selectedCategory.set(categoryId);
+    const filters: PostFilters = {
+      search_query: this.search_query() || undefined,
+      category_id: categoryId !== 'all' ? categoryId : undefined,
+    };
+    this.forumService.setFilters(filters);
   }
 
   resetFilters(): void {
@@ -12057,43 +13695,28 @@ export class Forum implements OnInit {
     this.forumService.setFilters({});
   }
 
+  nextPage(): void {
+    this.forumService.setPage(this.forumService.current_page() + 1);
+  }
+
+  prevPage(): void {
+    this.forumService.setPage(this.forumService.current_page() - 1);
+  }
+
   goToPage(page: number): void {
     this.forumService.setPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  previousPage(): void {
-    const current = this.forumService.current_page();
-    if (current > 1) this.goToPage(current - 1);
-  }
-
-  nextPage(): void {
-    const current = this.forumService.current_page();
-    if (current < this.total_pages()) this.goToPage(current + 1);
   }
 
   getPageNumbers(): number[] {
-    const current = this.forumService.current_page();
     const total = this.total_pages();
+    const current = this.forumService.current_page();
     const pages: number[] = [];
+    const range = 2;
 
-    pages.push(1);
-    const start = Math.max(2, current - 1);
-    const end = Math.min(total - 1, current + 1);
-    if (start > 2) pages.push(-1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (end < total - 1) pages.push(-1);
-    if (total > 1) pages.push(total);
-
+    for (let i = Math.max(1, current - range); i <= Math.min(total, current + range); i++) {
+      pages.push(i);
+    }
     return pages;
-  }
-
-  getPageAriaLabel(pageNum: number): string {
-    return `${this.translate.instant('pagination.page')} ${pageNum}`;
-  }
-
-  onPostClick(post: Post): void {
-    void post;
   }
 }
 
@@ -30746,39 +32369,56 @@ FILE: src\assets\i18n\de.json
       "deleted": "Benutzer gelöscht.",
       "error": "Fehler bei der Durchführung der Operation. Bitte versuchen Sie es erneut."
     },
-    "product_form": {
-      "add": "Produkt hinzufügen",
-      "add_title": "Neues Produkt",
-      "edit_title": "Produkt bearbeiten",
+    "posts_form": {
+      "add": "Neuer Beitrag",
+      "add_title": "Neuer Beitrag",
+      "edit_title": "Beitrag bearbeiten",
       "save": "Speichern",
-      "create": "Produkt erstellen",
-      "delete": "Produkt löschen",
-      "tab_basic": "Grunddaten",
-      "tab_pricing": "Preisgestaltung",
-      "tab_descriptions": "Beschreibungen",
-      "tab_details": "Details",
-      "names": "Produktnamen",
-      "name_hu": "Name (HU)",
-      "name_en": "Name (EN)",
-      "name_de": "Name (DE)",
-      "identification": "Identifikation",
-      "manufacturer": "Hersteller",
-      "thumbnail_url": "Vorschaubild-URL",
-      "price_huf": "Preis (HUF)",
-      "sale_pct": "Rabatt %",
-      "previews": "Vorschautexte",
-      "full_descriptions": "Vollständige Beschreibungen",
-      "active_ingredients": "Wirkstoffe",
-      "packaging": "Verpackung",
-      "featured": "Empfohlenes Produkt",
-      "confirm_delete_title": "Produkt löschen",
-      "confirm_delete_text": "Möchtest du das Produkt \"{{name}}\" endgültig löschen? Dies kann nicht rückgängig gemacht werden.",
-      "created": "Produkt erfolgreich erstellt.",
-      "updated": "Produkt erfolgreich aktualisiert.",
-      "deleted": "Produkt erfolgreich gelöscht.",
-      "save_error": "Das Produkt konnte nicht gespeichert werden.",
-      "delete_error": "Das Produkt konnte nicht gelöscht werden.",
-      "error_name_required": "Der englische Name des Produkts ist erforderlich."
+      "create": "Beitrag erstellen",
+      "delete": "Beitrag löschen",
+      "search_placeholder": "Beiträge suchen... (title:vitamin, status:draft)",
+      "no_posts": "Keine Beiträge gefunden.",
+      "featured": "Hervorgehoben",
+      "col_title": "Titel",
+      "col_views": "Aufrufe",
+      "col_likes": "Gefällt mir",
+      "col_comments": "Kommentare",
+      "manage_images": "Bilder verwalten",
+      "section_meta": "Beitragsdetails",
+      "section_settings": "Einstellungen",
+      "section_content": "Inhalt",
+      "section_images": "Bilder",
+      "title": "Titel",
+      "title_placeholder": "z.B. Wintervitamine und Nahrungsergänzungsmittel",
+      "slug": "Slug (URL)",
+      "regenerate_slug": "Aus Titel neu generieren",
+      "excerpt": "Kurztext",
+      "excerpt_placeholder": "Kurze Zusammenfassung für die Vorschau...",
+      "cover_image_url": "Titelbild-URL",
+      "content": "Inhalt (HTML)",
+      "content_hint": "HTML-Tags sind erlaubt. Betten Sie Bilder ein, indem Sie deren URL aus dem Bilder-Tab kopieren.",
+      "content_placeholder": "<p>Beitragsinhalt hier...</p>",
+      "tags": "Tags",
+      "tags_hint": "Kommagetrennt: vitamin,gesundheit,winter",
+      "status_draft": "Entwurf",
+      "status_published": "Veröffentlicht",
+      "status_hidden": "Versteckt",
+      "status_archived": "Archiviert",
+      "images_hint": "Laden Sie Bilder hoch, um sie in den Beitragsinhalt einzubetten. Kopieren Sie die URL und fügen Sie sie als <img>-Tag im Inhalt-Tab ein.",
+      "open_gallery": "Bildergalerie öffnen",
+      "save_first_for_images": "Speichern Sie zuerst den Beitrag, dann können Sie Bilder verwalten.",
+      "copy_url": "URL kopieren",
+      "copy_url_hint": "Klicken Sie auf ein Bild, um seine URL zu kopieren und in den Inhalt einzubetten.",
+      "gallery_title": "Beitragsbilder",
+      "no_images_yet": "Noch keine Bilder hochgeladen. Verwenden Sie die Upload-Schaltfläche.",
+      "confirm_delete_title": "Beitrag löschen",
+      "confirm_delete_text": "\"{{title}}\" dauerhaft löschen? Dies kann nicht rückgängig gemacht werden.",
+      "created": "Beitrag erfolgreich erstellt.",
+      "updated": "Beitrag erfolgreich aktualisiert.",
+      "deleted": "Beitrag erfolgreich gelöscht.",
+      "save_error": "Beitrag konnte nicht gespeichert werden.",
+      "delete_error": "Beitrag konnte nicht gelöscht werden.",
+      "error_title_required": "Titel des Beitrags ist erforderlich."
     },
     "stats": {
       "this_week": "diese Woche",
@@ -30796,7 +32436,8 @@ FILE: src\assets\i18n\de.json
       "orders": "Bestellungen",
       "users": "Benutzer",
       "dashboard": "Dashboard",
-      "products": "Produkte"
+      "products": "Produkte",
+      "posts": "Beiträge"
     },
     "search_products": "Produkte suchen...",
     "loading": "Daten werden geladen...",
@@ -30810,7 +32451,8 @@ FILE: src\assets\i18n\de.json
     "greeting": "Willkommen, {{name}}!",
     "errors": {
       "orders_load_failed": "Fehler beim Laden der Produkte!",
-      "users_load_failed": "Fehler beim Laden der Benutzer!"
+      "users_load_failed": "Fehler beim Laden der Benutzer!",
+      "posts_load_failed": "Fehler beim Laden der Beiträge."
     }
   },
   "footer": {
@@ -31569,39 +33211,56 @@ FILE: src\assets\i18n\en.json
       "deleted": "User has been deleted.",
       "error": "Action failed. Please try again."
     },
-    "product_form": {
-      "add": "Add Product",
-      "add_title": "New Product",
-      "edit_title": "Edit Product",
+    "posts_form": {
+      "add": "New Post",
+      "add_title": "New Post",
+      "edit_title": "Edit Post",
       "save": "Save Changes",
-      "create": "Create Product",
-      "delete": "Delete Product",
-      "tab_basic": "Basic",
-      "tab_pricing": "Pricing",
-      "tab_descriptions": "Descriptions",
-      "tab_details": "Details",
-      "names": "Product Names",
-      "name_hu": "Name (HU)",
-      "name_en": "Name (EN)",
-      "name_de": "Name (DE)",
-      "identification": "Identification",
-      "manufacturer": "Manufacturer",
-      "thumbnail_url": "Thumbnail URL",
-      "price_huf": "Price (HUF)",
-      "sale_pct": "Discount %",
-      "previews": "Preview Descriptions",
-      "full_descriptions": "Full Descriptions",
-      "active_ingredients": "Active Ingredients",
-      "packaging": "Packaging",
-      "featured": "Featured Product",
-      "confirm_delete_title": "Delete Product",
-      "confirm_delete_text": "Permanently delete \"{{name}}\"? This cannot be undone.",
-      "created": "Product created successfully.",
-      "updated": "Product updated successfully.",
-      "deleted": "Product deleted successfully.",
-      "save_error": "Failed to save product.",
-      "delete_error": "Failed to delete product.",
-      "error_name_required": "Product name (EN) is required."
+      "create": "Create Post",
+      "delete": "Delete Post",
+      "search_placeholder": "Search posts... (title:vitamin, status:draft)",
+      "no_posts": "No posts found.",
+      "featured": "Featured",
+      "col_title": "Title",
+      "col_views": "Views",
+      "col_likes": "Likes",
+      "col_comments": "Comments",
+      "manage_images": "Manage images",
+      "section_meta": "Post Details",
+      "section_settings": "Settings",
+      "section_content": "Content",
+      "section_images": "Images",
+      "title": "Title",
+      "title_placeholder": "e.g. Winter vitamins and supplements",
+      "slug": "Slug (URL)",
+      "regenerate_slug": "Regenerate from title",
+      "excerpt": "Excerpt",
+      "excerpt_placeholder": "Short summary shown on the post card...",
+      "cover_image_url": "Cover Image URL",
+      "content": "Content (HTML)",
+      "content_hint": "You can use HTML tags. Embed images by copying their URL from the Images tab.",
+      "content_placeholder": "<p>Post content here...</p>",
+      "tags": "Tags",
+      "tags_hint": "Comma-separated: vitamin,health,winter",
+      "status_draft": "Draft",
+      "status_published": "Published",
+      "status_hidden": "Hidden",
+      "status_archived": "Archived",
+      "images_hint": "Upload images to embed in your post content. Copy the URL and paste it as an <img> tag in the Content tab.",
+      "open_gallery": "Open Image Gallery",
+      "save_first_for_images": "Save the post first, then you can manage images.",
+      "copy_url": "Copy URL",
+      "copy_url_hint": "Click an image to copy its URL for embedding in content.",
+      "gallery_title": "Post Images",
+      "no_images_yet": "No images uploaded yet. Use the Upload button to add images.",
+      "confirm_delete_title": "Delete Post",
+      "confirm_delete_text": "Permanently delete \"{{title}}\"? This cannot be undone.",
+      "created": "Post created successfully.",
+      "updated": "Post updated successfully.",
+      "deleted": "Post deleted successfully.",
+      "save_error": "Failed to save post.",
+      "delete_error": "Failed to delete post.",
+      "error_title_required": "Post title is required."
     },
     "stats": {
       "this_week": "this week",
@@ -31619,7 +33278,8 @@ FILE: src\assets\i18n\en.json
       "orders": "Orders",
       "users": "Users",
       "dashboard": "Dashboard",
-      "products": "Products"
+      "products": "Products",
+      "posts": "Posts"
     },
     "search_products": "Search products...",
     "loading": "Loading data...",
@@ -31633,7 +33293,8 @@ FILE: src\assets\i18n\en.json
     "greeting": "Welcome, {{name}}!",
     "errors": {
       "orders_load_failed": "There was an error loading the products!",
-      "users_load_failed": "There was an error loading the users!"
+      "users_load_failed": "There was an error loading the users!",
+      "posts_load_failed": "There was an error loading the posts."
     }
   },
   "footer": {
@@ -32362,39 +34023,56 @@ FILE: src\assets\i18n\hu.json
       "deleted": "Felhasználó törölve.",
       "error": "A művelet sikertelen. Próbáld újra."
     },
-    "product_form": {
-      "add": "Termék hozzáadása",
-      "add_title": "Új termék",
-      "edit_title": "Termék szerkesztése",
+    "posts_form": {
+      "add": "Új bejegyzés",
+      "add_title": "Új bejegyzés",
+      "edit_title": "Bejegyzés szerkesztése",
       "save": "Mentés",
-      "create": "Termék létrehozása",
-      "delete": "Termék törlése",
-      "tab_basic": "Alapadatok",
-      "tab_pricing": "Árazás",
-      "tab_descriptions": "Leírások",
-      "tab_details": "Részletek",
-      "names": "Terméknevek",
-      "name_hu": "Név (HU)",
-      "name_en": "Név (EN)",
-      "name_de": "Név (DE)",
-      "identification": "Azonosítás",
-      "manufacturer": "Gyártó",
-      "thumbnail_url": "Bélyegkép URL",
-      "price_huf": "Ár (HUF)",
-      "sale_pct": "Kedvezmény %",
-      "previews": "Előnézet szövegek",
-      "full_descriptions": "Teljes leírások",
-      "active_ingredients": "Hatóanyagok",
-      "packaging": "Csomagolás",
-      "featured": "Kiemelt termék",
-      "confirm_delete_title": "Termék törlése",
-      "confirm_delete_text": "Véglegesen törlöd a(z) \"{{name}}\" terméket? Ez nem visszavonható.",
-      "created": "Termék sikeresen létrehozva.",
-      "updated": "Termék sikeresen frissítve.",
-      "deleted": "Termék sikeresen törölve.",
-      "save_error": "A termék mentése sikertelen.",
-      "delete_error": "A termék törlése sikertelen.",
-      "error_name_required": "A termék angol neve kötelező."
+      "create": "Bejegyzés létrehozása",
+      "delete": "Bejegyzés törlése",
+      "search_placeholder": "Bejegyzések keresése... (title:vitamin, status:draft)",
+      "no_posts": "Nem található bejegyzés.",
+      "featured": "Kiemelt",
+      "col_title": "Cím",
+      "col_views": "Megtekintés",
+      "col_likes": "Tetszések",
+      "col_comments": "Hozzászólások",
+      "manage_images": "Képek kezelése",
+      "section_meta": "Bejegyzés adatai",
+      "section_settings": "Beállítások",
+      "section_content": "Tartalom",
+      "section_images": "Képek",
+      "title": "Cím",
+      "title_placeholder": "pl. Téli vitaminok és kiegészítők",
+      "slug": "Slug (URL)",
+      "regenerate_slug": "Újragenerálás a címből",
+      "excerpt": "Rövid leírás",
+      "excerpt_placeholder": "Rövid összefoglaló, ami a bejegyzéskártyán jelenik meg...",
+      "cover_image_url": "Borítókép URL",
+      "content": "Tartalom (HTML)",
+      "content_hint": "HTML tagek használhatók. A képeket az URL másolásával ágyazhatod be a tartalomba.",
+      "content_placeholder": "<p>Ide kerül a bejegyzés tartalma...</p>",
+      "tags": "Tagek",
+      "tags_hint": "Vesszővel elválasztva: vitamin,egészség,tél",
+      "status_draft": "Piszkozat",
+      "status_published": "Publikált",
+      "status_hidden": "Rejtett",
+      "status_archived": "Archivált",
+      "images_hint": "Tölts fel képeket a bejegyzés tartalmába ágyazáshoz. Másold ki az URL-t és illeszd be <img> tagként a Tartalom fülön.",
+      "open_gallery": "Képgaléria megnyitása",
+      "save_first_for_images": "Először mentsd el a bejegyzést, utána lehet képeket kezelni.",
+      "copy_url": "URL másolása",
+      "copy_url_hint": "Kattints egy képre az URL másolásához, hogy beágyazhasd a tartalomba.",
+      "gallery_title": "Bejegyzés képei",
+      "no_images_yet": "Még nincs feltöltött kép. Használd a Feltöltés gombot.",
+      "confirm_delete_title": "Bejegyzés törlése",
+      "confirm_delete_text": "Véglegesen törlöd a(z) \"{{title}}\" bejegyzést? Ez nem vonható vissza.",
+      "created": "Bejegyzés sikeresen létrehozva.",
+      "updated": "Bejegyzés sikeresen frissítve.",
+      "deleted": "Bejegyzés sikeresen törölve.",
+      "save_error": "Nem sikerült menteni a bejegyzést.",
+      "delete_error": "Nem sikerült törölni a bejegyzést.",
+      "error_title_required": "A bejegyzés címe kötelező."
     },
     "stats": {
       "this_week": "ezen a héten",
@@ -32412,7 +34090,8 @@ FILE: src\assets\i18n\hu.json
       "orders": "Rendelések",
       "users": "Felhasználók",
       "dashboard": "Vezérlőpult",
-      "products": "Termékek"
+      "products": "Termékek",
+      "posts": "Bejegyzések"
     },
     "search_products": "Termékek keresése...",
     "loading": "Adatok betöltése...",
@@ -32426,7 +34105,8 @@ FILE: src\assets\i18n\hu.json
     "greeting": "Üdvözöljük, {{name}}!",
     "errors": {
       "orders_load_failed": "Hiba történt a termékek betöltésekor!",
-      "users_load_failed": "Hiba történt a felhasználók betöltésekor!"
+      "users_load_failed": "Hiba történt a felhasználók betöltésekor!",
+      "posts_load_failed": "Hiba történt a bejegyzések betöltésekor."
     }
   },
   "footer": {
