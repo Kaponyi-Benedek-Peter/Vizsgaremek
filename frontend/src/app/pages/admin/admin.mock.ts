@@ -1,4 +1,5 @@
 import { AdminUser, AdminOrder } from '../../core/services/account.service';
+import { Post } from '../../core/models/forum.model';
 
 export const MOCK_MODE = true;
 
@@ -181,5 +182,63 @@ export const MOCK_ORDERS: AdminOrder[] = [
     apartment_number: '2',
     phone_number: '+36701112233',
     note: '',
+  },
+];
+
+export const MOCK_POSTS: Post[] = [
+  {
+    id: '1',
+    title: 'Tesztposzt – Vitaminok télen',
+    slug: 'tesztposzt-vitaminok-telen',
+    excerpt: 'Rövid összefoglaló a téli vitaminpótlásról.',
+    content: '<p>Bővebb tartalom ide kerül...</p>',
+    user_id: '1',
+    category_id: '1',
+    tags: 'vitamin,tél,immunrendszer',
+    image_url: '',
+    status: 'published',
+    views: 120,
+    likes: 14,
+    comment_count: 3,
+    is_featured: 1,
+    created_at: '2026-03-01T10:00:00',
+    updated_at: '2026-03-01T10:00:00',
+    published_at: '2026-03-01T10:00:00',
+  },
+  {
+    id: '2',
+    title: 'Draft cikk – Vérnyomás és életmód',
+    slug: 'draft-cikk-vernyomas-es-eletmod',
+    excerpt: 'Draft poszt, még nem publikált.',
+    content: '<p>Tartalom írás alatt...</p>',
+    user_id: '1',
+    category_id: '2',
+    tags: 'vérnyomás,egészség',
+    image_url: '',
+    status: 'draft',
+    views: 0,
+    likes: 0,
+    comment_count: 0,
+    is_featured: 0,
+    created_at: '2026-03-15T09:00:00',
+    updated_at: '2026-03-15T09:00:00',
+  },
+  {
+    id: '3',
+    title: 'Rejtett poszt – Szezális egészség',
+    slug: 'rejtett-poszt-szezonalis-egeszseg',
+    excerpt: 'Hidden státuszú bejegyzés.',
+    content: '<p>Ez a poszt rejtett.</p>',
+    user_id: '1',
+    category_id: '3',
+    tags: 'szezonális',
+    image_url: '',
+    status: 'hidden',
+    views: 5,
+    likes: 0,
+    comment_count: 0,
+    is_featured: 0,
+    created_at: '2026-03-20T12:00:00',
+    updated_at: '2026-03-20T12:00:00',
   },
 ];

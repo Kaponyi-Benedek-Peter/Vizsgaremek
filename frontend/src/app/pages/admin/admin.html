@@ -1288,6 +1288,587 @@
   </div>
 }
 
+@if (activeSection() === 'posts') {
+  <div class="section-content">
+    <div class="section-toolbar">
+      <div class="search-input-wrapper">
+        <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
+        <input
+          type="search"
+          class="admin-search"
+          [(ngModel)]="postSearch"
+          [placeholder]="'admin.posts_form.search_placeholder' | translate"
+        />
+      </div>
+      <button class="add-product-btn" (click)="openPostForm()">
+        + {{ 'admin.posts_form.add' | translate }}
+      </button>
+    </div>
+
+    @if (postsLoading()) {
+      <div class="loading-state">
+        <span class="spinner">⏳</span>
+        <span>{{ 'admin.loading' | translate }}</span>
+      </div>
+    } @else if (postsError()) {
+      <div class="error-state">
+        <span>⚠️ {{ postsError()! | translate }}</span>
+        <button class="retry-btn" (click)="loadPostsForAdmin()">
+          {{ 'common.retry' | translate }}
+        </button>
+      </div>
+    } @else {
+      <div class="admin-card">
+        <div class="table-wrapper">
+          @if (filteredPosts().length === 0) {
+            <div class="empty-state">{{ 'admin.posts_form.no_posts' | translate }}</div>
+          } @else {
+            <table class="admin-table" appResizableTable="posts">
+              <thead>
+                <tr>
+                  <th>{{ 'admin.posts_form.col_title' | translate }}</th>
+                  <th>{{ 'admin.table.category' | translate }}</th>
+                  <th>{{ 'admin.table.status' | translate }}</th>
+                  <th>{{ 'admin.posts_form.col_views' | translate }}</th>
+                  <th>{{ 'admin.posts_form.col_likes' | translate }}</th>
+                  <th>{{ 'admin.posts_form.col_comments' | translate }}</th>
+                  <th>{{ 'admin.table.date' | translate }}</th>
+                  <th>{{ 'admin.table.actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (post of filteredPosts(); track post.id) {
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        @if (post.image_url) {
+                          <div class="product-thumb">
+                            <img
+                              [src]="post.image_url"
+                              [alt]="post.title"
+                              class="product-thumb-img"
+                              loading="lazy"
+                            />
+                          </div>
+                        }
+                        <div class="product-cell-info">
+                          <span class="product-name">{{ post.title }}</span>
+                          @if (post.is_featured) {
+                            <span class="featured-badge"
+                              >⭐ {{ 'admin.posts_form.featured' | translate }}</span
+                            >
+                          }
+                        </div>
+                      </div>
+                    </td>
+                    <td class="muted">
+                      {{ getPostCategoryName(post.category_id) }}
+                    </td>
+                    <td>
+                      <span [class]="getPostStatusClass(post.status)">
+                        {{ 'admin.posts_form.status_' + post.status | translate }}
+                      </span>
+                    </td>
+                    <td class="muted">{{ post.views }}</td>
+                    <td class="muted">{{ post.likes }}</td>
+                    <td class="muted">{{ post.comment_count }}</td>
+                    <td class="muted">{{ formatDate(post.created_at) }}</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button
+                          class="images-btn"
+                          (click)="openPostGallery(post)"
+                          [attr.title]="'admin.posts_form.manage_images' | translate"
+                        >
+                          🖼
+                        </button>
+                        <button
+                          class="action-btn edit-btn"
+                          (click)="openPostForm(post)"
+                          [attr.title]="'common.edit' | translate"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          class="action-btn delete-btn"
+                          (click)="requestDeletePost(post, $event)"
+                          [attr.title]="'admin.posts_form.delete' | translate"
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}
+
+@if (postDeleteConfirm()) {
+  <div class="confirm-overlay" (click)="cancelDeletePost()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-wrapper">
+        <svg
+          class="confirm-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          />
+        </svg>
+      </div>
+      <h3 class="confirm-title">{{ 'admin.posts_form.confirm_delete_title' | translate }}</h3>
+      <p class="confirm-text">
+        {{
+          'admin.posts_form.confirm_delete_text' | translate: { title: postDeleteConfirm()!.title }
+        }}
+      </p>
+      <div class="confirm-actions">
+        <button
+          class="confirm-cancel-btn"
+          (click)="cancelDeletePost()"
+          [disabled]="postDeleteLoading()"
+        >
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button
+          class="confirm-delete-btn"
+          (click)="confirmDeletePost()"
+          [disabled]="postDeleteLoading()"
+        >
+          @if (postDeleteLoading()) {
+            <span class="btn-spinner"></span>
+          }
+          {{ 'admin.posts_form.delete' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (postFormOpen()) {
+  <div class="post-form-overlay" (click)="onPostFormOverlayClick($event)">
+    <div class="product-form-modal">
+      <div class="product-form-header">
+        <h2 class="product-form-title">
+          {{
+            (postFormIsEdit() ? 'admin.posts_form.edit_title' : 'admin.posts_form.add_title')
+              | translate
+          }}
+        </h2>
+        <button class="gallery-close-btn" (click)="closePostForm()">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="product-form-tabs">
+        @for (tab of postFormTabs; track tab.id) {
+          <button
+            [class]="'pf-tab' + (postFormTab() === tab.id ? ' pf-tab-active' : '')"
+            (click)="setPostFormTab(tab.id)"
+          >
+            {{ tab.label | translate }}
+          </button>
+        }
+      </div>
+
+      <div class="product-form-body">
+        @if (postFormTab() === 'basic') {
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.posts_form.section_meta' | translate }}</h3>
+
+            <div class="pf-field">
+              <label class="pf-label">{{ 'admin.posts_form.title' | translate }} *</label>
+              <input
+                class="pf-input"
+                [ngModel]="postFormData().title"
+                (ngModelChange)="updatePostField('title', $event)"
+                [placeholder]="'admin.posts_form.title_placeholder' | translate"
+              />
+            </div>
+
+            <div class="pf-field" style="margin-top: var(--space-4)">
+              <label class="pf-label">{{ 'admin.posts_form.slug' | translate }}</label>
+              <div class="pf-input-row">
+                <input
+                  class="pf-input"
+                  [ngModel]="postFormData().slug"
+                  (ngModelChange)="updatePostField('slug', $event)"
+                  placeholder="pl-vitaminok-telen"
+                />
+                <button
+                  class="pf-slug-btn"
+                  (click)="regenerateSlug()"
+                  type="button"
+                  [title]="'admin.posts_form.regenerate_slug' | translate"
+                >
+                  ↺
+                </button>
+              </div>
+            </div>
+
+            <div class="pf-field" style="margin-top: var(--space-4)">
+              <label class="pf-label">{{ 'admin.posts_form.excerpt' | translate }}</label>
+              <textarea
+                class="pf-input pf-textarea"
+                rows="3"
+                [ngModel]="postFormData().excerpt"
+                (ngModelChange)="updatePostField('excerpt', $event)"
+                [placeholder]="'admin.posts_form.excerpt_placeholder' | translate"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.posts_form.section_settings' | translate }}</h3>
+            <div class="pf-grid-2">
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.table.category' | translate }}</label>
+                <select
+                  class="pf-select"
+                  [ngModel]="postFormData().category_id"
+                  (ngModelChange)="updatePostField('category_id', $event)"
+                >
+                  <option value="">—</option>
+                  @for (cat of availablePostCategories(); track cat.id) {
+                    <option [value]="cat.id">{{ cat.display_name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="pf-field">
+                <label class="pf-label">{{ 'admin.table.status' | translate }}</label>
+                <select
+                  class="pf-select"
+                  [ngModel]="postFormData().status"
+                  (ngModelChange)="updatePostField('status', $event)"
+                >
+                  <option value="draft">{{ 'admin.posts_form.status_draft' | translate }}</option>
+                  <option value="published">
+                    {{ 'admin.posts_form.status_published' | translate }}
+                  </option>
+                  <option value="hidden">{{ 'admin.posts_form.status_hidden' | translate }}</option>
+                  <option value="archived">
+                    {{ 'admin.posts_form.status_archived' | translate }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="pf-field" style="margin-top: var(--space-4)">
+              <label class="pf-label">{{ 'admin.posts_form.tags' | translate }}</label>
+              <input
+                class="pf-input"
+                [ngModel]="postFormData().tags"
+                (ngModelChange)="updatePostField('tags', $event)"
+                placeholder="vitamin,egészség,tél"
+              />
+              <span class="pf-hint">{{ 'admin.posts_form.tags_hint' | translate }}</span>
+            </div>
+
+            <div class="pf-field pf-toggle-row" style="margin-top: var(--space-4)">
+              <span class="pf-label">{{ 'admin.posts_form.featured' | translate }}</span>
+              <button
+                [class]="'pf-toggle' + (postFormData().is_featured ? ' pf-toggle-on' : '')"
+                (click)="togglePostFeatured()"
+                type="button"
+              >
+                {{ postFormData().is_featured ? '✓' : '○' }}
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (postFormTab() === 'content') {
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.posts_form.section_content' | translate }}</h3>
+
+            <div class="pf-field">
+              <label class="pf-label">{{ 'admin.posts_form.cover_image_url' | translate }}</label>
+              <input
+                class="pf-input"
+                [ngModel]="postFormData().image_url"
+                (ngModelChange)="updatePostField('image_url', $event)"
+                placeholder="https://..."
+              />
+              @if (postFormData().image_url) {
+                <div class="pf-cover-preview">
+                  <img
+                    [src]="postFormData().image_url"
+                    alt="Borítókép előnézet"
+                    class="pf-cover-img"
+                    loading="lazy"
+                  />
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <div class="pf-field">
+              <label class="pf-label">{{ 'admin.posts_form.content' | translate }}</label>
+              <p class="pf-hint">{{ 'admin.posts_form.content_hint' | translate }}</p>
+              <textarea
+                class="pf-input pf-textarea pf-content-area"
+                rows="20"
+                [ngModel]="postFormData().content"
+                (ngModelChange)="updatePostField('content', $event)"
+                [placeholder]="'admin.posts_form.content_placeholder' | translate"
+              ></textarea>
+            </div>
+          </div>
+        }
+
+        @if (postFormTab() === 'images') {
+          <div class="pf-section">
+            <h3 class="pf-section-title">{{ 'admin.posts_form.section_images' | translate }}</h3>
+            <p class="pf-hint">{{ 'admin.posts_form.images_hint' | translate }}</p>
+
+            @if (postFormIsEdit()) {
+              <button class="pf-open-gallery-btn" (click)="openPostGalleryFromForm()">
+                🖼 {{ 'admin.posts_form.open_gallery' | translate }}
+              </button>
+            } @else {
+              <div class="pf-info-box">
+                {{ 'admin.posts_form.save_first_for_images' | translate }}
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="product-form-footer">
+        <button class="pf-cancel-btn" (click)="closePostForm()" [disabled]="postFormSaving()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="pf-save-btn" (click)="savePost()" [disabled]="postFormSaving()">
+          @if (postFormSaving()) {
+            <span class="btn-spinner"></span>
+          }
+          {{ (postFormIsEdit() ? 'admin.posts_form.save' : 'admin.posts_form.create') | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (postGalleryOpen()) {
+  <div class="gallery-overlay" (click)="onPostGalleryOverlayClick($event)">
+    <div class="gallery-panel" (click)="$event.stopPropagation()">
+      <div class="gallery-header">
+        <div class="gallery-title-block">
+          <h2 class="gallery-title">
+            {{ 'admin.posts_form.gallery_title' | translate }}
+            @if (postGalleryPost()) {
+              — <span class="gallery-product-name">{{ postGalleryPost()!.title }}</span>
+            }
+          </h2>
+          <span class="gallery-count">
+            {{ postGalleryImages().length }} {{ 'admin.gallery.title' | translate }}
+          </span>
+        </div>
+        <button class="gallery-close-btn" (click)="closePostGallery()">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="gallery-toolbar">
+        <button
+          class="gallery-upload-btn"
+          (click)="triggerPostFileUpload()"
+          [disabled]="postUploadInProgress()"
+        >
+          @if (postUploadInProgress()) {
+            <span class="btn-spinner"></span>
+          } @else {
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="upload-icon"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          }
+          {{ 'admin.gallery.upload' | translate }}
+        </button>
+        <p class="gallery-copy-hint">{{ 'admin.posts_form.copy_url_hint' | translate }}</p>
+      </div>
+
+      @if (postGalleryLoading()) {
+        <div class="gallery-loading">
+          <span class="spinner">⏳</span>
+        </div>
+      } @else if (postGalleryImages().length === 0) {
+        <div class="gallery-empty">
+          <p>{{ 'admin.posts_form.no_images_yet' | translate }}</p>
+        </div>
+      } @else {
+        <div class="gallery-grid">
+          @for (img of postGalleryImages(); track img.id) {
+            <div class="gallery-item" (click)="openPostImageDetail(img)">
+              <img
+                [src]="img.image_url"
+                [alt]="img.alt_text_en"
+                class="gallery-thumb"
+                loading="lazy"
+              />
+              <div class="gallery-item-overlay">
+                <button
+                  class="gallery-copy-btn"
+                  (click)="copyImageUrl(img.image_url); $event.stopPropagation()"
+                  [title]="'admin.posts_form.copy_url' | translate"
+                >
+                  @if (copiedImageUrl() === img.image_url) {
+                    ✓
+                  } @else {
+                    📋
+                  }
+                </button>
+                <button
+                  class="gallery-delete-btn"
+                  (click)="requestDeletePostImage(img, $event)"
+                  [title]="'admin.gallery.delete_image' | translate"
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
+
+@if (postDeleteImageConfirmOpen()) {
+  <div class="confirm-overlay" (click)="cancelDeletePostImage()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <div class="confirm-icon-wrapper">
+        <svg
+          class="confirm-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          />
+        </svg>
+      </div>
+      <h3 class="confirm-title">{{ 'admin.gallery.confirm_delete_title' | translate }}</h3>
+      <p class="confirm-text">{{ 'admin.gallery.confirm_delete_text' | translate }}</p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel-btn" (click)="cancelDeletePostImage()">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button class="confirm-delete-btn" (click)="confirmDeletePostImage()">
+          {{ 'admin.gallery.delete_image' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (postImageDetailOpen() && postImageDetailImage()) {
+  <div class="detail-overlay" (click)="closePostImageDetail()">
+    <div class="detail-panel" (click)="$event.stopPropagation()">
+      <button class="gallery-close-btn detail-close" (click)="closePostImageDetail()">✕</button>
+      <div class="detail-image-wrapper">
+        <img
+          [src]="postImageDetailImage()!.image_url"
+          [alt]="postImageDetailImage()!.alt_text_en"
+          class="detail-image"
+          (load)="onPostDetailImageLoad($event)"
+        />
+      </div>
+      @if (postImageDetailMeta(); as meta) {
+        <div class="detail-meta">
+          <h3 class="detail-meta-title">{{ 'admin.gallery.details' | translate }}</h3>
+          <div class="detail-meta-row">
+            <span class="detail-meta-label">{{ 'admin.gallery.meta.filename' | translate }}</span>
+            <span class="detail-meta-value">{{ meta.name }}</span>
+          </div>
+          <div class="detail-meta-row">
+            <span class="detail-meta-label">{{ 'admin.gallery.meta.type' | translate }}</span>
+            <span class="detail-meta-value">{{ meta.type }}</span>
+          </div>
+          <div class="detail-meta-row">
+            <span class="detail-meta-label">{{ 'admin.gallery.meta.resolution' | translate }}</span>
+            <span class="detail-meta-value">{{ meta.resolution }}</span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="detail-download-btn" (click)="downloadPostImage(postImageDetailImage()!)">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            {{ 'admin.gallery.download' | translate }}
+          </button>
+          <button
+            class="detail-download-btn"
+            (click)="copyImageUrl(postImageDetailImage()!.image_url)"
+          >
+            {{
+              copiedImageUrl() === postImageDetailImage()!.image_url
+                ? '✓ Másolva!'
+                : '📋 URL másolása'
+            }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
 @if (productDeleteConfirm(); as product) {
   <div class="confirm-overlay" (click)="cancelDeleteProduct()">
     <div class="confirm-dialog" (click)="$event.stopPropagation()">

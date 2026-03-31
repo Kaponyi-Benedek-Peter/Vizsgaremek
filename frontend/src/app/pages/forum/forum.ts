@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -26,9 +26,11 @@ export class Forum implements OnInit {
 
   private translate = inject(TranslateService);
   private authService = inject(AuthService);
+  private router = inject(Router);
   forumService = inject(ForumService);
 
   isAuthenticated = computed(() => this.authService.isAuthenticated());
+  isAdmin = computed(() => this.authService.isAdmin());
 
   posts = computed(() => this.forumService.paginatedPosts());
   total_pages = computed(() => this.forumService.total_pages());
@@ -46,28 +48,36 @@ export class Forum implements OnInit {
     this.forumService.loadPosts();
   }
 
+  navigateToNewPost(): void {
+    this.router.navigate(['/admin'], { queryParams: { section: 'posts', action: 'new' } });
+  }
+
   applySearch(): void {
     const filters: PostFilters = {
       search_query: this.search_query() || undefined,
-      category_id:
-        this.selectedCategory() !== 'all' ? (this.selectedCategory() as PostCategory) : undefined,
+      category_id: this.selectedCategory() !== 'all' ? this.selectedCategory() : undefined,
     };
     this.forumService.setFilters(filters);
-  }
-
-  selectCategory(category: PostCategory | 'all'): void {
-    this.selectedCategory.set(category);
-    this.applySearch();
-  }
-
-  changeSort(sort_by: SortOption): void {
-    this.selectedSort.set(sort_by);
-    this.forumService.setSorting(sort_by);
+    this.forumService.setSorting(this.selectedSort());
   }
 
   clearSearch(): void {
     this.search_query.set('');
-    this.applySearch();
+    this.forumService.setFilters({});
+  }
+
+  changeSort(value: SortOption): void {
+    this.selectedSort.set(value);
+    this.forumService.setSorting(value);
+  }
+
+  selectCategory(categoryId: PostCategory | 'all'): void {
+    this.selectedCategory.set(categoryId);
+    const filters: PostFilters = {
+      search_query: this.search_query() || undefined,
+      category_id: categoryId !== 'all' ? categoryId : undefined,
+    };
+    this.forumService.setFilters(filters);
   }
 
   resetFilters(): void {
@@ -76,42 +86,27 @@ export class Forum implements OnInit {
     this.forumService.setFilters({});
   }
 
+  nextPage(): void {
+    this.forumService.setPage(this.forumService.current_page() + 1);
+  }
+
+  prevPage(): void {
+    this.forumService.setPage(this.forumService.current_page() - 1);
+  }
+
   goToPage(page: number): void {
     this.forumService.setPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  previousPage(): void {
-    const current = this.forumService.current_page();
-    if (current > 1) this.goToPage(current - 1);
-  }
-
-  nextPage(): void {
-    const current = this.forumService.current_page();
-    if (current < this.total_pages()) this.goToPage(current + 1);
   }
 
   getPageNumbers(): number[] {
-    const current = this.forumService.current_page();
     const total = this.total_pages();
+    const current = this.forumService.current_page();
     const pages: number[] = [];
+    const range = 2;
 
-    pages.push(1);
-    const start = Math.max(2, current - 1);
-    const end = Math.min(total - 1, current + 1);
-    if (start > 2) pages.push(-1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (end < total - 1) pages.push(-1);
-    if (total > 1) pages.push(total);
-
+    for (let i = Math.max(1, current - range); i <= Math.min(total, current + range); i++) {
+      pages.push(i);
+    }
     return pages;
-  }
-
-  getPageAriaLabel(pageNum: number): string {
-    return `${this.translate.instant('pagination.page')} ${pageNum}`;
-  }
-
-  onPostClick(post: Post): void {
-    void post;
   }
 }

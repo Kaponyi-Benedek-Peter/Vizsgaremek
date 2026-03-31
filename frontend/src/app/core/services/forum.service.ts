@@ -15,6 +15,7 @@ import {
   CATEGORY_COLOR_MAP,
   DEFAULT_CATEGORY_COLOR,
 } from '../models/forum.model';
+import { GalleryImage } from '../models/admin.models';
 import { getCategoryIcon } from '../constants/visuals';
 import { environment } from '../../../environments/environment';
 
@@ -232,6 +233,164 @@ export class ForumService {
   setPosts(posts: Post[]): void {
     this.postsSignal.set(posts);
     this.current_pageSignal.set(1);
+  }
+
+  getAllPostsAdmin(_adminId: string, _sessionToken: string) {
+    return this.fetchPosts();
+  }
+
+  createPostAdmin(
+    userId: string,
+    sessionToken: string,
+    data: {
+      title: string;
+      content: string;
+      excerpt: string;
+      slug: string;
+      image_url: string;
+      category_id: string;
+      tags: string;
+      status: string;
+      is_featured: boolean;
+    },
+  ) {
+    const body = {
+      user_id: btoa(userId),
+      session_token: btoa(sessionToken),
+      title: btoa(data.title),
+      content: btoa(data.content),
+      image_url: btoa(data.image_url),
+      category_id: btoa(data.category_id),
+      slug: btoa(data.slug),
+      except: btoa(data.excerpt),
+      status: btoa(data.status),
+      views: btoa('0'),
+      likes: btoa('0'),
+      comment_count: btoa('0'),
+      is_featured: btoa(data.is_featured ? '1' : '0'),
+      tags: btoa(data.tags),
+    };
+    return this.http
+      .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/create_post`, body)
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of({ status: 'error', statuscode: 500 })),
+      );
+  }
+
+  updatePostAdmin(
+    userId: string,
+    sessionToken: string,
+    postId: string,
+    data: {
+      title: string;
+      content: string;
+      excerpt: string;
+      slug: string;
+      image_url: string;
+      category_id: string;
+      tags: string;
+      status: string;
+      is_featured: boolean;
+      views?: number;
+      likes?: number;
+      comment_count?: number;
+    },
+  ) {
+    const body = {
+      user_id: btoa(userId),
+      session_token: btoa(sessionToken),
+      post_id: btoa(postId),
+      title: btoa(data.title),
+      content: btoa(data.content),
+      image_url: btoa(data.image_url),
+      category_id: btoa(data.category_id),
+      slug: btoa(data.slug),
+      except: btoa(data.excerpt),
+      status: btoa(data.status),
+      views: btoa(String(data.views ?? 0)),
+      likes: btoa(String(data.likes ?? 0)),
+      comment_count: btoa(String(data.comment_count ?? 0)),
+      is_featured: btoa(data.is_featured ? '1' : '0'),
+      tags: btoa(data.tags),
+    };
+    return this.http
+      .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/update_post_by_id`, body)
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of({ status: 'error', statuscode: 500 })),
+      );
+  }
+
+  deletePostAdmin(adminId: string, sessionToken: string, postId: string) {
+    return this.http
+      .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/delete_post_by_id`, {
+        admin_id: btoa(adminId),
+        session_token: btoa(sessionToken),
+        post_id: btoa(postId),
+      })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of({ status: 'error', statuscode: 500 })),
+      );
+  }
+
+  getPostImagesAdmin(adminId: string, adminSessionToken: string, postId: string) {
+    return this.http
+      .post<{ status: string; statuscode: number; images: GalleryImage[] }>(
+        `${this.API_URL}/api/get_post_images_admin`,
+        {
+          admin_id: btoa(adminId),
+          admin_session_token: btoa(adminSessionToken),
+          post_id: btoa(postId),
+        },
+      )
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => (res?.status === 'success' ? res.images : [])),
+        catchError(() => of([] as GalleryImage[])),
+      );
+  }
+
+  uploadPostImageAdmin(
+    adminId: string,
+    adminSessionToken: string,
+    postId: string,
+    imageBase64: string,
+  ) {
+    return this.http
+      .post<{ statuscode: string; status: string; image?: GalleryImage }>(
+        `${this.API_URL}/api/upload_post_image_admin`,
+        {
+          admin_id: btoa(adminId),
+          admin_session_token: btoa(adminSessionToken),
+          post_id: btoa(postId),
+          image_b64: imageBase64,
+        },
+      )
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of({ statuscode: '500', status: 'error' })),
+      );
+  }
+
+  deletePostImageAdmin(
+    adminId: string,
+    adminSessionToken: string,
+    postId: string,
+    imageId: string,
+  ) {
+    return this.http
+      .post<{ statuscode: string; status: string }>(`${this.API_URL}/api/delete_post_image_admin`, {
+        admin_id: btoa(adminId),
+        admin_session_token: btoa(adminSessionToken),
+        post_id: btoa(postId),
+        image_id: btoa(imageId),
+      })
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(() => of({ statuscode: '500', status: 'error' })),
+      );
   }
 
   private applyFilters(posts: Post[], filters: PostFilters): Post[] {

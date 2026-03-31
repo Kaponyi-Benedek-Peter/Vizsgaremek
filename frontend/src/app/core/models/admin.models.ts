@@ -1,7 +1,8 @@
 import { AdminUser, AdminOrder } from '../../core/services/account.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
+import { Post } from '../../core/models/forum.model';
 
-export type AdminSection = 'dashboard' | 'orders' | 'users' | 'products';
+export type AdminSection = 'dashboard' | 'orders' | 'users' | 'products' | 'posts';
 
 export interface NavItem {
   id: AdminSection;
@@ -59,6 +60,22 @@ export interface ProductFormData {
   featured: boolean;
 }
 
+export type PostFormTab = 'basic' | 'content' | 'images';
+
+export type PostStatus = 'draft' | 'published' | 'archived' | 'hidden';
+
+export interface PostFormData {
+  title: string;
+  excerpt: string;
+  content: string;
+  image_url: string;
+  category_id: string;
+  tags: string;
+  status: PostStatus;
+  is_featured: boolean;
+  slug: string;
+}
+
 export type UserActionType = 'change_role' | 'ban' | 'unban' | 'delete';
 
 export interface UserActionRequest {
@@ -71,10 +88,8 @@ export type FieldExtractor<T> = (item: T) => string;
 
 export const ACCOUNT_STATES = ['verified', 'unverified', 'admin', 'superadmin'] as const;
 
-// Admin can only assign these roles (cannot promote to admin or superadmin)
 export const ADMIN_ASSIGNABLE_STATES = ['verified', 'unverified'] as const;
 
-// Superadmin can also promote to admin (but superadmin is DB-only, never assignable from frontend)
 export const SUPERADMIN_ASSIGNABLE_STATES = ['verified', 'unverified', 'admin'] as const;
 
 export const ORDER_COLUMNS: Record<string, FieldExtractor<AdminOrder>> = {
@@ -110,4 +125,13 @@ export const PRODUCT_COLUMNS: Record<string, FieldExtractor<ProductWithHelpers>>
   stock: (p) => String(p.stock_number ?? ''),
   rating: (p) => String(p.rating_number ?? ''),
   status: (p) => (p.in_stock ? 'active' : 'inactive'),
+};
+
+export const POST_COLUMNS: Record<string, FieldExtractor<Post>> = {
+  id: (p) => p.id,
+  title: (p) => p.title || '',
+  excerpt: (p) => p.excerpt || '',
+  tags: (p) => p.tags || '',
+  status: (p) => p.status || '',
+  category: (p) => p.category_id || '',
 };

@@ -1,4 +1,4 @@
-import { FieldExtractor, ProductFormData } from '../models/admin.models';
+import { FieldExtractor, PostFormData, ProductFormData } from '../models/admin.models';
 
 export function emptyProductForm(): ProductFormData {
   return {
@@ -25,6 +25,31 @@ export function emptyProductForm(): ProductFormData {
     thumbnail_url: '',
     featured: false,
   };
+}
+
+export function emptyPostForm(): PostFormData {
+  return {
+    title: '',
+    excerpt: '',
+    content: '',
+    image_url: '',
+    category_id: '',
+    tags: '',
+    status: 'draft',
+    is_featured: false,
+    slug: '',
+  };
+}
+
+export function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 }
 
 interface SearchQuery {

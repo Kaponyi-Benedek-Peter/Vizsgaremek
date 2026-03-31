@@ -1,5 +1,5 @@
 import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
@@ -10,12 +10,15 @@ import {
   OrderProductDetail,
 } from '../../core/services/account.service';
 import { ProductService } from '../../core/services/product.service';
+import { ForumService } from '../../core/services/forum.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ProductWithHelpers } from '../../core/models/product.model';
+import { ProductImage } from '../../core/models/product.model';
+import { Post } from '../../core/models/forum.model';
 import { ICONS } from '../../core/constants/visuals';
 import { ResizableTableDirective } from '../../shared/directives/resizable-table.directive';
 import { formatFileSize } from '../../core/utils/image-utils';
-import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS } from './admin.mock';
+import { MOCK_MODE, MOCK_USERS, MOCK_ORDERS, MOCK_POSTS } from './admin.mock';
 import { PdfExportService } from '../../core/services/pdf-export.service';
 
 import {
@@ -25,6 +28,8 @@ import {
   GalleryImage,
   ProductFormTab,
   ProductFormData,
+  PostFormTab,
+  PostFormData,
   UserActionType,
   UserActionRequest,
   ACCOUNT_STATES,
@@ -33,8 +38,14 @@ import {
   ORDER_COLUMNS,
   USER_COLUMNS,
   PRODUCT_COLUMNS,
+  POST_COLUMNS,
 } from '../../core/models/admin.models';
-import { emptyProductForm, smartFilter } from '../../core/utils/admin.utils';
+import {
+  emptyProductForm,
+  emptyPostForm,
+  generateSlug,
+  smartFilter,
+} from '../../core/utils/admin.utils';
 
 @Component({
   selector: 'app-admin',
@@ -47,9 +58,11 @@ export class Admin implements OnInit {
   private authService = inject(AuthService);
   private accountService = inject(AccountService);
   private productService = inject(ProductService);
+  private forumService = inject(ForumService);
   private toastService = inject(ToastService);
   private translate = inject(TranslateService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private pdfService = inject(PdfExportService);
 
   protected readonly icons = ICONS;
@@ -83,6 +96,7 @@ export class Admin implements OnInit {
   orderStatusFilter = 'all';
   userSearch = '';
   productSearch = '';
+  postSearch = '';
 
   usersLoading = signal(false);
   usersError = signal<string | null>(null);
@@ -90,9 +104,12 @@ export class Admin implements OnInit {
   ordersError = signal<string | null>(null);
   productsLoading = signal(false);
   productsError = signal<string | null>(null);
+  postsLoading = signal(false);
+  postsError = signal<string | null>(null);
 
   apiUsers = signal<AdminUser[]>([]);
   apiOrders = signal<AdminOrder[]>([]);
+  apiPosts = signal<Post[]>([]);
 
   galleryOpen = signal(false);
   galleryProduct = signal<ProductWithHelpers | null>(null);
@@ -109,6 +126,23 @@ export class Admin implements OnInit {
 
   deleteConfirmOpen = signal(false);
   deleteTargetImage = signal<GalleryImage | null>(null);
+
+  postGalleryOpen = signal(false);
+  postGalleryPost = signal<Post | null>(null);
+  postGalleryImages = signal<GalleryImage[]>([]);
+  postGalleryLoading = signal(false);
+  postUploadInProgress = signal(false);
+
+  postImageDetailOpen = signal(false);
+  postImageDetailImage = signal<GalleryImage | null>(null);
+  postImageDetailMeta = signal<ImageMeta | null>(null);
+  postImageDetailNaturalWidth = signal(0);
+  postImageDetailNaturalHeight = signal(0);
+
+  postDeleteImageConfirmOpen = signal(false);
+  postDeleteTargetImage = signal<GalleryImage | null>(null);
+
+  copiedImageUrl = signal<string | null>(null);
 
   activeUserMenu = signal<string | null>(null);
   userActionConfirm = signal<UserActionRequest | null>(null);
@@ -127,9 +161,19 @@ export class Admin implements OnInit {
   orderDetailOpen = signal(false);
   orderDetailOrder = signal<AdminOrder | null>(null);
 
+  postFormOpen = signal(false);
+  postFormTab = signal<PostFormTab>('basic');
+  postFormData = signal<PostFormData>(emptyPostForm());
+  postFormEditId = signal<string | null>(null);
+  postFormSaving = signal(false);
+  postDeleteConfirm = signal<Post | null>(null);
+  postDeleteLoading = signal(false);
+
   productFormIsEdit = computed(() => this.productFormEditId() !== null);
+  postFormIsEdit = computed(() => this.postFormEditId() !== null);
 
   availableCategories = computed(() => this.productService.categories());
+  availablePostCategories = computed(() => this.forumService.categories());
 
   adminName = computed(() => {
     const user = this.authService.currentUser();
@@ -162,6 +206,7 @@ export class Admin implements OnInit {
     { id: 'orders', icon: ICONS.order, label: 'admin.nav.orders' },
     { id: 'users', icon: ICONS.customers, label: 'admin.nav.users' },
     { id: 'products', icon: ICONS.sale, label: 'admin.nav.products' },
+    { id: 'posts', icon: ICONS.forumNewPost, label: 'admin.nav.posts' },
   ];
 
   productFormTabs: { id: ProductFormTab; label: string }[] = [
@@ -169,6 +214,12 @@ export class Admin implements OnInit {
     { id: 'pricing', label: 'admin.product_form.tab_pricing' },
     { id: 'descriptions', label: 'admin.product_form.tab_descriptions' },
     { id: 'details', label: 'admin.product_form.tab_details' },
+  ];
+
+  postFormTabs: { id: PostFormTab; label: string }[] = [
+    { id: 'basic', label: 'admin.posts_form.tab_basic' },
+    { id: 'content', label: 'admin.posts_form.tab_content' },
+    { id: 'images', label: 'admin.posts_form.tab_images' },
   ];
 
   filteredOrders = computed(() => {
@@ -181,6 +232,10 @@ export class Admin implements OnInit {
 
   filteredProducts = computed(() => {
     return smartFilter(this.productService.products(), this.productSearch, PRODUCT_COLUMNS);
+  });
+
+  filteredPosts = computed(() => {
+    return smartFilter(this.apiPosts(), this.postSearch, POST_COLUMNS);
   });
 
   recentOrders = computed(() => this.apiOrders().slice(0, 5));
@@ -199,6 +254,17 @@ export class Admin implements OnInit {
     this.loadUsers();
     this.loadOrders();
     this.loadProducts();
+    this.loadPostsForAdmin();
+
+    this.route.queryParams.subscribe((params) => {
+      if (params['section'] === 'posts') {
+        this.activeSection.set('posts');
+        if (params['action'] === 'new') {
+          // Kis delay, hogy az oldal betöltsön
+          setTimeout(() => this.openPostForm(), 100);
+        }
+      }
+    });
   }
 
   loadUsers(): void {
@@ -266,6 +332,33 @@ export class Admin implements OnInit {
         console.error('Admin products load error:', err);
         this.productsError.set('admin.errors.products_load_failed');
         this.productsLoading.set(false);
+      });
+  }
+
+  loadPostsForAdmin(): void {
+    if (MOCK_MODE) {
+      this.apiPosts.set(MOCK_POSTS);
+      return;
+    }
+
+    this.postsLoading.set(true);
+    this.postsError.set(null);
+    this.forumService
+      .getAllPostsAdmin(
+        this.currentAdminId(),
+        this.authService.getSessionToken() ?? this.authService.getToken() ?? '',
+      )
+      .subscribe({
+        next: (posts) => {
+          this.apiPosts.set(posts);
+          this.postsLoading.set(false);
+        },
+        error: () => {
+          // Fallback: public endpoint
+          this.apiPosts.set(this.forumService.posts());
+          this.postsError.set('admin.errors.posts_load_failed');
+          this.postsLoading.set(false);
+        },
       });
   }
 
@@ -430,6 +523,27 @@ export class Admin implements OnInit {
     return map[state] ?? 'role-user';
   }
 
+  getOrderStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      pending: 'status-pending',
+      processing: 'status-processing',
+      shipped: 'status-shipped',
+      delivered: 'status-delivered',
+      cancelled: 'status-cancelled',
+    };
+    return 'status-badge ' + (map[status] ?? 'status-pending');
+  }
+
+  getPostStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      published: 'post-status-published',
+      draft: 'post-status-draft',
+      archived: 'post-status-archived',
+      hidden: 'post-status-hidden',
+    };
+    return 'post-status-badge ' + (map[status] ?? 'post-status-draft');
+  }
+
   getOrderAddressSummary(order: AdminOrder): string {
     const parts = [
       order.city,
@@ -441,15 +555,34 @@ export class Admin implements OnInit {
     return parts.join(' ') || '—';
   }
 
-  getOrderStatusClass(status: string): string {
-    const map: Record<string, string> = {
-      pending: 'status-pending',
-      processing: 'status-processing',
-      shipped: 'status-shipped',
-      delivered: 'status-delivered',
-      cancelled: 'status-cancelled',
-    };
-    return 'status-badge ' + (map[status] ?? 'status-pending');
+  getProductImageCount(product: ProductWithHelpers): number {
+    const count = product.images?.length ?? 0;
+    return count > 0 ? count : product.thumbnail_url ? 1 : 0;
+  }
+
+  trackById(_index: number, item: { id: string }): string {
+    return item.id;
+  }
+
+  trackByProductId(_index: number, item: ProductWithHelpers): string {
+    return item.id;
+  }
+
+  isSelf(user: AdminUser): boolean {
+    return user.id === this.currentAdminId();
+  }
+
+  canManageUser(user: AdminUser): boolean {
+    if (this.isSelf(user)) return false;
+
+    const myRole = this.authService.authState().role;
+    const targetRole = user.account_state;
+
+    if (myRole === 'superadmin') return true;
+    if (myRole === 'admin') {
+      return targetRole !== 'admin' && targetRole !== 'superadmin';
+    }
+    return false;
   }
 
   updateOrderStatus(order: AdminOrder, newStatus: string): void {
@@ -501,34 +634,8 @@ export class Admin implements OnInit {
   confirmCancelOrder(): void {
     const order = this.orderCancelConfirm();
     if (!order) return;
-
     this.orderCancelConfirm.set(null);
     this.updateOrderStatus(order, 'cancelled');
-  }
-
-  trackById(_index: number, item: { id: string }): string {
-    return item.id;
-  }
-
-  trackByProductId(_index: number, item: ProductWithHelpers): string {
-    return item.id;
-  }
-
-  isSelf(user: AdminUser): boolean {
-    return user.id === this.currentAdminId();
-  }
-
-  canManageUser(user: AdminUser): boolean {
-    if (this.isSelf(user)) return false;
-
-    const myRole = this.authService.authState().role;
-    const targetRole = user.account_state;
-
-    if (myRole === 'superadmin') return true;
-    if (myRole === 'admin') {
-      return targetRole !== 'admin' && targetRole !== 'superadmin';
-    }
-    return false;
   }
 
   toggleUserMenu(userId: string, event: MouseEvent): void {
@@ -540,7 +647,6 @@ export class Admin implements OnInit {
     const myRole = this.authService.authState().role;
     const assignable =
       myRole === 'superadmin' ? SUPERADMIN_ASSIGNABLE_STATES : ADMIN_ASSIGNABLE_STATES;
-
     return [...assignable].filter((s) => s !== user.account_state);
   }
 
@@ -644,6 +750,71 @@ export class Admin implements OnInit {
     }
   }
 
+  getUserActionTitle(): string {
+    const req = this.userActionConfirm();
+    if (!req) return '';
+    switch (req.action) {
+      case 'change_role':
+        return 'admin.user_actions.confirm_role_title';
+      case 'ban':
+        return 'admin.user_actions.confirm_ban_title';
+      case 'unban':
+        return 'admin.user_actions.confirm_unban_title';
+      case 'delete':
+        return 'admin.user_actions.confirm_delete_title';
+    }
+  }
+
+  getUserActionText(): string {
+    const req = this.userActionConfirm();
+    if (!req) return '';
+    switch (req.action) {
+      case 'change_role':
+        return 'admin.user_actions.confirm_role_text';
+      case 'ban':
+        return 'admin.user_actions.confirm_ban_text';
+      case 'unban':
+        return 'admin.user_actions.confirm_unban_text';
+      case 'delete':
+        return 'admin.user_actions.confirm_delete_text';
+    }
+  }
+
+  getUserActionBtnClass(): string {
+    const req = this.userActionConfirm();
+    if (!req) return '';
+    return req.action === 'delete' || req.action === 'ban'
+      ? 'confirm-delete-btn'
+      : 'confirm-action-btn';
+  }
+
+  private executeMockUserAction(req: UserActionRequest): void {
+    switch (req.action) {
+      case 'change_role':
+      case 'unban':
+        this.applyUserStateChange(req.user.id, req.newState!);
+        break;
+      case 'ban':
+        this.applyUserStateChange(req.user.id, 'banned');
+        break;
+      case 'delete':
+        this.apiUsers.update((users) => users.filter((u) => u.id !== req.user.id));
+        break;
+    }
+    this.finishUserAction();
+  }
+
+  private applyUserStateChange(userId: string, newState: string): void {
+    this.apiUsers.update((users) =>
+      users.map((u) => (u.id === userId ? { ...u, account_state: newState } : u)),
+    );
+  }
+
+  private finishUserAction(): void {
+    this.userActionLoading.set(false);
+    this.userActionConfirm.set(null);
+  }
+
   requestDeleteProduct(product: ProductWithHelpers, event: MouseEvent): void {
     event.stopPropagation();
     this.productDeleteConfirm.set(product);
@@ -694,9 +865,9 @@ export class Admin implements OnInit {
         name_hu: product.name_hu || '',
         name_en: product.name_en || '',
         name_de: product.name_de || '',
-        description_hu: product.description_hu || product.description_hu || '',
-        description_en: product.description_en || product.description_en || '',
-        description_de: product.description_de || product.description_de || '',
+        description_hu: product.description_hu || '',
+        description_en: product.description_en || '',
+        description_de: product.description_de || '',
         description_preview_hu: product.description_preview_hu || '',
         description_preview_en: product.description_preview_en || '',
         description_preview_de: product.description_preview_de || '',
@@ -707,7 +878,7 @@ export class Admin implements OnInit {
         manufacturer: product.manufacturer || '',
         brand: product.brand || '',
         sku: product.sku || '',
-        active_ingredients: product.active_ingredients || product.active_ingredients || '',
+        active_ingredients: product.active_ingredients || '',
         packaging_hu: product.packaging_hu ?? '',
         packaging_en: product.packaging_en ?? '',
         packaging_de: product.packaging_de ?? '',
@@ -832,78 +1003,475 @@ export class Admin implements OnInit {
     return body;
   }
 
-  private buildAdminAuth(): { id: string; session_token: string } {
-    const storedId = sessionStorage.getItem('user_id') ?? '';
+  openPostForm(post?: Post): void {
+    if (post) {
+      this.postFormEditId.set(post.id);
+      this.postFormData.set({
+        title: post.title || '',
+        excerpt: post.excerpt || '',
+        content: post.content || '',
+        image_url: post.image_url || '',
+        category_id: post.category_id || '',
+        tags: post.tags || '',
+        status: (post.status as PostFormData['status']) || 'draft',
+        is_featured: !!post.is_featured,
+        slug: post.slug || '',
+      });
+    } else {
+      this.postFormEditId.set(null);
+      this.postFormData.set(emptyPostForm());
+    }
+    this.postFormTab.set('basic');
+    this.postFormOpen.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closePostForm(): void {
+    this.postFormOpen.set(false);
+    this.postFormEditId.set(null);
+    this.postFormData.set(emptyPostForm());
+    document.body.style.overflow = '';
+  }
+
+  onPostFormOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('post-form-overlay')) {
+      this.closePostForm();
+    }
+  }
+
+  setPostFormTab(tab: PostFormTab): void {
+    this.postFormTab.set(tab);
+  }
+
+  updatePostField<K extends keyof PostFormData>(key: K, value: PostFormData[K]): void {
+    this.postFormData.update((data) => ({ ...data, [key]: value }));
+    if (key === 'title' && !this.postFormIsEdit()) {
+      const slug = generateSlug(value as string);
+      this.postFormData.update((data) => ({ ...data, slug }));
+    }
+  }
+
+  togglePostFeatured(): void {
+    this.postFormData.update((data) => ({ ...data, is_featured: !data.is_featured }));
+  }
+
+  regenerateSlug(): void {
+    const title = this.postFormData().title;
+    this.postFormData.update((data) => ({ ...data, slug: generateSlug(title) }));
+  }
+
+  savePost(): void {
+    const data = this.postFormData();
+    const editId = this.postFormEditId();
+
+    if (!data.title.trim()) {
+      this.toastService.show('admin.posts_form.error_title_required', 'error');
+      this.postFormTab.set('basic');
+      return;
+    }
+
+    this.postFormSaving.set(true);
+
+    if (MOCK_MODE) {
+      if (editId) {
+        this.apiPosts.update((posts) =>
+          posts.map((p) =>
+            p.id === editId
+              ? {
+                  ...p,
+                  title: data.title,
+                  excerpt: data.excerpt,
+                  content: data.content,
+                  image_url: data.image_url,
+                  category_id: data.category_id,
+                  tags: data.tags,
+                  status: data.status,
+                  is_featured: data.is_featured ? 1 : 0,
+                  slug: data.slug,
+                  updated_at: new Date().toISOString(),
+                }
+              : p,
+          ),
+        );
+      } else {
+        const newPost: Post = {
+          id: String(Date.now()),
+          title: data.title,
+          excerpt: data.excerpt,
+          content: data.content,
+          image_url: data.image_url,
+          category_id: data.category_id,
+          tags: data.tags,
+          status: data.status,
+          is_featured: data.is_featured ? 1 : 0,
+          slug: data.slug,
+          user_id: this.currentAdminId(),
+          views: 0,
+          likes: 0,
+          comment_count: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          published_at: data.status === 'published' ? new Date().toISOString() : undefined,
+        };
+        this.apiPosts.update((posts) => [newPost, ...posts]);
+      }
+      this.toastService.show(
+        editId ? 'admin.posts_form.updated' : 'admin.posts_form.created',
+        'success',
+      );
+      this.postFormSaving.set(false);
+      this.closePostForm();
+      return;
+    }
+
+    const adminId = this.currentAdminId();
     const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
-    return {
-      id: btoa(storedId),
-      session_token: btoa(token),
+
+    const payload = {
+      title: data.title,
+      content: data.content,
+      excerpt: data.excerpt,
+      slug: data.slug,
+      image_url: data.image_url,
+      category_id: data.category_id,
+      tags: data.tags,
+      status: data.status,
+      is_featured: data.is_featured,
+      // Update esetén megőrizzük az eredeti views/likes/comment_count értékeket
+      views: editId ? (this.apiPosts().find((p) => p.id === editId)?.views ?? 0) : 0,
+      likes: editId ? (this.apiPosts().find((p) => p.id === editId)?.likes ?? 0) : 0,
+      comment_count: editId
+        ? (this.apiPosts().find((p) => p.id === editId)?.comment_count ?? 0)
+        : 0,
     };
+
+    const request$ = editId
+      ? this.forumService.updatePostAdmin(adminId, token, editId, payload)
+      : this.forumService.createPostAdmin(adminId, token, payload);
+
+    request$.subscribe({
+      next: (res) => {
+        if (res.statuscode === 200 || res.statuscode.toString() === '200') {
+          this.toastService.show(
+            editId ? 'admin.posts_form.updated' : 'admin.posts_form.created',
+            'success',
+          );
+          this.closePostForm();
+          this.loadPostsForAdmin();
+        } else {
+          this.toastService.show('admin.posts_form.save_error', 'error');
+        }
+        this.postFormSaving.set(false);
+      },
+      error: () => {
+        this.toastService.show('admin.posts_form.save_error', 'error');
+        this.postFormSaving.set(false);
+      },
+    });
   }
 
-  private executeMockUserAction(req: UserActionRequest): void {
-    switch (req.action) {
-      case 'change_role':
-      case 'unban':
-        this.applyUserStateChange(req.user.id, req.newState!);
-        break;
-      case 'ban':
-        this.applyUserStateChange(req.user.id, 'banned');
-        break;
-      case 'delete':
-        this.apiUsers.update((users) => users.filter((u) => u.id !== req.user.id));
-        break;
+  requestDeletePost(post: Post, event: MouseEvent): void {
+    event.stopPropagation();
+    this.postDeleteConfirm.set(post);
+  }
+
+  cancelDeletePost(): void {
+    this.postDeleteConfirm.set(null);
+  }
+
+  confirmDeletePost(): void {
+    const post = this.postDeleteConfirm();
+    if (!post) return;
+
+    this.postDeleteLoading.set(true);
+
+    if (MOCK_MODE) {
+      this.apiPosts.update((posts) => posts.filter((p) => p.id !== post.id));
+      this.toastService.show('admin.posts_form.deleted', 'success');
+      this.postDeleteLoading.set(false);
+      this.postDeleteConfirm.set(null);
+      return;
     }
-    this.finishUserAction();
+
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    this.forumService.deletePostAdmin(adminId, token, post.id).subscribe({
+      next: (res) => {
+        if (res.statuscode === 200 || res.statuscode.toString() === '200') {
+          this.apiPosts.update((posts) => posts.filter((p) => p.id !== post.id));
+          this.toastService.show('admin.posts_form.deleted', 'success');
+        } else {
+          this.toastService.show('admin.posts_form.delete_error', 'error');
+        }
+        this.postDeleteLoading.set(false);
+        this.postDeleteConfirm.set(null);
+      },
+      error: () => {
+        this.toastService.show('admin.posts_form.delete_error', 'error');
+        this.postDeleteLoading.set(false);
+        this.postDeleteConfirm.set(null);
+      },
+    });
   }
 
-  private applyUserStateChange(userId: string, newState: string): void {
-    this.apiUsers.update((users) =>
-      users.map((u) => (u.id === userId ? { ...u, account_state: newState } : u)),
-    );
+  openPostGallery(post: Post): void {
+    this.postGalleryPost.set(post);
+    this.postGalleryImages.set([]);
+    this.postGalleryOpen.set(true);
+    this.postGalleryLoading.set(true);
+    document.body.style.overflow = 'hidden';
+
+    if (MOCK_MODE) {
+      const mockImages: GalleryImage[] = [];
+      if (post.image_url) {
+        mockImages.push({
+          id: 'mock-cover',
+          product_id: post.id,
+          image_url: post.image_url,
+          alt_text_hu: post.title,
+          alt_text_en: post.title,
+          alt_text_de: post.title,
+          sort_id: '1',
+        });
+      }
+      this.postGalleryImages.set(mockImages);
+      this.postGalleryLoading.set(false);
+      return;
+    }
+
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    this.forumService.getPostImagesAdmin(adminId, token, post.id).subscribe({
+      next: (images) => {
+        this.postGalleryImages.set(images);
+        this.postGalleryLoading.set(false);
+      },
+      error: () => {
+        this.postGalleryLoading.set(false);
+      },
+    });
   }
 
-  private finishUserAction(): void {
-    this.userActionLoading.set(false);
-    this.userActionConfirm.set(null);
-  }
-
-  getUserActionTitle(): string {
-    const req = this.userActionConfirm();
-    if (!req) return '';
-    switch (req.action) {
-      case 'change_role':
-        return 'admin.user_actions.confirm_role_title';
-      case 'ban':
-        return 'admin.user_actions.confirm_ban_title';
-      case 'unban':
-        return 'admin.user_actions.confirm_unban_title';
-      case 'delete':
-        return 'admin.user_actions.confirm_delete_title';
+  closePostGallery(): void {
+    this.postGalleryImages().forEach((img) => {
+      if (img.objectUrl) URL.revokeObjectURL(img.objectUrl);
+    });
+    this.postGalleryOpen.set(false);
+    this.postGalleryPost.set(null);
+    this.postGalleryImages.set([]);
+    if (!this.postImageDetailOpen()) {
+      document.body.style.overflow = '';
     }
   }
 
-  getUserActionText(): string {
-    const req = this.userActionConfirm();
-    if (!req) return '';
-    switch (req.action) {
-      case 'change_role':
-        return 'admin.user_actions.confirm_role_text';
-      case 'ban':
-        return 'admin.user_actions.confirm_ban_text';
-      case 'unban':
-        return 'admin.user_actions.confirm_unban_text';
-      case 'delete':
-        return 'admin.user_actions.confirm_delete_text';
+  onPostGalleryOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('gallery-overlay')) {
+      this.closePostGallery();
     }
   }
 
-  getUserActionBtnClass(): string {
-    const req = this.userActionConfirm();
-    if (!req) return '';
-    return req.action === 'delete' || req.action === 'ban'
-      ? 'confirm-delete-btn'
-      : 'confirm-action-btn';
+  triggerPostFileUpload(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = (e: Event) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) this.handlePostFileUpload(files);
+    };
+    input.click();
+  }
+
+  private async handlePostFileUpload(files: FileList): Promise<void> {
+    const post = this.postGalleryPost();
+    if (!post) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const objectUrl = URL.createObjectURL(file);
+
+      const img = new Image();
+      const dims = await new Promise<{ w: number; h: number }>((resolve) => {
+        img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        img.onerror = () => resolve({ w: 0, h: 0 });
+        img.src = objectUrl;
+      });
+
+      const newImage: GalleryImage = {
+        id: `new-${Date.now()}-${i}`,
+        product_id: post.id,
+        image_url: objectUrl,
+        alt_text_hu: file.name,
+        alt_text_en: file.name,
+        alt_text_de: file.name,
+        sort_id: `${this.postGalleryImages().length + 1}`,
+        file,
+        objectUrl,
+        meta: {
+          name: file.name,
+          size: formatFileSize(file.size),
+          type: file.type || 'unknown',
+          width: dims.w,
+          height: dims.h,
+          resolution: dims.w > 0 ? `${dims.w} × ${dims.h}` : '—',
+          lastModified: new Date(file.lastModified).toLocaleDateString('hu-HU'),
+        },
+      };
+
+      this.postGalleryImages.update((imgs) => [...imgs, newImage]);
+
+      if (!MOCK_MODE) {
+        this.uploadPostImageToBackend(post.id, file, newImage.id);
+      }
+    }
+  }
+
+  private uploadPostImageToBackend(postId: string, file: File, tempId: string): void {
+    this.postUploadInProgress.set(true);
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageBase64 = reader.result as string;
+
+      this.forumService.uploadPostImageAdmin(adminId, token, postId, imageBase64).subscribe({
+        next: (res) => {
+          if (res.statuscode === '200' && 'image' in res) {
+            const uploaded = (res as { statuscode: string; status: string; image: GalleryImage })
+              .image;
+            if (uploaded) {
+              this.postGalleryImages.update((imgs) =>
+                imgs.map((img) =>
+                  img.id === tempId
+                    ? { ...img, id: uploaded.id, image_url: uploaded.image_url, file: undefined }
+                    : img,
+                ),
+              );
+            }
+          }
+          this.postUploadInProgress.set(false);
+        },
+        error: () => {
+          this.postUploadInProgress.set(false);
+        },
+      });
+    };
+    reader.onerror = () => {
+      this.postUploadInProgress.set(false);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  copyImageUrl(url: string): void {
+    navigator.clipboard.writeText(url).then(() => {
+      this.copiedImageUrl.set(url);
+      setTimeout(() => this.copiedImageUrl.set(null), 2000);
+    });
+  }
+
+  requestDeletePostImage(image: GalleryImage, event: MouseEvent): void {
+    event.stopPropagation();
+    this.postDeleteTargetImage.set(image);
+    this.postDeleteImageConfirmOpen.set(true);
+  }
+
+  confirmDeletePostImage(): void {
+    const target = this.postDeleteTargetImage();
+    const post = this.postGalleryPost();
+    if (!target || !post) return;
+
+    if (target.id.startsWith('new-')) {
+      if (target.objectUrl) URL.revokeObjectURL(target.objectUrl);
+      this.postGalleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+      this.cancelDeletePostImage();
+      return;
+    }
+
+    if (MOCK_MODE) {
+      this.postGalleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+      this.toastService.show('admin.gallery.image_deleted', 'success');
+      this.cancelDeletePostImage();
+      return;
+    }
+
+    const adminId = this.currentAdminId();
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    this.forumService.deletePostImageAdmin(adminId, token, post.id, target.id).subscribe({
+      next: (res) => {
+        if (res.statuscode === '200') {
+          if (target.objectUrl) URL.revokeObjectURL(target.objectUrl);
+          this.postGalleryImages.update((imgs) => imgs.filter((img) => img.id !== target.id));
+          this.toastService.show('admin.gallery.image_deleted', 'success');
+        } else {
+          this.toastService.show('admin.gallery.delete_error', 'error');
+        }
+        this.cancelDeletePostImage();
+      },
+      error: () => {
+        this.toastService.show('admin.gallery.delete_error', 'error');
+        this.cancelDeletePostImage();
+      },
+    });
+  }
+
+  cancelDeletePostImage(): void {
+    this.postDeleteImageConfirmOpen.set(false);
+    this.postDeleteTargetImage.set(null);
+  }
+
+  openPostImageDetail(image: GalleryImage): void {
+    this.postImageDetailImage.set(image);
+    this.postImageDetailNaturalWidth.set(0);
+    this.postImageDetailNaturalHeight.set(0);
+
+    if (image.meta) {
+      this.postImageDetailMeta.set(image.meta);
+    } else {
+      this.postImageDetailMeta.set({
+        name: this.extractFileName(image.image_url),
+        size: '—',
+        type: this.guessImageType(image.image_url),
+        width: 0,
+        height: 0,
+        resolution: '...',
+        lastModified: '—',
+      });
+    }
+
+    this.postImageDetailOpen.set(true);
+  }
+
+  onPostDetailImageLoad(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    this.postImageDetailNaturalWidth.set(img.naturalWidth);
+    this.postImageDetailNaturalHeight.set(img.naturalHeight);
+    const meta = this.postImageDetailMeta();
+    if (meta) {
+      this.postImageDetailMeta.set({
+        ...meta,
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+        resolution: `${img.naturalWidth} × ${img.naturalHeight}`,
+      });
+    }
+  }
+
+  closePostImageDetail(): void {
+    this.postImageDetailOpen.set(false);
+    this.postImageDetailImage.set(null);
+    this.postImageDetailMeta.set(null);
+  }
+
+  downloadPostImage(image: GalleryImage): void {
+    const link = document.createElement('a');
+    link.href = image.objectUrl || image.image_url;
+    link.download = this.extractFileName(image.image_url);
+    link.target = '_blank';
+    link.click();
   }
 
   openGallery(product: ProductWithHelpers): void {
@@ -917,24 +1485,18 @@ export class Admin implements OnInit {
 
     if (MOCK_MODE) {
       this.loadMockGalleryImages(product);
-    } else {
-      this.productService.getProductImages(product.id).subscribe({
-        next: (images) => {
-          this.galleryImages.set(
-            images.map((img) => ({
-              ...img,
-              objectUrl: undefined,
-              file: undefined,
-              meta: undefined,
-            })),
-          );
-          this.galleryLoading.set(false);
-        },
-        error: () => {
-          this.galleryLoading.set(false);
-        },
-      });
+      return;
     }
+
+    this.productService.getProductImages(product.id).subscribe({
+      next: (images: ProductImage[]) => {
+        this.galleryImages.set(images as GalleryImage[]);
+        this.galleryLoading.set(false);
+      },
+      error: () => {
+        this.galleryLoading.set(false);
+      },
+    });
   }
 
   private loadMockGalleryImages(product: ProductWithHelpers): void {
@@ -986,11 +1548,6 @@ export class Admin implements OnInit {
     if ((event.target as HTMLElement).classList.contains('gallery-overlay')) {
       this.closeGallery();
     }
-  }
-
-  getProductImageCount(product: ProductWithHelpers): number {
-    const count = product.images?.length ?? 0;
-    return count > 0 ? count : product.thumbnail_url ? 1 : 0;
   }
 
   toggleTransparent(): void {
@@ -1090,14 +1647,12 @@ export class Admin implements OnInit {
             }
             this.uploadInProgress.set(false);
           },
-          error: (err) => {
-            console.error('Image upload failed:', err);
+          error: () => {
             this.uploadInProgress.set(false);
           },
         });
     };
     reader.onerror = () => {
-      console.error('Failed to read file:', file.name);
       this.uploadInProgress.set(false);
     };
     reader.readAsDataURL(file);
@@ -1177,7 +1732,6 @@ export class Admin implements OnInit {
     const img = event.target as HTMLImageElement;
     this.detailNaturalWidth.set(img.naturalWidth);
     this.detailNaturalHeight.set(img.naturalHeight);
-
     const meta = this.detailMeta();
     if (meta) {
       this.detailMeta.set({
@@ -1189,10 +1743,21 @@ export class Admin implements OnInit {
     }
   }
 
-  closeImageDetail(): void {
-    this.detailOpen.set(false);
-    this.detailImage.set(null);
-    this.detailMeta.set(null);
+  downloadImage(image: GalleryImage): void {
+    const link = document.createElement('a');
+    link.href = image.objectUrl || image.image_url;
+    link.download = this.extractFileName(image.image_url);
+    link.target = '_blank';
+    link.click();
+  }
+
+  private buildAdminAuth(): { id: string; session_token: string } {
+    const storedId = sessionStorage.getItem('user_id') ?? '';
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+    return {
+      id: btoa(storedId),
+      session_token: btoa(token),
+    };
   }
 
   onDetailOverlayClick(event: MouseEvent): void {
@@ -1201,31 +1766,48 @@ export class Admin implements OnInit {
     }
   }
 
-  extractFileName(url: string): string {
-    const parts = url.split('/');
-    return parts[parts.length - 1] || 'image';
+  closeImageDetail(): void {
+    this.detailOpen.set(false);
+    this.detailImage.set(null);
+    this.detailMeta.set(null);
+  }
+
+  closeDetail(): void {
+    this.closeImageDetail();
+  }
+
+  getPostCategoryName(categoryId: string): string {
+    const cat = this.availablePostCategories().find((c) => c.id === categoryId);
+    return cat ? cat.display_name : categoryId;
+  }
+
+  openPostGalleryFromForm(): void {
+    const editId = this.postFormEditId();
+    if (!editId) return;
+    const post = this.apiPosts().find((p) => p.id === editId);
+    if (!post) return;
+    this.closePostForm();
+    this.openPostGallery(post);
+  }
+
+  protected extractFileName(url: string): string {
+    try {
+      return url.split('/').pop()?.split('?')[0] || 'image';
+    } catch {
+      return 'image';
+    }
   }
 
   private guessImageType(url: string): string {
     const ext = url.split('.').pop()?.toLowerCase();
     const map: Record<string, string> = {
-      webp: 'image/webp',
       jpg: 'image/jpeg',
       jpeg: 'image/jpeg',
       png: 'image/png',
+      webp: 'image/webp',
       gif: 'image/gif',
       svg: 'image/svg+xml',
     };
-    return map[ext ?? ''] ?? 'image/*';
-  }
-
-  downloadImage(image: GalleryImage): void {
-    const link = document.createElement('a');
-    link.href = image.objectUrl || image.image_url;
-    link.download = this.extractFileName(image.image_url);
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    return map[ext ?? ''] || 'image/*';
   }
 }
