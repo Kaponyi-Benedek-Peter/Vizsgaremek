@@ -4305,8 +4305,20 @@ export class ForumService {
     this.current_pageSignal.set(1);
   }
 
-  getAllPostsAdmin(_adminId: string, _sessionToken: string) {
-    return this.fetchPosts();
+  getAllPostsAdmin(adminId: string, sessionToken: string) {
+    return this.http
+      .post<{ status: string; statuscode: number; posts: Post[] }>(
+        `${this.API_URL}/api/get_all_posts_admin`,
+        {
+          admin_id: btoa(adminId),
+          session_token: btoa(sessionToken),
+        },
+      )
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        map((res) => (res?.status === 'success' && Array.isArray(res.posts) ? res.posts : [])),
+        catchError(() => this.fetchPosts()), // fallback ha az endpoint hibázna
+      );
   }
 
   createPostAdmin(
