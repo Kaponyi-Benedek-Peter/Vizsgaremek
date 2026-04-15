@@ -72,7 +72,7 @@ export interface PostFormData {
   category_id: string;
   tags: string;
   status: PostStatus;
-  is_featured: boolean;
+  is_featured: '1' | '0';
   slug: string;
 }
 

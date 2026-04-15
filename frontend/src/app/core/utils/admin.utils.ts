@@ -36,7 +36,7 @@ export function emptyPostForm(): PostFormData {
     category_id: '',
     tags: '',
     status: 'draft',
-    is_featured: false,
+    is_featured: '0',
     slug: '',
   };
 }

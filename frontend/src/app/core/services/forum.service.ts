@@ -263,7 +263,7 @@ export class ForumService {
       category_id: string;
       tags: string;
       status: string;
-      is_featured: boolean;
+      is_featured: '1' | '0';
     },
   ) {
     const body = {
@@ -303,7 +303,7 @@ export class ForumService {
       category_id: string;
       tags: string;
       status: string;
-      is_featured: boolean;
+      is_featured: '0' | '1';
       views?: number;
       likes?: number;
       comment_count?: number;
@@ -347,6 +347,10 @@ export class ForumService {
       );
   }
 
+  getPostImageUrl(postId: string, imageId: string): string {
+    return `https://www.roysshack.hu/assets/posts/${postId}/${imageId}.webp`;
+  }
+
   getPostImagesAdmin(adminId: string, adminSessionToken: string, postId: string) {
     return this.http
       .post<{ status: string; statuscode: number; images: GalleryImage[] }>(
@@ -367,6 +371,7 @@ export class ForumService {
   uploadPostImageAdmin(
     adminId: string,
     adminSessionToken: string,
+    transparency: string,
     postId: string,
     imageBase64: string,
   ) {
@@ -376,6 +381,7 @@ export class ForumService {
         {
           admin_id: btoa(adminId),
           admin_session_token: btoa(adminSessionToken),
+          transparency: btoa(transparency),
           post_id: btoa(postId),
           image_b64: imageBase64,
         },

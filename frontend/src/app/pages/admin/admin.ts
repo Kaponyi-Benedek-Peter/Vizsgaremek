@@ -1014,7 +1014,7 @@ export class Admin implements OnInit {
         category_id: post.category_id || '',
         tags: post.tags || '',
         status: (post.status as PostFormData['status']) || 'draft',
-        is_featured: !!post.is_featured,
+        is_featured: !!post.is_featured ? '0' : '1',
         slug: post.slug || '',
       });
     } else {
@@ -1052,7 +1052,10 @@ export class Admin implements OnInit {
   }
 
   togglePostFeatured(): void {
-    this.postFormData.update((data) => ({ ...data, is_featured: !data.is_featured }));
+    this.postFormData.update((data) => ({
+      ...data,
+      is_featured: data.is_featured === '1' ? '0' : '1',
+    }));
   }
 
   regenerateSlug(): void {
@@ -1137,7 +1140,6 @@ export class Admin implements OnInit {
       tags: data.tags,
       status: data.status,
       is_featured: data.is_featured,
-      // Update esetén megőrizzük az eredeti views/likes/comment_count értékeket
       views: editId ? (this.apiPosts().find((p) => p.id === editId)?.views ?? 0) : 0,
       likes: editId ? (this.apiPosts().find((p) => p.id === editId)?.likes ?? 0) : 0,
       comment_count: editId
@@ -1284,6 +1286,10 @@ export class Admin implements OnInit {
     input.click();
   }
 
+  private mapTransparency(value: boolean): string {
+    return value ? '1' : '0';
+  }
+
   private async handlePostFileUpload(files: FileList): Promise<void> {
     const post = this.postGalleryPost();
     if (!post) return;
@@ -1323,12 +1329,22 @@ export class Admin implements OnInit {
       this.postGalleryImages.update((imgs) => [...imgs, newImage]);
 
       if (!MOCK_MODE) {
-        this.uploadPostImageToBackend(post.id, file, newImage.id);
+        this.uploadPostImageToBackend(
+          post.id,
+          this.mapTransparency(this.uploadTransparent()),
+          file,
+          newImage.id,
+        );
       }
     }
   }
 
-  private uploadPostImageToBackend(postId: string, file: File, tempId: string): void {
+  private uploadPostImageToBackend(
+    postId: string,
+    transparency: string,
+    file: File,
+    tempId: string,
+  ): void {
     this.postUploadInProgress.set(true);
     const adminId = this.currentAdminId();
     const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
@@ -1337,27 +1353,29 @@ export class Admin implements OnInit {
     reader.onload = () => {
       const imageBase64 = reader.result as string;
 
-      this.forumService.uploadPostImageAdmin(adminId, token, postId, imageBase64).subscribe({
-        next: (res) => {
-          if (res.statuscode === '200' && 'image' in res) {
-            const uploaded = (res as { statuscode: string; status: string; image: GalleryImage })
-              .image;
-            if (uploaded) {
-              this.postGalleryImages.update((imgs) =>
-                imgs.map((img) =>
-                  img.id === tempId
-                    ? { ...img, id: uploaded.id, image_url: uploaded.image_url, file: undefined }
-                    : img,
-                ),
-              );
+      this.forumService
+        .uploadPostImageAdmin(adminId, token, transparency, postId, imageBase64)
+        .subscribe({
+          next: (res) => {
+            if (res.statuscode === '200' && 'image' in res) {
+              const uploaded = (res as { statuscode: string; status: string; image: GalleryImage })
+                .image;
+              if (uploaded) {
+                this.postGalleryImages.update((imgs) =>
+                  imgs.map((img) =>
+                    img.id === tempId
+                      ? { ...img, id: uploaded.id, image_url: uploaded.image_url, file: undefined }
+                      : img,
+                  ),
+                );
+              }
             }
-          }
-          this.postUploadInProgress.set(false);
-        },
-        error: () => {
-          this.postUploadInProgress.set(false);
-        },
-      });
+            this.postUploadInProgress.set(false);
+          },
+          error: () => {
+            this.postUploadInProgress.set(false);
+          },
+        });
     };
     reader.onerror = () => {
       this.postUploadInProgress.set(false);
