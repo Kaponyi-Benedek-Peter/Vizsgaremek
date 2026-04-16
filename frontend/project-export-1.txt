@@ -10370,7 +10370,7 @@ FILE: src\app\pages\admin\admin.mock.ts
 import { AdminUser, AdminOrder } from '../../core/services/account.service';
 import { Post } from '../../core/models/forum.model';
 
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 export const MOCK_USERS: AdminUser[] = [
   {
@@ -19368,7 +19368,7 @@ FILE: src\app\pages\products\product.mock.ts
 
 import { Product, ProductCategory, ProductImageGroup } from '../../core/models/product.model';
 
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 // Mock image gallery per product ID.
 // Add new entries here as you add more images to assets/products/<id>/.
@@ -23457,7 +23457,8 @@ FILE: src\app\pages\register\register.html
           id="email"
           class="form-input"
           [placeholder]="'auth.placeholders.email' | translate"
-          [(ngModel)]="email"
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
           name="email"
           [disabled]="isLoading()"
           required
@@ -24159,7 +24160,10 @@ export class RegistrationPromise implements OnInit {
         this.isVerified.set(true);
         setTimeout(() => {
           this.router.navigate(['/home']);
-        }, 2500);
+          setTimeout(() => {
+            this.authService['toastService']?.success('auth.success.welcome_back');
+          }, 300);
+        }, 1500);
       },
       error: (error) => {
         this.isVerifying.set(false);

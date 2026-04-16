@@ -1,7 +1,7 @@
 import { AdminUser, AdminOrder } from '../../core/services/account.service';
 import { Post } from '../../core/models/forum.model';
 
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 export const MOCK_USERS: AdminUser[] = [
   {

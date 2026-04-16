@@ -1,6 +1,6 @@
 import { Product, ProductCategory, ProductImageGroup } from '../../core/models/product.model';
 
-export const MOCK_MODE = true;
+export const MOCK_MODE = false;
 
 // Mock image gallery per product ID.
 // Add new entries here as you add more images to assets/products/<id>/.
