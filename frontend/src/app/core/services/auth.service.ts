@@ -46,8 +46,9 @@ export class AuthService {
     isAuthenticated: false,
     user: null,
     token: null,
-    sessionToken: null,
     expiresAt: null,
+    session_token: null,
+    session_token_expiration: null,
     role: null,
   });
 
@@ -55,15 +56,16 @@ export class AuthService {
   public isAuthenticated = computed(() => this.authStateSignal().isAuthenticated);
   public currentUser = computed(() => this.authStateSignal().user);
   public token = computed(() => this.authStateSignal().token);
-  public sessionToken = computed(() => this.authStateSignal().sessionToken);
+  public sessionToken = computed(() => this.authStateSignal().session_token);
   public language = computed(() => this.translationService.getCurrentLanguage());
 
   private authStateSubject = new BehaviorSubject<AuthState>({
     isAuthenticated: false,
     user: null,
     token: null,
-    sessionToken: null,
     expiresAt: null,
+    session_token: null,
+    session_token_expiration: null,
     role: null,
   });
 
@@ -82,8 +84,12 @@ export class AuthService {
     const token = this.getStoredToken();
     const user = this.getStoredUser();
     const expiresAt = this.getStoredExpiration();
-    const sessionToken = this.getStoredSessionToken();
+    const session = this.getStoredSessionToken();
     const role = this.getStoredRole();
+
+    const stayLoggedIn = localStorage.getItem(this.STORAGE_TYPE_KEY) === 'local';
+
+    if (!session.token) return;
 
     if (token && user && expiresAt) {
       if (new Date() < expiresAt) {
@@ -91,10 +97,12 @@ export class AuthService {
           isAuthenticated: true,
           user,
           token,
-          sessionToken,
           expiresAt,
+          session_token: session.token ?? null,
+          session_token_expiration: session.expiresAt ?? null,
           role,
         });
+
         this.startStatusPolling();
       } else {
         this.clearStorage();
@@ -198,8 +206,9 @@ export class AuthService {
             isAuthenticated: false,
             user: null,
             token: null,
-            sessionToken: null,
             expiresAt: null,
+            session_token: null,
+            session_token_expiration: null,
             role: null,
           });
 
@@ -302,7 +311,8 @@ export class AuthService {
           const mappedResponse: LoginResponse = {
             user_id: response.user?.id ?? id,
             jwt_token: response.jwt_token,
-            session_token: response.session_token,
+            session_token: response.session_token ?? null,
+            session_token_expiration: response.session_token_expiration ?? null,
             jwt_token_expiration: response.jwt_token_expiration,
             user_state: (response.user?.account_state as UserState) ?? 'verified',
           };
@@ -356,8 +366,9 @@ export class AuthService {
       isAuthenticated: false,
       user: null,
       token: null,
-      sessionToken: null,
       expiresAt: null,
+      session_token: null,
+      session_token_expiration: null,
       role: null,
     });
 
@@ -377,7 +388,7 @@ export class AuthService {
   }
 
   getSessionToken(): string | null {
-    const token = this.authStateSignal().sessionToken;
+    const token = this.authStateSignal().session_token;
     const expires =
       localStorage.getItem(this.SESSION_EXPIRES_KEY) ||
       sessionStorage.getItem(this.SESSION_EXPIRES_KEY);
@@ -479,8 +490,8 @@ export class AuthService {
     skipNavigation = false,
   ): void {
     const jwtToken = response.jwt_token;
-    const sessionToken = response.session_token ?? null;
-    const sessionExpires = response.session_token_expiration ?? null;
+    const session_token = response.session_token ?? null;
+    const session_expires = response.session_token_expiration ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -515,7 +526,7 @@ export class AuthService {
     this.storeRole(role, stayLoggedIn);
     this.storeId(id, stayLoggedIn);
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
-    this.storeSessionToken(sessionToken, sessionExpires, stayLoggedIn);
+    this.storeSessionToken(session_token, session_expires, stayLoggedIn);
     if (userData) {
       this.storeUser(userData, stayLoggedIn);
     }
@@ -524,8 +535,9 @@ export class AuthService {
       isAuthenticated: true,
       user: userData || this.getStoredUser(),
       token: jwtToken,
-      sessionToken,
       expiresAt,
+      session_token: session_token ?? null,
+      session_token_expiration: session_expires ?? null,
       role,
     });
 
@@ -593,10 +605,19 @@ export class AuthService {
     return isNaN(date.getTime()) ? null : date;
   }
 
-  private getStoredSessionToken(): string | null {
-    return (
-      localStorage.getItem(this.SESSION_TOKEN_KEY) || sessionStorage.getItem(this.SESSION_TOKEN_KEY)
-    );
+  private getStoredSessionToken(): { token: string | null; expiresAt: string | null } {
+    const token =
+      localStorage.getItem(this.SESSION_TOKEN_KEY) ||
+      sessionStorage.getItem(this.SESSION_TOKEN_KEY);
+
+    const expiresAt =
+      localStorage.getItem(this.SESSION_EXPIRES_KEY) ||
+      sessionStorage.getItem(this.SESSION_EXPIRES_KEY);
+
+    return {
+      token,
+      expiresAt,
+    };
   }
 
   private clearStorage(): void {
@@ -697,5 +718,9 @@ export class AuthService {
 
   isVerified(): boolean {
     return this.authStateSignal().role === 'verified';
+  }
+
+  private assertString(value: string | null): string | undefined {
+    return value ?? undefined;
   }
 }
