@@ -188,7 +188,7 @@ export class AuthService {
 
   private storeId(user_id: string, stayLoggedIn: boolean): void {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
-    storage.setItem('user_id', user_id);
+    storage.setItem('user_id', btoa(user_id));
   }
 
   private getStoredRole(): UserState | null {
