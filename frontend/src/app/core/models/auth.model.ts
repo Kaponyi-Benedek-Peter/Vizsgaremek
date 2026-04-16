@@ -31,6 +31,7 @@ export interface LoginResponse {
   user_id: string;
   jwt_token: string;
   session_token?: string;
+  session_token_expiration?: string;
   jwt_token_expiration?: string;
   user_state: UserState;
 }

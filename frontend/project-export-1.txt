@@ -2113,6 +2113,7 @@ export interface LoginResponse {
   user_id: string;
   jwt_token: string;
   session_token?: string;
+  session_token_expiration?: string;
   jwt_token_expiration?: string;
   user_state: UserState;
 }
@@ -3126,6 +3127,7 @@ export class AuthService {
   private readonly EXPIRES_KEY = 'auth_expires';
   private readonly STORAGE_TYPE_KEY = 'auth_storage_type';
   private readonly SESSION_TOKEN_KEY = 'auth_session_token';
+  private readonly SESSION_EXPIRES_KEY = 'auth_session_expires';
   private readonly STATUS_POLL_INTERVAL = 100_000;
 
   private toastService = inject(ToastService);
@@ -3468,7 +3470,19 @@ export class AuthService {
   }
 
   getSessionToken(): string | null {
-    return this.authStateSignal().sessionToken;
+    const token = this.authStateSignal().sessionToken;
+    const expires =
+      localStorage.getItem(this.SESSION_EXPIRES_KEY) ||
+      sessionStorage.getItem(this.SESSION_EXPIRES_KEY);
+
+    if (!token || !expires) return null;
+
+    if (new Date() > new Date(expires)) {
+      this.logout();
+      return null;
+    }
+
+    return token;
   }
 
   isUserAuthenticated(): boolean {
@@ -3559,6 +3573,7 @@ export class AuthService {
   ): void {
     const jwtToken = response.jwt_token;
     const sessionToken = response.session_token ?? null;
+    const sessionExpires = response.session_token_expiration ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -3593,7 +3608,7 @@ export class AuthService {
     this.storeRole(role, stayLoggedIn);
     this.storeId(id, stayLoggedIn);
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
-    this.storeSessionToken(sessionToken, stayLoggedIn);
+    this.storeSessionToken(sessionToken, sessionExpires, stayLoggedIn);
     if (userData) {
       this.storeUser(userData, stayLoggedIn);
     }
@@ -3629,10 +3644,19 @@ export class AuthService {
     storage.setItem(this.STORAGE_TYPE_KEY, stayLoggedIn ? 'local' : 'session');
   }
 
-  private storeSessionToken(sessionToken: string | null, stayLoggedIn: boolean): void {
+  private storeSessionToken(
+    sessionToken: string | null,
+    expiresAt: string | null,
+    stayLoggedIn: boolean,
+  ): void {
     if (!sessionToken) return;
+
     const storage = stayLoggedIn ? localStorage : sessionStorage;
     storage.setItem(this.SESSION_TOKEN_KEY, sessionToken);
+
+    if (expiresAt) {
+      storage.setItem('auth_session_expires', expiresAt);
+    }
   }
 
   private storeUser(user: User, stayLoggedIn: boolean): void {
