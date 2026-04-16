@@ -3214,7 +3214,7 @@ export class AuthService {
     return this.http.post<{ account_state: string; statuscode: string; status: string }>(
       `${this.API_URL}/api/get_user_state`,
       {
-        id: btoa(id),
+        id: id,
         session_token: btoa(sessionToken),
       },
     );
