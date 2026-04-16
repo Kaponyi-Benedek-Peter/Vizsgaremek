@@ -75,7 +75,10 @@ export class RegistrationPromise implements OnInit {
         this.isVerified.set(true);
         setTimeout(() => {
           this.router.navigate(['/home']);
-        }, 2500);
+          setTimeout(() => {
+            this.authService['toastService']?.success('auth.success.welcome_back');
+          }, 300);
+        }, 1500);
       },
       error: (error) => {
         this.isVerifying.set(false);
