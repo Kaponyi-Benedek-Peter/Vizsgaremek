@@ -130,12 +130,12 @@ export class AccountService {
     sessionToken: string,
     id: string,
   ): Observable<ApiResponse<User>> {
-    const request = encodeObjectValues({
+    const request = {
       new_firstname: newFirstname,
       new_lastname: newLastname,
       session_token: sessionToken,
       id: id,
-    });
+    };
 
     return this.http
       .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, request)
