@@ -122,7 +122,7 @@ export class AuthService {
       `${this.API_URL}/api/get_user_state`,
       {
         id: id,
-        session_token: sessionToken,
+        session_token: btoa(unescape(encodeURIComponent(sessionToken))),
       },
     );
   }
