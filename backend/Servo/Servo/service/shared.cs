@@ -35,8 +35,19 @@ namespace Servo.service
         }
         public static string b64dec(string str)
         {
-
-            return System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(str));
+            string toReturn = str;
+            while (true)
+            {
+                try
+                {
+                    toReturn = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(toReturn));
+                }
+                catch (FormatException)
+                {
+                    break;
+                }
+            }
+            return toReturn;
         }
 
         static string thumbnail_template(int id) {return $"{service.shared.current_url}assets/products/{id}/thumbnail.webp"; }
