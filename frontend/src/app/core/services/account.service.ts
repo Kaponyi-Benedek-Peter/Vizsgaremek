@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { User } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { SupportedLanguage } from './translation.service';
+import { encodeObjectValues } from '../utils/base64.utils';
 
 export interface UpdateProfileRequest {
   firstname?: string;
@@ -140,11 +141,11 @@ export class AccountService {
     password: string,
     language: SupportedLanguage,
   ): Observable<ApiResponse> {
-    const request: DeleteAccountRequest = {
+    const request: DeleteAccountRequest = encodeObjectValues({
       id: userId,
       password: password,
       language: language as SupportedLanguage,
-    };
+    });
 
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/delacc_request`, request)
@@ -152,10 +153,10 @@ export class AccountService {
   }
 
   confirmAccountDeletion(encodedId: string, encodedToken: string): Observable<ApiResponse> {
-    const request = {
+    const request = encodeObjectValues({
       id: encodedId,
       token: encodedToken,
-    };
+    });
 
     return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_promise`, request).pipe(
       tap(() => this.authService.logout()),
@@ -168,11 +169,11 @@ export class AccountService {
     currentPassword: string,
     newPassword: string,
   ): Observable<ApiResponse> {
-    const request = {
+    const request = encodeObjectValues({
       id: userId,
       currentPassword: currentPassword,
       newPassword: newPassword,
-    };
+    });
 
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/change-password`, request)

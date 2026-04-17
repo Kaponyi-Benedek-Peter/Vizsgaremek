@@ -22,6 +22,7 @@ import {
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
 import { SupportedLanguage, TranslationService } from './translation.service';
+import { encodeObjectValues } from '../utils/base64.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -245,11 +246,11 @@ export class AuthService {
   }
 
   loginRequest(email: string, password: string, language: SupportedLanguage) {
-    const request: LoginRequest = {
+    const request: LoginRequest = encodeObjectValues({
       email: email,
       password: password,
       language: language as SupportedLanguage,
-    };
+    });
 
     return this.http
       .post<LoginRequestResponse>(`${this.API_URL}/api/login_request`, request)
@@ -261,10 +262,10 @@ export class AuthService {
     confirmationToken: string,
     stayLoggedIn: boolean,
   ): Observable<LoginResponse> {
-    const request: LoginPromiseRequest = {
+    const request: LoginPromiseRequest = encodeObjectValues({
       id,
       confirmation_token: confirmationToken,
-    };
+    });
 
     return this.http.post<LoginResponse>(`${this.API_URL}/api/login_promise`, request).pipe(
       tap((response) => {
@@ -281,13 +282,13 @@ export class AuthService {
     lastname: string,
     language: SupportedLanguage,
   ): Observable<void> {
-    const request: RegistrationRequest = {
+    const request: RegistrationRequest = encodeObjectValues({
       email: email,
       password: password,
       firstname: firstname,
       lastname: lastname,
       language: language as SupportedLanguage,
-    };
+    });
 
     return this.http
       .post<void>(`${this.API_URL}/api/registration_request`, request)
@@ -299,10 +300,10 @@ export class AuthService {
     token: string,
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
-    const request: RegistrationPromiseRequest = {
+    const request: RegistrationPromiseRequest = encodeObjectValues({
       id,
       token,
-    };
+    });
 
     return this.http
       .post<RegistrationResponse>(`${this.API_URL}/api/registration_promise`, request)
@@ -323,11 +324,11 @@ export class AuthService {
   }
 
   requestPasswordChange(email: string, newPassword: string, language: SupportedLanguage) {
-    const request: PasswordChangeRequest = {
+    const request: PasswordChangeRequest = encodeObjectValues({
       email: email,
       password: newPassword,
       language: language as SupportedLanguage,
-    };
+    });
 
     return this.http
       .post<void>(`${this.API_URL}/api/chpass_request`, request)
@@ -335,10 +336,10 @@ export class AuthService {
   }
 
   completePasswordChange(id: string, token: string) {
-    const request: PasswordChangePromise = {
+    const request: PasswordChangePromise = encodeObjectValues({
       id,
       token,
-    };
+    });
     const stayLoggedIn = localStorage.getItem(this.STORAGE_TYPE_KEY) === 'local';
 
     return this.http

@@ -2785,6 +2785,7 @@ import { AuthService } from './auth.service';
 import { User } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 import { SupportedLanguage } from './translation.service';
+import { encodeObjectValues } from '../utils/base64.utils';
 
 export interface UpdateProfileRequest {
   firstname?: string;
@@ -2919,11 +2920,11 @@ export class AccountService {
     password: string,
     language: SupportedLanguage,
   ): Observable<ApiResponse> {
-    const request: DeleteAccountRequest = {
+    const request: DeleteAccountRequest = encodeObjectValues({
       id: userId,
       password: password,
       language: language as SupportedLanguage,
-    };
+    });
 
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/delacc_request`, request)
@@ -2931,10 +2932,10 @@ export class AccountService {
   }
 
   confirmAccountDeletion(encodedId: string, encodedToken: string): Observable<ApiResponse> {
-    const request = {
+    const request = encodeObjectValues({
       id: encodedId,
       token: encodedToken,
-    };
+    });
 
     return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_promise`, request).pipe(
       tap(() => this.authService.logout()),
@@ -2947,11 +2948,11 @@ export class AccountService {
     currentPassword: string,
     newPassword: string,
   ): Observable<ApiResponse> {
-    const request = {
+    const request = encodeObjectValues({
       id: userId,
       currentPassword: currentPassword,
       newPassword: newPassword,
-    };
+    });
 
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/change-password`, request)
@@ -3109,6 +3110,7 @@ import {
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
 import { SupportedLanguage, TranslationService } from './translation.service';
+import { encodeObjectValues } from '../utils/base64.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -3332,11 +3334,11 @@ export class AuthService {
   }
 
   loginRequest(email: string, password: string, language: SupportedLanguage) {
-    const request: LoginRequest = {
+    const request: LoginRequest = encodeObjectValues({
       email: email,
       password: password,
       language: language as SupportedLanguage,
-    };
+    });
 
     return this.http
       .post<LoginRequestResponse>(`${this.API_URL}/api/login_request`, request)
@@ -3348,10 +3350,10 @@ export class AuthService {
     confirmationToken: string,
     stayLoggedIn: boolean,
   ): Observable<LoginResponse> {
-    const request: LoginPromiseRequest = {
+    const request: LoginPromiseRequest = encodeObjectValues({
       id,
       confirmation_token: confirmationToken,
-    };
+    });
 
     return this.http.post<LoginResponse>(`${this.API_URL}/api/login_promise`, request).pipe(
       tap((response) => {
@@ -3368,13 +3370,13 @@ export class AuthService {
     lastname: string,
     language: SupportedLanguage,
   ): Observable<void> {
-    const request: RegistrationRequest = {
+    const request: RegistrationRequest = encodeObjectValues({
       email: email,
       password: password,
       firstname: firstname,
       lastname: lastname,
       language: language as SupportedLanguage,
-    };
+    });
 
     return this.http
       .post<void>(`${this.API_URL}/api/registration_request`, request)
@@ -3386,10 +3388,10 @@ export class AuthService {
     token: string,
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
-    const request: RegistrationPromiseRequest = {
+    const request: RegistrationPromiseRequest = encodeObjectValues({
       id,
       token,
-    };
+    });
 
     return this.http
       .post<RegistrationResponse>(`${this.API_URL}/api/registration_promise`, request)
@@ -3410,11 +3412,11 @@ export class AuthService {
   }
 
   requestPasswordChange(email: string, newPassword: string, language: SupportedLanguage) {
-    const request: PasswordChangeRequest = {
+    const request: PasswordChangeRequest = encodeObjectValues({
       email: email,
       password: newPassword,
       language: language as SupportedLanguage,
-    };
+    });
 
     return this.http
       .post<void>(`${this.API_URL}/api/chpass_request`, request)
@@ -3422,10 +3424,10 @@ export class AuthService {
   }
 
   completePasswordChange(id: string, token: string) {
-    const request: PasswordChangePromise = {
+    const request: PasswordChangePromise = encodeObjectValues({
       id,
       token,
-    };
+    });
     const stayLoggedIn = localStorage.getItem(this.STORAGE_TYPE_KEY) === 'local';
 
     return this.http
@@ -5863,7 +5865,7 @@ export function smartFilter<T>(
 FILE: src\app\core\utils\base64.utils.ts
 ================================================================================
 
-export function encodeObjectValues<T extends object>(obj: T): Record<string, string> {
+export function encodeObjectValues<T extends object>(obj: T): T {
   const result: Record<string, string> = {};
 
   for (const key of Object.keys(obj)) {
@@ -5872,7 +5874,7 @@ export function encodeObjectValues<T extends object>(obj: T): Record<string, str
     result[key] = btoa(unescape(encodeURIComponent(stringified)));
   }
 
-  return result;
+  return result as unknown as T;
 }
 
 

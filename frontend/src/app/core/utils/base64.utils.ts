@@ -1,4 +1,4 @@
-export function encodeObjectValues<T extends object>(obj: T): Record<string, string> {
+export function encodeObjectValues<T extends object>(obj: T): T {
   const result: Record<string, string> = {};
 
   for (const key of Object.keys(obj)) {
@@ -7,5 +7,5 @@ export function encodeObjectValues<T extends object>(obj: T): Record<string, str
     result[key] = btoa(unescape(encodeURIComponent(stringified)));
   }
 
-  return result;
+  return result as unknown as T;
 }
