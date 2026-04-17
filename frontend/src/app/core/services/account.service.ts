@@ -124,16 +124,22 @@ export class AccountService {
     return this.http.get<User>(`${this.API_URL}/api/getUser`).pipe(catchError(this.handleError));
   }
 
-  updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
-    const encodedUpdates: Partial<UpdateProfileRequest> = {};
-
-    if (updates.firstname) encodedUpdates.firstname = updates.firstname;
-    if (updates.lastname) encodedUpdates.lastname = updates.lastname;
-    if (updates.email) encodedUpdates.email = updates.email;
+  updateProfile(
+    newFirstname: string,
+    newLastname: string,
+    sessionToken: string,
+    id: string,
+  ): Observable<ApiResponse<User>> {
+    const request = encodeObjectValues({
+      new_firstname: newFirstname,
+      new_lastname: newLastname,
+      session_token: sessionToken,
+      id: id,
+    });
 
     return this.http
-      .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, encodedUpdates)
-      .pipe(catchError(this.handleError));
+      .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, request)
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
   deleteAccountRequest(

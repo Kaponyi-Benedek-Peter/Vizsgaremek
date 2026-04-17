@@ -2903,16 +2903,22 @@ export class AccountService {
     return this.http.get<User>(`${this.API_URL}/api/getUser`).pipe(catchError(this.handleError));
   }
 
-  updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
-    const encodedUpdates: Partial<UpdateProfileRequest> = {};
-
-    if (updates.firstname) encodedUpdates.firstname = updates.firstname;
-    if (updates.lastname) encodedUpdates.lastname = updates.lastname;
-    if (updates.email) encodedUpdates.email = updates.email;
+  updateProfile(
+    newFirstname: string,
+    newLastname: string,
+    sessionToken: string,
+    id: string,
+  ): Observable<ApiResponse<User>> {
+    const request = encodeObjectValues({
+      new_firstname: newFirstname,
+      new_lastname: newLastname,
+      session_token: sessionToken,
+      id: id,
+    });
 
     return this.http
-      .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, encodedUpdates)
-      .pipe(catchError(this.handleError));
+      .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, request)
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
   deleteAccountRequest(
@@ -3490,6 +3496,10 @@ export class AuthService {
     }
 
     return token;
+  }
+
+  getUserId(): string | null {
+    return this.authStateSignal().user?.id ?? null;
   }
 
   isUserAuthenticated(): boolean {
@@ -17675,6 +17685,7 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-password-reset',
@@ -17721,19 +17732,29 @@ export class PasswordReset implements OnInit {
     this.isProcessing.set(true);
     this.errorMessage.set('');
 
-    this.authService.completePasswordChange(encodedId, encodedToken).subscribe({
-      next: () => {
-        this.isProcessing.set(false);
-        this.isSuccess.set(true);
-        const message = this.translateService.instant('auth.success.password_changed');
-        this.toastService.success(message);
-      },
-      error: (error) => {
-        this.isProcessing.set(false);
-        this.errorMessage.set(error.message || 'auth.errors.password_reset_failed');
-        this.authService.logout();
-      },
-    });
+    this.authService
+      .completePasswordChange(encodedId, encodedToken)
+      .pipe(
+        tap(() => {
+          this.authService.logout();
+          setTimeout(() => {
+            window.location.reload();
+          }, 15000);
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.isProcessing.set(false);
+          this.isSuccess.set(true);
+          const message = this.translateService.instant('auth.success.password_changed');
+          this.toastService.success(message);
+        },
+        error: (error) => {
+          this.isProcessing.set(false);
+          this.errorMessage.set(error.message || 'auth.errors.password_reset_failed');
+          this.authService.logout();
+        },
+      });
   }
 
   backToLogin(): void {
@@ -22153,6 +22174,10 @@ export class Profile implements OnInit {
 
     const firstname = this.editFirstname.trim();
     const lastname = this.editLastname.trim();
+    const userId = this.authService.getUserId();
+    const token = this.authService.getSessionToken();
+
+    if (!userId || !token) return;
 
     if (!firstname || !lastname) {
       this.profileEditError.set('profile.errors.name_required');
@@ -22161,19 +22186,21 @@ export class Profile implements OnInit {
 
     this.isUpdatingProfile.set(true);
 
-    this.accountService.updateProfile({ firstname, lastname }).subscribe({
-      next: () => {
-        this.isUpdatingProfile.set(false);
-        this.profileEditSuccess.set(true);
-        this.authService.patchCurrentUser({ firstname, lastname });
-        this.loadPersonalInfoIntoForm();
-        this.toastService.success('profile.success.profile_updated');
-      },
-      error: (err) => {
-        this.isUpdatingProfile.set(false);
-        this.profileEditError.set(err.message ?? 'profile.errors.update_failed');
-      },
-    });
+    this.accountService
+      .updateProfile(firstname, lastname, this.authService.getToken()!, userId)
+      .subscribe({
+        next: () => {
+          this.isUpdatingProfile.set(false);
+          this.profileEditSuccess.set(true);
+          this.authService.patchCurrentUser({ firstname, lastname });
+          this.loadPersonalInfoIntoForm();
+          this.toastService.success('profile.success.profile_updated');
+        },
+        error: (err) => {
+          this.isUpdatingProfile.set(false);
+          this.profileEditError.set(err.message ?? 'profile.errors.update_failed');
+        },
+      });
   }
 
   requestPasswordChange(): void {

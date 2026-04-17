@@ -404,6 +404,10 @@ export class AuthService {
     return token;
   }
 
+  getUserId(): string | null {
+    return this.authStateSignal().user?.id ?? null;
+  }
+
   isUserAuthenticated(): boolean {
     const isAuth = this.authStateSignal().isAuthenticated;
     const hasValidToken = this.getToken() !== null;
