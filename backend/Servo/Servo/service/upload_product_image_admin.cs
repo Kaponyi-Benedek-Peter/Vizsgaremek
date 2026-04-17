@@ -13,9 +13,7 @@ namespace Servo.service
     internal class upload_product_image_admin
     {
         private static readonly HttpClient _http = new HttpClient();
-        private static readonly string HF_TOKEN = service.shared.conf("r", "hftoken");
-        private const string HF_URL = "https://api-inference.huggingface.co/models/briaai/RMBG-1.4";
-
+        
         public static int process_upload_product_image(string controller_admin_id, string controller_sesstoken, string controller_product_id, string image_b64, out string saved_filename, string transparency)
         {
             saved_filename = "";

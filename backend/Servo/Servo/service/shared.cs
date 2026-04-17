@@ -35,6 +35,7 @@ namespace Servo.service
         }
         public static string b64dec(string str)
         {
+
             return System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(str));
         }
 

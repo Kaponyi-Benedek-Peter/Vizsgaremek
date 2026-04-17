@@ -23,6 +23,7 @@ namespace Servo.model
                {
                 { "p_new_account_state", "verified" },
                 { "p_id", service_id }
+
                };
 
                 //string result = model.shared.fetchsqlsing("update_account_state_by_email", null, null, null, "users", null, lista);

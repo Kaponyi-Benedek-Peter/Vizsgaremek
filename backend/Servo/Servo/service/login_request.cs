@@ -43,8 +43,10 @@ namespace Servo.service
                     };
 
 
-
-                int result = model.shared.add_confirmation(con);
+                int result1 = model.shared.delete_confirmations_by_user_id_and_type(model_user_id, "login");
+                if (result1 == 200)
+                {
+                    int result = model.shared.add_confirmation(con);
 
                     if (result != 200)
                     {
@@ -52,17 +54,22 @@ namespace Servo.service
                         return 500;
 
                     }
+                    sendlogin(email, model_user_id, new_confirmation_token, language);
+                    return 200;
+                }
+                return 500;
 
 
-
-
-
-
-                    sendlogin(email, model_user_id,new_confirmation_token,language);
                 
 
 
-                return 200;
+
+
+
+
+                   
+                
+
             }
 
             else

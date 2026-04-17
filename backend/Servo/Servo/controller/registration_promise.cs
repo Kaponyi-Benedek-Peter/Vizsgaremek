@@ -57,8 +57,8 @@ namespace Servo.controller
 
                 service.shared.log("Registration promise: " + id + "  " + confirmation_token + "  (" + data.Request.RemoteEndPoint.Address.ToString() + ")");
 
-                int resp = service.registration_promise.process_registration_promise(id, confirmation_token);
-                if (resp == 200)
+                (int, string, string, string, string, string) resp = service.registration_promise.process_registration_promise(id, confirmation_token);
+                if (resp.Item1 == 200)
                 {
                     
                     service.shared.log("response:200 (aktivalva)");
@@ -67,7 +67,19 @@ namespace Servo.controller
                     var respon = new
                     {
                         status = "activated",
-                        statuscode = "200"
+                        //user_token,user_token_expiration,new_jwt_token,jwt_expiration,controller_id
+                        statuscode = "200",
+                        session_token = resp.Item2,
+                        session_token_expiration = resp.Item3,
+                        
+                        jwt_token = resp.Item4,
+                        jwt_token_expiration = resp.Item5,
+
+                        user_id = resp.Item6,
+
+
+                        //user_token,user_token_expiration,new_jwt_token,jwt_expiration,controller_id
+
                     };
 
                     string jsonrespon = JsonSerializer.Serialize(respon);
@@ -77,7 +89,7 @@ namespace Servo.controller
 
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
-                else if (resp == 401)
+                else if (resp.Item1 == 401)
                 {
                     var respon = new
                     {
@@ -92,7 +104,7 @@ namespace Servo.controller
                     service.shared.log("response:401 (wrong_token)");
                     data.Response.OutputStream.Write(buffer, 0, buffer.Length);
                 }
-                else if (resp == 409)
+                else if (resp.Item1 == 409)
                 {
 
                     var respon = new

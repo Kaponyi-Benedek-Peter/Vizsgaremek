@@ -156,7 +156,7 @@ namespace Servo
                 try
                 {
                     //service.shared.log("[starting server 1]");
-                    sh.start_server(int.Parse(port_tbox.Text));
+                    sh.start_server(int.Parse(port_tbox.Text),checkBox1.Checked, checkBox2.Checked);
                     sh.isrunning = true;
                     //service.shared.log("[starting server 6]");
                 }

@@ -19,7 +19,7 @@ namespace Servo
     public class shared
     {
 
-        public async Task start_server(int port)
+        public async Task start_server(int port, Boolean honeypot, Boolean ddosprotection)
         {
             //service.shared.log("[starting server 1.1]");
 
@@ -63,7 +63,7 @@ namespace Servo
                         {
                             try
                             {
-                                controller.router.main(context, service.shared.baseDir);
+                                controller.router.main(context, service.shared.baseDir,ddosprotection);
                             }
                             catch { }
                         });
@@ -80,7 +80,7 @@ namespace Servo
 
 
 
-
+            if (honeypot) { 
             honeypotport = Task.Factory.StartNew(() =>
             {
 
@@ -131,7 +131,7 @@ namespace Servo
                 trap.Stop();
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
-
+            }
 
 
             email_auth_refresh = Task.Factory.StartNew(() =>

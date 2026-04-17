@@ -1369,6 +1369,34 @@ tags
             }
         }
 
+
+
+
+
+        public static int update_order_status_by_id(string user_id, string new_order_status)
+        {
+
+            try
+            {
+                using (MySqlCommand cmd = new MySqlCommand("update_order_status_by_id", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@p_id", user_id);
+                    cmd.Parameters.AddWithValue("@p_order_status", new_order_status);
+                    cmd.ExecuteNonQuery();
+
+                    return 200;
+                }
+            }
+            catch (Exception ex)
+            {
+                service.shared.log($"Error 1: {ex.Message} --model.shared.update_order_status_by_id");
+                return 500;
+            }
+        }
+
+
         public static int update_password_by_id(string user_id, string new_firstname, string new_lastname)
         {
 

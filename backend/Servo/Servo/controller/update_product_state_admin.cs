@@ -44,7 +44,7 @@ namespace Servo.controller
                     admin_id = service.shared.b64dec(jsonObj["admin_id"].ToString());
                     sesstoken = service.shared.b64dec(jsonObj["admin_session_token"].ToString());
                     target_product_id = service.shared.b64dec(jsonObj["target_product_id"].ToString());
-                    new_product_state = service.shared.b64dec(jsonObj["new_product_state"].ToString());
+                    new_product_state = service.shared.b64dec(jsonObj["new_product_status"].ToString());
 
                 }
                 catch
