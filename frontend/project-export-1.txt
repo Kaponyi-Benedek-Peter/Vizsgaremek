@@ -36,7 +36,8 @@ PROJECT STRUCTURE
 │   │   │   ├── 📁 guards/
 │   │   │   │   └── 📄 auth.guard.ts
 │   │   │   ├── 📁 interceptors/
-│   │   │   │   └── 📄 auth.interceptors.ts
+│   │   │   │   ├── 📄 auth.interceptors.ts
+│   │   │   │   └── 📄 base64.interceptor.ts
 │   │   │   ├── 📁 models/
 │   │   │   │   ├── 📄 admin.models.ts
 │   │   │   │   ├── 📄 auth.model.ts
@@ -1135,6 +1136,7 @@ import { HttpClient } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptors';
 
 import { routes } from './app.routes';
+import { base64Interceptor } from './core/interceptors/base64.interceptor';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -1152,6 +1154,7 @@ export const appConfig: ApplicationConfig = {
         deps: [HttpClient],
       },
     }),
+    provideHttpClient(withInterceptors([base64Interceptor])),
   ],
 };
 
@@ -1929,6 +1932,49 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     }),
   );
 };
+
+
+
+================================================================================
+FILE: src\app\core\interceptors\base64.interceptor.ts
+================================================================================
+
+import { HttpInterceptorFn, HttpRequest, HttpEvent, HttpResponse } from '@angular/common/http';
+import { map } from 'rxjs/operators';
+
+export const base64Interceptor: HttpInterceptorFn = (req, next) => {
+  const encodedReq = encodeRequest(req);
+
+  return next(encodedReq).pipe(
+    map((event: HttpEvent<unknown>) => {
+      if (event instanceof HttpResponse && typeof event.body === 'string') {
+        try {
+          const decoded = decodeURIComponent(escape(atob(event.body)));
+          return event.clone({ body: JSON.parse(decoded) });
+        } catch {
+          return event;
+        }
+      }
+      return event;
+    }),
+  );
+};
+
+function encodeRequest(req: HttpRequest<unknown>): HttpRequest<unknown> {
+  const body = req.body;
+
+  if (body === null || body === undefined || body instanceof FormData || body instanceof Blob) {
+    return req;
+  }
+
+  const json = JSON.stringify(body);
+  const encoded = btoa(unescape(encodeURIComponent(json)));
+
+  return req.clone({
+    body: encoded,
+    setHeaders: { 'Content-Type': 'text/plain' },
+  });
+}
 
 
 
@@ -2904,9 +2950,9 @@ export class AccountService {
   updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
     const encodedUpdates: Partial<UpdateProfileRequest> = {};
 
-    if (updates.firstname) encodedUpdates.firstname = this.encodeBase64(updates.firstname);
-    if (updates.lastname) encodedUpdates.lastname = this.encodeBase64(updates.lastname);
-    if (updates.email) encodedUpdates.email = this.encodeBase64(updates.email);
+    if (updates.firstname) encodedUpdates.firstname = updates.firstname;
+    if (updates.lastname) encodedUpdates.lastname = updates.lastname;
+    if (updates.email) encodedUpdates.email = updates.email;
 
     return this.http
       .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, encodedUpdates)
@@ -2919,9 +2965,9 @@ export class AccountService {
     language: SupportedLanguage,
   ): Observable<ApiResponse> {
     const request: DeleteAccountRequest = {
-      id: this.encodeBase64(userId),
-      password: this.encodeBase64(password),
-      language: this.encodeBase64(language) as SupportedLanguage,
+      id: userId,
+      password: password,
+      language: language as SupportedLanguage,
     };
 
     return this.http
@@ -2947,9 +2993,9 @@ export class AccountService {
     newPassword: string,
   ): Observable<ApiResponse> {
     const request = {
-      id: this.encodeBase64(userId),
-      currentPassword: this.encodeBase64(currentPassword),
-      newPassword: this.encodeBase64(newPassword),
+      id: userId,
+      currentPassword: currentPassword,
+      newPassword: newPassword,
     };
 
     return this.http
@@ -2971,11 +3017,11 @@ export class AccountService {
     reason: string,
   ): Observable<ApiResponse> {
     const body = {
-      admin_id: this.encodeBase64(admin_id),
-      admin_session_token: this.encodeBase64(admin_session_token),
-      target_user_id: this.encodeBase64(target_user_id),
-      new_user_state: this.encodeBase64(new_user_state),
-      reason: this.encodeBase64(reason),
+      admin_id: admin_id,
+      admin_session_token: admin_session_token,
+      target_user_id: target_user_id,
+      new_user_state: new_user_state,
+      reason: reason,
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/update_user_state_admin`, body)
@@ -2986,7 +3032,7 @@ export class AccountService {
     const auth = this.buildAdminAuthBody();
     const body = {
       ...auth,
-      user_id: this.encodeBase64(userId),
+      user_id: userId,
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/delete_user_admin`, body)
@@ -3024,10 +3070,10 @@ export class AccountService {
     const storedId = sessionStorage.getItem('user_id') ?? localStorage.getItem('user_id') ?? '';
     const sessionToken = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
     const body = {
-      admin_id: this.encodeBase64(storedId),
-      admin_session_token: this.encodeBase64(sessionToken),
-      target_order_id: this.encodeBase64(orderId),
-      new_order_status: this.encodeBase64(newStatus),
+      admin_id: storedId,
+      admin_session_token: sessionToken,
+      target_order_id: orderId,
+      new_order_status: newStatus,
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/update_order_status_admin`, body)
@@ -3042,17 +3088,9 @@ export class AccountService {
     const tokenToSend = sessionToken ?? jwtToken ?? '';
 
     return {
-      id: this.encodeBase64(storedId),
-      session_token: this.encodeBase64(tokenToSend),
+      id: storedId,
+      session_token: tokenToSend,
     };
-  }
-
-  private encodeBase64(value: string): string {
-    try {
-      return btoa(unescape(encodeURIComponent(value)));
-    } catch {
-      return btoa(value);
-    }
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
@@ -3215,7 +3253,7 @@ export class AuthService {
       `${this.API_URL}/api/get_user_state`,
       {
         id: id,
-        session_token: btoa(sessionToken),
+        session_token: sessionToken,
       },
     );
   }
@@ -3282,7 +3320,7 @@ export class AuthService {
 
   private storeId(user_id: string, stayLoggedIn: boolean): void {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
-    storage.setItem('user_id', btoa(user_id));
+    storage.setItem('user_id', user_id);
   }
 
   private getStoredRole(): UserState | null {
@@ -3340,9 +3378,9 @@ export class AuthService {
 
   loginRequest(email: string, password: string, language: SupportedLanguage) {
     const request: LoginRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(password),
-      language: this.encodeBase64(language) as SupportedLanguage,
+      email: email,
+      password: password,
+      language: language as SupportedLanguage,
     };
 
     return this.http
@@ -3376,11 +3414,11 @@ export class AuthService {
     language: SupportedLanguage,
   ): Observable<void> {
     const request: RegistrationRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(password),
-      firstname: this.encodeBase64(firstname),
-      lastname: this.encodeBase64(lastname),
-      language: this.encodeBase64(language) as SupportedLanguage,
+      email: email,
+      password: password,
+      firstname: firstname,
+      lastname: lastname,
+      language: language as SupportedLanguage,
     };
 
     return this.http
@@ -3418,9 +3456,9 @@ export class AuthService {
 
   requestPasswordChange(email: string, newPassword: string, language: SupportedLanguage) {
     const request: PasswordChangeRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(newPassword),
-      language: this.encodeBase64(language) as SupportedLanguage,
+      email: email,
+      password: newPassword,
+      language: language as SupportedLanguage,
     };
 
     return this.http
@@ -3724,14 +3762,6 @@ export class AuthService {
       storage.removeItem('auth_role');
       storage.removeItem('user_id');
     });
-  }
-
-  encodeBase64(value: string): string {
-    try {
-      return btoa(unescape(encodeURIComponent(value)));
-    } catch {
-      return btoa(value);
-    }
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
@@ -4220,7 +4250,7 @@ export class ForumService {
   private fetchPosts() {
     return this.http
       .post<BackendPostsResponse>(`${this.API_URL}/api/get_all_posts`, {
-        category: btoa(''),
+        category: '',
       })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
@@ -4257,13 +4287,13 @@ export class ForumService {
 
   getPostById(id: string, isAdmin = false, adminId = '', adminSessionToken = '') {
     const body: Record<string, string | number> = {
-      post_id: btoa(id),
+      post_id: id,
       admin: isAdmin ? 1 : 0,
     };
 
     if (isAdmin && adminId && adminSessionToken) {
-      body['admin_id'] = btoa(adminId);
-      body['admin_session_token'] = btoa(adminSessionToken);
+      body['admin_id'] = adminId;
+      body['admin_session_token'] = adminSessionToken;
     }
 
     return this.http
@@ -4288,9 +4318,9 @@ export class ForumService {
         status: string;
         statuscode: number;
       }>(`${this.API_URL}/api/increment_post_views_by_id`, {
-        user_id: btoa(userId),
-        session_token: btoa(sessionToken),
-        post_id: btoa(postId),
+        user_id: userId,
+        session_token: sessionToken,
+        post_id: postId,
       })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
@@ -4304,7 +4334,7 @@ export class ForumService {
         status: string;
         statuscode: number;
         comments: Comment[];
-      }>(`${this.API_URL}/api/get_post_comments_by_post_id`, { post_id: btoa(postId) })
+      }>(`${this.API_URL}/api/get_post_comments_by_post_id`, { post_id: postId })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' ? (res.comments ?? []) : [])),
@@ -4317,9 +4347,9 @@ export class ForumService {
       .post<{ status: string; statuscode: number; new_comment_id?: number }>(
         `${this.API_URL}/api/create_post_comment`,
         {
-          post_id: btoa(postId),
-          sesstoken: btoa(sesstoken),
-          content: btoa(content),
+          post_id: postId,
+          sesstoken: sesstoken,
+          content: content,
         },
       )
       .pipe(timeout(this.REQUEST_TIMEOUT));
@@ -4360,8 +4390,8 @@ export class ForumService {
       .post<{ status: string; statuscode: number; posts: Post[] }>(
         `${this.API_URL}/api/get_all_posts_admin`,
         {
-          admin_id: btoa(adminId),
-          session_token: btoa(sessionToken),
+          admin_id: adminId,
+          session_token: sessionToken,
         },
       )
       .pipe(
@@ -4387,20 +4417,20 @@ export class ForumService {
     },
   ) {
     const body = {
-      user_id: btoa(userId),
-      session_token: btoa(sessionToken),
-      title: btoa(data.title),
-      content: btoa(data.content),
-      image_url: btoa(data.image_url),
-      category_id: btoa(data.category_id),
-      slug: btoa(data.slug),
-      except: btoa(data.excerpt),
-      status: btoa(data.status),
-      views: btoa('0'),
-      likes: btoa('0'),
-      comment_count: btoa('0'),
-      is_featured: btoa(data.is_featured ? '1' : '0'),
-      tags: btoa(data.tags),
+      user_id: userId,
+      session_token: sessionToken,
+      title: data.title,
+      content: data.content,
+      image_url: data.image_url,
+      category_id: data.category_id,
+      slug: data.slug,
+      except: data.excerpt,
+      status: data.status,
+      views: '0',
+      likes: '0',
+      comment_count: '0',
+      is_featured: data.is_featured ? '1' : '0',
+      tags: data.tags,
     };
     return this.http
       .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/create_post`, body)
@@ -4430,21 +4460,21 @@ export class ForumService {
     },
   ) {
     const body = {
-      user_id: btoa(userId),
-      session_token: btoa(sessionToken),
-      post_id: btoa(postId),
-      title: btoa(data.title),
-      content: btoa(data.content),
-      image_url: btoa(data.image_url),
-      category_id: btoa(data.category_id),
-      slug: btoa(data.slug),
-      except: btoa(data.excerpt),
-      status: btoa(data.status),
-      views: btoa(String(data.views ?? 0)),
-      likes: btoa(String(data.likes ?? 0)),
-      comment_count: btoa(String(data.comment_count ?? 0)),
-      is_featured: btoa(data.is_featured ? '1' : '0'),
-      tags: btoa(data.tags),
+      user_id: userId,
+      session_token: sessionToken,
+      post_id: postId,
+      title: data.title,
+      content: data.content,
+      image_url: data.image_url,
+      category_id: data.category_id,
+      slug: data.slug,
+      except: data.excerpt,
+      status: data.status,
+      views: String(data.views ?? 0),
+      likes: String(data.likes ?? 0),
+      comment_count: String(data.comment_count ?? 0),
+      is_featured: data.is_featured ? '1' : '0',
+      tags: data.tags,
     };
     return this.http
       .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/update_post_by_id`, body)
@@ -4457,9 +4487,9 @@ export class ForumService {
   deletePostAdmin(adminId: string, sessionToken: string, postId: string) {
     return this.http
       .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/delete_post_by_id`, {
-        admin_id: btoa(adminId),
-        session_token: btoa(sessionToken),
-        post_id: btoa(postId),
+        admin_id: adminId,
+        session_token: sessionToken,
+        post_id: postId,
       })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
@@ -4476,9 +4506,9 @@ export class ForumService {
       .post<{ status: string; statuscode: number; images: GalleryImage[] }>(
         `${this.API_URL}/api/get_post_images_admin`,
         {
-          admin_id: btoa(adminId),
-          admin_session_token: btoa(adminSessionToken),
-          post_id: btoa(postId),
+          admin_id: adminId,
+          admin_session_token: adminSessionToken,
+          post_id: postId,
         },
       )
       .pipe(
@@ -4499,10 +4529,10 @@ export class ForumService {
       .post<{ statuscode: string; status: string; image?: GalleryImage }>(
         `${this.API_URL}/api/upload_post_image_admin`,
         {
-          admin_id: btoa(adminId),
-          admin_session_token: btoa(adminSessionToken),
-          transparency: btoa(transparency),
-          post_id: btoa(postId),
+          admin_id: adminId,
+          admin_session_token: adminSessionToken,
+          transparency: transparency,
+          post_id: postId,
           image_b64: imageBase64,
         },
       )
@@ -4520,10 +4550,10 @@ export class ForumService {
   ) {
     return this.http
       .post<{ statuscode: string; status: string }>(`${this.API_URL}/api/delete_post_image_admin`, {
-        admin_id: btoa(adminId),
-        admin_session_token: btoa(adminSessionToken),
-        post_id: btoa(postId),
-        image_id: btoa(imageId),
+        admin_id: adminId,
+        admin_session_token: adminSessionToken,
+        post_id: postId,
+        image_id: imageId,
       })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
@@ -5197,10 +5227,10 @@ export class ProductService {
     isTransparent: boolean,
   ): Observable<{ statuscode: string; status: string; image?: ProductImage }> {
     const body = {
-      admin_id: btoa(adminId),
-      admin_session_token: btoa(adminSessionToken),
-      product_id: btoa(productId),
-      transparency: btoa(isTransparent ? '1' : '0'),
+      admin_id: adminId,
+      admin_session_token: adminSessionToken,
+      product_id: productId,
+      transparency: isTransparent ? '1' : '0',
       image_b64: imageBase64,
     };
     return this.http
@@ -5219,10 +5249,10 @@ export class ProductService {
     imageId: string,
   ): Observable<{ statuscode: string; status: string }> {
     const body = {
-      admin_id: btoa(adminId),
-      admin_session_token: btoa(adminSessionToken),
-      product_id: btoa(productId),
-      image_id: btoa(imageId),
+      admin_id: adminId,
+      admin_session_token: adminSessionToken,
+      product_id: productId,
+      image_id: imageId,
     };
     return this.http
       .post<{
@@ -5279,7 +5309,7 @@ export class ProductService {
     auth: Record<string, string>,
     productId: string,
   ): Observable<{ statuscode: string; status: string }> {
-    const body = { ...auth, product_id: btoa(productId) };
+    const body = { ...auth, product_id: productId };
     return this.http.post<{ statuscode: string; status: string }>(
       `${this.API_URL}/api/delete_product_admin`,
       body,
@@ -5293,10 +5323,10 @@ export class ProductService {
     newProductStatus: string,
   ): Observable<{ statuscode: string; status: string }> {
     const body = {
-      admin_id: btoa(adminId),
-      admin_session_token: btoa(adminSessionToken),
-      target_product_id: btoa(targetProductId),
-      new_product_status: btoa(newProductStatus),
+      admin_id: adminId,
+      admin_session_token: adminSessionToken,
+      target_product_id: targetProductId,
+      new_product_status: newProductStatus,
     };
     return this.http
       .post<{
@@ -5424,9 +5454,9 @@ export class ReviewService {
 
   getReviewsByProductId(productId: string, page = 1, amount = 50): Observable<ReviewWithHelpers[]> {
     const body = {
-      product_id: btoa(productId),
-      page: btoa(String(page)),
-      amount: btoa(String(amount)),
+      product_id: productId,
+      page: String(page),
+      amount: String(amount),
     };
 
     return this.http
@@ -11642,32 +11672,32 @@ export class Admin implements OnInit {
     const auth = this.buildAdminAuth();
     const body: Record<string, string | number> = {
       ...auth,
-      name_hu: btoa(data.name_hu),
-      name_en: btoa(data.name_en),
-      name_de: btoa(data.name_de),
-      description_hu: btoa(data.description_hu),
-      description_en: btoa(data.description_en),
-      description_de: btoa(data.description_de),
-      description_preview_hu: btoa(data.description_preview_hu),
-      description_preview_en: btoa(data.description_preview_en),
-      description_preview_de: btoa(data.description_preview_de),
+      name_hu: data.name_hu,
+      name_en: data.name_en,
+      name_de: data.name_de,
+      description_hu: data.description_hu,
+      description_en: data.description_en,
+      description_de: data.description_de,
+      description_preview_hu: data.description_preview_hu,
+      description_preview_en: data.description_preview_en,
+      description_preview_de: data.description_preview_de,
       price_huf: data.price_huf,
       sale_percentage: data.sale_percentage,
       stock: data.stock,
-      category_id: btoa(data.category_id),
-      manufacturer: btoa(data.manufacturer),
-      brand: btoa(data.brand),
-      sku: btoa(data.sku),
-      active_ingredients: btoa(data.active_ingredients),
-      packaging_hu: btoa(data.packaging_hu),
-      packaging_en: btoa(data.packaging_en),
-      packaging_de: btoa(data.packaging_de),
-      thumbnail_url: btoa(data.thumbnail_url),
+      category_id: data.category_id,
+      manufacturer: data.manufacturer,
+      brand: data.brand,
+      sku: data.sku,
+      active_ingredients: data.active_ingredients,
+      packaging_hu: data.packaging_hu,
+      packaging_en: data.packaging_en,
+      packaging_de: data.packaging_de,
+      thumbnail_url: data.thumbnail_url,
       featured: data.featured ? 1 : 0,
     };
 
     if (editId) {
-      body['product_id'] = btoa(editId);
+      body['product_id'] = editId;
     }
 
     return body;
@@ -12443,8 +12473,8 @@ export class Admin implements OnInit {
     const storedId = sessionStorage.getItem('user_id') ?? '';
     const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
     return {
-      id: btoa(storedId),
-      session_token: btoa(token),
+      id: storedId,
+      session_token: token,
     };
   }
 
@@ -23294,25 +23324,25 @@ export class Purchase implements OnInit {
 
       const orderData: CreateOrderRequest = {
         order: {
-          user_id: btoa(isGuest ? '0' : (user?.id ?? '')),
-          session_token: btoa(isGuest ? '' : (this.authService.getSessionToken() ?? '')),
-          email: btoa(this.form.email),
-          billing_name: btoa(this.form.billingName),
-          shipping_name: btoa(this.form.billingName),
-          shipping_company: btoa(''),
-          price: btoa(String(this.cartTotal())),
-          city: btoa(this.form.city),
-          guest: btoa(isGuest ? '1' : '0'),
-          zipcode: btoa(this.form.zipcode),
-          address: btoa(this.form.address),
-          apartment_number: btoa(this.form.apartmentNumber ?? '0'),
-          note: btoa(this.form.note ?? ''),
-          house_number: btoa(this.form.houseNumber),
-          phone_number: btoa(this.form.phoneNumber),
+          user_id: isGuest ? '0' : (user?.id ?? ''),
+          session_token: isGuest ? '' : (this.authService.getSessionToken() ?? ''),
+          email: this.form.email,
+          billing_name: this.form.billingName,
+          shipping_name: this.form.billingName,
+          shipping_company: '',
+          price: String(this.cartTotal()),
+          city: this.form.city,
+          guest: isGuest ? '1' : '0',
+          zipcode: this.form.zipcode,
+          address: this.form.address,
+          apartment_number: this.form.apartmentNumber ?? '0',
+          note: this.form.note ?? '',
+          house_number: this.form.houseNumber,
+          phone_number: this.form.phoneNumber,
         },
         items: this.cartItems().map((i) => ({
-          product_id: btoa(String(i.product.id)),
-          quantity: btoa(String(i.quantity)),
+          product_id: String(i.product.id),
+          quantity: String(i.quantity),
         })),
       };
 
@@ -26042,12 +26072,6 @@ export class NewsletterForm {
   private toastService = inject(ToastService);
   private translationService = inject(TranslationService);
   private readonly API_URL = environment.baseURL;
-  private toBase64(str: string): string {
-    const bytes = new TextEncoder().encode(str);
-    let binary = '';
-    bytes.forEach((b) => (binary += String.fromCharCode(b)));
-    return btoa(binary);
-  }
 
   ICONS = ICONS;
   IMAGES = IMAGES;
@@ -26107,8 +26131,8 @@ export class NewsletterForm {
     this.isSubmitting = true;
 
     const payload = {
-      email: this.toBase64(this.email),
-      news_level: btoa('1'),
+      email: this.email,
+      news_level: '1',
       language: LANG_TO_BACKEND[this.newsletterLang()],
     };
 
