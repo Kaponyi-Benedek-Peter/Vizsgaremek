@@ -153,10 +153,10 @@ export class AccountService {
   }
 
   confirmAccountDeletion(encodedId: string, encodedToken: string): Observable<ApiResponse> {
-    const request = encodeObjectValues({
+    const request = {
       id: encodedId,
       token: encodedToken,
-    });
+    };
 
     return this.http.post<ApiResponse>(`${this.API_URL}/api/delacc_promise`, request).pipe(
       tap(() => this.authService.logout()),

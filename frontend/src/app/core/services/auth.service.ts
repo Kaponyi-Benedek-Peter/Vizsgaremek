@@ -262,10 +262,10 @@ export class AuthService {
     confirmationToken: string,
     stayLoggedIn: boolean,
   ): Observable<LoginResponse> {
-    const request: LoginPromiseRequest = encodeObjectValues({
+    const request: LoginPromiseRequest = {
       id,
       confirmation_token: confirmationToken,
-    });
+    };
 
     return this.http.post<LoginResponse>(`${this.API_URL}/api/login_promise`, request).pipe(
       tap((response) => {
@@ -300,10 +300,10 @@ export class AuthService {
     token: string,
     stayLoggedIn: boolean = true,
   ): Observable<RegistrationResponse> {
-    const request: RegistrationPromiseRequest = encodeObjectValues({
+    const request: RegistrationPromiseRequest = {
       id,
       token,
-    });
+    };
 
     return this.http
       .post<RegistrationResponse>(`${this.API_URL}/api/registration_promise`, request)
@@ -336,10 +336,10 @@ export class AuthService {
   }
 
   completePasswordChange(id: string, token: string) {
-    const request: PasswordChangePromise = encodeObjectValues({
+    const request: PasswordChangePromise = {
       id,
       token,
-    });
+    };
     const stayLoggedIn = localStorage.getItem(this.STORAGE_TYPE_KEY) === 'local';
 
     return this.http
