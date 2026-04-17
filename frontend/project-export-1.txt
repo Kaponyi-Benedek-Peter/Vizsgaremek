@@ -36,8 +36,7 @@ PROJECT STRUCTURE
 │   │   │   ├── 📁 guards/
 │   │   │   │   └── 📄 auth.guard.ts
 │   │   │   ├── 📁 interceptors/
-│   │   │   │   ├── 📄 auth.interceptors.ts
-│   │   │   │   └── 📄 base64.interceptor.ts
+│   │   │   │   └── 📄 auth.interceptors.ts
 │   │   │   ├── 📁 models/
 │   │   │   │   ├── 📄 admin.models.ts
 │   │   │   │   ├── 📄 auth.model.ts
@@ -61,6 +60,7 @@ PROJECT STRUCTURE
 │   │   │   └── 📁 utils/
 │   │   │       ├── 📄 admin.utils.spec.ts
 │   │   │       ├── 📄 admin.utils.ts
+│   │   │       ├── 📄 base64.utils.ts
 │   │   │       └── 📄 image-utils.ts
 │   │   ├── 📁 pages/
 │   │   │   ├── 📁 admin/
@@ -1136,7 +1136,6 @@ import { HttpClient } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptors';
 
 import { routes } from './app.routes';
-import { base64Interceptor } from './core/interceptors/base64.interceptor';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -1154,7 +1153,6 @@ export const appConfig: ApplicationConfig = {
         deps: [HttpClient],
       },
     }),
-    provideHttpClient(withInterceptors([base64Interceptor])),
   ],
 };
 
@@ -1932,49 +1930,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     }),
   );
 };
-
-
-
-================================================================================
-FILE: src\app\core\interceptors\base64.interceptor.ts
-================================================================================
-
-import { HttpInterceptorFn, HttpRequest, HttpEvent, HttpResponse } from '@angular/common/http';
-import { map } from 'rxjs/operators';
-
-export const base64Interceptor: HttpInterceptorFn = (req, next) => {
-  const encodedReq = encodeRequest(req);
-
-  return next(encodedReq).pipe(
-    map((event: HttpEvent<unknown>) => {
-      if (event instanceof HttpResponse && typeof event.body === 'string') {
-        try {
-          const decoded = decodeURIComponent(escape(atob(event.body)));
-          return event.clone({ body: JSON.parse(decoded) });
-        } catch {
-          return event;
-        }
-      }
-      return event;
-    }),
-  );
-};
-
-function encodeRequest(req: HttpRequest<unknown>): HttpRequest<unknown> {
-  const body = req.body;
-
-  if (body === null || body === undefined || body instanceof FormData || body instanceof Blob) {
-    return req;
-  }
-
-  const json = JSON.stringify(body);
-  const encoded = btoa(unescape(encodeURIComponent(json)));
-
-  return req.clone({
-    body: encoded,
-    setHeaders: { 'Content-Type': 'text/plain' },
-  });
-}
 
 
 
@@ -5900,6 +5855,24 @@ export function smartFilter<T>(
   return items.filter((item) =>
     extractors.some((extract) => extract(item).toLowerCase().includes(value)),
   );
+}
+
+
+
+================================================================================
+FILE: src\app\core\utils\base64.utils.ts
+================================================================================
+
+export function encodeObjectValues<T extends object>(obj: T): Record<string, string> {
+  const result: Record<string, string> = {};
+
+  for (const key of Object.keys(obj)) {
+    const value = (obj as Record<string, unknown>)[key];
+    const stringified = typeof value === 'string' ? value : JSON.stringify(value);
+    result[key] = btoa(unescape(encodeURIComponent(stringified)));
+  }
+
+  return result;
 }
 
 

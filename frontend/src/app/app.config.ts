@@ -7,7 +7,6 @@ import { HttpClient } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptors';
 
 import { routes } from './app.routes';
-import { base64Interceptor } from './core/interceptors/base64.interceptor';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -25,6 +24,5 @@ export const appConfig: ApplicationConfig = {
         deps: [HttpClient],
       },
     }),
-    provideHttpClient(withInterceptors([base64Interceptor])),
   ],
 };
