@@ -126,9 +126,9 @@ export class AccountService {
   updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
     const encodedUpdates: Partial<UpdateProfileRequest> = {};
 
-    if (updates.firstname) encodedUpdates.firstname = this.encodeBase64(updates.firstname);
-    if (updates.lastname) encodedUpdates.lastname = this.encodeBase64(updates.lastname);
-    if (updates.email) encodedUpdates.email = this.encodeBase64(updates.email);
+    if (updates.firstname) encodedUpdates.firstname = updates.firstname;
+    if (updates.lastname) encodedUpdates.lastname = updates.lastname;
+    if (updates.email) encodedUpdates.email = updates.email;
 
     return this.http
       .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, encodedUpdates)
@@ -141,9 +141,9 @@ export class AccountService {
     language: SupportedLanguage,
   ): Observable<ApiResponse> {
     const request: DeleteAccountRequest = {
-      id: this.encodeBase64(userId),
-      password: this.encodeBase64(password),
-      language: this.encodeBase64(language) as SupportedLanguage,
+      id: userId,
+      password: password,
+      language: language as SupportedLanguage,
     };
 
     return this.http
@@ -169,9 +169,9 @@ export class AccountService {
     newPassword: string,
   ): Observable<ApiResponse> {
     const request = {
-      id: this.encodeBase64(userId),
-      currentPassword: this.encodeBase64(currentPassword),
-      newPassword: this.encodeBase64(newPassword),
+      id: userId,
+      currentPassword: currentPassword,
+      newPassword: newPassword,
     };
 
     return this.http
@@ -193,11 +193,11 @@ export class AccountService {
     reason: string,
   ): Observable<ApiResponse> {
     const body = {
-      admin_id: this.encodeBase64(admin_id),
-      admin_session_token: this.encodeBase64(admin_session_token),
-      target_user_id: this.encodeBase64(target_user_id),
-      new_user_state: this.encodeBase64(new_user_state),
-      reason: this.encodeBase64(reason),
+      admin_id: admin_id,
+      admin_session_token: admin_session_token,
+      target_user_id: target_user_id,
+      new_user_state: new_user_state,
+      reason: reason,
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/update_user_state_admin`, body)
@@ -208,7 +208,7 @@ export class AccountService {
     const auth = this.buildAdminAuthBody();
     const body = {
       ...auth,
-      user_id: this.encodeBase64(userId),
+      user_id: userId,
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/delete_user_admin`, body)
@@ -246,10 +246,10 @@ export class AccountService {
     const storedId = sessionStorage.getItem('user_id') ?? localStorage.getItem('user_id') ?? '';
     const sessionToken = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
     const body = {
-      admin_id: this.encodeBase64(storedId),
-      admin_session_token: this.encodeBase64(sessionToken),
-      target_order_id: this.encodeBase64(orderId),
-      new_order_status: this.encodeBase64(newStatus),
+      admin_id: storedId,
+      admin_session_token: sessionToken,
+      target_order_id: orderId,
+      new_order_status: newStatus,
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/update_order_status_admin`, body)
@@ -264,17 +264,9 @@ export class AccountService {
     const tokenToSend = sessionToken ?? jwtToken ?? '';
 
     return {
-      id: this.encodeBase64(storedId),
-      session_token: this.encodeBase64(tokenToSend),
+      id: storedId,
+      session_token: tokenToSend,
     };
-  }
-
-  private encodeBase64(value: string): string {
-    try {
-      return btoa(unescape(encodeURIComponent(value)));
-    } catch {
-      return btoa(value);
-    }
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

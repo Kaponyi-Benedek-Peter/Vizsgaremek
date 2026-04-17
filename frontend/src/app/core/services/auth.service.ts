@@ -121,7 +121,7 @@ export class AuthService {
       `${this.API_URL}/api/get_user_state`,
       {
         id: id,
-        session_token: btoa(sessionToken),
+        session_token: sessionToken,
       },
     );
   }
@@ -188,7 +188,7 @@ export class AuthService {
 
   private storeId(user_id: string, stayLoggedIn: boolean): void {
     const storage = stayLoggedIn ? localStorage : sessionStorage;
-    storage.setItem('user_id', btoa(user_id));
+    storage.setItem('user_id', user_id);
   }
 
   private getStoredRole(): UserState | null {
@@ -246,9 +246,9 @@ export class AuthService {
 
   loginRequest(email: string, password: string, language: SupportedLanguage) {
     const request: LoginRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(password),
-      language: this.encodeBase64(language) as SupportedLanguage,
+      email: email,
+      password: password,
+      language: language as SupportedLanguage,
     };
 
     return this.http
@@ -282,11 +282,11 @@ export class AuthService {
     language: SupportedLanguage,
   ): Observable<void> {
     const request: RegistrationRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(password),
-      firstname: this.encodeBase64(firstname),
-      lastname: this.encodeBase64(lastname),
-      language: this.encodeBase64(language) as SupportedLanguage,
+      email: email,
+      password: password,
+      firstname: firstname,
+      lastname: lastname,
+      language: language as SupportedLanguage,
     };
 
     return this.http
@@ -324,9 +324,9 @@ export class AuthService {
 
   requestPasswordChange(email: string, newPassword: string, language: SupportedLanguage) {
     const request: PasswordChangeRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(newPassword),
-      language: this.encodeBase64(language) as SupportedLanguage,
+      email: email,
+      password: newPassword,
+      language: language as SupportedLanguage,
     };
 
     return this.http
@@ -630,14 +630,6 @@ export class AuthService {
       storage.removeItem('auth_role');
       storage.removeItem('user_id');
     });
-  }
-
-  encodeBase64(value: string): string {
-    try {
-      return btoa(unescape(encodeURIComponent(value)));
-    } catch {
-      return btoa(value);
-    }
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

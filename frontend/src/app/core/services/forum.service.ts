@@ -100,7 +100,7 @@ export class ForumService {
   private fetchPosts() {
     return this.http
       .post<BackendPostsResponse>(`${this.API_URL}/api/get_all_posts`, {
-        category: btoa(''),
+        category: '',
       })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
@@ -137,13 +137,13 @@ export class ForumService {
 
   getPostById(id: string, isAdmin = false, adminId = '', adminSessionToken = '') {
     const body: Record<string, string | number> = {
-      post_id: btoa(id),
+      post_id: id,
       admin: isAdmin ? 1 : 0,
     };
 
     if (isAdmin && adminId && adminSessionToken) {
-      body['admin_id'] = btoa(adminId);
-      body['admin_session_token'] = btoa(adminSessionToken);
+      body['admin_id'] = adminId;
+      body['admin_session_token'] = adminSessionToken;
     }
 
     return this.http
@@ -168,9 +168,9 @@ export class ForumService {
         status: string;
         statuscode: number;
       }>(`${this.API_URL}/api/increment_post_views_by_id`, {
-        user_id: btoa(userId),
-        session_token: btoa(sessionToken),
-        post_id: btoa(postId),
+        user_id: userId,
+        session_token: sessionToken,
+        post_id: postId,
       })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
@@ -184,7 +184,7 @@ export class ForumService {
         status: string;
         statuscode: number;
         comments: Comment[];
-      }>(`${this.API_URL}/api/get_post_comments_by_post_id`, { post_id: btoa(postId) })
+      }>(`${this.API_URL}/api/get_post_comments_by_post_id`, { post_id: postId })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' ? (res.comments ?? []) : [])),
@@ -197,9 +197,9 @@ export class ForumService {
       .post<{ status: string; statuscode: number; new_comment_id?: number }>(
         `${this.API_URL}/api/create_post_comment`,
         {
-          post_id: btoa(postId),
-          sesstoken: btoa(sesstoken),
-          content: btoa(content),
+          post_id: postId,
+          sesstoken: sesstoken,
+          content: content,
         },
       )
       .pipe(timeout(this.REQUEST_TIMEOUT));
@@ -240,8 +240,8 @@ export class ForumService {
       .post<{ status: string; statuscode: number; posts: Post[] }>(
         `${this.API_URL}/api/get_all_posts_admin`,
         {
-          admin_id: btoa(adminId),
-          session_token: btoa(sessionToken),
+          admin_id: adminId,
+          session_token: sessionToken,
         },
       )
       .pipe(
@@ -267,20 +267,20 @@ export class ForumService {
     },
   ) {
     const body = {
-      user_id: btoa(userId),
-      session_token: btoa(sessionToken),
-      title: btoa(data.title),
-      content: btoa(data.content),
-      image_url: btoa(data.image_url),
-      category_id: btoa(data.category_id),
-      slug: btoa(data.slug),
-      except: btoa(data.excerpt),
-      status: btoa(data.status),
-      views: btoa('0'),
-      likes: btoa('0'),
-      comment_count: btoa('0'),
-      is_featured: btoa(data.is_featured ? '1' : '0'),
-      tags: btoa(data.tags),
+      user_id: userId,
+      session_token: sessionToken,
+      title: data.title,
+      content: data.content,
+      image_url: data.image_url,
+      category_id: data.category_id,
+      slug: data.slug,
+      except: data.excerpt,
+      status: data.status,
+      views: '0',
+      likes: '0',
+      comment_count: '0',
+      is_featured: data.is_featured ? '1' : '0',
+      tags: data.tags,
     };
     return this.http
       .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/create_post`, body)
@@ -310,21 +310,21 @@ export class ForumService {
     },
   ) {
     const body = {
-      user_id: btoa(userId),
-      session_token: btoa(sessionToken),
-      post_id: btoa(postId),
-      title: btoa(data.title),
-      content: btoa(data.content),
-      image_url: btoa(data.image_url),
-      category_id: btoa(data.category_id),
-      slug: btoa(data.slug),
-      except: btoa(data.excerpt),
-      status: btoa(data.status),
-      views: btoa(String(data.views ?? 0)),
-      likes: btoa(String(data.likes ?? 0)),
-      comment_count: btoa(String(data.comment_count ?? 0)),
-      is_featured: btoa(data.is_featured ? '1' : '0'),
-      tags: btoa(data.tags),
+      user_id: userId,
+      session_token: sessionToken,
+      post_id: postId,
+      title: data.title,
+      content: data.content,
+      image_url: data.image_url,
+      category_id: data.category_id,
+      slug: data.slug,
+      except: data.excerpt,
+      status: data.status,
+      views: String(data.views ?? 0),
+      likes: String(data.likes ?? 0),
+      comment_count: String(data.comment_count ?? 0),
+      is_featured: data.is_featured ? '1' : '0',
+      tags: data.tags,
     };
     return this.http
       .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/update_post_by_id`, body)
@@ -337,9 +337,9 @@ export class ForumService {
   deletePostAdmin(adminId: string, sessionToken: string, postId: string) {
     return this.http
       .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/delete_post_by_id`, {
-        admin_id: btoa(adminId),
-        session_token: btoa(sessionToken),
-        post_id: btoa(postId),
+        admin_id: adminId,
+        session_token: sessionToken,
+        post_id: postId,
       })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
@@ -356,9 +356,9 @@ export class ForumService {
       .post<{ status: string; statuscode: number; images: GalleryImage[] }>(
         `${this.API_URL}/api/get_post_images_admin`,
         {
-          admin_id: btoa(adminId),
-          admin_session_token: btoa(adminSessionToken),
-          post_id: btoa(postId),
+          admin_id: adminId,
+          admin_session_token: adminSessionToken,
+          post_id: postId,
         },
       )
       .pipe(
@@ -379,10 +379,10 @@ export class ForumService {
       .post<{ statuscode: string; status: string; image?: GalleryImage }>(
         `${this.API_URL}/api/upload_post_image_admin`,
         {
-          admin_id: btoa(adminId),
-          admin_session_token: btoa(adminSessionToken),
-          transparency: btoa(transparency),
-          post_id: btoa(postId),
+          admin_id: adminId,
+          admin_session_token: adminSessionToken,
+          transparency: transparency,
+          post_id: postId,
           image_b64: imageBase64,
         },
       )
@@ -400,10 +400,10 @@ export class ForumService {
   ) {
     return this.http
       .post<{ statuscode: string; status: string }>(`${this.API_URL}/api/delete_post_image_admin`, {
-        admin_id: btoa(adminId),
-        admin_session_token: btoa(adminSessionToken),
-        post_id: btoa(postId),
-        image_id: btoa(imageId),
+        admin_id: adminId,
+        admin_session_token: adminSessionToken,
+        post_id: postId,
+        image_id: imageId,
       })
       .pipe(
         timeout(this.REQUEST_TIMEOUT),

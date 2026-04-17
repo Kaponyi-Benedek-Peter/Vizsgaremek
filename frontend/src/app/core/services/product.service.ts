@@ -333,10 +333,10 @@ export class ProductService {
     isTransparent: boolean,
   ): Observable<{ statuscode: string; status: string; image?: ProductImage }> {
     const body = {
-      admin_id: btoa(adminId),
-      admin_session_token: btoa(adminSessionToken),
-      product_id: btoa(productId),
-      transparency: btoa(isTransparent ? '1' : '0'),
+      admin_id: adminId,
+      admin_session_token: adminSessionToken,
+      product_id: productId,
+      transparency: isTransparent ? '1' : '0',
       image_b64: imageBase64,
     };
     return this.http
@@ -355,10 +355,10 @@ export class ProductService {
     imageId: string,
   ): Observable<{ statuscode: string; status: string }> {
     const body = {
-      admin_id: btoa(adminId),
-      admin_session_token: btoa(adminSessionToken),
-      product_id: btoa(productId),
-      image_id: btoa(imageId),
+      admin_id: adminId,
+      admin_session_token: adminSessionToken,
+      product_id: productId,
+      image_id: imageId,
     };
     return this.http
       .post<{
@@ -415,7 +415,7 @@ export class ProductService {
     auth: Record<string, string>,
     productId: string,
   ): Observable<{ statuscode: string; status: string }> {
-    const body = { ...auth, product_id: btoa(productId) };
+    const body = { ...auth, product_id: productId };
     return this.http.post<{ statuscode: string; status: string }>(
       `${this.API_URL}/api/delete_product_admin`,
       body,
@@ -429,10 +429,10 @@ export class ProductService {
     newProductStatus: string,
   ): Observable<{ statuscode: string; status: string }> {
     const body = {
-      admin_id: btoa(adminId),
-      admin_session_token: btoa(adminSessionToken),
-      target_product_id: btoa(targetProductId),
-      new_product_status: btoa(newProductStatus),
+      admin_id: adminId,
+      admin_session_token: adminSessionToken,
+      target_product_id: targetProductId,
+      new_product_status: newProductStatus,
     };
     return this.http
       .post<{

@@ -972,32 +972,32 @@ export class Admin implements OnInit {
     const auth = this.buildAdminAuth();
     const body: Record<string, string | number> = {
       ...auth,
-      name_hu: btoa(data.name_hu),
-      name_en: btoa(data.name_en),
-      name_de: btoa(data.name_de),
-      description_hu: btoa(data.description_hu),
-      description_en: btoa(data.description_en),
-      description_de: btoa(data.description_de),
-      description_preview_hu: btoa(data.description_preview_hu),
-      description_preview_en: btoa(data.description_preview_en),
-      description_preview_de: btoa(data.description_preview_de),
+      name_hu: data.name_hu,
+      name_en: data.name_en,
+      name_de: data.name_de,
+      description_hu: data.description_hu,
+      description_en: data.description_en,
+      description_de: data.description_de,
+      description_preview_hu: data.description_preview_hu,
+      description_preview_en: data.description_preview_en,
+      description_preview_de: data.description_preview_de,
       price_huf: data.price_huf,
       sale_percentage: data.sale_percentage,
       stock: data.stock,
-      category_id: btoa(data.category_id),
-      manufacturer: btoa(data.manufacturer),
-      brand: btoa(data.brand),
-      sku: btoa(data.sku),
-      active_ingredients: btoa(data.active_ingredients),
-      packaging_hu: btoa(data.packaging_hu),
-      packaging_en: btoa(data.packaging_en),
-      packaging_de: btoa(data.packaging_de),
-      thumbnail_url: btoa(data.thumbnail_url),
+      category_id: data.category_id,
+      manufacturer: data.manufacturer,
+      brand: data.brand,
+      sku: data.sku,
+      active_ingredients: data.active_ingredients,
+      packaging_hu: data.packaging_hu,
+      packaging_en: data.packaging_en,
+      packaging_de: data.packaging_de,
+      thumbnail_url: data.thumbnail_url,
       featured: data.featured ? 1 : 0,
     };
 
     if (editId) {
-      body['product_id'] = btoa(editId);
+      body['product_id'] = editId;
     }
 
     return body;
@@ -1773,8 +1773,8 @@ export class Admin implements OnInit {
     const storedId = sessionStorage.getItem('user_id') ?? '';
     const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
     return {
-      id: btoa(storedId),
-      session_token: btoa(token),
+      id: storedId,
+      session_token: token,
     };
   }
 
