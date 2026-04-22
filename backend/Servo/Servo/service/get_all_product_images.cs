@@ -20,7 +20,7 @@ namespace Servo.service
             String resp = "";
 
 
-            try//
+            try
             {
                 string locatio = "./public/assets/products";
 
@@ -36,7 +36,7 @@ namespace Servo.service
                     foreach (string file in Directory.GetFiles(folder))
                     {
                         string fileName = Path.GetFileName(file);
-                        urls.Add("https://www.roysshack.hu/assets/products/" + folderName + "/" + fileName);
+                        urls.Add($"{service.shared.current_url}assets/products/" + folderName + "/" + fileName);
                     }
 
                     entry["files"] = urls;
@@ -82,19 +82,7 @@ namespace Servo.service
             else
             {
 
-
-
-                // if (van adat)
-                {
-
-                    //calculate exchange rate
                     return (resp);
-                }
-
-
-
-                return "error";
-
 
             }
 

@@ -24,9 +24,11 @@ namespace Servo.service
             
             if (!Directory.Exists(baseDir))
                 Directory.CreateDirectory(baseDir);
+            current_url= service.shared.b64dec(conf("r", "current_url"));
+
         }
 
-        public static string current_url = "https://www.roysshack.hu/"; //https://www.roysshack.hu
+        public static string current_url = "";
 
 
         public static string b64enc(string str)

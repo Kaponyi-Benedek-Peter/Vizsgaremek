@@ -517,7 +517,7 @@
             this.checkBox1.TabIndex = 29;
             this.checkBox1.Text = "honeypot";
             this.checkBox1.UseVisualStyleBackColor = true;
-            // 
+           // 
             // checkBox2
             // 
             this.checkBox2.AutoSize = true;

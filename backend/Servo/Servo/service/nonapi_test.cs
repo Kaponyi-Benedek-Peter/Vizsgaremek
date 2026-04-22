@@ -251,7 +251,7 @@ namespace Servo.service
                     alt_text_hu = (product_id).ToString(),
                     alt_text_en= "city",
                     alt_text_de= "alt_text_de",
-                    image_url= $"https://www.roysshack.hu/assets/products/{product_id}/{i}",
+                    image_url= $"{service.shared.current_url}assets/products/{product_id}/{i}",
                     sort_id= i,
                     product_id= product_id
 
