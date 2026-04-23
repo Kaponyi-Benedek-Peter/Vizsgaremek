@@ -402,9 +402,13 @@
     "clear": "Clear",
     "cancel": "Cancel",
     "scroll_right": "Scroll right",
+<<<<<<< Updated upstream
     "added_to_cart": "Added to cart",
     "edit": "Edit",
     "added": "Added!"
+=======
+    "added_to_cart": "Added to cart"
+>>>>>>> Stashed changes
   },
   "home": {
     "featured": {
@@ -510,6 +514,7 @@
       "category": "Category",
       "actions": "Actions",
       "items": "Items",
+<<<<<<< Updated upstream
       "price": "Price",
       "brand": "Brand",
       "billing": "Billing",
@@ -604,6 +609,9 @@
       "save_error": "Failed to save post.",
       "delete_error": "Failed to delete post.",
       "error_title_required": "Post title is required."
+=======
+      "price": "Price"
+>>>>>>> Stashed changes
     },
     "stats": {
       "this_week": "this week",
@@ -633,12 +641,16 @@
     "search_orders": "Search orders...",
     "recent_orders": "Recent Orders",
     "no_orders": "No orders found.",
+<<<<<<< Updated upstream
     "greeting": "Welcome, {{name}}!",
     "errors": {
       "orders_load_failed": "There was an error loading the products!",
       "users_load_failed": "There was an error loading the users!",
       "posts_load_failed": "There was an error loading the posts."
     }
+=======
+    "greeting": "Welcome, {{name}}!"
+>>>>>>> Stashed changes
   },
   "footer": {
     "contactInfo": "Contact information",

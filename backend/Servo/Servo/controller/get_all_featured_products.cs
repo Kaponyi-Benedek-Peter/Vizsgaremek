@@ -61,7 +61,7 @@ namespace Servo.controller
 
                     var respon = new
                     {
-                        status = "internal_error",
+                        status = "unknown_error",
                         statuscode = "500"
                     };
 
@@ -93,7 +93,7 @@ namespace Servo.controller
             }
             finally
             {
-                controller.router.safe_close(data);
+                data.Response.OutputStream.Close();
             }
         }
 

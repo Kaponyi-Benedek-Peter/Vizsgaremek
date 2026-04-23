@@ -402,9 +402,13 @@
     "clear": "Törlés",
     "cancel": "Mégse",
     "scroll_right": "Görgetés jobbra",
+<<<<<<< Updated upstream
     "added_to_cart": "Kosárba helyezve",
     "edit": "Szerkesztés",
     "added": "Hozzáadva!"
+=======
+    "added_to_cart": "Kosárba helyezve"
+>>>>>>> Stashed changes
   },
   "home": {
     "featured": {
@@ -456,6 +460,7 @@
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
     "comment_edited": "szerkesztve",
+
     "empty_title": "Még nincsenek posztok",
     "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
     "error_title": "Nem sikerült betölteni",
@@ -510,6 +515,7 @@
       "category": "Kategória",
       "actions": "Műveletek",
       "items": "Tételek",
+<<<<<<< Updated upstream
       "price": "Ár",
       "brand": "Márka",
       "billing": "Számlázás",
@@ -604,6 +610,9 @@
       "save_error": "Nem sikerült menteni a bejegyzést.",
       "delete_error": "Nem sikerült törölni a bejegyzést.",
       "error_title_required": "A bejegyzés címe kötelező."
+=======
+      "price": "Ár"
+>>>>>>> Stashed changes
     },
     "stats": {
       "this_week": "ezen a héten",
@@ -633,12 +642,16 @@
     "search_orders": "Rendelések keresése...",
     "recent_orders": "Legutóbbi rendelések",
     "no_orders": "Nem találhatók rendelések.",
+<<<<<<< Updated upstream
     "greeting": "Üdvözöljük, {{name}}!",
     "errors": {
       "orders_load_failed": "Hiba történt a termékek betöltésekor!",
       "users_load_failed": "Hiba történt a felhasználók betöltésekor!",
       "posts_load_failed": "Hiba történt a bejegyzések betöltésekor."
     }
+=======
+    "greeting": "Üdvözöljük, {{name}}!"
+>>>>>>> Stashed changes
   },
   "footer": {
     "contactInfo": "Kapcsolati információk",

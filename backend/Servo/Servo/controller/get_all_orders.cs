@@ -93,8 +93,6 @@ namespace Servo.controller
 
                 if (resp.responsecode == 200)
                 {
-                    service.shared.log($"jo");
-
                     data.Response.StatusCode = 200;
 
                     data.Response.ContentType = "application/json";
@@ -103,7 +101,6 @@ namespace Servo.controller
                 }
                 else if (resp.responsecode == 401)
                 {
-                    service.shared.log($"nemjo");
 
                     var respon = new
                     {
@@ -120,7 +117,7 @@ namespace Servo.controller
                 }
                 else
                 {
-                    service.shared.log($"egyeb?");
+
                     var respon = new
                     {
                         status = resp.responsedata,
@@ -155,7 +152,7 @@ namespace Servo.controller
             }
             finally
             {
-                controller.router.safe_close(data);
+                data.Response.OutputStream.Close();
             }
         }
 

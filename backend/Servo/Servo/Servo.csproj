@@ -192,12 +192,9 @@
   <ItemGroup>
     <Compile Include="controller\chpass_promise.cs" />
     <Compile Include="controller\chpass_request.cs" />
-    <Compile Include="controller\create_order.cs" />
-    <Compile Include="controller\create_post.cs" />
-    <Compile Include="controller\create_post_comment_by_post_id.cs" />
-    <Compile Include="controller\create_product.cs" />
     <Compile Include="controller\delacc_promise.cs" />
     <Compile Include="controller\delacc_request.cs" />
+<<<<<<< Updated upstream
     <Compile Include="controller\delete_all_posts.cs" />
     <Compile Include="controller\delete_all_post_comments.cs" />
     <Compile Include="controller\delete_image_by_id.cs" />
@@ -206,18 +203,17 @@
     <Compile Include="controller\delete_all_post_comments_by_post_id.cs" />
     <Compile Include="controller\delete_post_image_by_id_admin.cs" />
     <Compile Include="controller\delete_product_admin.cs" />
+=======
+>>>>>>> Stashed changes
     <Compile Include="controller\get_all_featured_products.cs" />
     <Compile Include="controller\get_all_orders.cs" />
-    <Compile Include="controller\get_all_orders_user.cs" />
     <Compile Include="controller\get_all_posts.cs" />
     <Compile Include="controller\get_all_posts_admin.cs" />
-    <Compile Include="controller\get_all_post_categories.cs" />
     <Compile Include="controller\get_all_products.cs" />
     <Compile Include="controller\get_all_product_categories.cs" />
-    <Compile Include="controller\get_all_product_images.cs" />
-    <Compile Include="controller\get_all_product_images_by_id.cs" />
     <Compile Include="controller\get_all_reviews_page_by_product_id.cs" />
     <Compile Include="controller\get_all_users.cs" />
+<<<<<<< Updated upstream
     <Compile Include="controller\get_post.cs" />
     <Compile Include="controller\get_product_by_id.cs" />
     <Compile Include="controller\get_user_data.cs" />
@@ -229,13 +225,17 @@
     <Compile Include="controller\update_order_state_admin.cs" />
     <Compile Include="controller\update_product_state_admin.cs" />
     <Compile Include="controller\update_user_state_admin.cs" />
+=======
+    <Compile Include="controller\login_promise.cs" />
+    <Compile Include="controller\newsletter_subscription.cs" />
+    <Compile Include="controller\router.cs" />
+    <Compile Include="controller\ban_user.cs" />
+>>>>>>> Stashed changes
     <Compile Include="controller\login_request.cs" />
     <Compile Include="controller\registration_promise.cs" />
     <Compile Include="controller\registration_request.cs" />
     <Compile Include="controller\unban_user.cs" />
     <Compile Include="controller\update_name_by_id.cs" />
-    <Compile Include="controller\update_post_by_id.cs" />
-    <Compile Include="controller\update_post_comment_by_comment_id.cs" />
     <Compile Include="controller\update_stock.cs" />
     <Compile Include="controller\upload_post_image_admin.cs" />
     <Compile Include="controller\upload_product_image_admin.cs" />
@@ -246,27 +246,28 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="lib.cs" />
-    <Compile Include="model\create_order.cs" />
-    <Compile Include="model\create_post.cs" />
     <Compile Include="model\delacc_promise.cs" />
     <Compile Include="model\delacc_request.cs" />
+<<<<<<< Updated upstream
     <Compile Include="model\delete_all_posts.cs" />
     <Compile Include="model\delete_post_by_id.cs" />
     <Compile Include="model\delete_product_by_id.cs" />
+=======
+>>>>>>> Stashed changes
     <Compile Include="model\get_all_featured_products.cs" />
     <Compile Include="model\get_all_orders.cs" />
-    <Compile Include="model\get_all_orders_user.cs" />
     <Compile Include="model\get_all_posts.cs" />
     <Compile Include="model\get_all_posts_admin.cs" />
-    <Compile Include="model\get_all_post_categories.cs" />
     <Compile Include="model\get_all_products.cs" />
     <Compile Include="model\get_all_product_categories.cs" />
-    <Compile Include="model\get_all_product_images_by_id.cs" />
     <Compile Include="model\get_all_reviews_page_by_product_id.cs" />
     <Compile Include="model\get_all_users.cs" />
+<<<<<<< Updated upstream
     <Compile Include="model\get_post.cs" />
     <Compile Include="model\get_product_by_id.cs" />
     <Compile Include="model\get_user_data.cs" />
+=======
+>>>>>>> Stashed changes
     <Compile Include="model\registration_request.cs" />
     <Compile Include="model\chpass_promise.cs" />
     <Compile Include="model\chpass_request.cs" />
@@ -275,6 +276,7 @@
     <Compile Include="model\registration_promise.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+<<<<<<< Updated upstream
     <Compile Include="service\delete_post_image_by_id_admin.cs" />
     <Compile Include="service\delete_product_admin.cs" />
     <Compile Include="service\delete_product_image_by_id.cs" />
@@ -283,35 +285,21 @@
     <Compile Include="service\update_order_status_admin.cs" />
     <Compile Include="service\update_product_state_admin.cs" />
     <Compile Include="service\update_user_state_admin.cs" />
+=======
+    <Compile Include="service\ban_user.cs" />
+>>>>>>> Stashed changes
     <Compile Include="service\chpass_promise.cs" />
     <Compile Include="service\chpass_request.cs" />
-    <Compile Include="service\create_order.cs" />
-    <Compile Include="service\create_post.cs" />
-    <Compile Include="service\create_post_comment_by_post_id.cs" />
-    <Compile Include="service\create_product.cs" />
-    <Compile Include="service\delete_all_posts.cs" />
-    <Compile Include="service\delete_all_post_comments.cs" />
-    <Compile Include="service\delete_all_post_comments_by_post_id.cs" />
-    <Compile Include="service\delete_post_by_id.cs" />
-    <Compile Include="service\delete_post_comments_by_post_id.cs" />
-    <Compile Include="service\delete_post_comment_by_comment_id.cs" />
     <Compile Include="service\get_all_featured_products.cs" />
     <Compile Include="service\get_all_orders.cs" />
-    <Compile Include="service\get_all_orders_user.cs" />
     <Compile Include="service\get_all_posts.cs" />
     <Compile Include="service\get_all_posts_admin.cs" />
-    <Compile Include="service\get_all_post_categories.cs" />
     <Compile Include="service\get_all_product_categories.cs" />
-    <Compile Include="service\get_all_product_images_by_product_id.cs" />
     <Compile Include="service\get_all_reviews_page_by_product_id.cs" />
     <Compile Include="service\get_all_users.cs" />
     <Compile Include="service\delacc_promise.cs" />
     <Compile Include="service\delacc_request.cs" />
     <Compile Include="service\get_all_products.cs" />
-    <Compile Include="service\get_post.cs" />
-    <Compile Include="service\get_product_by_id.cs" />
-    <Compile Include="service\get_user_state.cs" />
-    <Compile Include="service\increment_post_views_by_id.cs" />
     <Compile Include="service\jwt_handler.cs" />
     <Compile Include="service\login_request.cs" />
     <Compile Include="service\login_promise.cs" />
@@ -322,8 +310,6 @@
     <Compile Include="service\shared.cs" />
     <Compile Include="service\unban_user.cs" />
     <Compile Include="service\update_name_by_id.cs" />
-    <Compile Include="service\update_post_by_id.cs" />
-    <Compile Include="service\update_post_comment_by_comment_id.cs" />
     <Compile Include="service\update_stock.cs" />
     <Compile Include="service\upload_post_image_admin.cs" />
     <Compile Include="service\upload_product_image_admin.cs" />

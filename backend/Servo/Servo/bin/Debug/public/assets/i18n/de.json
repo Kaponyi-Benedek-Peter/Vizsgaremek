@@ -372,9 +372,13 @@
     "clear": "Löschen",
     "cancel": "Abbrechen",
     "scroll_right": "Nach rechts scrollen",
+<<<<<<< Updated upstream
     "added_to_cart": "Zum Warenkorb hinzugefügt",
     "edit": "Bearbeiten",
     "added": "Hinzugefügt!"
+=======
+    "added_to_cart": "Zum Warenkorb hinzugefügt"
+>>>>>>> Stashed changes
   },
   "home": {
     "featured": {
@@ -480,6 +484,7 @@
       "category": "Kategorie",
       "actions": "Aktionen",
       "items": "Artikel",
+<<<<<<< Updated upstream
       "price": "Preis",
       "brand": "Marke",
       "billing": "Rechnungsstellung",
@@ -574,6 +579,9 @@
       "save_error": "Beitrag konnte nicht gespeichert werden.",
       "delete_error": "Beitrag konnte nicht gelöscht werden.",
       "error_title_required": "Titel des Beitrags ist erforderlich."
+=======
+      "price": "Preis"
+>>>>>>> Stashed changes
     },
     "stats": {
       "this_week": "diese Woche",
@@ -603,12 +611,16 @@
     "search_orders": "Bestellungen suchen...",
     "recent_orders": "Neueste Bestellungen",
     "no_orders": "Keine Bestellungen gefunden.",
+<<<<<<< Updated upstream
     "greeting": "Willkommen, {{name}}!",
     "errors": {
       "orders_load_failed": "Fehler beim Laden der Produkte!",
       "users_load_failed": "Fehler beim Laden der Benutzer!",
       "posts_load_failed": "Fehler beim Laden der Beiträge."
     }
+=======
+    "greeting": "Willkommen, {{name}}!"
+>>>>>>> Stashed changes
   },
   "footer": {
     "contactInfo": "Kontaktinformationen",
@@ -767,6 +779,7 @@
     "browse_products": "Produkte entdecken",
     "quick_links": "Oder springe zu",
     "quick_links_label": "Schnellnavigation"
+<<<<<<< Updated upstream
   },
   "danger": {
     "confirm_password": "Mit Passwort bestätigen",
@@ -801,5 +814,7 @@
   "account": {
     "empty_fields": "Du hast ein paar Felder leer gelassen.",
     "bad_request": "Ungültige Anfrage"
+=======
+>>>>>>> Stashed changes
   }
 }

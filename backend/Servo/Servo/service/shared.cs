@@ -28,7 +28,11 @@ namespace Servo.service
 
         }
 
+<<<<<<< Updated upstream
         public static string current_url = "";
+=======
+        public static string current_url = "http://192.168.11.213:90/"; //https://www.roysshack.hu
+>>>>>>> Stashed changes
 
 
         public static string b64enc(string str)
@@ -52,8 +56,8 @@ namespace Servo.service
             return toReturn;
         }
 
-        static string thumbnail_template(int id) {return $"{service.shared.current_url}assets/products/{id}/thumbnail.webp"; }
-        public static void log(string abc, string type="api")
+
+        public static void log(string abc)
         {
             var f = Form1.Instance;
             if (f == null)
@@ -68,12 +72,16 @@ namespace Servo.service
                 return;
             }
 
+<<<<<<< Updated upstream
             if(type=="api") f.InvokeOnUi(() => f.api_rtbox.AppendText(abc + Environment.NewLine));
             else if (type == "static") { f.InvokeOnUi(() => f.static_rtbox.AppendText(abc + Environment.NewLine)); }
             else if (type == "server") { f.InvokeOnUi(() => f.server_rtbox.AppendText(abc + Environment.NewLine)); }
 
             f.InvokeOnUi(() => f.all_rtbox.AppendText(abc + Environment.NewLine));
             
+=======
+            f.InvokeOnUi(() => f.LogBox.AppendText(abc + Environment.NewLine));
+>>>>>>> Stashed changes
         }
         private const int KeySize = 32;
         private const int Iterations = 1000;
@@ -89,54 +97,30 @@ namespace Servo.service
         }
 
 
-        //Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of "text/html". Strict MIME type checking is enforced for module scripts per HTML spec.
-        public static (string, bool) mime(string ext)
+
+        public static string mime(string ext)
         {
-            List<(string ext, string type, bool isStatic)> mimes = new List<(string, string, bool)>
-    {
-        // Static assets (isStatic: true)
-        (".png",  "image/png",              true),
-        (".jpg",  "image/jpeg",             true),
-
-        (".webp", "image/image/webp",             true),
-        (".jpeg", "image/jpeg",             true),
-
-        (".gif",  "image/gif",              true),
-        (".svg",  "image/svg+xml",          true),
-        (".ico",  "image/x-icon",           true),
-        (".woff", "font/woff",              true),
-        (".woff2","font/woff2",             true),
-        (".ttf",  "font/ttf",               true),
-        (".eot",  "application/vnd.ms-fontobject", true),
-        (".mp4",  "video/mp4",              true),
-        (".mp3",  "audio/mpeg",             true),
-        (".wav",  "audio/wav",              true),
-        (".webm", "video/webm",             true),
-        (".ogg",  "audio/ogg",              true),
-
-        (".html", "text/html",              false),
-        (".css",  "text/css",               false),
-        (".js",   "application/javascript",  false),
-        (".pdf",  "application/pdf",        false),
-        (".json", "application/json",       false),
-        (".xml",  "application/xml",        false),
-        (".txt",  "text/plain",             false),
-        (".csv",  "text/csv",               false),
-        (".zip",  "application/zip",        false),
-        (".tar",  "application/x-tar",      false),
-        (".gz",   "application/gzip",       false)
-    };
-
-            string extLower = ext?.ToLower();
-            foreach (var (extension, type, isStatic) in mimes)
+            List<string[]> mimes = new List<string[]>
             {
-                if (extension == extLower)
-                    return (type, isStatic);
+                new[] { ".html", "text/html" },
+                new[] { ".css", "text/css" },
+                new[] { ".js", "application/javascript" },
+                new[] { ".json", "application/json" },
+                new[] { ".png", "image/png" },
+                new[] { ".jpg", ".jpeg", "image/jpeg" },
+                new[] { ".gif", "image/gif" },
+                new[] { ".mp4", "video/mp4" },
+                new[] { ".mp3", "audio/mpeg" },
+                new[] { ".txt", "text/plain" }
+            };
+
+            foreach (var item in mimes)
+            {
+                if (item[0] == ext.ToLower())
+                    return item[1];
             }
-
-            return ("application/octet-stream", false);
+            return "application/octet-stream";
         }
-
 
 
         public static double usd=0.0027;
@@ -147,7 +131,7 @@ namespace Servo.service
         {
             
 
-            return new List<double> { Math.Round(inn * usd,1), Math.Round(inn * eur,1)};
+            return new List<double> { Math.Round(inn * usd), Math.Round(inn * eur)};
         }
 
 
@@ -177,7 +161,7 @@ namespace Servo.service
             catch (Exception ex)
             {
                 log($"{tipus} email sent: {hova} || ERROR: {ex.ToString()}");
-                
+                Form1.Instance.updateerrorcount();
             }
         }
         public static string gen_string(int n)

@@ -11,6 +11,10 @@ namespace Servo.model
     internal class get_all_orders
     {
 
+<<<<<<< Updated upstream
+=======
+        static MySqlConnection conn = model.shared.conn;
+>>>>>>> Stashed changes
 
         public static Dictionary<string, object> communicate_get_order_items_by_order_id(string order_id)
         {
@@ -80,8 +84,7 @@ namespace Servo.model
 
 
         public static Dictionary<string, object> communicate_get_all_orders()
-        {   
-            MySqlConnection conn = null;
+        {
             var result = new Dictionary<string, object>
             {
                 { "statuscode", "200" },
@@ -91,8 +94,6 @@ namespace Servo.model
 
             try
             {
-                conn = new MySqlConnection(model.shared.connStr);
-                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("get_all_orders", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -126,15 +127,8 @@ namespace Servo.model
             {
                 service.shared.log($"Error 1: {ex.Message} --model.get_all_orders.communicate_get_all_orders");
                 result["statuscode"] = "500";
-                result["status"] = "internal_error";
+                result["status"] = "unknown error";
 
-            }
-            finally
-            {
-                if (conn != null && conn.State == ConnectionState.Open)
-                {
-                    conn.Close();
-                }
             }
 
             return result;

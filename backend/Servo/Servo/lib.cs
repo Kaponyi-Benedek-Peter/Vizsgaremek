@@ -1,6 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
-using Servo.controller;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -49,15 +48,22 @@ namespace Servo
 
             server_main = Task.Factory.StartNew(() =>
             {
+<<<<<<< Updated upstream
                 service.shared.log("[! server started !]", "server");
 
                 while (isrunning)
+=======
+                service.shared.log("[! server started !]");
+                //service.shared.log("[starting server 3]");
+                while (!token.IsCancellationRequested)
+>>>>>>> Stashed changes
                 {
                     try
                     {
                         
                         HttpListenerContext context = hallgatozo.GetContext();
 
+<<<<<<< Updated upstream
                       
                         ThreadPool.QueueUserWorkItem(o =>
                         {
@@ -73,6 +79,14 @@ namespace Servo
                         
                         if (!isrunning) break;
                         Thread.Sleep(100);
+=======
+                        service.shared.log("[server stopped 1/1]");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        service.shared.log($"Error 1: {ex.Message} --lib.shared.start_server > server");
+>>>>>>> Stashed changes
                     }
                 }
             }, TaskCreationOptions.LongRunning);
@@ -80,6 +94,7 @@ namespace Servo
 
 
 
+<<<<<<< Updated upstream
             if (honeypot) { 
             honeypotport = Task.Factory.StartNew(() =>
             {
@@ -133,6 +148,8 @@ namespace Servo
 
             }
 
+=======
+>>>>>>> Stashed changes
 
             email_auth_refresh = Task.Factory.StartNew(() =>
             {
@@ -145,7 +162,7 @@ namespace Servo
                     }
                     catch (Exception ex)
                     {
-                        service.shared.log($"Error 2: {ex.Message} --lib.shared.start_server > email_auth refresh", "server");
+                        service.shared.log($"Error 2: {ex.Message} --lib.shared.start_server > email_auth refresh");
                     }
 
                      
@@ -171,12 +188,12 @@ namespace Servo
 
                             service.shared.eur = (double)data.rates.EUR;
                             service.shared.usd = (double)data.rates.USD;
-                            service.shared.log($"[exchange rate fetched succesfully]", "server");
+                            service.shared.log($"[exchange rate fetched succesfully]");
                         }
                     }
                     catch (Exception ex)
                     {
-                        service.shared.log($"Error 3: {ex.Message} --lib.shared > exhange_rates", "server");
+                        service.shared.log($"Error 3: {ex.Message} --lib.shared > exhange_rates");
                     }
 
                     Thread.Sleep(3000000);
@@ -185,6 +202,7 @@ namespace Servo
 
 
 
+<<<<<<< Updated upstream
             /* anti_ddos = Task.Factory.StartNew(() =>
              {
                  while (!token.IsCancellationRequested)
@@ -207,6 +225,9 @@ namespace Servo
                 }
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
            
+=======
+
+>>>>>>> Stashed changes
 
 
         }
@@ -220,14 +241,16 @@ namespace Servo
         public Task email_auth_refresh;
 
         public Task newsletter_main;
-        public Task honeypotport;
 
         public Task exchange_rates;
+<<<<<<< Updated upstream
         
         //public Task anti_ddos;
 
         public Task iplog;
 
+=======
+>>>>>>> Stashed changes
 
 
         public CancellationTokenSource cts;

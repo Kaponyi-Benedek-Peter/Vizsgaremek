@@ -30,7 +30,7 @@ namespace Servo.service
 
 
 
-            if (accstate == "admin" || accstate == "superadmin")
+            if (accstate == "admin")
             {
 
 
@@ -90,7 +90,7 @@ namespace Servo.service
 
                 else
                 {
-                    return (403, "wrong_token"); ;
+                    return (401, "wrong_token"); ;
                 }
 
 
