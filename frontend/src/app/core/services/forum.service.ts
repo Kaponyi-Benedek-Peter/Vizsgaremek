@@ -348,7 +348,7 @@ export class ForumService {
   }
 
   getPostImageUrl(postId: string, imageId: string): string {
-    return `https://www.roysshack.hu/assets/posts/${postId}/${imageId}.webp`;
+    return `${this.API_URL}/assets/posts/${postId}/${imageId}.webp`;
   }
 
   getPostImagesAdmin(adminId: string, adminSessionToken: string, postId: string) {
