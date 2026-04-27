@@ -1,6 +1,6 @@
 # Roy's Shack
 
-As of 2026.04.25 it is hosted on a server in the cloud\
+As of 2026.04.25 it is hosted on a server in the cloud
 
 > [!TIP]
 > Can be accessed at: https://www.RoysShack.hu
