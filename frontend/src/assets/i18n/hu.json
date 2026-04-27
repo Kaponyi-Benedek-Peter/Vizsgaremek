@@ -233,8 +233,8 @@
     "quick_actions": "Gyorsműveletek",
     "role": {
       "verified": "Hitelesített",
-      "unverified": "Nem hitelesített",
-      "admin": "Adminisztrátor"
+      "admin": "Adminisztrátor",
+      "superadmin": "Szuperadminisztrátor"
     },
     "nav": {
       "label": "Profil navigáció",
@@ -321,10 +321,36 @@
     }
   },
   "orders": {
-    "subtitle": "Rendelési előzmények és nyomkövetés",
-    "empty_title": "Még nincs rendelés",
-    "empty_desc": "Még nem adott le rendelést. Böngésszen termékkínálatunkban!",
-    "browse_products": "Termékek megtekintése"
+    "browse_products": "Termékek megtekintése",
+    "title": "Rendeléseim",
+    "subtitle": "Rendelési előzmények és követés",
+    "loading": "Rendelések betöltése...",
+    "retry": "Újrapróbálás",
+
+    "empty_title": "Még nincsenek rendeléseid",
+    "empty_desc": "Még nem adtál le rendelést. Kezdj el böngészni a termékeink között!",
+
+    "fields": {
+      "email": "Email",
+      "city": "Város",
+      "address": "Cím",
+      "zip": "Irányítószám",
+      "phone": "Telefonszám",
+      "tracking": "Követés"
+    },
+
+    "products": {
+      "title": "Termékek",
+      "sku": "Cikkszám"
+    },
+
+    "status": {
+      "pending": "Függőben",
+      "processing": "Feldolgozás alatt",
+      "shipped": "Feladva",
+      "delivered": "Kiszállítva",
+      "cancelled": "Törölve"
+    }
   },
   "danger": {
     "subtitle": "Visszafordíthatatlan fiókműveletek",

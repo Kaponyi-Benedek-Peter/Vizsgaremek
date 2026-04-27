@@ -11,6 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { AccountService, CreateOrderRequest } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Product } from '../../core/models/product.model';
+import { encodeObjectValues } from '../../core/utils/base64.utils';
 
 interface CheckoutForm {
   email: string;
@@ -38,6 +39,10 @@ export class Purchase implements OnInit {
   private accountService = inject(AccountService);
   private toastService = inject(ToastService);
   private router = inject(Router);
+
+  private decode(value: string): string {
+    return decodeURIComponent(escape(atob(value)));
+  }
 
   cartItems = computed(() => this.cartService.items());
   cartTotal = computed(() => this.cartService.totalPrice());
@@ -214,8 +219,12 @@ export class Purchase implements OnInit {
   }
 
   async submitOrder(): Promise<void> {
-    if (!this.validateForm()) return;
-
+    console.log('1');
+    if (!this.validateForm()) {
+      console.log('2');
+      return;
+    }
+    console.log('3');
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
@@ -224,7 +233,7 @@ export class Purchase implements OnInit {
       const isGuest = this.isGuest();
 
       const orderData: CreateOrderRequest = {
-        order: {
+        order: encodeObjectValues({
           user_id: isGuest ? '0' : (user?.id ?? ''),
           session_token: isGuest ? '' : (this.authService.getSessionToken() ?? ''),
           email: this.form.email,
@@ -240,11 +249,14 @@ export class Purchase implements OnInit {
           note: this.form.note ?? '',
           house_number: this.form.houseNumber,
           phone_number: this.form.phoneNumber,
-        },
-        items: this.cartItems().map((i) => ({
-          product_id: String(i.product.id),
-          quantity: String(i.quantity),
-        })),
+        }),
+
+        items: this.cartItems().map((i) =>
+          encodeObjectValues({
+            product_id: String(i.product.id),
+            quantity: String(i.quantity),
+          }),
+        ),
       };
 
       const response = await firstValueFrom(this.accountService.createOrder(orderData));
@@ -253,7 +265,9 @@ export class Purchase implements OnInit {
         this.successMessage.set('checkout.success');
         this.toastService.success('checkout.success');
 
-        const trackingToken = response.tracking_token ?? '';
+        const trackingTokenEncoded = response.tracking_token ?? '';
+        const trackingToken = trackingTokenEncoded ? this.decode(trackingTokenEncoded) : '';
+
         this.lastTrackingToken.set(trackingToken);
         this.showDownloadConfirmation.set(true);
 
@@ -278,6 +292,10 @@ export class Purchase implements OnInit {
   }
 
   private validateForm(): boolean {
+    console.log('terms:', this.acceptedTerms);
+    console.log('isGuest:', this.isGuest());
+    console.log('form:', this.form);
+    console.log(this.authService.currentUser());
     if (!this.acceptedTerms) {
       this.errorMessage.set('checkout.terms_required');
       return false;
@@ -303,7 +321,7 @@ export class Purchase implements OnInit {
       this.errorMessage.set('checkout.validation_error');
       return false;
     }
-
+    console.log('zipcode test:', /^\d{4,10}$/.test(this.form.zipcode));
     if (!/^\d{4,10}$/.test(this.form.zipcode)) {
       this.errorMessage.set('checkout.invalid_zipcode');
       return false;

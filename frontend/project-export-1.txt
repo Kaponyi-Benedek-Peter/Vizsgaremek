@@ -100,6 +100,10 @@ PROJECT STRUCTURE
 │   │   │   │   ├── 📄 not-found.css
 │   │   │   │   ├── 📄 not-found.html
 │   │   │   │   └── 📄 not-found.ts
+│   │   │   ├── 📁 orders/
+│   │   │   │   ├── 📄 orders.css
+│   │   │   │   ├── 📄 orders.html
+│   │   │   │   └── 📄 orders.ts
 │   │   │   ├── 📁 password-reset/
 │   │   │   │   ├── 📄 password-reset.css
 │   │   │   │   ├── 📄 password-reset.html
@@ -1239,6 +1243,11 @@ export const routes: Routes = [
   {
     path: 'purchase',
     loadComponent: () => import('./pages/purchase/purchase').then((m) => m.Purchase),
+  },
+  {
+    path: 'orders',
+    loadComponent: () => import('./pages/orders/orders').then((m) => m.Orders),
+    canActivate: [authGuard],
   },
   {
     path: 'legal',
@@ -2777,7 +2786,7 @@ export function enrichReview(review: Review): ReviewWithHelpers {
 FILE: src\app\core\services\account.service.ts
 ================================================================================
 
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
@@ -2899,6 +2908,16 @@ export class AccountService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 
+  private lastOrderToken = signal<string | null>(null);
+
+  setLastOrderToken(token: string) {
+    this.lastOrderToken.set(token);
+  }
+
+  getLastOrderToken() {
+    return this.lastOrderToken();
+  }
+
   getProfile(): Observable<User> {
     return this.http.get<User>(`${this.API_URL}/api/getUser`).pipe(catchError(this.handleError));
   }
@@ -3006,6 +3025,17 @@ export class AccountService {
     return this.http
       .post<ApiResponse<any[]>>(`${this.API_URL}/api/get_all_orders_user`, body)
       .pipe(catchError(this.handleError));
+  }
+
+  getOrders(data: { user_id: string; session_token: string }) {
+    return this.http.post<ApiResponse & { orders: AdminOrder[] }>(
+      `${this.API_URL}/api/get_orders`,
+      data,
+    );
+  }
+
+  getOrderByTracking(data: { tracking_token: string }) {
+    return this.http.post<any>(`${this.API_URL}/api/get_order`, data);
   }
 
   getSavedAddresses(): Observable<ApiResponse<any[]>> {
@@ -17623,6 +17653,387 @@ export class NotFound implements OnInit, OnDestroy {
 
 
 ================================================================================
+FILE: src\app\pages\orders\orders.css
+================================================================================
+
+.orders-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.orders-header h1 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  margin-bottom: 4px;
+}
+
+.orders-header p {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.state {
+  text-align: center;
+  padding: var(--space-10);
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+}
+
+.state.error {
+  color: var(--color-error);
+}
+
+.state.empty {
+  color: var(--color-text-secondary);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-brand-primary);
+  border-radius: 50%;
+  margin: 0 auto var(--space-3);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.order-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.order-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4);
+  cursor: pointer;
+  gap: var(--space-4);
+}
+
+.left .order-id {
+  font-weight: var(--font-bold);
+}
+
+.left .order-date {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.status {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status.pending {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.status.completed {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.status.cancelled {
+  background: var(--color-error-light);
+  color: var(--color-error);
+}
+
+.price {
+  font-weight: var(--font-semibold);
+}
+
+.order-details {
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.tracking code {
+  background: var(--color-surface-subtle);
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+}
+
+.product {
+  display: grid;
+  grid-template-columns: 60px 1fr auto auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.product img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.product .name {
+  font-weight: 600;
+}
+
+.product .sku {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .orders-page {
+    padding: var(--space-4);
+  }
+
+  .order-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .meta {
+    grid-template-columns: 1fr;
+  }
+
+  .product {
+    grid-template-columns: 50px 1fr;
+    grid-template-areas:
+      'img info'
+      'qty price';
+  }
+}
+
+
+
+================================================================================
+FILE: src\app\pages\orders\orders.html
+================================================================================
+
+<div class="orders-page">
+  <div class="orders-header">
+    <h1>{{ 'orders.title' | translate }}</h1>
+    <p>{{ 'orders.subtitle' | translate }}</p>
+  </div>
+
+  @if (loading()) {
+    <div class="state">
+      <div class="spinner"></div>
+      <p>{{ 'orders.loading' | translate }}</p>
+    </div>
+  }
+
+  @if (!loading() && error()) {
+    <div class="state error">
+      <p>{{ error() }}</p>
+      <button class="btn" (click)="loadOrders()">
+        {{ 'orders.retry' | translate }}
+      </button>
+    </div>
+  }
+
+  @if (!loading() && !error() && orders().length === 0) {
+    <div class="state empty">
+      <h3>{{ 'orders.empty_title' | translate }}</h3>
+      <p>{{ 'orders.empty_desc' | translate }}</p>
+    </div>
+  }
+
+  <div class="orders-list">
+    @for (order of orders(); track trackByOrder(order)) {
+      <div class="order-card">
+        <div class="order-summary" (click)="toggle(order.id)">
+          <div class="left">
+            <div class="order-id">#{{ order.id }}</div>
+            <div class="order-date">{{ order.created_at | date: 'medium' }}</div>
+          </div>
+
+          <div class="right">
+            <span class="status" [class]="order.order_status">
+              {{ 'orders.status.' + order.order_status | translate }}
+            </span>
+
+            <span class="price"> {{ order.price }} € </span>
+          </div>
+        </div>
+
+        @if (isExpanded(order.id)) {
+          <div class="order-details">
+            <div class="meta">
+              <div>
+                <strong>{{ 'orders.fields.email' | translate }}:</strong>
+                {{ order.email }}
+              </div>
+
+              <div>
+                <strong>{{ 'orders.fields.city' | translate }}:</strong>
+                {{ order.city }}
+              </div>
+
+              <div>
+                <strong>{{ 'orders.fields.address' | translate }}:</strong>
+                {{ order.address }} {{ order.house_number }}
+              </div>
+
+              <div>
+                <strong>{{ 'orders.fields.zip' | translate }}:</strong>
+                {{ order.zipcode }}
+              </div>
+
+              <div>
+                <strong>{{ 'orders.fields.phone' | translate }}:</strong>
+                {{ order.phone_number }}
+              </div>
+
+              @if (order.tracking_token) {
+                <div class="tracking">
+                  <strong>{{ 'orders.fields.tracking' | translate }}:</strong>
+                  <code>{{ order.tracking_token }}</code>
+                </div>
+              }
+            </div>
+
+            <div class="products">
+              <h4>{{ 'orders.products.title' | translate }}</h4>
+
+              @for (p of order.products; track p.id) {
+                <div class="product">
+                  <img [src]="p.thumbnail_url" alt="" />
+
+                  <div class="info">
+                    <div class="name">{{ p.product_name_en }}</div>
+                    <div class="sku">{{ 'orders.products.sku' | translate }}: {{ p.sku }}</div>
+                  </div>
+
+                  <div class="qty">x{{ p.quantity }}</div>
+
+                  <div class="price">{{ p.price }} €</div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+
+
+================================================================================
+FILE: src\app\pages\orders\orders.ts
+================================================================================
+
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AccountService, AdminOrder } from '../../core/services/account.service';
+import { AuthService } from '../../core/services/auth.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+
+@Component({
+  selector: 'app-orders',
+  standalone: true,
+  imports: [CommonModule, TranslateModule],
+  templateUrl: './orders.html',
+  styleUrl: './orders.css',
+})
+export class Orders implements OnInit {
+  private accountService = inject(AccountService);
+  private authService = inject(AuthService);
+  private translateService = inject(TranslateService);
+
+  orders = signal<AdminOrder[]>([]);
+  loading = signal<boolean>(true);
+  error = signal<string | null>(null);
+
+  expandedOrderId = signal<string | null>(null);
+
+  ngOnInit(): void {
+    this.loadOrders();
+  }
+
+  loadOrders() {
+    this.loading.set(true);
+    this.error.set(null);
+
+    const userId = sessionStorage.getItem('user_id') ?? localStorage.getItem('user_id') ?? '';
+
+    const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    this.accountService.getOrders({ user_id: userId, session_token: token }).subscribe({
+      next: (res) => {
+        this.orders.set(res?.orders ?? res ?? []);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err?.message ?? 'Failed to load orders');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  toggle(orderId: string) {
+    this.expandedOrderId.set(this.expandedOrderId() === orderId ? null : orderId);
+  }
+
+  isExpanded(orderId: string) {
+    return this.expandedOrderId() === orderId;
+  }
+
+  trackByOrder(order: any) {
+    return order.id;
+  }
+}
+
+
+
+================================================================================
 FILE: src\app\pages\password-reset\password-reset.css
 ================================================================================
 
@@ -23112,6 +23523,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { AccountService, CreateOrderRequest } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Product } from '../../core/models/product.model';
+import { encodeObjectValues } from '../../core/utils/base64.utils';
 
 interface CheckoutForm {
   email: string;
@@ -23139,6 +23551,10 @@ export class Purchase implements OnInit {
   private accountService = inject(AccountService);
   private toastService = inject(ToastService);
   private router = inject(Router);
+
+  private decode(value: string): string {
+    return decodeURIComponent(escape(atob(value)));
+  }
 
   cartItems = computed(() => this.cartService.items());
   cartTotal = computed(() => this.cartService.totalPrice());
@@ -23325,7 +23741,7 @@ export class Purchase implements OnInit {
       const isGuest = this.isGuest();
 
       const orderData: CreateOrderRequest = {
-        order: {
+        order: encodeObjectValues({
           user_id: isGuest ? '0' : (user?.id ?? ''),
           session_token: isGuest ? '' : (this.authService.getSessionToken() ?? ''),
           email: this.form.email,
@@ -23341,11 +23757,14 @@ export class Purchase implements OnInit {
           note: this.form.note ?? '',
           house_number: this.form.houseNumber,
           phone_number: this.form.phoneNumber,
-        },
-        items: this.cartItems().map((i) => ({
-          product_id: String(i.product.id),
-          quantity: String(i.quantity),
-        })),
+        }),
+
+        items: this.cartItems().map((i) =>
+          encodeObjectValues({
+            product_id: String(i.product.id),
+            quantity: String(i.quantity),
+          }),
+        ),
       };
 
       const response = await firstValueFrom(this.accountService.createOrder(orderData));
@@ -23354,7 +23773,9 @@ export class Purchase implements OnInit {
         this.successMessage.set('checkout.success');
         this.toastService.success('checkout.success');
 
-        const trackingToken = response.tracking_token ?? '';
+        const trackingTokenEncoded = response.tracking_token ?? '';
+        const trackingToken = trackingTokenEncoded ? this.decode(trackingTokenEncoded) : '';
+
         this.lastTrackingToken.set(trackingToken);
         this.showDownloadConfirmation.set(true);
 
@@ -26862,7 +27283,7 @@ FILE: src\app\shared\components\header\header.html
               <img [src]="ICONS.user" alt="profile" class="dropdown-icon" />
               {{ 'header.my_profile' | translate }}
             </a>
-            <a routerLink="/purchase" class="user-dropdown-item" (click)="closeUserMenu()">
+            <a routerLink="/orders" class="user-dropdown-item" (click)="closeUserMenu()">
               <img [src]="ICONS.basket" alt="orders" class="dropdown-icon" />
               {{ 'header.my_orders' | translate }}
             </a>
@@ -27043,7 +27464,7 @@ FILE: src\app\shared\components\header\header.html
             <a routerLink="/profile" class="mobile-nav-item" (click)="closeMobileMenu()">
               {{ 'header.my_profile' | translate }}
             </a>
-            <a routerLink="/purchase" class="mobile-nav-item" (click)="closeMobileMenu()">
+            <a routerLink="/orders" class="mobile-nav-item" (click)="closeMobileMenu()">
               {{ 'header.my_orders' | translate }}
             </a>
           }
@@ -32752,9 +33173,35 @@ FILE: src\assets\i18n\de.json
   },
   "orders": {
     "browse_products": "Produkte durchstöbern",
-    "empty_desc": "Sie haben noch keine Bestellungen aufgegeben. Stöbern Sie in unserem Produktkatalog!",
+    "title": "Meine Bestellungen",
+    "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung",
+    "loading": "Bestellungen werden geladen...",
+    "retry": "Erneut versuchen",
+
     "empty_title": "Noch keine Bestellungen",
-    "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung"
+    "empty_desc": "Sie haben noch keine Bestellung aufgegeben. Beginnen Sie mit dem Durchsuchen unseres Produktkatalogs!",
+
+    "fields": {
+      "email": "E-Mail",
+      "city": "Stadt",
+      "address": "Adresse",
+      "zip": "PLZ",
+      "phone": "Telefon",
+      "tracking": "Sendungsverfolgung"
+    },
+
+    "products": {
+      "title": "Produkte",
+      "sku": "Artikelnummer"
+    },
+
+    "status": {
+      "pending": "Ausstehend",
+      "processing": "In Bearbeitung",
+      "shipped": "Versendet",
+      "delivered": "Zugestellt",
+      "cancelled": "Storniert"
+    }
   },
   "success": {
     "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
@@ -33094,10 +33541,36 @@ FILE: src\assets\i18n\en.json
     }
   },
   "orders": {
+    "browse_products": "Browse products",
+    "title": "My Orders",
     "subtitle": "Your order history and tracking",
+    "loading": "Loading orders...",
+    "retry": "Retry",
+
     "empty_title": "No orders yet",
     "empty_desc": "You haven't placed any orders yet. Start browsing our product catalog!",
-    "browse_products": "Browse products"
+
+    "fields": {
+      "email": "Email",
+      "city": "City",
+      "address": "Address",
+      "zip": "ZIP",
+      "phone": "Phone",
+      "tracking": "Tracking"
+    },
+
+    "products": {
+      "title": "Products",
+      "sku": "SKU"
+    },
+
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
   },
   "danger": {
     "subtitle": "Irreversible account actions",
@@ -33906,10 +34379,36 @@ FILE: src\assets\i18n\hu.json
     }
   },
   "orders": {
-    "subtitle": "Rendelési előzmények és nyomkövetés",
-    "empty_title": "Még nincs rendelés",
-    "empty_desc": "Még nem adott le rendelést. Böngésszen termékkínálatunkban!",
-    "browse_products": "Termékek megtekintése"
+    "browse_products": "Termékek megtekintése",
+    "title": "Rendeléseim",
+    "subtitle": "Rendelési előzmények és követés",
+    "loading": "Rendelések betöltése...",
+    "retry": "Újrapróbálás",
+
+    "empty_title": "Még nincsenek rendeléseid",
+    "empty_desc": "Még nem adtál le rendelést. Kezdj el böngészni a termékeink között!",
+
+    "fields": {
+      "email": "Email",
+      "city": "Város",
+      "address": "Cím",
+      "zip": "Irányítószám",
+      "phone": "Telefonszám",
+      "tracking": "Követés"
+    },
+
+    "products": {
+      "title": "Termékek",
+      "sku": "Cikkszám"
+    },
+
+    "status": {
+      "pending": "Függőben",
+      "processing": "Feldolgozás alatt",
+      "shipped": "Feladva",
+      "delivered": "Kiszállítva",
+      "cancelled": "Törölve"
+    }
   },
   "danger": {
     "subtitle": "Visszafordíthatatlan fiókműveletek",

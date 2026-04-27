@@ -33,7 +33,7 @@
               <img [src]="ICONS.user" alt="profile" class="dropdown-icon" />
               {{ 'header.my_profile' | translate }}
             </a>
-            <a routerLink="/purchase" class="user-dropdown-item" (click)="closeUserMenu()">
+            <a routerLink="/orders" class="user-dropdown-item" (click)="closeUserMenu()">
               <img [src]="ICONS.basket" alt="orders" class="dropdown-icon" />
               {{ 'header.my_orders' | translate }}
             </a>
@@ -214,7 +214,7 @@
             <a routerLink="/profile" class="mobile-nav-item" (click)="closeMobileMenu()">
               {{ 'header.my_profile' | translate }}
             </a>
-            <a routerLink="/purchase" class="mobile-nav-item" (click)="closeMobileMenu()">
+            <a routerLink="/orders" class="mobile-nav-item" (click)="closeMobileMenu()">
               {{ 'header.my_orders' | translate }}
             </a>
           }

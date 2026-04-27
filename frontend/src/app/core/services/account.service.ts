@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
@@ -120,6 +120,16 @@ export class AccountService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 
+  private lastOrderToken = signal<string | null>(null);
+
+  setLastOrderToken(token: string) {
+    this.lastOrderToken.set(token);
+  }
+
+  getLastOrderToken() {
+    return this.lastOrderToken();
+  }
+
   getProfile(): Observable<User> {
     return this.http.get<User>(`${this.API_URL}/api/getUser`).pipe(catchError(this.handleError));
   }
@@ -227,6 +237,21 @@ export class AccountService {
     return this.http
       .post<ApiResponse<any[]>>(`${this.API_URL}/api/get_all_orders_user`, body)
       .pipe(catchError(this.handleError));
+  }
+
+  getOrders(data: { id: string; session_token: string }) {
+    const body = {
+      id: data.id,
+      session_token: btoa(unescape(encodeURIComponent(data.session_token))),
+    };
+    return this.http.post<ApiResponse & { orders: AdminOrder[] }>(
+      `${this.API_URL}/api/get_all_orders_user`,
+      body,
+    );
+  }
+
+  getOrderByTracking(data: { tracking_token: string }) {
+    return this.http.post<any>(`${this.API_URL}/api/get_all_orders_user`, data);
   }
 
   getSavedAddresses(): Observable<ApiResponse<any[]>> {

@@ -233,8 +233,8 @@
     "quick_actions": "Schnellaktionen",
     "role": {
       "verified": "Verifiziert",
-      "unverified": "Nicht verifiziert",
-      "admin": "Administrator"
+      "admin": "Administrator",
+      "superadmin": "Superadministrator"
     },
     "nav": {
       "label": "Profilnavigation",
@@ -791,9 +791,35 @@
   },
   "orders": {
     "browse_products": "Produkte durchstöbern",
-    "empty_desc": "Sie haben noch keine Bestellungen aufgegeben. Stöbern Sie in unserem Produktkatalog!",
+    "title": "Meine Bestellungen",
+    "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung",
+    "loading": "Bestellungen werden geladen...",
+    "retry": "Erneut versuchen",
+
     "empty_title": "Noch keine Bestellungen",
-    "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung"
+    "empty_desc": "Sie haben noch keine Bestellung aufgegeben. Beginnen Sie mit dem Durchsuchen unseres Produktkatalogs!",
+
+    "fields": {
+      "email": "E-Mail",
+      "city": "Stadt",
+      "address": "Adresse",
+      "zip": "PLZ",
+      "phone": "Telefon",
+      "tracking": "Sendungsverfolgung"
+    },
+
+    "products": {
+      "title": "Produkte",
+      "sku": "Artikelnummer"
+    },
+
+    "status": {
+      "pending": "Ausstehend",
+      "processing": "In Bearbeitung",
+      "shipped": "Versendet",
+      "delivered": "Zugestellt",
+      "cancelled": "Storniert"
+    }
   },
   "success": {
     "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
