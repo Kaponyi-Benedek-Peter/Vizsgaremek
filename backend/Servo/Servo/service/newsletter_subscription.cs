@@ -64,7 +64,7 @@ namespace Servo.service
 
             //string first_name = model.shared.get_firstname_by_newsletter_email();
 
-            string emailhtml = File.ReadAllText($"templates/password_reset_{language.ToUpper()}.html"
+            string emailhtml = File.ReadAllText($"templates/newsletter_{language.ToUpper()}.html"
                 .Replace("{EMAIL}", hova)
 
            //     .Replace("{FIRST_NAME}", first_name)
