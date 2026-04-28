@@ -41,7 +41,7 @@
   transform: translateX(-50%);
   height: 2px;
   width: 16px;
-  background-color: var(--btn-underline-color, var(--color-accent-bright));
+  background-color: var(--color-text-on-brand, var(--color-accent-bright));
   transition: width 0.3s ease;
 }
 

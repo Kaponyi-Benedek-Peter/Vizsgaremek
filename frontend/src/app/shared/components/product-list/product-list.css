@@ -69,8 +69,8 @@
 
 .clear-filters-button {
   padding: var(--space-3) var(--space-6);
-  background: var(--color-primary);
-  color: var(--color-text-on-primary);
+  background: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--text-base);
@@ -83,7 +83,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .clear-filters-button:hover {
-    background: var(--color-primary-hover);
+    background: var(--color-brand-primary-hover);
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
   }

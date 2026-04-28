@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-password-reset',
@@ -50,19 +51,29 @@ export class PasswordReset implements OnInit {
     this.isProcessing.set(true);
     this.errorMessage.set('');
 
-    this.authService.completePasswordChange(encodedId, encodedToken).subscribe({
-      next: () => {
-        this.isProcessing.set(false);
-        this.isSuccess.set(true);
-        const message = this.translateService.instant('auth.success.password_changed');
-        this.toastService.success(message);
-      },
-      error: (error) => {
-        this.isProcessing.set(false);
-        this.errorMessage.set(error.message || 'auth.errors.password_reset_failed');
-        this.authService.logout();
-      },
-    });
+    this.authService
+      .completePasswordChange(encodedId, encodedToken)
+      .pipe(
+        tap(() => {
+          this.authService.logout();
+          setTimeout(() => {
+            window.location.reload();
+          }, 15000);
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.isProcessing.set(false);
+          this.isSuccess.set(true);
+          const message = this.translateService.instant('auth.success.password_changed');
+          this.toastService.success(message);
+        },
+        error: (error) => {
+          this.isProcessing.set(false);
+          this.errorMessage.set(error.message || 'auth.errors.password_reset_failed');
+          this.authService.logout();
+        },
+      });
   }
 
   backToLogin(): void {

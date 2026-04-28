@@ -25,6 +25,7 @@ import {
   MOCK_MODE,
   MOCK_RAW_PRODUCTS,
   MOCK_RAW_CATEGORIES,
+  MOCK_PRODUCT_IMAGES,
 } from '../../pages/products/product.mock';
 
 @Injectable({
@@ -280,6 +281,22 @@ export class ProductService {
   }
 
   getProductImages(productId: string): Observable<ProductImage[]> {
+    if (MOCK_MODE) {
+      const group = MOCK_PRODUCT_IMAGES.find((g) => g.name === productId);
+      if (!group) return of([]);
+      return of(
+        group.files.map((url, i) => ({
+          id: `${productId}-${i + 1}`,
+          product_id: productId,
+          image_url: url,
+          alt_text_hu: '',
+          alt_text_en: '',
+          alt_text_de: '',
+          sort_id: `${i + 1}`,
+        })),
+      );
+    }
+
     return this.getAllProductImages().pipe(
       map((groups) => {
         const group = groups.find((g) => g.name === productId);
@@ -316,10 +333,10 @@ export class ProductService {
     isTransparent: boolean,
   ): Observable<{ statuscode: string; status: string; image?: ProductImage }> {
     const body = {
-      admin_id: btoa(adminId),
-      admin_session_token: btoa(adminSessionToken),
-      product_id: btoa(productId),
-      transparency: btoa(isTransparent ? '1' : '0'),
+      admin_id: adminId,
+      admin_session_token: adminSessionToken,
+      product_id: productId,
+      transparency: isTransparent ? '1' : '0',
       image_b64: imageBase64,
     };
     return this.http
@@ -338,10 +355,10 @@ export class ProductService {
     imageId: string,
   ): Observable<{ statuscode: string; status: string }> {
     const body = {
-      admin_id: btoa(adminId),
-      admin_session_token: btoa(adminSessionToken),
-      product_id: btoa(productId),
-      image_id: btoa(imageId),
+      admin_id: adminId,
+      admin_session_token: adminSessionToken,
+      product_id: productId,
+      image_id: imageId,
     };
     return this.http
       .post<{
@@ -398,11 +415,31 @@ export class ProductService {
     auth: Record<string, string>,
     productId: string,
   ): Observable<{ statuscode: string; status: string }> {
-    const body = { ...auth, product_id: btoa(productId) };
+    const body = { ...auth, product_id: productId };
     return this.http.post<{ statuscode: string; status: string }>(
       `${this.API_URL}/api/delete_product_admin`,
       body,
     );
+  }
+
+  updateProductStatusAdmin(
+    adminId: string,
+    adminSessionToken: string,
+    targetProductId: string,
+    newProductStatus: string,
+  ): Observable<{ statuscode: string; status: string }> {
+    const body = {
+      admin_id: adminId,
+      admin_session_token: adminSessionToken,
+      target_product_id: targetProductId,
+      new_product_status: newProductStatus,
+    };
+    return this.http
+      .post<{
+        statuscode: string;
+        status: string;
+      }>(`${this.API_URL}/api/update_product_status_admin`, body)
+      .pipe(catchError(this.handleError));
   }
 
   saveProductAdmin(

@@ -11,6 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { AccountService, CreateOrderRequest } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Product } from '../../core/models/product.model';
+import { encodeObjectValues } from '../../core/utils/base64.utils';
 
 interface CheckoutForm {
   email: string;
@@ -38,6 +39,10 @@ export class Purchase implements OnInit {
   private accountService = inject(AccountService);
   private toastService = inject(ToastService);
   private router = inject(Router);
+
+  private decode(value: string): string {
+    return decodeURIComponent(escape(atob(value)));
+  }
 
   cartItems = computed(() => this.cartService.items());
   cartTotal = computed(() => this.cartService.totalPrice());
@@ -70,8 +75,12 @@ export class Purchase implements OnInit {
 
     if (!this.isGuest()) {
       const user = this.authService.currentUser();
+      const pending = this.authService.getPendingUserName();
+      const firstname = user?.firstname || pending?.firstname || '';
+      const lastname = user?.lastname || pending?.lastname || '';
+
       this.form.email = user?.email ?? '';
-      this.form.billingName = `${user?.firstname ?? ''} ${user?.lastname ?? ''}`.trim();
+      this.form.billingName = `${firstname} ${lastname}`.trim();
     }
 
     if (this.cartItems().length === 0) {
@@ -214,8 +223,9 @@ export class Purchase implements OnInit {
   }
 
   async submitOrder(): Promise<void> {
-    if (!this.validateForm()) return;
-
+    if (!this.validateForm()) {
+      return;
+    }
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
@@ -224,27 +234,30 @@ export class Purchase implements OnInit {
       const isGuest = this.isGuest();
 
       const orderData: CreateOrderRequest = {
-        order: {
-          user_id: btoa(isGuest ? '0' : (user?.id ?? '')),
-          session_token: btoa(isGuest ? '' : (this.authService.getSessionToken() ?? '')),
-          email: btoa(this.form.email),
-          billing_name: btoa(this.form.billingName),
-          shipping_name: btoa(this.form.billingName),
-          shipping_company: btoa(''),
-          price: btoa(String(this.cartTotal())),
-          city: btoa(this.form.city),
-          guest: btoa(isGuest ? '1' : '0'),
-          zipcode: btoa(this.form.zipcode),
-          address: btoa(this.form.address),
-          apartment_number: btoa(this.form.apartmentNumber ?? '0'),
-          note: btoa(this.form.note ?? ''),
-          house_number: btoa(this.form.houseNumber),
-          phone_number: btoa(this.form.phoneNumber),
-        },
-        items: this.cartItems().map((i) => ({
-          product_id: btoa(String(i.product.id)),
-          quantity: btoa(String(i.quantity)),
-        })),
+        order: encodeObjectValues({
+          user_id: isGuest ? '0' : (user?.id ?? ''),
+          session_token: isGuest ? '' : (this.authService.getSessionToken() ?? ''),
+          email: this.form.email,
+          billing_name: this.form.billingName,
+          shipping_name: this.form.billingName,
+          shipping_company: '',
+          price: String(this.cartTotal()),
+          city: this.form.city,
+          guest: isGuest ? '1' : '0',
+          zipcode: this.form.zipcode,
+          address: this.form.address,
+          apartment_number: this.form.apartmentNumber ?? '0',
+          note: this.form.note ?? '',
+          house_number: this.form.houseNumber,
+          phone_number: this.form.phoneNumber,
+        }),
+
+        items: this.cartItems().map((i) =>
+          encodeObjectValues({
+            product_id: String(i.product.id),
+            quantity: String(i.quantity),
+          }),
+        ),
       };
 
       const response = await firstValueFrom(this.accountService.createOrder(orderData));
@@ -253,7 +266,9 @@ export class Purchase implements OnInit {
         this.successMessage.set('checkout.success');
         this.toastService.success('checkout.success');
 
-        const trackingToken = response.tracking_token ?? '';
+        const trackingTokenEncoded = response.tracking_token ?? '';
+        const trackingToken = trackingTokenEncoded ? this.decode(trackingTokenEncoded) : '';
+
         this.lastTrackingToken.set(trackingToken);
         this.showDownloadConfirmation.set(true);
 

@@ -99,6 +99,10 @@ export class Profile implements OnInit {
 
     const firstname = this.editFirstname.trim();
     const lastname = this.editLastname.trim();
+    const userId = this.authService.getUserId();
+    const token = this.authService.getSessionToken();
+
+    if (!userId || !token) return;
 
     if (!firstname || !lastname) {
       this.profileEditError.set('profile.errors.name_required');
@@ -107,19 +111,22 @@ export class Profile implements OnInit {
 
     this.isUpdatingProfile.set(true);
 
-    this.accountService.updateProfile({ firstname, lastname }).subscribe({
-      next: () => {
-        this.isUpdatingProfile.set(false);
-        this.profileEditSuccess.set(true);
-        this.authService.patchCurrentUser({ firstname, lastname });
-        this.loadPersonalInfoIntoForm();
-        this.toastService.success('profile.success.profile_updated');
-      },
-      error: (err) => {
-        this.isUpdatingProfile.set(false);
-        this.profileEditError.set(err.message ?? 'profile.errors.update_failed');
-      },
-    });
+    this.accountService
+      .updateProfile(firstname, lastname, this.authService.getToken()!, userId)
+      .subscribe({
+        next: () => {
+          this.isUpdatingProfile.set(false);
+          this.profileEditSuccess.set(true);
+          this.authService.patchCurrentUser({ firstname, lastname });
+          this.authService.storePendingUserName(firstname, lastname);
+          this.loadPersonalInfoIntoForm();
+          this.toastService.success('profile.success.profile_updated');
+        },
+        error: (err) => {
+          this.isUpdatingProfile.set(false);
+          this.profileEditError.set(err.message ?? 'profile.errors.update_failed');
+        },
+      });
   }
 
   requestPasswordChange(): void {
@@ -176,7 +183,7 @@ export class Profile implements OnInit {
 
     this.isDeletingAccount.set(true);
 
-    this.accountService.deleteAccountRequest(userId, password).subscribe({
+    this.accountService.deleteAccountRequest(userId, password, this.language()).subscribe({
       next: () => {
         this.isDeletingAccount.set(false);
         this.deleteConfirmationSent.set(true);

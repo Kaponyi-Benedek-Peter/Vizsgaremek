@@ -1,24 +1,37 @@
-:root {
-  --icon-filter: brightness(0) saturate(100%);
-}
+/* ============================================================
+   DARK THEME OVERRIDES
+   Only properties that differ from the light theme defaults
+   defined in _variables.css are listed here.
+   ============================================================ */
+
 [data-theme='dark'] {
-  --color-background: var(--color-gray-very-dark);
-  --color-surface: var(--color-dark-neutral);
-  --color-surface-elevated: var(--color-gray-dark);
+  /* ----------------------------------------------------------
+     SURFACE COLORS
+     ---------------------------------------------------------- */
+  --color-background: #1a1a1a;
+  --color-surface: #252525;
+  --color-surface-elevated: #1e1e1e;
+  --color-surface-subtle: #252525;
+  --color-surface-muted: #303030;
 
-  --color-primary: var(--color-green-primary);
-  --color-primary-hover: #088554;
-  --color-primary-light: rgba(6, 122, 69, 0.15);
-  --color-primary-mid: rgba(6, 122, 69, 0.4);
+  /* ----------------------------------------------------------
+     TEXT COLORS
+     ---------------------------------------------------------- */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b0b0b0;
+  --color-text-tertiary: #9f9c9c;
+  --color-text-placeholder: #808080;
 
-  --color-text-primary: var(--color-off-white);
-  --color-text-secondary: var(--color-light-gray);
-  --color-text-tertiary: var(--color-medium-light-gray);
+  /* ----------------------------------------------------------
+     BORDER COLORS
+     ---------------------------------------------------------- */
+  --color-border: #404040;
+  --color-border-hover: #606060;
 
-  --color-border: var(--color-medium-gray);
-  --color-border-light: var(--color-gray-dark);
-
-  /* Status Colors - Dark Theme */
+  /* ----------------------------------------------------------
+     STATUS COLORS
+     (adjusted for dark background contrast)
+     ---------------------------------------------------------- */
   --color-success: #16a34a;
   --color-success-hover: #15803d;
   --color-success-light: rgba(22, 163, 74, 0.15);
@@ -35,31 +48,31 @@
   --color-info-hover: #3b82f6;
   --color-info-light: rgba(96, 165, 250, 0.15);
 
+  /* ----------------------------------------------------------
+     OVERLAY & SPECIAL
+     ---------------------------------------------------------- */
+  --color-overlay: rgba(0, 0, 0, 0.7);
+  --color-featured-divider: rgba(255, 255, 255, 0.15);
+
+  /* ----------------------------------------------------------
+     ICON FILTER
+     ---------------------------------------------------------- */
+  --icon-filter: none;
+
+  /* ----------------------------------------------------------
+     SHADOWS (heavier on dark backgrounds)
+     ---------------------------------------------------------- */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.55), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.65), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-  --shadow-primary: 0 8px 24px rgba(6, 122, 69, 0.4);
-  --shadow-primary-lg: 0 12px 32px rgba(6, 122, 69, 0.55);
+  --shadow-brand: 0 8px 24px rgba(6, 122, 69, 0.4);
+  --shadow-brand-lg: 0 12px 32px rgba(6, 122, 69, 0.55);
 
+  /* ----------------------------------------------------------
+     GRADIENTS
+     ---------------------------------------------------------- */
   --gradient-image-bg: linear-gradient(135deg, #1a2e24 0%, #1e3829 100%);
-
-  --icon-filter: none;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: var(--font-primary);
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
-  transition:
-    background-color var(--transition-normal),
-    color var(--transition-normal);
 }

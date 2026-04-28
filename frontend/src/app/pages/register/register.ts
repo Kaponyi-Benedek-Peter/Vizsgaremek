@@ -70,6 +70,7 @@ export class Register {
       .subscribe({
         next: () => {
           this.isLoading.set(false);
+          this.authService.storePendingUserName(this.firstname(), this.lastname());
           this.successMessage.set('auth.register.success_message');
         },
         error: (error) => {

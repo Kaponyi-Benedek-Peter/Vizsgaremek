@@ -55,12 +55,12 @@
 }
 
 .search-input:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-brand-primary);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--color-brand-primary);
   box-shadow: 0 0 0 3px rgba(6, 122, 69, 0.12);
 }
 
@@ -124,13 +124,13 @@
 }
 
 .sort-select:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-brand-primary);
 }
 
 .sort-select:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px var(--color-brand-primary-light);
 }
 
 .select-arrow {
@@ -162,8 +162,8 @@
 
 @media (hover: hover) and (pointer: fine) {
   .expand-button:hover {
-    border-color: var(--color-primary);
-    background: var(--color-primary-light);
+    border-color: var(--color-brand-primary);
+    background: var(--color-brand-primary-light);
   }
 }
 
@@ -179,7 +179,7 @@
 .active-indicator {
   width: 8px;
   height: 8px;
-  background: var(--color-primary);
+  background: var(--color-brand-primary);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -275,13 +275,13 @@
 }
 
 .price-input:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-brand-primary);
 }
 
 .price-input:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px var(--color-brand-primary-light);
 }
 
 .price-input::placeholder {
@@ -307,7 +307,7 @@
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: var(--color-primary);
+  accent-color: var(--color-brand-primary);
   flex-shrink: 0;
 }
 

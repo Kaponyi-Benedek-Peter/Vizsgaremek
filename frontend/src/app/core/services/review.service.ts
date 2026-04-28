@@ -19,9 +19,9 @@ export class ReviewService {
 
   getReviewsByProductId(productId: string, page = 1, amount = 50): Observable<ReviewWithHelpers[]> {
     const body = {
-      product_id: btoa(productId),
-      page: btoa(String(page)),
-      amount: btoa(String(amount)),
+      product_id: productId,
+      page: String(page),
+      amount: String(amount),
     };
 
     return this.http

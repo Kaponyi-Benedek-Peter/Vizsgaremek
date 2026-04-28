@@ -1,10 +1,12 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { User } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
+import { SupportedLanguage } from './translation.service';
+import { encodeObjectValues } from '../utils/base64.utils';
 
 export interface UpdateProfileRequest {
   firstname?: string;
@@ -15,6 +17,7 @@ export interface UpdateProfileRequest {
 export interface DeleteAccountRequest {
   id: string;
   password: string;
+  language: SupportedLanguage;
 }
 
 export interface ApiResponse<T = any> {
@@ -117,27 +120,48 @@ export class AccountService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 
+  private lastOrderToken = signal<string | null>(null);
+
+  setLastOrderToken(token: string) {
+    this.lastOrderToken.set(token);
+  }
+
+  getLastOrderToken() {
+    return this.lastOrderToken();
+  }
+
   getProfile(): Observable<User> {
     return this.http.get<User>(`${this.API_URL}/api/getUser`).pipe(catchError(this.handleError));
   }
 
-  updateProfile(updates: UpdateProfileRequest): Observable<ApiResponse<User>> {
-    const encodedUpdates: Partial<UpdateProfileRequest> = {};
-
-    if (updates.firstname) encodedUpdates.firstname = this.encodeBase64(updates.firstname);
-    if (updates.lastname) encodedUpdates.lastname = this.encodeBase64(updates.lastname);
-    if (updates.email) encodedUpdates.email = this.encodeBase64(updates.email);
+  updateProfile(
+    newFirstname: string,
+    newLastname: string,
+    sessionToken: string,
+    id: string,
+  ): Observable<ApiResponse<User>> {
+    const request = {
+      new_firstname: newFirstname,
+      new_lastname: newLastname,
+      session_token: sessionToken,
+      id: id,
+    };
 
     return this.http
-      .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, encodedUpdates)
-      .pipe(catchError(this.handleError));
+      .put<ApiResponse<User>>(`${this.API_URL}/api/update_name_by_id`, request)
+      .pipe(catchError(this.handleError.bind(this)));
   }
 
-  deleteAccountRequest(userId: string, password: string): Observable<ApiResponse> {
-    const request: DeleteAccountRequest = {
-      id: this.encodeBase64(userId),
-      password: this.encodeBase64(password),
-    };
+  deleteAccountRequest(
+    userId: string,
+    password: string,
+    language: SupportedLanguage,
+  ): Observable<ApiResponse> {
+    const request: DeleteAccountRequest = encodeObjectValues({
+      id: userId,
+      password: password,
+      language: language as SupportedLanguage,
+    });
 
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/delacc_request`, request)
@@ -161,11 +185,11 @@ export class AccountService {
     currentPassword: string,
     newPassword: string,
   ): Observable<ApiResponse> {
-    const request = {
-      id: this.encodeBase64(userId),
-      currentPassword: this.encodeBase64(currentPassword),
-      newPassword: this.encodeBase64(newPassword),
-    };
+    const request = encodeObjectValues({
+      id: userId,
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    });
 
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/change-password`, request)
@@ -186,11 +210,11 @@ export class AccountService {
     reason: string,
   ): Observable<ApiResponse> {
     const body = {
-      admin_id: this.encodeBase64(admin_id),
-      admin_session_token: this.encodeBase64(admin_session_token),
-      target_user_id: this.encodeBase64(target_user_id),
-      new_user_state: this.encodeBase64(new_user_state),
-      reason: this.encodeBase64(reason),
+      admin_id: admin_id,
+      admin_session_token: admin_session_token,
+      target_user_id: target_user_id,
+      new_user_state: new_user_state,
+      reason: reason,
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/update_user_state_admin`, body)
@@ -201,7 +225,7 @@ export class AccountService {
     const auth = this.buildAdminAuthBody();
     const body = {
       ...auth,
-      user_id: this.encodeBase64(userId),
+      user_id: userId,
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/delete_user_admin`, body)
@@ -213,6 +237,21 @@ export class AccountService {
     return this.http
       .post<ApiResponse<any[]>>(`${this.API_URL}/api/get_all_orders_user`, body)
       .pipe(catchError(this.handleError));
+  }
+
+  getOrders(data: { id: string; session_token: string }) {
+    const body = {
+      id: data.id,
+      session_token: btoa(unescape(encodeURIComponent(data.session_token))),
+    };
+    return this.http.post<ApiResponse & { orders: AdminOrder[] }>(
+      `${this.API_URL}/api/get_all_orders_user`,
+      body,
+    );
+  }
+
+  getOrderByTracking(data: { tracking_token: string }) {
+    return this.http.post<any>(`${this.API_URL}/api/get_all_orders_user`, data);
   }
 
   getSavedAddresses(): Observable<ApiResponse<any[]>> {
@@ -236,10 +275,13 @@ export class AccountService {
   }
 
   updateOrderStatusAdmin(orderId: string, newStatus: string): Observable<ApiResponse> {
+    const storedId = sessionStorage.getItem('user_id') ?? localStorage.getItem('user_id') ?? '';
+    const sessionToken = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
     const body = {
-      ...this.buildAdminAuthBody(),
-      order_id: this.encodeBase64(orderId),
-      new_status: this.encodeBase64(newStatus),
+      admin_id: storedId,
+      admin_session_token: sessionToken,
+      target_order_id: orderId,
+      new_order_status: newStatus,
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/update_order_status_admin`, body)
@@ -254,17 +296,9 @@ export class AccountService {
     const tokenToSend = sessionToken ?? jwtToken ?? '';
 
     return {
-      id: this.encodeBase64(storedId),
-      session_token: this.encodeBase64(tokenToSend),
+      id: storedId,
+      session_token: tokenToSend,
     };
-  }
-
-  private encodeBase64(value: string): string {
-    try {
-      return btoa(unescape(encodeURIComponent(value)));
-    } catch {
-      return btoa(value);
-    }
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

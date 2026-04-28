@@ -10,7 +10,7 @@ main {
   top: -100%;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--color-primary);
+  background: var(--color-brand-primary);
   color: white;
   padding: 12px 24px;
   border-radius: var(--radius-md);

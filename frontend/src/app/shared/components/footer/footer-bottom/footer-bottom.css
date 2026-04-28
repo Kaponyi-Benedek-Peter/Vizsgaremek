@@ -1,5 +1,5 @@
 .footer-bottom {
-  background-color: var(--color-primary-dark);
+  background-color: var(--color-brand-primary-hover);
   padding: 16px 20px;
   width: 100%;
   min-height: 70px;
@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   padding: clamp(12px, 3vw, 20px);
-  transition: background-color var(--transition-speed) var(--transition-ease);
+  transition: background-color var(--transition-normal);
 }
 
 .footer-left {

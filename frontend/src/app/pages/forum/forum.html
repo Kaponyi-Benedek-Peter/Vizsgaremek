@@ -7,7 +7,6 @@
   </section>
 
   <div class="forum-container">
-    <!-- ── Search + Sort ── -->
     <section class="search-filters">
       <div class="search-bar">
         <div class="search-input-wrapper">
@@ -49,8 +48,8 @@
           </select>
         </div>
 
-        @if (isAuthenticated()) {
-          <button class="new-post-button" routerLink="/forum/new">
+        @if (isAdmin()) {
+          <button class="new-post-button" (click)="navigateToNewPost()">
             <img [src]="ICONS.forumNewPost" alt="" class="btn-icon" aria-hidden="true" />
             {{ 'forum.new_post' | translate }}
           </button>
@@ -58,7 +57,6 @@
       </div>
     </section>
 
-    <!-- ── Category chips ── -->
     @if (categories().length > 0) {
       <section
         class="category-filters"
@@ -82,14 +80,17 @@
             "
             (click)="selectCategory(category.id)"
           >
-            <img [src]="category.icon_src" [alt]="category.display_name" class="category-icon-img" />
+            <img
+              [src]="category.icon_src"
+              [alt]="category.display_name"
+              class="category-icon-img"
+            />
             <span class="category-name">{{ category.display_name }}</span>
           </button>
         }
       </section>
     }
 
-    <!-- ── Loading ── -->
     @if (forumService.isLoading()) {
       <div class="loading-container" role="status" [attr.aria-label]="'common.loading' | translate">
         <div class="spinner"></div>
@@ -97,7 +98,6 @@
       </div>
     }
 
-    <!-- ── Error state: backend unreachable ── -->
     @if (!forumService.isLoading() && forumService.loadError()) {
       <div class="empty-state">
         <img [src]="IMAGES.stateError" alt="" class="empty-state-img" aria-hidden="true" />
@@ -110,7 +110,6 @@
       </div>
     }
 
-    <!-- ── Content ── -->
     @if (!forumService.isLoading() && !forumService.loadError()) {
       @if (posts().length > 0) {
         <section class="posts-grid">
@@ -122,7 +121,6 @@
               [showCategory]="true"
               [showAuthor]="true"
               [showStats]="true"
-              (cardClick)="onPostClick($event)"
             />
           }
         </section>
@@ -132,7 +130,7 @@
             <button
               class="pagination-button"
               [disabled]="forumService.current_page() === 1"
-              (click)="previousPage()"
+              (click)="prevPage()"
               [attr.aria-label]="'common.previous_page' | translate"
             >
               ‹ {{ 'pagination.previous' | translate }}
@@ -140,19 +138,14 @@
 
             <div class="page-numbers">
               @for (pageNum of getPageNumbers(); track pageNum) {
-                @if (pageNum === -1) {
-                  <span class="pagination-ellipsis">...</span>
-                } @else {
-                  <button
-                    class="page-number"
-                    [class.active]="forumService.current_page() === pageNum"
-                    (click)="goToPage(pageNum)"
-                    [attr.aria-label]="getPageAriaLabel(pageNum)"
-                    [attr.aria-current]="forumService.current_page() === pageNum ? 'page' : null"
-                  >
-                    {{ pageNum }}
-                  </button>
-                }
+                <button
+                  class="page-number"
+                  [class.active]="forumService.current_page() === pageNum"
+                  (click)="goToPage(pageNum)"
+                  [attr.aria-current]="forumService.current_page() === pageNum ? 'page' : null"
+                >
+                  {{ pageNum }}
+                </button>
               }
             </div>
 
@@ -167,7 +160,6 @@
           </nav>
         }
       } @else if (search_query() || selectedCategory() !== 'all') {
-        <!-- ── No results (active search/filter) ── -->
         <div class="empty-state">
           <img [src]="IMAGES.stateNoResults" alt="" class="empty-state-img" aria-hidden="true" />
           <h3 class="empty-state-title">{{ 'forum.no_results_title' | translate }}</h3>
@@ -177,13 +169,12 @@
           </button>
         </div>
       } @else {
-        <!-- ── Truly empty: no posts on the forum yet ── -->
         <div class="empty-state">
           <img [src]="IMAGES.stateEmptyForum" alt="" class="empty-state-img" aria-hidden="true" />
           <h3 class="empty-state-title">{{ 'forum.empty_title' | translate }}</h3>
           <p class="empty-state-description">{{ 'forum.empty_description' | translate }}</p>
-          @if (isAuthenticated()) {
-            <button class="empty-state-action" routerLink="/forum/new">
+          @if (isAdmin()) {
+            <button class="empty-state-action" (click)="navigateToNewPost()">
               <img [src]="ICONS.forumNewPost" alt="" class="btn-icon" aria-hidden="true" />
               {{ 'forum.new_post' | translate }}
             </button>

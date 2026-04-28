@@ -1,12 +1,13 @@
 :host {
   display: block;
+  height: 100%;
   min-width: 0;
 }
 
 .featured-product-card {
   width: 100%;
   min-width: 0;
-  height: auto;
+  height: 100%;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 16px;
@@ -46,7 +47,7 @@
   position: absolute;
   inset: -1px;
   border-radius: 17px;
-  background: linear-gradient(135deg, var(--color-primary), transparent 60%);
+  background: linear-gradient(135deg, var(--color-brand-primary), transparent 60%);
   opacity: 0;
   transition: opacity 0.38s ease;
   z-index: -1;
@@ -60,7 +61,7 @@
       0 20px 40px rgba(6, 122, 69, 0.15),
       0 8px 16px rgba(0, 0, 0, 0.1),
       0 2px 4px rgba(0, 0, 0, 0.06);
-    border-color: var(--color-primary);
+    border-color: var(--color-brand-primary);
   }
 
   .featured-product-card:hover::before {
@@ -77,14 +78,14 @@
   }
 
   .featured-product-card:hover .featured-product-name {
-    color: var(--color-primary);
+    color: var(--color-brand-primary);
   }
 }
 
 @media (hover: none) {
   .featured-product-card:active {
     transform: scale(0.985);
-    border-color: var(--color-primary);
+    border-color: var(--color-brand-primary);
     box-shadow:
       0 8px 20px rgba(6, 122, 69, 0.12),
       0 2px 6px rgba(0, 0, 0, 0.08);
@@ -127,7 +128,7 @@
   flex-shrink: 0;
   background: var(--color-surface-elevated);
   border-bottom: 1px solid var(--color-border);
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   gap: 16px;
   z-index: 1;
 }
@@ -135,7 +136,7 @@
 .featured-placeholder-icon {
   width: 70px;
   height: 70px;
-  border: 3px solid var(--text-secondary);
+  border: 3px solid var(--color-text-secondary);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -181,7 +182,7 @@
 }
 
 .featured-badge-prescription {
-  background: var(--color-primary);
+  background: var(--color-brand-primary);
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -205,7 +206,7 @@
 .featured-product-name {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   margin: 0;
   line-height: 1.4;
   display: -webkit-box;
@@ -226,13 +227,13 @@
 .featured-product-price {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-brand-primary);
   letter-spacing: -0.5px;
 }
 
 .featured-product-old-price {
   font-size: 0.95rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   text-decoration: line-through;
 }
 

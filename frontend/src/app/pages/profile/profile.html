@@ -186,12 +186,20 @@
               <div class="overview-info">
                 <h1 class="overview-name">{{ fullName() }}</h1>
                 <p class="overview-email">{{ email() }}</p>
-                @if (accountState() === 'admin') {
-                  <span class="badge badge--admin">Admin</span>
-                } @else {
-                  <span class="badge badge--verified">{{
-                    'profile.role.verified' | translate
-                  }}</span>
+                @switch (accountState()) {
+                  @case ('superadmin') {
+                    <span class="badge badge--superadmin">{{
+                      'profile.role.superadmin' | translate
+                    }}</span>
+                  }
+                  @case ('admin') {
+                    <span class="badge badge--admin">{{ 'profile.role.admin' | translate }}</span>
+                  }
+                  @case ('verified') {
+                    <span class="badge badge--verified">{{
+                      'profile.role.verified' | translate
+                    }}</span>
+                  }
                 }
               </div>
             </div>

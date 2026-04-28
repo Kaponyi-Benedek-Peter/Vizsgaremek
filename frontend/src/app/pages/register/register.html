@@ -51,7 +51,8 @@
           id="email"
           class="form-input"
           [placeholder]="'auth.placeholders.email' | translate"
-          [(ngModel)]="email"
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
           name="email"
           [disabled]="isLoading()"
           required

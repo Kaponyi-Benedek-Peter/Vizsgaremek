@@ -30,7 +30,8 @@ export interface LoginPromiseRequest {
 export interface LoginResponse {
   user_id: string;
   jwt_token: string;
-  session_token?: string;
+  session_token?: string | null;
+  session_token_expiration?: string | null;
   jwt_token_expiration?: string;
   user_state: UserState;
 }
@@ -53,8 +54,8 @@ export interface RegistrationResponse {
   statuscode: number;
   jwt_token: string;
   jwt_token_expiration: string;
-  session_token: string;
-  session_token_expiration: string;
+  session_token: string | null;
+  session_token_expiration: string | null;
   user?: User;
 }
 
@@ -66,7 +67,7 @@ export interface PasswordChangeRequest {
 
 export interface PasswordChangePromise {
   id: string;
-  token: string;
+  token?: string;
   user?: User;
 }
 
@@ -78,7 +79,7 @@ export interface AccountDeletionRequest {
 
 export interface AccountDeletionPromiseRequest {
   id: string;
-  token: string;
+  token?: string;
 }
 
 export interface ApiErrorResponse {
@@ -93,8 +94,9 @@ export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
-  sessionToken: string | null;
   expiresAt: Date | null;
+  session_token: string | null;
+  session_token_expiration: string | null;
   role: UserState | null;
 }
 

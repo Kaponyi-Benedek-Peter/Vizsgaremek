@@ -22,6 +22,7 @@ import {
 import { environment } from '../../../environments/environment';
 import { ToastService } from './toast.service';
 import { SupportedLanguage, TranslationService } from './translation.service';
+import { encodeObjectValues } from '../utils/base64.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -34,6 +35,9 @@ export class AuthService {
   private readonly EXPIRES_KEY = 'auth_expires';
   private readonly STORAGE_TYPE_KEY = 'auth_storage_type';
   private readonly SESSION_TOKEN_KEY = 'auth_session_token';
+  private readonly SESSION_EXPIRES_KEY = 'auth_session_expires';
+  private readonly PENDING_FIRSTNAME_KEY = 'auth_pending_firstname';
+  private readonly PENDING_LASTNAME_KEY = 'auth_pending_lastname';
   private readonly STATUS_POLL_INTERVAL = 100_000;
 
   private toastService = inject(ToastService);
@@ -45,8 +49,9 @@ export class AuthService {
     isAuthenticated: false,
     user: null,
     token: null,
-    sessionToken: null,
     expiresAt: null,
+    session_token: null,
+    session_token_expiration: null,
     role: null,
   });
 
@@ -54,15 +59,16 @@ export class AuthService {
   public isAuthenticated = computed(() => this.authStateSignal().isAuthenticated);
   public currentUser = computed(() => this.authStateSignal().user);
   public token = computed(() => this.authStateSignal().token);
-  public sessionToken = computed(() => this.authStateSignal().sessionToken);
+  public sessionToken = computed(() => this.authStateSignal().session_token);
   public language = computed(() => this.translationService.getCurrentLanguage());
 
   private authStateSubject = new BehaviorSubject<AuthState>({
     isAuthenticated: false,
     user: null,
     token: null,
-    sessionToken: null,
     expiresAt: null,
+    session_token: null,
+    session_token_expiration: null,
     role: null,
   });
 
@@ -81,8 +87,12 @@ export class AuthService {
     const token = this.getStoredToken();
     const user = this.getStoredUser();
     const expiresAt = this.getStoredExpiration();
-    const sessionToken = this.getStoredSessionToken();
+    const session = this.getStoredSessionToken();
     const role = this.getStoredRole();
+
+    const stayLoggedIn = localStorage.getItem(this.STORAGE_TYPE_KEY) === 'local';
+
+    if (!session.token) return;
 
     if (token && user && expiresAt) {
       if (new Date() < expiresAt) {
@@ -90,10 +100,12 @@ export class AuthService {
           isAuthenticated: true,
           user,
           token,
-          sessionToken,
           expiresAt,
+          session_token: session.token ?? null,
+          session_token_expiration: session.expiresAt ?? null,
           role,
         });
+
         this.startStatusPolling();
       } else {
         this.clearStorage();
@@ -111,8 +123,8 @@ export class AuthService {
     return this.http.post<{ account_state: string; statuscode: string; status: string }>(
       `${this.API_URL}/api/get_user_state`,
       {
-        id: btoa(id),
-        session_token: btoa(sessionToken),
+        id: id,
+        session_token: btoa(unescape(encodeURIComponent(sessionToken))),
       },
     );
   }
@@ -197,8 +209,9 @@ export class AuthService {
             isAuthenticated: false,
             user: null,
             token: null,
-            sessionToken: null,
             expiresAt: null,
+            session_token: null,
+            session_token_expiration: null,
             role: null,
           });
 
@@ -235,11 +248,11 @@ export class AuthService {
   }
 
   loginRequest(email: string, password: string, language: SupportedLanguage) {
-    const request: LoginRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(password),
-      language: this.encodeBase64(language) as SupportedLanguage,
-    };
+    const request: LoginRequest = encodeObjectValues({
+      email: email,
+      password: password,
+      language: language as SupportedLanguage,
+    });
 
     return this.http
       .post<LoginRequestResponse>(`${this.API_URL}/api/login_request`, request)
@@ -271,13 +284,13 @@ export class AuthService {
     lastname: string,
     language: SupportedLanguage,
   ): Observable<void> {
-    const request: RegistrationRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(password),
-      firstname: this.encodeBase64(firstname),
-      lastname: this.encodeBase64(lastname),
-      language: this.encodeBase64(language) as SupportedLanguage,
-    };
+    const request: RegistrationRequest = encodeObjectValues({
+      email: email,
+      password: password,
+      firstname: firstname,
+      lastname: lastname,
+      language: language as SupportedLanguage,
+    });
 
     return this.http
       .post<void>(`${this.API_URL}/api/registration_request`, request)
@@ -301,7 +314,8 @@ export class AuthService {
           const mappedResponse: LoginResponse = {
             user_id: response.user?.id ?? id,
             jwt_token: response.jwt_token,
-            session_token: response.session_token,
+            session_token: response.session_token ?? null,
+            session_token_expiration: response.session_token_expiration ?? null,
             jwt_token_expiration: response.jwt_token_expiration,
             user_state: (response.user?.account_state as UserState) ?? 'verified',
           };
@@ -312,11 +326,11 @@ export class AuthService {
   }
 
   requestPasswordChange(email: string, newPassword: string, language: SupportedLanguage) {
-    const request: PasswordChangeRequest = {
-      email: this.encodeBase64(email),
-      password: this.encodeBase64(newPassword),
-      language: this.encodeBase64(language) as SupportedLanguage,
-    };
+    const request: PasswordChangeRequest = encodeObjectValues({
+      email: email,
+      password: newPassword,
+      language: language as SupportedLanguage,
+    });
 
     return this.http
       .post<void>(`${this.API_URL}/api/chpass_request`, request)
@@ -350,13 +364,17 @@ export class AuthService {
 
   logout(sessionExpiredMessage?: string): void {
     this.stopStatusPolling();
+
+    window.dispatchEvent(new CustomEvent('auth:logout'));
+
     this.clearStorage();
     this.updateAuthState({
       isAuthenticated: false,
       user: null,
       token: null,
-      sessionToken: null,
       expiresAt: null,
+      session_token: null,
+      session_token_expiration: null,
       role: null,
     });
 
@@ -376,7 +394,23 @@ export class AuthService {
   }
 
   getSessionToken(): string | null {
-    return this.authStateSignal().sessionToken;
+    const token = this.authStateSignal().session_token;
+    const expires =
+      localStorage.getItem(this.SESSION_EXPIRES_KEY) ||
+      sessionStorage.getItem(this.SESSION_EXPIRES_KEY);
+
+    if (!token || !expires) return null;
+
+    if (new Date() > new Date(expires)) {
+      this.logout();
+      return null;
+    }
+
+    return token;
+  }
+
+  getUserId(): string | null {
+    return this.authStateSignal().user?.id ?? null;
   }
 
   isUserAuthenticated(): boolean {
@@ -442,6 +476,30 @@ export class AuthService {
     storage.setItem(this.USER_KEY, JSON.stringify(updated));
   }
 
+  storePendingUserName(firstname: string, lastname: string): void {
+    localStorage.setItem(this.PENDING_FIRSTNAME_KEY, btoa(unescape(encodeURIComponent(firstname))));
+    localStorage.setItem(this.PENDING_LASTNAME_KEY, btoa(unescape(encodeURIComponent(lastname))));
+  }
+
+  getPendingUserName(): { firstname: string; lastname: string } | null {
+    const fn = localStorage.getItem(this.PENDING_FIRSTNAME_KEY);
+    const ln = localStorage.getItem(this.PENDING_LASTNAME_KEY);
+    if (!fn || !ln) return null;
+    try {
+      return {
+        firstname: decodeURIComponent(escape(atob(fn))),
+        lastname: decodeURIComponent(escape(atob(ln))),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  clearPendingUserName(): void {
+    localStorage.removeItem(this.PENDING_FIRSTNAME_KEY);
+    localStorage.removeItem(this.PENDING_LASTNAME_KEY);
+  }
+
   private decodeJWT(token: string): JWTPayload | null {
     try {
       const base64Url = token.split('.')[1];
@@ -466,7 +524,8 @@ export class AuthService {
     skipNavigation = false,
   ): void {
     const jwtToken = response.jwt_token;
-    const sessionToken = response.session_token ?? null;
+    const session_token = response.session_token ?? null;
+    const session_expires = response.session_token_expiration ?? null;
     const expiresAt = response.jwt_token_expiration
       ? new Date(response.jwt_token_expiration)
       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -500,8 +559,9 @@ export class AuthService {
     this.clearStorage();
     this.storeRole(role, stayLoggedIn);
     this.storeId(id, stayLoggedIn);
+    window.dispatchEvent(new CustomEvent('auth:login'));
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
-    this.storeSessionToken(sessionToken, stayLoggedIn);
+    this.storeSessionToken(session_token, session_expires, stayLoggedIn);
     if (userData) {
       this.storeUser(userData, stayLoggedIn);
     }
@@ -510,8 +570,9 @@ export class AuthService {
       isAuthenticated: true,
       user: userData || this.getStoredUser(),
       token: jwtToken,
-      sessionToken,
       expiresAt,
+      session_token: session_token ?? null,
+      session_token_expiration: session_expires ?? null,
       role,
     });
 
@@ -537,10 +598,19 @@ export class AuthService {
     storage.setItem(this.STORAGE_TYPE_KEY, stayLoggedIn ? 'local' : 'session');
   }
 
-  private storeSessionToken(sessionToken: string | null, stayLoggedIn: boolean): void {
+  private storeSessionToken(
+    sessionToken: string | null,
+    expiresAt: string | null,
+    stayLoggedIn: boolean,
+  ): void {
     if (!sessionToken) return;
+
     const storage = stayLoggedIn ? localStorage : sessionStorage;
     storage.setItem(this.SESSION_TOKEN_KEY, sessionToken);
+
+    if (expiresAt) {
+      storage.setItem('auth_session_expires', expiresAt);
+    }
   }
 
   private storeUser(user: User, stayLoggedIn: boolean): void {
@@ -570,10 +640,19 @@ export class AuthService {
     return isNaN(date.getTime()) ? null : date;
   }
 
-  private getStoredSessionToken(): string | null {
-    return (
-      localStorage.getItem(this.SESSION_TOKEN_KEY) || sessionStorage.getItem(this.SESSION_TOKEN_KEY)
-    );
+  private getStoredSessionToken(): { token: string | null; expiresAt: string | null } {
+    const token =
+      localStorage.getItem(this.SESSION_TOKEN_KEY) ||
+      sessionStorage.getItem(this.SESSION_TOKEN_KEY);
+
+    const expiresAt =
+      localStorage.getItem(this.SESSION_EXPIRES_KEY) ||
+      sessionStorage.getItem(this.SESSION_EXPIRES_KEY);
+
+    return {
+      token,
+      expiresAt,
+    };
   }
 
   private clearStorage(): void {
@@ -583,17 +662,11 @@ export class AuthService {
       storage.removeItem(this.EXPIRES_KEY);
       storage.removeItem(this.STORAGE_TYPE_KEY);
       storage.removeItem(this.SESSION_TOKEN_KEY);
+      storage.removeItem(this.PENDING_FIRSTNAME_KEY);
+      storage.removeItem(this.PENDING_LASTNAME_KEY);
       storage.removeItem('auth_role');
       storage.removeItem('user_id');
     });
-  }
-
-  encodeBase64(value: string): string {
-    try {
-      return btoa(unescape(encodeURIComponent(value)));
-    } catch {
-      return btoa(value);
-    }
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
@@ -674,5 +747,9 @@ export class AuthService {
 
   isVerified(): boolean {
     return this.authStateSignal().role === 'verified';
+  }
+
+  private assertString(value: string | null): string | undefined {
+    return value ?? undefined;
   }
 }

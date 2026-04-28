@@ -35,12 +35,6 @@ export class NewsletterForm {
   private toastService = inject(ToastService);
   private translationService = inject(TranslationService);
   private readonly API_URL = environment.baseURL;
-  private toBase64(str: string): string {
-    const bytes = new TextEncoder().encode(str);
-    let binary = '';
-    bytes.forEach((b) => (binary += String.fromCharCode(b)));
-    return btoa(binary);
-  }
 
   ICONS = ICONS;
   IMAGES = IMAGES;
@@ -100,8 +94,8 @@ export class NewsletterForm {
     this.isSubmitting = true;
 
     const payload = {
-      email: this.toBase64(this.email),
-      news_level: btoa('1'),
+      email: this.email,
+      news_level: '1',
       language: LANG_TO_BACKEND[this.newsletterLang()],
     };
 
