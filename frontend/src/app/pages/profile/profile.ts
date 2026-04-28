@@ -118,6 +118,7 @@ export class Profile implements OnInit {
           this.isUpdatingProfile.set(false);
           this.profileEditSuccess.set(true);
           this.authService.patchCurrentUser({ firstname, lastname });
+          this.authService.storePendingUserName(firstname, lastname);
           this.loadPersonalInfoIntoForm();
           this.toastService.success('profile.success.profile_updated');
         },

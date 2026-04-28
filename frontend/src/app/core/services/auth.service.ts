@@ -36,6 +36,8 @@ export class AuthService {
   private readonly STORAGE_TYPE_KEY = 'auth_storage_type';
   private readonly SESSION_TOKEN_KEY = 'auth_session_token';
   private readonly SESSION_EXPIRES_KEY = 'auth_session_expires';
+  private readonly PENDING_FIRSTNAME_KEY = 'auth_pending_firstname';
+  private readonly PENDING_LASTNAME_KEY = 'auth_pending_lastname';
   private readonly STATUS_POLL_INTERVAL = 100_000;
 
   private toastService = inject(ToastService);
@@ -362,6 +364,9 @@ export class AuthService {
 
   logout(sessionExpiredMessage?: string): void {
     this.stopStatusPolling();
+
+    window.dispatchEvent(new CustomEvent('auth:logout'));
+
     this.clearStorage();
     this.updateAuthState({
       isAuthenticated: false,
@@ -471,6 +476,30 @@ export class AuthService {
     storage.setItem(this.USER_KEY, JSON.stringify(updated));
   }
 
+  storePendingUserName(firstname: string, lastname: string): void {
+    localStorage.setItem(this.PENDING_FIRSTNAME_KEY, btoa(unescape(encodeURIComponent(firstname))));
+    localStorage.setItem(this.PENDING_LASTNAME_KEY, btoa(unescape(encodeURIComponent(lastname))));
+  }
+
+  getPendingUserName(): { firstname: string; lastname: string } | null {
+    const fn = localStorage.getItem(this.PENDING_FIRSTNAME_KEY);
+    const ln = localStorage.getItem(this.PENDING_LASTNAME_KEY);
+    if (!fn || !ln) return null;
+    try {
+      return {
+        firstname: decodeURIComponent(escape(atob(fn))),
+        lastname: decodeURIComponent(escape(atob(ln))),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  clearPendingUserName(): void {
+    localStorage.removeItem(this.PENDING_FIRSTNAME_KEY);
+    localStorage.removeItem(this.PENDING_LASTNAME_KEY);
+  }
+
   private decodeJWT(token: string): JWTPayload | null {
     try {
       const base64Url = token.split('.')[1];
@@ -530,6 +559,7 @@ export class AuthService {
     this.clearStorage();
     this.storeRole(role, stayLoggedIn);
     this.storeId(id, stayLoggedIn);
+    window.dispatchEvent(new CustomEvent('auth:login'));
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
     this.storeSessionToken(session_token, session_expires, stayLoggedIn);
     if (userData) {
@@ -632,6 +662,8 @@ export class AuthService {
       storage.removeItem(this.EXPIRES_KEY);
       storage.removeItem(this.STORAGE_TYPE_KEY);
       storage.removeItem(this.SESSION_TOKEN_KEY);
+      storage.removeItem(this.PENDING_FIRSTNAME_KEY);
+      storage.removeItem(this.PENDING_LASTNAME_KEY);
       storage.removeItem('auth_role');
       storage.removeItem('user_id');
     });

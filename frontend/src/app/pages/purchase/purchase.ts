@@ -75,8 +75,12 @@ export class Purchase implements OnInit {
 
     if (!this.isGuest()) {
       const user = this.authService.currentUser();
+      const pending = this.authService.getPendingUserName();
+      const firstname = user?.firstname || pending?.firstname || '';
+      const lastname = user?.lastname || pending?.lastname || '';
+
       this.form.email = user?.email ?? '';
-      this.form.billingName = `${user?.firstname ?? ''} ${user?.lastname ?? ''}`.trim();
+      this.form.billingName = `${firstname} ${lastname}`.trim();
     }
 
     if (this.cartItems().length === 0) {
@@ -219,12 +223,9 @@ export class Purchase implements OnInit {
   }
 
   async submitOrder(): Promise<void> {
-    console.log('1');
     if (!this.validateForm()) {
-      console.log('2');
       return;
     }
-    console.log('3');
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
@@ -292,10 +293,6 @@ export class Purchase implements OnInit {
   }
 
   private validateForm(): boolean {
-    console.log('terms:', this.acceptedTerms);
-    console.log('isGuest:', this.isGuest());
-    console.log('form:', this.form);
-    console.log(this.authService.currentUser());
     if (!this.acceptedTerms) {
       this.errorMessage.set('checkout.terms_required');
       return false;
@@ -321,7 +318,7 @@ export class Purchase implements OnInit {
       this.errorMessage.set('checkout.validation_error');
       return false;
     }
-    console.log('zipcode test:', /^\d{4,10}$/.test(this.form.zipcode));
+
     if (!/^\d{4,10}$/.test(this.form.zipcode)) {
       this.errorMessage.set('checkout.invalid_zipcode');
       return false;

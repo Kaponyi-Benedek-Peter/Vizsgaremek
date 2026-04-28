@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { Product, ProductWithHelpers } from '../models/product.model';
 import { TranslationService } from './translation.service';
 import { CurrencyService } from './currency.service';
+import { AuthService } from './auth.service';
 
 export interface CartItem {
   product: ProductWithHelpers;
@@ -14,6 +15,7 @@ export interface CartItem {
 export class CartService {
   private translationService = inject(TranslationService);
   private currencyService = inject(CurrencyService);
+  private authService = inject(AuthService);
 
   private cartItems = signal<CartItem[]>([]);
 
@@ -29,6 +31,19 @@ export class CartService {
 
   constructor() {
     this.loadCartFromStorage();
+    this.setupAuthListeners();
+  }
+
+  private setupAuthListeners(): void {
+    if (typeof window === 'undefined') return;
+
+    window.addEventListener('auth:logout', () => {
+      this.saveAndClearCart();
+    });
+
+    window.addEventListener('auth:login', () => {
+      this.restoreCartForUser();
+    });
   }
 
   getProductPrice(product: Product): number {
@@ -166,9 +181,24 @@ export class CartService {
     return item?.quantity ?? 0;
   }
 
+  saveAndClearCart(): void {
+    this.saveCartToStorage();
+    this.cartItems.set([]);
+    localStorage.removeItem('cart_guest');
+  }
+
+  restoreCartForUser(): void {
+    this.loadCartFromStorage();
+  }
+
+  private getCartKey(): string {
+    const userId = this.authService.getUserId();
+    return userId ? `cart_${userId}` : 'cart_guest';
+  }
+
   private saveCartToStorage(): void {
     try {
-      localStorage.setItem('cart', JSON.stringify(this.cartItems()));
+      localStorage.setItem(this.getCartKey(), JSON.stringify(this.cartItems()));
     } catch (error) {
       console.error('Failed to save cart to localStorage:', error);
     }
@@ -176,10 +206,9 @@ export class CartService {
 
   private loadCartFromStorage(): void {
     try {
-      const savedCart = localStorage.getItem('cart');
+      const savedCart = localStorage.getItem(this.getCartKey());
       if (savedCart) {
-        const parsedCart = JSON.parse(savedCart) as CartItem[];
-        this.cartItems.set(parsedCart);
+        this.cartItems.set(JSON.parse(savedCart) as CartItem[]);
       }
     } catch (error) {
       console.error('Failed to load cart from localStorage:', error);

@@ -3027,15 +3027,19 @@ export class AccountService {
       .pipe(catchError(this.handleError));
   }
 
-  getOrders(data: { user_id: string; session_token: string }) {
+  getOrders(data: { id: string; session_token: string }) {
+    const body = {
+      id: data.id,
+      session_token: btoa(unescape(encodeURIComponent(data.session_token))),
+    };
     return this.http.post<ApiResponse & { orders: AdminOrder[] }>(
-      `${this.API_URL}/api/get_orders`,
-      data,
+      `${this.API_URL}/api/get_all_orders_user`,
+      body,
     );
   }
 
   getOrderByTracking(data: { tracking_token: string }) {
-    return this.http.post<any>(`${this.API_URL}/api/get_order`, data);
+    return this.http.post<any>(`${this.API_URL}/api/get_all_orders_user`, data);
   }
 
   getSavedAddresses(): Observable<ApiResponse<any[]>> {
@@ -3160,6 +3164,8 @@ export class AuthService {
   private readonly STORAGE_TYPE_KEY = 'auth_storage_type';
   private readonly SESSION_TOKEN_KEY = 'auth_session_token';
   private readonly SESSION_EXPIRES_KEY = 'auth_session_expires';
+  private readonly PENDING_FIRSTNAME_KEY = 'auth_pending_firstname';
+  private readonly PENDING_LASTNAME_KEY = 'auth_pending_lastname';
   private readonly STATUS_POLL_INTERVAL = 100_000;
 
   private toastService = inject(ToastService);
@@ -3486,6 +3492,9 @@ export class AuthService {
 
   logout(sessionExpiredMessage?: string): void {
     this.stopStatusPolling();
+
+    window.dispatchEvent(new CustomEvent('auth:logout'));
+
     this.clearStorage();
     this.updateAuthState({
       isAuthenticated: false,
@@ -3595,6 +3604,30 @@ export class AuthService {
     storage.setItem(this.USER_KEY, JSON.stringify(updated));
   }
 
+  storePendingUserName(firstname: string, lastname: string): void {
+    localStorage.setItem(this.PENDING_FIRSTNAME_KEY, btoa(unescape(encodeURIComponent(firstname))));
+    localStorage.setItem(this.PENDING_LASTNAME_KEY, btoa(unescape(encodeURIComponent(lastname))));
+  }
+
+  getPendingUserName(): { firstname: string; lastname: string } | null {
+    const fn = localStorage.getItem(this.PENDING_FIRSTNAME_KEY);
+    const ln = localStorage.getItem(this.PENDING_LASTNAME_KEY);
+    if (!fn || !ln) return null;
+    try {
+      return {
+        firstname: decodeURIComponent(escape(atob(fn))),
+        lastname: decodeURIComponent(escape(atob(ln))),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  clearPendingUserName(): void {
+    localStorage.removeItem(this.PENDING_FIRSTNAME_KEY);
+    localStorage.removeItem(this.PENDING_LASTNAME_KEY);
+  }
+
   private decodeJWT(token: string): JWTPayload | null {
     try {
       const base64Url = token.split('.')[1];
@@ -3654,6 +3687,7 @@ export class AuthService {
     this.clearStorage();
     this.storeRole(role, stayLoggedIn);
     this.storeId(id, stayLoggedIn);
+    window.dispatchEvent(new CustomEvent('auth:login'));
     this.storeToken(jwtToken, expiresAt, stayLoggedIn);
     this.storeSessionToken(session_token, session_expires, stayLoggedIn);
     if (userData) {
@@ -3756,6 +3790,8 @@ export class AuthService {
       storage.removeItem(this.EXPIRES_KEY);
       storage.removeItem(this.STORAGE_TYPE_KEY);
       storage.removeItem(this.SESSION_TOKEN_KEY);
+      storage.removeItem(this.PENDING_FIRSTNAME_KEY);
+      storage.removeItem(this.PENDING_LASTNAME_KEY);
       storage.removeItem('auth_role');
       storage.removeItem('user_id');
     });
@@ -3856,6 +3892,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { Product, ProductWithHelpers } from '../models/product.model';
 import { TranslationService } from './translation.service';
 import { CurrencyService } from './currency.service';
+import { AuthService } from './auth.service';
 
 export interface CartItem {
   product: ProductWithHelpers;
@@ -3868,6 +3905,7 @@ export interface CartItem {
 export class CartService {
   private translationService = inject(TranslationService);
   private currencyService = inject(CurrencyService);
+  private authService = inject(AuthService);
 
   private cartItems = signal<CartItem[]>([]);
 
@@ -3883,6 +3921,19 @@ export class CartService {
 
   constructor() {
     this.loadCartFromStorage();
+    this.setupAuthListeners();
+  }
+
+  private setupAuthListeners(): void {
+    if (typeof window === 'undefined') return;
+
+    window.addEventListener('auth:logout', () => {
+      this.saveAndClearCart();
+    });
+
+    window.addEventListener('auth:login', () => {
+      this.restoreCartForUser();
+    });
   }
 
   getProductPrice(product: Product): number {
@@ -4020,9 +4071,24 @@ export class CartService {
     return item?.quantity ?? 0;
   }
 
+  saveAndClearCart(): void {
+    this.saveCartToStorage();
+    this.cartItems.set([]);
+    localStorage.removeItem('cart_guest');
+  }
+
+  restoreCartForUser(): void {
+    this.loadCartFromStorage();
+  }
+
+  private getCartKey(): string {
+    const userId = this.authService.getUserId();
+    return userId ? `cart_${userId}` : 'cart_guest';
+  }
+
   private saveCartToStorage(): void {
     try {
-      localStorage.setItem('cart', JSON.stringify(this.cartItems()));
+      localStorage.setItem(this.getCartKey(), JSON.stringify(this.cartItems()));
     } catch (error) {
       console.error('Failed to save cart to localStorage:', error);
     }
@@ -4030,10 +4096,9 @@ export class CartService {
 
   private loadCartFromStorage(): void {
     try {
-      const savedCart = localStorage.getItem('cart');
+      const savedCart = localStorage.getItem(this.getCartKey());
       if (savedCart) {
-        const parsedCart = JSON.parse(savedCart) as CartItem[];
-        this.cartItems.set(parsedCart);
+        this.cartItems.set(JSON.parse(savedCart) as CartItem[]);
       }
     } catch (error) {
       console.error('Failed to load cart from localStorage:', error);
@@ -18002,17 +18067,20 @@ export class Orders implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    const userId = sessionStorage.getItem('user_id') ?? localStorage.getItem('user_id') ?? '';
-
+    const userId =
+      this.authService.getUserId() ??
+      sessionStorage.getItem('user_id') ??
+      localStorage.getItem('user_id') ??
+      '';
     const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
 
-    this.accountService.getOrders({ user_id: userId, session_token: token }).subscribe({
+    this.accountService.getOrders({ id: userId, session_token: token }).subscribe({
       next: (res) => {
-        this.orders.set(res?.orders ?? res ?? []);
+        this.orders.set(res?.orders ?? []);
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err?.message ?? 'Failed to load orders');
+        this.error.set(err?.message ?? 'orders.error_load');
         this.loading.set(false);
       },
     });
@@ -21787,12 +21855,20 @@ FILE: src\app\pages\profile\profile.html
               <div class="overview-info">
                 <h1 class="overview-name">{{ fullName() }}</h1>
                 <p class="overview-email">{{ email() }}</p>
-                @if (accountState() === 'admin') {
-                  <span class="badge badge--admin">Admin</span>
-                } @else {
-                  <span class="badge badge--verified">{{
-                    'profile.role.verified' | translate
-                  }}</span>
+                @switch (accountState()) {
+                  @case ('superadmin') {
+                    <span class="badge badge--superadmin">{{
+                      'profile.role.superadmin' | translate
+                    }}</span>
+                  }
+                  @case ('admin') {
+                    <span class="badge badge--admin">{{ 'profile.role.admin' | translate }}</span>
+                  }
+                  @case ('verified') {
+                    <span class="badge badge--verified">{{
+                      'profile.role.verified' | translate
+                    }}</span>
+                  }
                 }
               </div>
             </div>
@@ -22604,6 +22680,7 @@ export class Profile implements OnInit {
           this.isUpdatingProfile.set(false);
           this.profileEditSuccess.set(true);
           this.authService.patchCurrentUser({ firstname, lastname });
+          this.authService.storePendingUserName(firstname, lastname);
           this.loadPersonalInfoIntoForm();
           this.toastService.success('profile.success.profile_updated');
         },
@@ -23587,8 +23664,12 @@ export class Purchase implements OnInit {
 
     if (!this.isGuest()) {
       const user = this.authService.currentUser();
+      const pending = this.authService.getPendingUserName();
+      const firstname = user?.firstname || pending?.firstname || '';
+      const lastname = user?.lastname || pending?.lastname || '';
+
       this.form.email = user?.email ?? '';
-      this.form.billingName = `${user?.firstname ?? ''} ${user?.lastname ?? ''}`.trim();
+      this.form.billingName = `${firstname} ${lastname}`.trim();
     }
 
     if (this.cartItems().length === 0) {
@@ -23731,8 +23812,9 @@ export class Purchase implements OnInit {
   }
 
   async submitOrder(): Promise<void> {
-    if (!this.validateForm()) return;
-
+    if (!this.validateForm()) {
+      return;
+    }
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
@@ -24139,6 +24221,7 @@ export class Register {
       .subscribe({
         next: () => {
           this.isLoading.set(false);
+          this.authService.storePendingUserName(this.firstname(), this.lastname());
           this.successMessage.set('auth.register.success_message');
         },
         error: (error) => {
@@ -32615,8 +32698,8 @@ FILE: src\assets\i18n\de.json
     "quick_actions": "Schnellaktionen",
     "role": {
       "verified": "Verifiziert",
-      "unverified": "Nicht verifiziert",
-      "admin": "Administrator"
+      "admin": "Administrator",
+      "superadmin": "Superadministrator"
     },
     "nav": {
       "label": "Profilnavigation",
@@ -33453,8 +33536,8 @@ FILE: src\assets\i18n\en.json
     "quick_actions": "Quick actions",
     "role": {
       "verified": "Verified",
-      "unverified": "Unverified",
-      "admin": "Admin"
+      "admin": "Admin",
+      "superadmin": "Superadmin"
     },
     "nav": {
       "label": "Profile navigation",
@@ -34291,8 +34374,8 @@ FILE: src\assets\i18n\hu.json
     "quick_actions": "Gyorsműveletek",
     "role": {
       "verified": "Hitelesített",
-      "unverified": "Nem hitelesített",
-      "admin": "Adminisztrátor"
+      "admin": "Adminisztrátor",
+      "superadmin": "Szuperadminisztrátor"
     },
     "nav": {
       "label": "Profil navigáció",
