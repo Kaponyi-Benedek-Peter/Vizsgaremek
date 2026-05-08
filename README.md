@@ -11,4 +11,4 @@ Documentation: [main/Roy_Shack_Documentation.docx](https://github.com/Kaponyi-Be
 ---
 ### Login process
 
- ![x](https://www.roysshack.hu/media/login_process_github.svg)
+ ![x](https://raw.githubusercontent.com/Kaponyi-Benedek-Peter/Vizsgaremek/refs/heads/Backend/backend_login_process.svg)
