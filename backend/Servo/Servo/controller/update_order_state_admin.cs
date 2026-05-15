@@ -43,7 +43,7 @@ namespace Servo.controller
                     JObject jsonObj = JObject.Parse(lenyeg);
                     admin_id = service.shared.b64dec(jsonObj["admin_id"].ToString());
                     sesstoken = service.shared.b64dec(jsonObj["admin_session_token"].ToString());
-                    target_ordert_id = service.shared.b64dec(jsonObj["target_ordert_id"].ToString());
+                    target_ordert_id = service.shared.b64dec(jsonObj["target_order_id"].ToString());
                     new_order_status = service.shared.b64dec(jsonObj["new_order_status"].ToString());
 
                 }
