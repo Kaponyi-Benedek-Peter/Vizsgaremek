@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -12,7 +12,7 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 @Component({
   selector: 'app-forum',
   standalone: true,
-  imports: [RouterModule, FormsModule, TranslateModule, PostCardComponent],
+  imports: [RouterModule, FormsModule, TranslatePipe, PostCardComponent],
   templateUrl: './forum.html',
   styleUrl: './forum.css',
 })

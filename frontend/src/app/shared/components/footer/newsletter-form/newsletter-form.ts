@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { ICONS, IMAGES, LANGUAGE_OPTIONS } from '../../../../core/constants/visuals';
 import { environment } from '../../../../../environments/environment';
@@ -26,7 +26,7 @@ interface SocialLink {
 @Component({
   selector: 'app-newsletter-form',
   standalone: true,
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './newsletter-form.html',
   styleUrl: './newsletter-form.css',
 })

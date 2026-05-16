@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { PaginationConfig } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-product-pagination',
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   templateUrl: './product-pagination.html',
   styleUrl: './product-pagination.css',
 })

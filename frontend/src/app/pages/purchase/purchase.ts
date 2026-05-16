@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { CartService } from '../../core/services/cart.service';
@@ -28,7 +28,7 @@ interface CheckoutForm {
 @Component({
   selector: 'app-purchase',
   standalone: true,
-  imports: [RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslatePipe],
   templateUrl: './purchase.html',
   styleUrl: './purchase.css',
 })
@@ -70,17 +70,19 @@ export class Purchase implements OnInit {
 
   isGuest = signal(false);
 
+  needsBillingNameInput = signal(false);
+
   ngOnInit(): void {
-    this.isGuest.set(!this.authService.isUserAuthenticated());
+    const isAuthenticated = this.authService.isUserAuthenticated();
+    this.isGuest.set(!isAuthenticated);
 
-    if (!this.isGuest()) {
+    if (isAuthenticated) {
       const user = this.authService.currentUser();
-      const pending = this.authService.getPendingUserName();
-      const firstname = user?.firstname || pending?.firstname || '';
-      const lastname = user?.lastname || pending?.lastname || '';
-
+      const firstname = user?.firstname?.trim() || '';
+      const lastname = user?.lastname?.trim() || '';
       this.form.email = user?.email ?? '';
       this.form.billingName = `${firstname} ${lastname}`.trim();
+      this.needsBillingNameInput.set(!this.form.billingName);
     }
 
     if (this.cartItems().length === 0) {
@@ -235,19 +237,19 @@ export class Purchase implements OnInit {
 
       const orderData: CreateOrderRequest = {
         order: encodeObjectValues({
-          user_id: isGuest ? '0' : (user?.id ?? ''),
-          session_token: isGuest ? '' : (this.authService.getSessionToken() ?? ''),
+          user_id: this.isGuest() ? '0' : (this.authService.currentUser()?.id ?? '0'),
+          session_token: this.isGuest() ? '0' : (this.authService.getSessionToken() ?? '0'),
           email: this.form.email,
           billing_name: this.form.billingName,
           shipping_name: this.form.billingName,
-          shipping_company: '',
+          shipping_company: ' ',
           price: String(this.cartTotal()),
           city: this.form.city,
           guest: isGuest ? '1' : '0',
           zipcode: this.form.zipcode,
           address: this.form.address,
-          apartment_number: this.form.apartmentNumber ?? '0',
-          note: this.form.note ?? '',
+          apartment_number: this.form.apartmentNumber?.trim() || '0',
+          note: this.form.note?.trim() || '0',
           house_number: this.form.houseNumber,
           phone_number: this.form.phoneNumber,
         }),

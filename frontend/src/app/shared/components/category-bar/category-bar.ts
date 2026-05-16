@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Category } from '../../../core/models/product.model';
 import { CategoryItem } from '../category-item/category-item';
 
 @Component({
   selector: 'app-category-bar',
-  imports: [TranslateModule, CategoryItem],
+  imports: [TranslatePipe, CategoryItem],
   templateUrl: './category-bar.html',
   styleUrl: './category-bar.css',
 })

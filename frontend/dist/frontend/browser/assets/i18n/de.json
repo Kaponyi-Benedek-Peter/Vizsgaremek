@@ -130,7 +130,8 @@
       "already_activated": "Dieses Konto wurde bereits aktiviert.",
       "token_expired": "Der Bestätigungslink ist abgelaufen. Bitte fordern Sie einen neuen an.",
       "account_banned": "Dieses Konto wurde gesperrt. Bitte wenden Sie sich an den Support.",
-      "unknown_error": "Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+      "unknown_error": "Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+      "passwords_dont_match": "Passwörter stimmen nicht überein."
     }
   },
   "legal": {
@@ -608,6 +609,31 @@
       "orders_load_failed": "Fehler beim Laden der Produkte!",
       "users_load_failed": "Fehler beim Laden der Benutzer!",
       "posts_load_failed": "Fehler beim Laden der Beiträge."
+    },
+    "product_form": {
+      "add_title": "Produkt hinzufügen",
+      "edit_title": "Produkt bearbeiten",
+      "name_hu": "Name (HU)",
+      "name_en": "Name (EN)",
+      "name_de": "Name (DE)",
+      "identification": "Identifikation",
+      "manufacturer": "Hersteller",
+      "thumbnail_url": "Vorschaubild-URL",
+      "save": "Speichern",
+      "tab_basic": "Grunddaten",
+      "tab_pricing": "Preisgestaltung",
+      "tab_descriptions": "Beschreibungen",
+      "tab_details": "Details",
+      "add": "Produkt hinzufügen",
+      "names": "Namen",
+      "previews": "Kurzbeschreibungen",
+      "full_descriptions": "Vollständige Beschreibungen",
+      "packaging": "Verpackung",
+      "active_ingredients": "Wirkstoffe",
+      "featured": "Empfohlen",
+      "price_huf": "Preis (HUF)",
+      "sale_pct": "Rabatt (%)",
+      "create": "Erstellen"
     }
   },
   "footer": {
@@ -795,10 +821,8 @@
     "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung",
     "loading": "Bestellungen werden geladen...",
     "retry": "Erneut versuchen",
-
     "empty_title": "Noch keine Bestellungen",
     "empty_desc": "Sie haben noch keine Bestellung aufgegeben. Beginnen Sie mit dem Durchsuchen unseres Produktkatalogs!",
-
     "fields": {
       "email": "E-Mail",
       "city": "Stadt",
@@ -807,12 +831,10 @@
       "phone": "Telefon",
       "tracking": "Sendungsverfolgung"
     },
-
     "products": {
       "title": "Produkte",
       "sku": "Artikelnummer"
     },
-
     "status": {
       "pending": "Ausstehend",
       "processing": "In Bearbeitung",

@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -13,7 +13,7 @@ export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | '
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslatePipe],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })

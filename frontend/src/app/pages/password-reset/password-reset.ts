@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { tap } from 'rxjs';
@@ -9,7 +9,7 @@ import { tap } from 'rxjs';
 @Component({
   selector: 'app-password-reset',
   standalone: true,
-  imports: [RouterModule, TranslateModule],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './password-reset.html',
   styleUrl: './password-reset.css',
 })

@@ -1,6 +1,6 @@
 import { Component, inject, computed, OnInit, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -14,7 +14,7 @@ import { ProductService } from '../../core/services/product.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [Slide, Featured, FeaturedProductCard, ScrollRevealDirective, TranslateModule],
+  imports: [Slide, Featured, FeaturedProductCard, ScrollRevealDirective, TranslatePipe],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

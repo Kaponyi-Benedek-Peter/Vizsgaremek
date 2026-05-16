@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output, inject, computed } from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyPipe } from '../../pipes/currency.pipe';
@@ -9,7 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-featured-product-card',
-  imports: [TranslateModule, CurrencyPipe],
+  imports: [TranslatePipe, CurrencyPipe],
   templateUrl: './featured-product-card.html',
   styleUrl: './featured-product-card.css',
 })

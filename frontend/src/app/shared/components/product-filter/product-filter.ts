@@ -13,7 +13,7 @@ import { ProductFilterOptions, SortOption } from '../../../core/models/product.m
 import { ICONS } from '../../../core/constants/visuals';
 
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 interface FilterState {
   categories: string[];
@@ -26,7 +26,7 @@ interface FilterState {
 
 @Component({
   selector: 'app-product-filter',
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './product-filter.html',
   styleUrl: './product-filter.css',
 })

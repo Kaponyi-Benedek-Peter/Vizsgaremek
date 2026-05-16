@@ -144,6 +144,19 @@
                 />
               </div>
             </div>
+          } @else if (needsBillingNameInput()) {
+            <div class="form-group">
+              <label for="billingName">{{ 'checkout.billing_name' | translate }} *</label>
+              <input
+                type="text"
+                id="billingName"
+                name="billingName"
+                [(ngModel)]="form.billingName"
+                [placeholder]="'checkout.billing_name_placeholder' | translate"
+                required
+                [disabled]="isSubmitting()"
+              />
+            </div>
           }
 
           <form (ngSubmit)="submitOrder()" #checkoutForm="ngForm">

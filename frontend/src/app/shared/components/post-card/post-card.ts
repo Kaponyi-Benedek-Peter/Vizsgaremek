@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Post } from '../../../core/models/forum.model';
 import { ForumService } from '../../../core/services/forum.service';
 import { ICONS } from '../../../core/constants/visuals';
@@ -9,7 +9,7 @@ import { ICONS } from '../../../core/constants/visuals';
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [RouterModule, TranslateModule],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './post-card.html',
   styleUrl: './post-card.css',
 })

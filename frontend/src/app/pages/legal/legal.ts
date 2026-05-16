@@ -1,13 +1,13 @@
 import { Component, signal } from '@angular/core';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type LegalTab = 'terms' | 'privacy' | 'cookies';
 
 @Component({
   selector: 'app-legal',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   templateUrl: './legal.html',
   styleUrl: './legal.css',
 })

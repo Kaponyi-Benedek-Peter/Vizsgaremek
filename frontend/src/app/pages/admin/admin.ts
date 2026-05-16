@@ -1,7 +1,7 @@
 import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import {
   AccountService,
@@ -50,7 +50,7 @@ import {
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [RouterModule, FormsModule, TranslateModule, ResizableTableDirective],
+  imports: [RouterModule, FormsModule, TranslatePipe, ResizableTableDirective],
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })
@@ -503,12 +503,15 @@ export class Admin implements OnInit {
   }
 
   getUserFullName(user: AdminUser): string {
-    const full = `${user.last_name} ${user.first_name}`.trim();
+    const last = user.last_name ?? '';
+    const first = user.first_name ?? '';
+    const full = `${last} ${first}`.trim();
     return full || user.email;
   }
 
   getUserInitial(user: AdminUser): string {
-    return (user.last_name || user.first_name || user.email).charAt(0).toUpperCase();
+    const name = user.last_name || user.first_name || user.email;
+    return name.charAt(0).toUpperCase();
   }
 
   getAccountStateClass(state: string): string {

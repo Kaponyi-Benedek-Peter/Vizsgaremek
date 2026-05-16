@@ -1,12 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { HERO_SLIDES } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-slide',
   standalone: true,
-  imports: [TranslateModule, RouterModule],
+  imports: [TranslatePipe, RouterModule],
   templateUrl: './slide.html',
   styleUrl: './slide.css',
 })

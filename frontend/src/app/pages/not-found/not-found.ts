@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { ThemeService, Theme } from '../../core/services/theme.service';
@@ -11,7 +11,7 @@ import { getLogoSrc } from '../../core/constants/visuals';
 @Component({
   selector: 'app-not-found',
   standalone: true,
-  imports: [RouterModule, TranslateModule],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './not-found.html',
   styleUrl: './not-found.css',
 })

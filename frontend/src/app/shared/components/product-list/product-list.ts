@@ -1,6 +1,6 @@
 import { Component, computed, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { interval } from 'rxjs';
 import {
   Category,
@@ -22,7 +22,7 @@ const POLL_INTERVAL_MS = 60_000;
 @Component({
   selector: 'app-product-list',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     CategoryBar,
     ProductFilter,
     ProductCard,

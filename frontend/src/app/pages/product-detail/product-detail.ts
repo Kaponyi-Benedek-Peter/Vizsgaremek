@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ProductWithHelpers, ProductImage, enrichProduct } from '../../core/models/product.model';
 import { ReviewWithHelpers } from '../../core/models/review.model';
 import { ProductService } from '../../core/services/product.service';
@@ -17,7 +17,7 @@ import { ICONS } from '../../core/constants/visuals';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [DatePipe, TranslateModule, RouterLink],
+  imports: [DatePipe, TranslatePipe, RouterLink],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
 })

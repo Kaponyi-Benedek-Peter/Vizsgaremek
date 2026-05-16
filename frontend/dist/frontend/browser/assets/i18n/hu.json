@@ -130,7 +130,8 @@
       "already_activated": "Ez a fiók már korábban aktiválva lett.",
       "token_expired": "A megerősítő link lejárt. Kérjen újat.",
       "account_banned": "A fiók le van tiltva. Lépjen kapcsolatba az ügyfélszolgálattal.",
-      "unknown_error": "Ismeretlen hiba történt. Kérjük, próbálja újra."
+      "unknown_error": "Ismeretlen hiba történt. Kérjük, próbálja újra.",
+      "passwords_dont_match": "A jelszavak nem egyeznek."
     }
   },
   "legal": {
@@ -326,10 +327,8 @@
     "subtitle": "Rendelési előzmények és követés",
     "loading": "Rendelések betöltése...",
     "retry": "Újrapróbálás",
-
     "empty_title": "Még nincsenek rendeléseid",
     "empty_desc": "Még nem adtál le rendelést. Kezdj el böngészni a termékeink között!",
-
     "fields": {
       "email": "Email",
       "city": "Város",
@@ -338,12 +337,10 @@
       "phone": "Telefonszám",
       "tracking": "Követés"
     },
-
     "products": {
       "title": "Termékek",
       "sku": "Cikkszám"
     },
-
     "status": {
       "pending": "Függőben",
       "processing": "Feldolgozás alatt",
@@ -664,6 +661,31 @@
       "orders_load_failed": "Hiba történt a termékek betöltésekor!",
       "users_load_failed": "Hiba történt a felhasználók betöltésekor!",
       "posts_load_failed": "Hiba történt a bejegyzések betöltésekor."
+    },
+    "product_form": {
+      "add_title": "Termék hozzáadása",
+      "edit_title": "Termék szerkesztése",
+      "name_hu": "Név (HU)",
+      "name_en": "Név (EN)",
+      "name_de": "Név (DE)",
+      "identification": "Azonosítás",
+      "manufacturer": "Gyártó",
+      "thumbnail_url": "Bélyegkép URL",
+      "save": "Mentés",
+      "tab_basic": "Alapadatok",
+      "tab_pricing": "Árazás",
+      "tab_descriptions": "Leírások",
+      "tab_details": "Részletek",
+      "add": "Termék hozzáadása",
+      "names": "Nevek",
+      "previews": "Rövid leírások",
+      "full_descriptions": "Teljes leírások",
+      "packaging": "Csomagolás",
+      "active_ingredients": "Hatóanyagok",
+      "featured": "Kiemelt",
+      "price_huf": "Ár (HUF)",
+      "sale_pct": "Kedvezmény (%)",
+      "create": "Létrehozás"
     }
   },
   "footer": {

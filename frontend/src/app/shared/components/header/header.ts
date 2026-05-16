@@ -8,7 +8,7 @@ import {
   inject,
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { PrimaryBtn } from '../primary-btn/primary-btn';
@@ -24,7 +24,7 @@ import { User } from '../../../core/models/auth.model';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [PrimaryBtn, IconBtn, RouterModule, LanguageSwitcher, TranslateModule],
+  imports: [PrimaryBtn, IconBtn, RouterModule, LanguageSwitcher, TranslatePipe],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })

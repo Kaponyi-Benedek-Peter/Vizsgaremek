@@ -277,11 +277,14 @@ export class AccountService {
   updateOrderStatusAdmin(orderId: string, newStatus: string): Observable<ApiResponse> {
     const storedId = sessionStorage.getItem('user_id') ?? localStorage.getItem('user_id') ?? '';
     const sessionToken = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    const enc = (v: string) => btoa(unescape(encodeURIComponent(String(v))));
+
     const body = {
       admin_id: storedId,
-      admin_session_token: sessionToken,
-      target_order_id: orderId,
-      new_order_status: newStatus,
+      admin_session_token: enc(sessionToken),
+      target_order_id: enc(orderId),
+      new_order_status: enc(newStatus),
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/update_order_status_admin`, body)
