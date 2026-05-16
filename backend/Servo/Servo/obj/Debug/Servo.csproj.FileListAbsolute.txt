@@ -113,11 +113,6 @@ C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\obj\Debug\Servo.csproj
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\obj\Debug\Servo.exe
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\obj\Debug\Servo.pdb
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\obj\Debug\Servo.exe.config
-<<<<<<< Updated upstream
-C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\SixLabors.ImageSharp.xml
-C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Text.Encoding.CodePages.xml
-=======
->>>>>>> Stashed changes
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\BCrypt.Net-Next.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\BouncyCastle.Cryptography.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Costura.dll
@@ -132,15 +127,8 @@ C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Microsoft.Id
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Microsoft.IdentityModel.JsonWebTokens.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Microsoft.IdentityModel.Logging.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Microsoft.IdentityModel.Tokens.dll
-<<<<<<< Updated upstream
-C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Microsoft.ML.OnnxRuntime.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\MySql.Data.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Newtonsoft.Json.dll
-C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\SixLabors.ImageSharp.dll
-=======
-C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\MySql.Data.dll
-C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Newtonsoft.Json.dll
->>>>>>> Stashed changes
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Buffers.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Configuration.ConfigurationManager.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Diagnostics.DiagnosticSource.dll
@@ -149,10 +137,6 @@ C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.IO.Pi
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Memory.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Numerics.Vectors.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
-<<<<<<< Updated upstream
-C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Text.Encoding.CodePages.dll
-=======
->>>>>>> Stashed changes
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Text.Encodings.Web.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Text.Json.dll
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\System.Threading.Tasks.Extensions.dll
@@ -161,7 +145,3 @@ C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\ZstdSharp.dl
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Costura.pdb
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Costura.xml
 C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Google.Protobuf.pdb
-<<<<<<< Updated upstream
-C:\Users\Nsc\Desktop\gith\Vizsgaremek\backend\Servo\Servo\bin\Debug\Microsoft.ML.OnnxRuntime.pdb
-=======
->>>>>>> Stashed changes

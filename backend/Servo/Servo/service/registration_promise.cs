@@ -14,7 +14,7 @@ namespace Servo.service
 
 
 
-        public static (int,string,string,string, string, string) process_registration_promise(string controller_id,string controller_token)
+        public static int process_registration_promise(string controller_id,string controller_token)
         {
             try
             {
@@ -26,7 +26,7 @@ namespace Servo.service
                 service.shared.log($"Debug 1: {model_recieved_token} || {accstate} --service.registration_promise.process_registration_promise");
                 if (accstate == "500")
                 {
-                    return (404,null,null,null, null, null);
+                    return 404;
                 }
                 if ((accstate == "unverified" && model_recieved_token == controller_token))
                 {
@@ -40,18 +40,14 @@ namespace Servo.service
                     {
 
                         service.shared.log($"Debug 3: {accstate} --service.registration_promise.process_registration_promise");
-                        string user_token = model.shared.get_token_by_id(controller_id);
-                        string user_token_expiration = model.shared.get_sesstoken_expiration_by_id(controller_id);
-                        string new_jwt_token = jwt_handler.generate_token(model.shared.get_email_by_id(controller_id));
-                        string jwt_expiration = jwt_handler.generate_expiration_string();
 
-                        return (200, user_token,user_token_expiration,new_jwt_token,jwt_expiration,controller_id);
+                        return 200;
                         
                     }
-                    else { return (500, null, null, null, null, null); }
+                    else { return 500; }
                 }
                 else if (string.IsNullOrEmpty(accstate)){
-                    return (404, null, null, null, null, null);
+                    return 404;
                 }
 
                 else
@@ -60,18 +56,18 @@ namespace Servo.service
                     if (controller_token != model_recieved_token)
                     {
 
-                        return (401, null, null, null, null, null);
+                        return 401;
                     }
                     else if (accstate == "verified" || accstate == "admin" || accstate == "superadmin")
                     {
                         service.shared.log($"Debug 4: {accstate} --service.registration_promise.process_registration_promise");
-                        return (409, null, null, null, null, null);
+                        return 409;
                     }
 
                     else
                     {
                         service.shared.log($"Debug 5: {accstate} --service.registration_promise.process_registration_promise");
-                        return (500, null, null, null, null, null);
+                        return 500;
                     }
                     // nem oké
 
@@ -79,7 +75,7 @@ namespace Servo.service
                 }
 
             }
-            catch (Exception ex) { service.shared.log($"Error 2: {ex.Message} --service.registration_promise.process_registration_promise");return (404, null, null, null, null, null); }
+            catch (Exception ex) { service.shared.log($"Error 2: {ex.Message} --service.registration_promise.process_registration_promise");return 404; }
 
         }
 

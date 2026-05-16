@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,25 +13,15 @@ namespace Servo.service
 {
     internal class shared
     {
-        private static readonly object _fileLock = new object();
-
-
-
         public static string baseDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "public");
         public static void init()
         {
             
             if (!Directory.Exists(baseDir))
                 Directory.CreateDirectory(baseDir);
-            current_url= service.shared.b64dec(conf("r", "current_url"));
-
         }
 
-<<<<<<< Updated upstream
-        public static string current_url = "";
-=======
         public static string current_url = "http://192.168.11.213:90/"; //https://www.roysshack.hu
->>>>>>> Stashed changes
 
 
         public static string b64enc(string str)
@@ -41,19 +30,7 @@ namespace Servo.service
         }
         public static string b64dec(string str)
         {
-            string toReturn = str;
-            while (true)
-            {
-                try
-                {
-                    toReturn = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(toReturn));
-                }
-                catch (FormatException)
-                {
-                    break;
-                }
-            }
-            return toReturn;
+            return System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(str));
         }
 
 
@@ -72,16 +49,7 @@ namespace Servo.service
                 return;
             }
 
-<<<<<<< Updated upstream
-            if(type=="api") f.InvokeOnUi(() => f.api_rtbox.AppendText(abc + Environment.NewLine));
-            else if (type == "static") { f.InvokeOnUi(() => f.static_rtbox.AppendText(abc + Environment.NewLine)); }
-            else if (type == "server") { f.InvokeOnUi(() => f.server_rtbox.AppendText(abc + Environment.NewLine)); }
-
-            f.InvokeOnUi(() => f.all_rtbox.AppendText(abc + Environment.NewLine));
-            
-=======
             f.InvokeOnUi(() => f.LogBox.AppendText(abc + Environment.NewLine));
->>>>>>> Stashed changes
         }
         private const int KeySize = 32;
         private const int Iterations = 1000;
@@ -180,86 +148,52 @@ namespace Servo.service
             else { return rnd.Next(100000, 999999).ToString(); }
         }
 
-        
+
         public static string conf(string rw, string id, string val = "___")
         {
-            lock (_fileLock)
+            string location = "roys_conf.ini";
+            if (!File.Exists(location)) { File.WriteAllText(location, "init:true\n"); }
+
+
+            if (rw == "r")
             {
-                string location = "roys_conf.ini";
-
-                // file in use problematika
-                for (int retry = 0; retry < 5; retry++)
+                string eredmeny = "___";
+                String[] con = File.ReadAllText(location).Split('\n');
+                foreach (var item in con)
                 {
-                    try
+                    string[] crrln = item.Split(':');
+                    if (crrln[0] == id)
                     {
-                        if (!File.Exists(location))
-                        {
-                            File.WriteAllText(location, "init:true\n");
-                        }
-
-                        if (rw == "r")
-                        {
-                            string eredmeny = "___";
-                            string[] con = File.ReadAllText(location).Split('\n');
-                            foreach (var item in con)
-                            {
-                                if (string.IsNullOrWhiteSpace(item)) continue;
-
-                                int colonIndex = item.IndexOf(':');
-                                if (colonIndex > 0)
-                                {
-                                    string key = item.Substring(0, colonIndex);
-                                    if (key == id)
-                                    {
-                                        eredmeny = item.Substring(colonIndex + 1);
-                                        break;
-                                    }
-                                }
-                            }
-                            return eredmeny;
-                        }
-                        else
-                        {
-                            string outx = "";
-                            bool found = false;
-
-                            foreach (var item in File.ReadAllText(location).Split('\n'))
-                            {
-                                if (string.IsNullOrWhiteSpace(item)) continue;
-
-                                int colonIndex = item.IndexOf(':');
-                                if (colonIndex > 0)
-                                {
-                                    string key = item.Substring(0, colonIndex);
-                                    string value = item.Substring(colonIndex + 1);
-
-                                    if (key != id)
-                                    {
-                                        outx += key + ":" + value + "\n";
-                                    }
-                                    else
-                                    {
-                                        outx += id + ":" + val + "\n";
-                                        found = true;
-                                    }
-                                }
-                            }
-
-                            if (!found) { outx += id + ":" + val + "\n"; }
-
-                            File.WriteAllText(location, outx);
-                        }
-
-                        return "";
-                    }
-                    catch (IOException) when (retry < 4)
-                    {
-                        Thread.Sleep(20);
+                        eredmeny = crrln[1];
                     }
                 }
-
-                return "";
+                return eredmeny;
             }
+
+            else
+            {
+                string outx = "";
+                Boolean found = false;
+                foreach (var item in File.ReadAllText(location).Split('\n'))
+                {
+                    string[] crrln = item.Split(':');
+                    try
+                    {
+                        if (crrln[0] != id) { outx += crrln[0] + ":" + crrln[1]; }
+                        else { outx += id + ":" + val; found = true; }
+                        outx += "\n";
+                    }
+                    catch { }
+                }
+                if (!found) { outx += id + ":" + val; }
+                File.Delete(location);
+                File.WriteAllText(location, outx);
+            }
+
+
+
+
+            return "";
         }
 
 

@@ -218,7 +218,7 @@ namespace Servo.controller
             }
             catch (Exception ex)
             {
-                service.shared.log($"Error 1: {ex.Message} --controller.update_user_state_admin.main");
+                service.shared.log($"Error 1: {ex.Message} --controller.ban_user.main");
 
 
 

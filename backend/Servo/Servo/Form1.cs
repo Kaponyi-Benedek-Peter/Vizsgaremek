@@ -68,48 +68,6 @@ namespace Servo
         }
         public void log(string abc)
         {
-<<<<<<< Updated upstream
-            /*
-            if (all_rtbox.IsHandleCreated)
-            {
-                all_rtbox.BeginInvoke(new Action(() =>
-                {
-                    all_rtbox.AppendText(abc + Environment.NewLine);
-                    // Optional: Auto-scroll to bottom
-                    all_rtbox.SelectionStart = all_rtbox.Text.Length;
-                    all_rtbox.ScrollToCaret();
-                }));
-            }*/
-        }
-
-        public void updateapisserved()
-        {
-            apis_box.BeginInvoke(new Action(() =>
-            {
-                if (int.TryParse(apis_box.Text, out int val))
-                    apis_box.Text = (val + 1).ToString();
-            }));
-        }
-
-        static long bandwidthcounter_bytes = 0; 
-        public void updatebandwidth(int incrementation)
-        {
-           
-            System.Threading.Interlocked.Add(ref bandwidthcounter_bytes, incrementation);
-
-            bandwidth_tbox.BeginInvoke(new Action(() =>
-            {
-                bandwidth_tbox.Text = (bandwidthcounter_bytes / 1000000).ToString();
-            }));
-        }
-
-        public void updatesusconns()
-        {
-            denied_tbox.BeginInvoke(new Action(() =>
-            {
-                if (int.TryParse(denied_tbox.Text, out int val))
-                    denied_tbox.Text = (val + 1).ToString();
-=======
 
             richTextBox1.Invoke(new Action(() =>
              richTextBox1.AppendText(abc + Environment.NewLine) // task factory miatti hiba kikerülése
@@ -123,41 +81,24 @@ namespace Servo
             error_textbox.Invoke(new Action(() =>
             {
                 error_textbox.Text = (int.Parse(error_textbox.Text)+1).ToString();
->>>>>>> Stashed changes
             }));
         }
-
         public void updatefilesserved()
         {
-<<<<<<< Updated upstream
-            files_tbox.BeginInvoke(new Action(() =>
-            {
-                if (int.TryParse(files_tbox.Text, out int val))
-                    files_tbox.Text = (val + 1).ToString();
-=======
             files_textbox.Invoke(new Action(() =>
             {
                 files_textbox.Text = (int.Parse(files_textbox.Text) + 1).ToString();
->>>>>>> Stashed changes
             }));
         }
-
         public void updateconnections()
         {
-<<<<<<< Updated upstream
-            conn_tbox.BeginInvoke(new Action(() =>
-            {
-                if (int.TryParse(conn_tbox.Text, out int val))
-                    conn_tbox.Text = (val + 1).ToString();
-=======
             conn_textbox.Invoke(new Action(() =>
             {
                 conn_textbox.Text = (int.Parse(conn_textbox.Text) + 1).ToString();
->>>>>>> Stashed changes
             }));
         }
-
-
+       
+      
         public void button1_Click(object sender, EventArgs e)
         {
             startserver();
@@ -177,11 +118,7 @@ namespace Servo
                 try
                 {
                     //service.shared.log("[starting server 1]");
-<<<<<<< Updated upstream
-                    sh.start_server(int.Parse(port_tbox.Text),checkBox1.Checked, checkBox2.Checked);
-=======
                     sh.start_server(int.Parse(textBox4.Text));
->>>>>>> Stashed changes
                     sh.isrunning = true;
                     //service.shared.log("[starting server 6]");
                 }
@@ -218,27 +155,11 @@ namespace Servo
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12 | System.Net.SecurityProtocolType.Tls13;
+           
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-<<<<<<< Updated upstream
-            all_rtbox.Clear();
-            server_rtbox.Clear();
-            static_rtbox.Clear();
-            api_rtbox.Clear();
-
-            items_box.Text = "0";
-            conn_tbox.Text = "0";
-            files_tbox.Text = "0";
-            apis_box.Text = "0";
-            denied_tbox.Text = "0";
-            users_box.Text = "0";
-            bandwidth_tbox.Text = "0";
-            bandwidthcounter_bytes = 0;
-            controller.router._fileCache.Clear();
-=======
             richTextBox1.Clear();
             items_textbox.Text = "0";
             conn_textbox.Text = "0";
@@ -247,7 +168,6 @@ namespace Servo
             susconn_textbox.Text = "0";
             users_textbox.Text = "0";
 
->>>>>>> Stashed changes
         }
 
         private void button6_Click(object sender, EventArgs e)
@@ -462,7 +382,5 @@ namespace Servo
         {
 
         }
-
-       
     }
 }

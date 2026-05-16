@@ -108,7 +108,7 @@ namespace Servo.service
                         string new_jwt_token = jwt_handler.generate_token(model_email);
                         string jwt_expiration = jwt_handler.generate_expiration_string();
                         string model_user_state = model.shared.get_account_state_by_id(controller_id);
-                        
+
 
 
                         if (model_session_token != "404")

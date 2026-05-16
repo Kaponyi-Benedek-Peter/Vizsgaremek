@@ -50,26 +50,7 @@
             this.button4 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.button5 = new System.Windows.Forms.Button();
-<<<<<<< Updated upstream
-            this.databasename_tbox = new System.Windows.Forms.TextBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.items_box = new System.Windows.Forms.TextBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.users_box = new System.Windows.Forms.TextBox();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.api_rtbox = new System.Windows.Forms.RichTextBox();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.static_rtbox = new System.Windows.Forms.RichTextBox();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.server_rtbox = new System.Windows.Forms.RichTextBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
-=======
             this.textBox1 = new System.Windows.Forms.TextBox();
->>>>>>> Stashed changes
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -288,7 +269,7 @@
             this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button6.ForeColor = System.Drawing.Color.White;
-            this.button6.Location = new System.Drawing.Point(730, 258);
+            this.button6.Location = new System.Drawing.Point(730, 220);
             this.button6.Margin = new System.Windows.Forms.Padding(6);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(214, 81);
@@ -342,9 +323,9 @@
             this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.users_textbox);
             this.groupBox1.ForeColor = System.Drawing.Color.White;
-            this.groupBox1.Location = new System.Drawing.Point(730, 310);
+            this.groupBox1.Location = new System.Drawing.Point(730, 278);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(214, 464);
+            this.groupBox1.Size = new System.Drawing.Size(214, 496);
             this.groupBox1.TabIndex = 32;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "STATS";
@@ -357,7 +338,7 @@
             this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.button5.ForeColor = System.Drawing.Color.White;
-            this.button5.Location = new System.Drawing.Point(956, 258);
+            this.button5.Location = new System.Drawing.Point(956, 220);
             this.button5.Margin = new System.Windows.Forms.Padding(6);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(214, 81);
@@ -368,172 +349,6 @@
             // 
             // textBox1
             // 
-<<<<<<< Updated upstream
-            this.databasename_tbox.BackColor = System.Drawing.Color.Black;
-            this.databasename_tbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.databasename_tbox.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.databasename_tbox.ForeColor = System.Drawing.Color.White;
-            this.databasename_tbox.Location = new System.Drawing.Point(730, 104);
-            this.databasename_tbox.Margin = new System.Windows.Forms.Padding(6);
-            this.databasename_tbox.Multiline = true;
-            this.databasename_tbox.Name = "databasename_tbox";
-            this.databasename_tbox.Size = new System.Drawing.Size(214, 46);
-            this.databasename_tbox.TabIndex = 34;
-            this.databasename_tbox.Text = "roy";
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.label1);
-            this.groupBox2.Controls.Add(this.items_box);
-            this.groupBox2.Controls.Add(this.label8);
-            this.groupBox2.Controls.Add(this.users_box);
-            this.groupBox2.ForeColor = System.Drawing.Color.White;
-            this.groupBox2.Location = new System.Drawing.Point(956, 310);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(214, 464);
-            this.groupBox2.TabIndex = 33;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "STATS";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(9, 104);
-            this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(75, 30);
-            this.label1.TabIndex = 28;
-            this.label1.Text = "items";
-            // 
-            // items_box
-            // 
-            this.items_box.BackColor = System.Drawing.Color.Black;
-            this.items_box.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.items_box.ForeColor = System.Drawing.Color.White;
-            this.items_box.Location = new System.Drawing.Point(9, 135);
-            this.items_box.Margin = new System.Windows.Forms.Padding(6);
-            this.items_box.Name = "items_box";
-            this.items_box.Size = new System.Drawing.Size(196, 31);
-            this.items_box.TabIndex = 27;
-            this.items_box.Text = "0";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label8.ForeColor = System.Drawing.Color.White;
-            this.label8.Location = new System.Drawing.Point(9, 29);
-            this.label8.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(76, 30);
-            this.label8.TabIndex = 26;
-            this.label8.Text = "users";
-            // 
-            // users_box
-            // 
-            this.users_box.BackColor = System.Drawing.Color.Black;
-            this.users_box.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.users_box.ForeColor = System.Drawing.Color.White;
-            this.users_box.Location = new System.Drawing.Point(9, 60);
-            this.users_box.Margin = new System.Windows.Forms.Padding(6);
-            this.users_box.Name = "users_box";
-            this.users_box.Size = new System.Drawing.Size(196, 31);
-            this.users_box.TabIndex = 25;
-            this.users_box.Text = "0";
-            // 
-            // tabControl1
-            // 
-            this.tabControl1.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Controls.Add(this.tabPage3);
-            this.tabControl1.Controls.Add(this.tabPage4);
-            this.tabControl1.Location = new System.Drawing.Point(-5, 0);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(716, 777);
-            this.tabControl1.TabIndex = 35;
-            // 
-            // tabPage1
-            // 
-            this.tabPage1.Controls.Add(this.all_rtbox);
-            this.tabPage1.Location = new System.Drawing.Point(4, 37);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(708, 736);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "All";
-            this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // tabPage2
-            // 
-            this.tabPage2.Controls.Add(this.api_rtbox);
-            this.tabPage2.Location = new System.Drawing.Point(4, 37);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(708, 736);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "API";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // api_rtbox
-            // 
-            this.api_rtbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(68)))), ((int)(((byte)(68)))));
-            this.api_rtbox.ForeColor = System.Drawing.Color.White;
-            this.api_rtbox.Location = new System.Drawing.Point(0, 0);
-            this.api_rtbox.Margin = new System.Windows.Forms.Padding(6);
-            this.api_rtbox.Name = "api_rtbox";
-            this.api_rtbox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-            this.api_rtbox.Size = new System.Drawing.Size(716, 736);
-            this.api_rtbox.TabIndex = 1;
-            this.api_rtbox.Text = "< 2025.08.26 - API - 2026.03.24 >\n";
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.static_rtbox);
-            this.tabPage3.Location = new System.Drawing.Point(4, 37);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(708, 736);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Static";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // static_rtbox
-            // 
-            this.static_rtbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(68)))), ((int)(((byte)(68)))));
-            this.static_rtbox.ForeColor = System.Drawing.Color.White;
-            this.static_rtbox.Location = new System.Drawing.Point(0, 0);
-            this.static_rtbox.Margin = new System.Windows.Forms.Padding(6);
-            this.static_rtbox.Name = "static_rtbox";
-            this.static_rtbox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-            this.static_rtbox.Size = new System.Drawing.Size(716, 736);
-            this.static_rtbox.TabIndex = 2;
-            this.static_rtbox.Text = "< 2025.08.26 - Static - 2026.03.24 >\n";
-            // 
-            // tabPage4
-            // 
-            this.tabPage4.Controls.Add(this.server_rtbox);
-            this.tabPage4.Location = new System.Drawing.Point(4, 37);
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(708, 736);
-            this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "Server";
-            this.tabPage4.UseVisualStyleBackColor = true;
-            // 
-            // server_rtbox
-            // 
-            this.server_rtbox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(68)))), ((int)(((byte)(68)))));
-            this.server_rtbox.ForeColor = System.Drawing.Color.White;
-            this.server_rtbox.Location = new System.Drawing.Point(0, 0);
-            this.server_rtbox.Margin = new System.Windows.Forms.Padding(6);
-            this.server_rtbox.Name = "server_rtbox";
-            this.server_rtbox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-            this.server_rtbox.Size = new System.Drawing.Size(716, 736);
-            this.server_rtbox.TabIndex = 1;
-            this.server_rtbox.Text = "< 2025.08.26 - Server - 2026.03.24 >\n";
-=======
             this.textBox1.BackColor = System.Drawing.Color.Black;
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.875F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
@@ -545,47 +360,14 @@
             this.textBox1.Size = new System.Drawing.Size(214, 46);
             this.textBox1.TabIndex = 34;
             this.textBox1.Text = "roy";
->>>>>>> Stashed changes
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.ForeColor = System.Drawing.Color.White;
-            this.checkBox1.Location = new System.Drawing.Point(772, 217);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(133, 29);
-            this.checkBox1.TabIndex = 29;
-            this.checkBox1.Text = "honeypot";
-            this.checkBox1.UseVisualStyleBackColor = true;
-           // 
-            // checkBox2
-            // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.ForeColor = System.Drawing.Color.White;
-            this.checkBox2.Location = new System.Drawing.Point(997, 217);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(140, 29);
-            this.checkBox2.TabIndex = 36;
-            this.checkBox2.Text = "ddos prot.";
-            this.checkBox2.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(68)))), ((int)(((byte)(68)))));
-<<<<<<< Updated upstream
-            this.ClientSize = new System.Drawing.Size(1178, 769);
-            this.Controls.Add(this.checkBox2);
-            this.Controls.Add(this.checkBox1);
-            this.Controls.Add(this.tabControl1);
-            this.Controls.Add(this.button5);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.databasename_tbox);
-=======
             this.ClientSize = new System.Drawing.Size(1178, 773);
             this.Controls.Add(this.textBox1);
->>>>>>> Stashed changes
             this.Controls.Add(this.button6);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.groupBox1);
@@ -633,28 +415,7 @@
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button button5;
-<<<<<<< Updated upstream
-        public System.Windows.Forms.TextBox databasename_tbox;
-        private System.Windows.Forms.TextBox bandwidth_tbox;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox items_box;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.TextBox users_box;
-        private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
-        public System.Windows.Forms.RichTextBox api_rtbox;
-        private System.Windows.Forms.TabPage tabPage3;
-        public System.Windows.Forms.RichTextBox static_rtbox;
-        private System.Windows.Forms.TabPage tabPage4;
-        public System.Windows.Forms.RichTextBox server_rtbox;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.CheckBox checkBox2;
-=======
         public System.Windows.Forms.TextBox textBox1;
->>>>>>> Stashed changes
     }
 }
 

@@ -499,9 +499,6 @@ namespace Servo.model
             }
         }
 
-
-       
-
         public static string get_passhash_by_id(string id)
         {
             try
@@ -1192,34 +1189,6 @@ namespace Servo.model
             }
         }
 
-
-
-
-
-        public static int update_order_status_by_id(string user_id, string new_order_status)
-        {
-
-            try
-            {
-                using (MySqlCommand cmd = new MySqlCommand("update_order_status_by_id", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@p_id", user_id);
-                    cmd.Parameters.AddWithValue("@p_order_status", new_order_status);
-                    cmd.ExecuteNonQuery();
-
-                    return 200;
-                }
-            }
-            catch (Exception ex)
-            {
-                service.shared.log($"Error 1: {ex.Message} --model.shared.update_order_status_by_id");
-                return 500;
-            }
-        }
-
-
         public static int update_password_by_id(string user_id, string new_firstname, string new_lastname)
         {
 
@@ -1266,69 +1235,6 @@ namespace Servo.model
                 return 500;
             }
         }
-
-
-        public static int update_product_state_by_id(string product_id, string new_state)
-        {
-
-            try
-            {
-                using (MySqlCommand cmd = new MySqlCommand("update_product_state_by_id", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@p_id", product_id);
-                    cmd.Parameters.AddWithValue("@p_new_state", new_state);
-                    cmd.ExecuteNonQuery();
-
-                    return 200;
-                }
-            }
-            catch (Exception ex)
-            {
-                service.shared.log($"Error 1: {ex.Message} --model.shared.update_name_by_id");
-                return 500;
-            }
-        }
-
-        public static string get_product_state_by_id(string id)
-        {
-            try
-            {
-
-
-                string toreturn = null;
-
-                using (MySqlCommand cmd = new MySqlCommand("get_product_state_by_id", conn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.AddWithValue("@p_id", id);
-
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-
-                            toreturn = reader["user_id"]?.ToString();
-                        }
-                    }
-                }
-
-                if (toreturn != null)
-                    return toreturn;
-                else
-                    return "404";
-            }
-            catch (Exception ex)
-            {
-                service.shared.log($"Error 1: {ex.Message} --model.shared.get_email_by_id");
-                return "500";
-            }
-
-        }
-
-
 
 
 
