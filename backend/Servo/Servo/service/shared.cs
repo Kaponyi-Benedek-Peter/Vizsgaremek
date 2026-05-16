@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -13,15 +14,21 @@ namespace Servo.service
 {
     internal class shared
     {
+        private static readonly object _fileLock = new object();
+
+
+
         public static string baseDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "public");
         public static void init()
         {
             
             if (!Directory.Exists(baseDir))
                 Directory.CreateDirectory(baseDir);
+            current_url= service.shared.b64dec(conf("r", "current_url"));
+
         }
 
-        public static string current_url = "http://192.168.11.213:90/"; //https://www.roysshack.hu
+        public static string current_url = "";
 
 
         public static string b64enc(string str)
@@ -30,11 +37,23 @@ namespace Servo.service
         }
         public static string b64dec(string str)
         {
-            return System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(str));
+            string toReturn = str;
+            while (true)
+            {
+                try
+                {
+                    toReturn = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(toReturn));
+                }
+                catch (FormatException)
+                {
+                    break;
+                }
+            }
+            return toReturn;
         }
 
-
-        public static void log(string abc)
+        static string thumbnail_template(int id) {return $"{service.shared.current_url}assets/products/{id}/thumbnail.webp"; }
+        public static void log(string abc, string type="api")
         {
             var f = Form1.Instance;
             if (f == null)
@@ -49,7 +68,12 @@ namespace Servo.service
                 return;
             }
 
-            f.InvokeOnUi(() => f.LogBox.AppendText(abc + Environment.NewLine));
+            if(type=="api") f.InvokeOnUi(() => f.api_rtbox.AppendText(abc + Environment.NewLine));
+            else if (type == "static") { f.InvokeOnUi(() => f.static_rtbox.AppendText(abc + Environment.NewLine)); }
+            else if (type == "server") { f.InvokeOnUi(() => f.server_rtbox.AppendText(abc + Environment.NewLine)); }
+
+            f.InvokeOnUi(() => f.all_rtbox.AppendText(abc + Environment.NewLine));
+            
         }
         private const int KeySize = 32;
         private const int Iterations = 1000;
@@ -65,30 +89,54 @@ namespace Servo.service
         }
 
 
-
-        public static string mime(string ext)
+        //Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of "text/html". Strict MIME type checking is enforced for module scripts per HTML spec.
+        public static (string, bool) mime(string ext)
         {
-            List<string[]> mimes = new List<string[]>
-            {
-                new[] { ".html", "text/html" },
-                new[] { ".css", "text/css" },
-                new[] { ".js", "application/javascript" },
-                new[] { ".json", "application/json" },
-                new[] { ".png", "image/png" },
-                new[] { ".jpg", ".jpeg", "image/jpeg" },
-                new[] { ".gif", "image/gif" },
-                new[] { ".mp4", "video/mp4" },
-                new[] { ".mp3", "audio/mpeg" },
-                new[] { ".txt", "text/plain" }
-            };
+            List<(string ext, string type, bool isStatic)> mimes = new List<(string, string, bool)>
+    {
+        // Static assets (isStatic: true)
+        (".png",  "image/png",              true),
+        (".jpg",  "image/jpeg",             true),
 
-            foreach (var item in mimes)
+        (".webp", "image/image/webp",             true),
+        (".jpeg", "image/jpeg",             true),
+
+        (".gif",  "image/gif",              true),
+        (".svg",  "image/svg+xml",          true),
+        (".ico",  "image/x-icon",           true),
+        (".woff", "font/woff",              true),
+        (".woff2","font/woff2",             true),
+        (".ttf",  "font/ttf",               true),
+        (".eot",  "application/vnd.ms-fontobject", true),
+        (".mp4",  "video/mp4",              true),
+        (".mp3",  "audio/mpeg",             true),
+        (".wav",  "audio/wav",              true),
+        (".webm", "video/webm",             true),
+        (".ogg",  "audio/ogg",              true),
+
+        (".html", "text/html",              false),
+        (".css",  "text/css",               false),
+        (".js",   "application/javascript",  false),
+        (".pdf",  "application/pdf",        false),
+        (".json", "application/json",       false),
+        (".xml",  "application/xml",        false),
+        (".txt",  "text/plain",             false),
+        (".csv",  "text/csv",               false),
+        (".zip",  "application/zip",        false),
+        (".tar",  "application/x-tar",      false),
+        (".gz",   "application/gzip",       false)
+    };
+
+            string extLower = ext?.ToLower();
+            foreach (var (extension, type, isStatic) in mimes)
             {
-                if (item[0] == ext.ToLower())
-                    return item[1];
+                if (extension == extLower)
+                    return (type, isStatic);
             }
-            return "application/octet-stream";
+
+            return ("application/octet-stream", false);
         }
+
 
 
         public static double usd=0.0027;
@@ -99,7 +147,7 @@ namespace Servo.service
         {
             
 
-            return new List<double> { Math.Round(inn * usd), Math.Round(inn * eur)};
+            return new List<double> { Math.Round(inn * usd,1), Math.Round(inn * eur,1)};
         }
 
 
@@ -129,7 +177,7 @@ namespace Servo.service
             catch (Exception ex)
             {
                 log($"{tipus} email sent: {hova} || ERROR: {ex.ToString()}");
-                Form1.Instance.updateerrorcount();
+                
             }
         }
         public static string gen_string(int n)
@@ -148,52 +196,86 @@ namespace Servo.service
             else { return rnd.Next(100000, 999999).ToString(); }
         }
 
-
+        
         public static string conf(string rw, string id, string val = "___")
         {
-            string location = "roys_conf.ini";
-            if (!File.Exists(location)) { File.WriteAllText(location, "init:true\n"); }
-
-
-            if (rw == "r")
+            lock (_fileLock)
             {
-                string eredmeny = "___";
-                String[] con = File.ReadAllText(location).Split('\n');
-                foreach (var item in con)
-                {
-                    string[] crrln = item.Split(':');
-                    if (crrln[0] == id)
-                    {
-                        eredmeny = crrln[1];
-                    }
-                }
-                return eredmeny;
-            }
+                string location = "roys_conf.ini";
 
-            else
-            {
-                string outx = "";
-                Boolean found = false;
-                foreach (var item in File.ReadAllText(location).Split('\n'))
+                // file in use problematika
+                for (int retry = 0; retry < 5; retry++)
                 {
-                    string[] crrln = item.Split(':');
                     try
                     {
-                        if (crrln[0] != id) { outx += crrln[0] + ":" + crrln[1]; }
-                        else { outx += id + ":" + val; found = true; }
-                        outx += "\n";
+                        if (!File.Exists(location))
+                        {
+                            File.WriteAllText(location, "init:true\n");
+                        }
+
+                        if (rw == "r")
+                        {
+                            string eredmeny = "___";
+                            string[] con = File.ReadAllText(location).Split('\n');
+                            foreach (var item in con)
+                            {
+                                if (string.IsNullOrWhiteSpace(item)) continue;
+
+                                int colonIndex = item.IndexOf(':');
+                                if (colonIndex > 0)
+                                {
+                                    string key = item.Substring(0, colonIndex);
+                                    if (key == id)
+                                    {
+                                        eredmeny = item.Substring(colonIndex + 1);
+                                        break;
+                                    }
+                                }
+                            }
+                            return eredmeny;
+                        }
+                        else
+                        {
+                            string outx = "";
+                            bool found = false;
+
+                            foreach (var item in File.ReadAllText(location).Split('\n'))
+                            {
+                                if (string.IsNullOrWhiteSpace(item)) continue;
+
+                                int colonIndex = item.IndexOf(':');
+                                if (colonIndex > 0)
+                                {
+                                    string key = item.Substring(0, colonIndex);
+                                    string value = item.Substring(colonIndex + 1);
+
+                                    if (key != id)
+                                    {
+                                        outx += key + ":" + value + "\n";
+                                    }
+                                    else
+                                    {
+                                        outx += id + ":" + val + "\n";
+                                        found = true;
+                                    }
+                                }
+                            }
+
+                            if (!found) { outx += id + ":" + val + "\n"; }
+
+                            File.WriteAllText(location, outx);
+                        }
+
+                        return "";
                     }
-                    catch { }
+                    catch (IOException) when (retry < 4)
+                    {
+                        Thread.Sleep(20);
+                    }
                 }
-                if (!found) { outx += id + ":" + val; }
-                File.Delete(location);
-                File.WriteAllText(location, outx);
+
+                return "";
             }
-
-
-
-
-            return "";
         }
 
 

@@ -117,11 +117,18 @@
     <Reference Include="Microsoft.IdentityModel.Tokens, Version=8.15.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Tokens.8.15.0\lib\net472\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.ML.OnnxRuntime, Version=1.24.4.0, Culture=neutral, PublicKeyToken=f27f157f0a5b7bb6, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ML.OnnxRuntime.Managed.1.24.4\lib\netstandard2.0\Microsoft.ML.OnnxRuntime.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data, Version=9.4.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.9.4.0\lib\net48\MySql.Data.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.ImageSharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
+      <HintPath>..\packages\SixLabors.ImageSharp.2.1.9\lib\net472\SixLabors.ImageSharp.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -152,6 +159,10 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Text.Encoding.CodePages, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.8.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
@@ -181,26 +192,53 @@
   <ItemGroup>
     <Compile Include="controller\chpass_promise.cs" />
     <Compile Include="controller\chpass_request.cs" />
+    <Compile Include="controller\create_order.cs" />
+    <Compile Include="controller\create_post.cs" />
+    <Compile Include="controller\create_post_comment_by_post_id.cs" />
+    <Compile Include="controller\create_product.cs" />
     <Compile Include="controller\delacc_promise.cs" />
     <Compile Include="controller\delacc_request.cs" />
+    <Compile Include="controller\delete_all_posts.cs" />
+    <Compile Include="controller\delete_all_post_comments.cs" />
+    <Compile Include="controller\delete_image_by_id.cs" />
+    <Compile Include="controller\delete_post_by_id.cs" />
+    <Compile Include="controller\delete_post_comment_by_comment_id.cs" />
+    <Compile Include="controller\delete_all_post_comments_by_post_id.cs" />
+    <Compile Include="controller\delete_post_image_by_id_admin.cs" />
+    <Compile Include="controller\delete_product_admin.cs" />
     <Compile Include="controller\get_all_featured_products.cs" />
     <Compile Include="controller\get_all_orders.cs" />
+    <Compile Include="controller\get_all_orders_user.cs" />
     <Compile Include="controller\get_all_posts.cs" />
     <Compile Include="controller\get_all_posts_admin.cs" />
+    <Compile Include="controller\get_all_post_categories.cs" />
     <Compile Include="controller\get_all_products.cs" />
     <Compile Include="controller\get_all_product_categories.cs" />
+    <Compile Include="controller\get_all_product_images.cs" />
+    <Compile Include="controller\get_all_product_images_by_id.cs" />
     <Compile Include="controller\get_all_reviews_page_by_product_id.cs" />
     <Compile Include="controller\get_all_users.cs" />
+    <Compile Include="controller\get_post.cs" />
+    <Compile Include="controller\get_product_by_id.cs" />
+    <Compile Include="controller\get_user_data.cs" />
+    <Compile Include="controller\get_user_state.cs" />
+    <Compile Include="controller\increment_post_views_by_id.cs" />
     <Compile Include="controller\login_promise.cs" />
     <Compile Include="controller\newsletter_subscription.cs" />
     <Compile Include="controller\router.cs" />
-    <Compile Include="controller\ban_user.cs" />
+    <Compile Include="controller\update_order_state_admin.cs" />
+    <Compile Include="controller\update_product_state_admin.cs" />
+    <Compile Include="controller\update_user_state_admin.cs" />
     <Compile Include="controller\login_request.cs" />
     <Compile Include="controller\registration_promise.cs" />
     <Compile Include="controller\registration_request.cs" />
     <Compile Include="controller\unban_user.cs" />
     <Compile Include="controller\update_name_by_id.cs" />
+    <Compile Include="controller\update_post_by_id.cs" />
+    <Compile Include="controller\update_post_comment_by_comment_id.cs" />
     <Compile Include="controller\update_stock.cs" />
+    <Compile Include="controller\upload_post_image_admin.cs" />
+    <Compile Include="controller\upload_product_image_admin.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -208,16 +246,27 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="lib.cs" />
+    <Compile Include="model\create_order.cs" />
+    <Compile Include="model\create_post.cs" />
     <Compile Include="model\delacc_promise.cs" />
     <Compile Include="model\delacc_request.cs" />
+    <Compile Include="model\delete_all_posts.cs" />
+    <Compile Include="model\delete_post_by_id.cs" />
+    <Compile Include="model\delete_product_by_id.cs" />
     <Compile Include="model\get_all_featured_products.cs" />
     <Compile Include="model\get_all_orders.cs" />
+    <Compile Include="model\get_all_orders_user.cs" />
     <Compile Include="model\get_all_posts.cs" />
     <Compile Include="model\get_all_posts_admin.cs" />
+    <Compile Include="model\get_all_post_categories.cs" />
     <Compile Include="model\get_all_products.cs" />
     <Compile Include="model\get_all_product_categories.cs" />
+    <Compile Include="model\get_all_product_images_by_id.cs" />
     <Compile Include="model\get_all_reviews_page_by_product_id.cs" />
     <Compile Include="model\get_all_users.cs" />
+    <Compile Include="model\get_post.cs" />
+    <Compile Include="model\get_product_by_id.cs" />
+    <Compile Include="model\get_user_data.cs" />
     <Compile Include="model\registration_request.cs" />
     <Compile Include="model\chpass_promise.cs" />
     <Compile Include="model\chpass_request.cs" />
@@ -226,19 +275,43 @@
     <Compile Include="model\registration_promise.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="service\ban_user.cs" />
+    <Compile Include="service\delete_post_image_by_id_admin.cs" />
+    <Compile Include="service\delete_product_admin.cs" />
+    <Compile Include="service\delete_product_image_by_id.cs" />
+    <Compile Include="service\get_all_product_images.cs" />
+    <Compile Include="service\get_user_data.cs" />
+    <Compile Include="service\update_order_status_admin.cs" />
+    <Compile Include="service\update_product_state_admin.cs" />
+    <Compile Include="service\update_user_state_admin.cs" />
     <Compile Include="service\chpass_promise.cs" />
     <Compile Include="service\chpass_request.cs" />
+    <Compile Include="service\create_order.cs" />
+    <Compile Include="service\create_post.cs" />
+    <Compile Include="service\create_post_comment_by_post_id.cs" />
+    <Compile Include="service\create_product.cs" />
+    <Compile Include="service\delete_all_posts.cs" />
+    <Compile Include="service\delete_all_post_comments.cs" />
+    <Compile Include="service\delete_all_post_comments_by_post_id.cs" />
+    <Compile Include="service\delete_post_by_id.cs" />
+    <Compile Include="service\delete_post_comments_by_post_id.cs" />
+    <Compile Include="service\delete_post_comment_by_comment_id.cs" />
     <Compile Include="service\get_all_featured_products.cs" />
     <Compile Include="service\get_all_orders.cs" />
+    <Compile Include="service\get_all_orders_user.cs" />
     <Compile Include="service\get_all_posts.cs" />
     <Compile Include="service\get_all_posts_admin.cs" />
+    <Compile Include="service\get_all_post_categories.cs" />
     <Compile Include="service\get_all_product_categories.cs" />
+    <Compile Include="service\get_all_product_images_by_product_id.cs" />
     <Compile Include="service\get_all_reviews_page_by_product_id.cs" />
     <Compile Include="service\get_all_users.cs" />
     <Compile Include="service\delacc_promise.cs" />
     <Compile Include="service\delacc_request.cs" />
     <Compile Include="service\get_all_products.cs" />
+    <Compile Include="service\get_post.cs" />
+    <Compile Include="service\get_product_by_id.cs" />
+    <Compile Include="service\get_user_state.cs" />
+    <Compile Include="service\increment_post_views_by_id.cs" />
     <Compile Include="service\jwt_handler.cs" />
     <Compile Include="service\login_request.cs" />
     <Compile Include="service\login_promise.cs" />
@@ -249,7 +322,11 @@
     <Compile Include="service\shared.cs" />
     <Compile Include="service\unban_user.cs" />
     <Compile Include="service\update_name_by_id.cs" />
+    <Compile Include="service\update_post_by_id.cs" />
+    <Compile Include="service\update_post_comment_by_comment_id.cs" />
     <Compile Include="service\update_stock.cs" />
+    <Compile Include="service\upload_post_image_admin.cs" />
+    <Compile Include="service\upload_product_image_admin.cs" />
     <Compile Include="testpanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -316,6 +393,8 @@
     <Error Condition="!Exists('..\packages\Fody.6.8.2\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.6.8.2\build\Fody.targets'))" />
     <Error Condition="!Exists('..\packages\Costura.Fody.6.0.0\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.6.0.0\build\Costura.Fody.props'))" />
     <Error Condition="!Exists('..\packages\Costura.Fody.6.0.0\build\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.6.0.0\build\Costura.Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.ML.OnnxRuntime.Managed.1.24.4\build\netstandard2.0\Microsoft.ML.OnnxRuntime.Managed.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ML.OnnxRuntime.Managed.1.24.4\build\netstandard2.0\Microsoft.ML.OnnxRuntime.Managed.targets'))" />
   </Target>
   <Import Project="..\packages\Costura.Fody.6.0.0\build\Costura.Fody.targets" Condition="Exists('..\packages\Costura.Fody.6.0.0\build\Costura.Fody.targets')" />
+  <Import Project="..\packages\Microsoft.ML.OnnxRuntime.Managed.1.24.4\build\netstandard2.0\Microsoft.ML.OnnxRuntime.Managed.targets" Condition="Exists('..\packages\Microsoft.ML.OnnxRuntime.Managed.1.24.4\build\netstandard2.0\Microsoft.ML.OnnxRuntime.Managed.targets')" />
 </Project>

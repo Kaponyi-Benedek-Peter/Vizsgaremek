@@ -11,13 +11,15 @@ namespace Servo.model
 {
     internal class chpass_promise
     {
-        static string connStr = model.shared.connStr;
-        static MySqlConnection conn = model.shared.conn;
+    
+         
         public static int change_password(string id, string new_passhash)
         {
-
+MySqlConnection conn = null;
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("update_password_by_id", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -35,15 +37,24 @@ namespace Servo.model
 
                 return 500;
             }
+            finally
+            {
+                                if (conn != null)
+                {
+                    conn.Close();
+                }
+            }
         }
 
 
 
         public static int delete_confirmation(string id)
         {
-
+            MySqlConnection conn = null;
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("delete_confirmations_by_user_id", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -58,6 +69,13 @@ namespace Servo.model
             {
                 service.shared.log($"Error 2: {ex.Message} --model.chpass_promise.delete_confirmation");
                 return 500;
+            }
+            finally
+            {
+                if (conn != null)
+                {
+                    conn.Close();
+                }
             }
         }
 

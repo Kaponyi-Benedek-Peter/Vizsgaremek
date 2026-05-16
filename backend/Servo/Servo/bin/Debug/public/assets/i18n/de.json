@@ -190,7 +190,14 @@
       "section4_title": "4. Preise und Zahlung",
       "section2_title": "2. Angaben zum Anbieter",
       "section1_title": "1. Geltungsbereich der AGB",
-      "info_email_value": "info@roysshack.hu"
+      "info_email_value": "info@roysshack.hu",
+      "withdrawal_title": "5a. Widerrufsrecht",
+      "withdrawal_text": "Gemäß der EU-Verbraucherrechterichtlinie (2011/83/EU) haben Verbraucher das Recht, von Fernabsatzverträgen zurückzutreten.",
+      "withdrawal_period": "14-tägiges Widerrufsrecht",
+      "withdrawal_details": "Sie können Ihre Vertragserklärung innerhalb von 14 Tagen ohne Angabe von Gründen widerrufen. Die Widerrufsfrist beträgt 14 Tage ab dem Tag, an dem Sie die Waren in Besitz genommen haben. Um Ihr Widerrufsrecht auszuüben, müssen Sie uns mittels einer eindeutigen Erklärung (z.B. per E-Mail) informieren.",
+      "complaints_title": "5b. Beschwerden und Streitbeilegung",
+      "complaints_text": "Beschwerden richten Sie bitte an support@roysshack.hu. Wir antworten innerhalb von 30 Tagen.",
+      "odr_text": "Europäische Verbraucher können auch die EU-Plattform zur Online-Streitbeilegung nutzen:"
     },
     "cookies": {
       "preferences_badge": "Einstellungen",
@@ -343,7 +350,9 @@
     "increase_quantity": "Menge erhöhen",
     "not_found": "Produkt nicht gefunden",
     "not_found_desc": "Das gesuchte Produkt existiert nicht oder wurde entfernt.",
-    "back_to_products": "Zurück zu den Produkten"
+    "back_to_products": "Zurück zu den Produkten",
+    "image_deleted": "Bild erfolgreich gelöscht",
+    "delete_error": "Bild konnte nicht gelöscht werden"
   },
   "common": {
     "next_page": "Nächste Seite",
@@ -363,7 +372,9 @@
     "clear": "Löschen",
     "cancel": "Abbrechen",
     "scroll_right": "Nach rechts scrollen",
-    "added_to_cart": "Zum Warenkorb hinzugefügt"
+    "added_to_cart": "Zum Warenkorb hinzugefügt",
+    "edit": "Bearbeiten",
+    "added": "Hinzugefügt!"
   },
   "home": {
     "featured": {
@@ -439,6 +450,14 @@
     "items": "Artikel"
   },
   "admin": {
+    "order_actions": {
+      "cancel": "Bestellung zurücksetzen",
+      "cancel_title": "Bestellung zurücksetzen",
+      "cancel_text": "Sind Sie sicher, dass Sie die Bestellung absagen?",
+      "confirm_cancel": "Ja, ich werde die Bestellung absagen.",
+      "status_updated": "Bestellstatus aktualisiert.",
+      "error": "Die Bestellung kann nicht aktualisiert werden. Bitte versuchen Sie es noch einmal."
+    },
     "toggle_sidebar": "Seitenleiste umschalten",
     "table": {
       "orders": "Bestellungen",
@@ -461,7 +480,100 @@
       "category": "Kategorie",
       "actions": "Aktionen",
       "items": "Artikel",
-      "price": "Preis"
+      "price": "Preis",
+      "brand": "Marke",
+      "billing": "Rechnungsstellung",
+      "view_images": "Bilder anzeigen",
+      "images": "Bilder"
+    },
+    "gallery": {
+      "title": "Produkt-Bilder",
+      "upload": "Uploaden",
+      "delete_image": "Bild löschen",
+      "confirm_delete_title": "Sind Sie sicher, dass Sie die Bilder löschen?",
+      "confirm_delete_text": "Diese Maßnahme darf nicht widerrufen werden. Bild wird vollständig gelöscht.",
+      "details": "Abbildung 1 Details",
+      "download": "Downloaden",
+      "transparent": "Transparent",
+      "transparent_hint": "Wenn aktiviert, entfernt das Backend automatisch den Bildhintergrund",
+      "meta": {
+        "filename": "Dateiname",
+        "type": "Typus",
+        "resolution": "Auflösung",
+        "size": "Dateigröße",
+        "modified": "zuletzt geändert"
+      }
+    },
+    "user_actions": {
+      "actions": "Aktionen",
+      "set_role": "Recht",
+      "ban": "Verbot",
+      "unban": "Verbot aufheben",
+      "delete": "Benutzer löschen",
+      "you": "Du",
+      "confirm_role_title": "Änderung der Berechtigung",
+      "confirm_role_text": "{{name}} Berechtigung ändern: {{state}}?",
+      "confirm_ban_title": "Benutzer deaktivieren",
+      "confirm_ban_text": "Gibt es ein Verbot von {{name}}? Sie verlieren den Zugang zu Ihrem Konto..",
+      "confirm_unban_title": "Benutzer auflösen",
+      "confirm_unban_text": "{{name}} Verbot auflösen? Ihr Benutzerkonto wird wieder auf Verified eingestellt.",
+      "confirm_delete_title": "Benutzer löschen",
+      "confirm_delete_text": "Wird {{name}} dauerhaft gelöscht? Kann nicht zurückgezogen werden.",
+      "success": "Benutzer erfolgreich aktualisiert.",
+      "banned": "Benutzer deaktiviert.",
+      "deleted": "Benutzer gelöscht.",
+      "error": "Fehler bei der Durchführung der Operation. Bitte versuchen Sie es erneut."
+    },
+    "posts_form": {
+      "add": "Neuer Beitrag",
+      "add_title": "Neuer Beitrag",
+      "edit_title": "Beitrag bearbeiten",
+      "save": "Speichern",
+      "create": "Beitrag erstellen",
+      "delete": "Beitrag löschen",
+      "search_placeholder": "Beiträge suchen... (title:vitamin, status:draft)",
+      "no_posts": "Keine Beiträge gefunden.",
+      "featured": "Hervorgehoben",
+      "col_title": "Titel",
+      "col_views": "Aufrufe",
+      "col_likes": "Gefällt mir",
+      "col_comments": "Kommentare",
+      "manage_images": "Bilder verwalten",
+      "section_meta": "Beitragsdetails",
+      "section_settings": "Einstellungen",
+      "section_content": "Inhalt",
+      "section_images": "Bilder",
+      "title": "Titel",
+      "title_placeholder": "z.B. Wintervitamine und Nahrungsergänzungsmittel",
+      "slug": "Slug (URL)",
+      "regenerate_slug": "Aus Titel neu generieren",
+      "excerpt": "Kurztext",
+      "excerpt_placeholder": "Kurze Zusammenfassung für die Vorschau...",
+      "cover_image_url": "Titelbild-URL",
+      "content": "Inhalt (HTML)",
+      "content_hint": "HTML-Tags sind erlaubt. Betten Sie Bilder ein, indem Sie deren URL aus dem Bilder-Tab kopieren.",
+      "content_placeholder": "<p>Beitragsinhalt hier...</p>",
+      "tags": "Tags",
+      "tags_hint": "Kommagetrennt: vitamin,gesundheit,winter",
+      "status_draft": "Entwurf",
+      "status_published": "Veröffentlicht",
+      "status_hidden": "Versteckt",
+      "status_archived": "Archiviert",
+      "images_hint": "Laden Sie Bilder hoch, um sie in den Beitragsinhalt einzubetten. Kopieren Sie die URL und fügen Sie sie als <img>-Tag im Inhalt-Tab ein.",
+      "open_gallery": "Bildergalerie öffnen",
+      "save_first_for_images": "Speichern Sie zuerst den Beitrag, dann können Sie Bilder verwalten.",
+      "copy_url": "URL kopieren",
+      "copy_url_hint": "Klicken Sie auf ein Bild, um seine URL zu kopieren und in den Inhalt einzubetten.",
+      "gallery_title": "Beitragsbilder",
+      "no_images_yet": "Noch keine Bilder hochgeladen. Verwenden Sie die Upload-Schaltfläche.",
+      "confirm_delete_title": "Beitrag löschen",
+      "confirm_delete_text": "\"{{title}}\" dauerhaft löschen? Dies kann nicht rückgängig gemacht werden.",
+      "created": "Beitrag erfolgreich erstellt.",
+      "updated": "Beitrag erfolgreich aktualisiert.",
+      "deleted": "Beitrag erfolgreich gelöscht.",
+      "save_error": "Beitrag konnte nicht gespeichert werden.",
+      "delete_error": "Beitrag konnte nicht gelöscht werden.",
+      "error_title_required": "Titel des Beitrags ist erforderlich."
     },
     "stats": {
       "this_week": "diese Woche",
@@ -479,7 +591,8 @@
       "orders": "Bestellungen",
       "users": "Benutzer",
       "dashboard": "Dashboard",
-      "products": "Produkte"
+      "products": "Produkte",
+      "posts": "Beiträge"
     },
     "search_products": "Produkte suchen...",
     "loading": "Daten werden geladen...",
@@ -490,7 +603,12 @@
     "search_orders": "Bestellungen suchen...",
     "recent_orders": "Neueste Bestellungen",
     "no_orders": "Keine Bestellungen gefunden.",
-    "greeting": "Willkommen, {{name}}!"
+    "greeting": "Willkommen, {{name}}!",
+    "errors": {
+      "orders_load_failed": "Fehler beim Laden der Produkte!",
+      "users_load_failed": "Fehler beim Laden der Benutzer!",
+      "posts_load_failed": "Fehler beim Laden der Beiträge."
+    }
   },
   "footer": {
     "contactInfo": "Kontaktinformationen",
@@ -527,7 +645,8 @@
     "filters": "Filter",
     "advanced_filters": "Erweiterte Filter",
     "toggle_filters": "Filter ein-/ausblenden",
-    "sort_by": "Sortieren nach"
+    "sort_by": "Sortieren nach",
+    "search_placeholder": "Produkte suchen..."
   },
   "checkout": {
     "invalid_phone": "Bitte geben Sie eine gültige Telefonnummer ein.",
@@ -558,7 +677,20 @@
     "house_number_placeholder": "z.B. 42",
     "phone": "Telefonnummer",
     "note": "Bestellhinweise",
-    "phone_placeholder": "+49 176 123 4567"
+    "phone_placeholder": "+49 176 123 4567",
+    "guest_notice": "Sie kaufen als Gast ein. Geben Sie Ihre E-Mail und Ihren Namen ein, damit wir Ihnen die Bestellbestätigung senden können.",
+    "email": "E-Mail-Adresse",
+    "email_placeholder": "ihre@email.de",
+    "billing_name": "Vollständiger Name",
+    "billing_name_placeholder": "Max Mustermann",
+    "guest_fields_required": "E-Mail und Name sind für den Gastkauf erforderlich.",
+    "invalid_email": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+    "pdf_downloaded": "Über die Bestätigung der Bestellung wurde pdf heruntergeladen",
+    "download_again": "Herunterladen nochmal",
+    "accept_terms_prefix": "Ich habe die",
+    "accept_terms_link": "AGB und Datenschutzerklärung",
+    "accept_terms_suffix": "gelesen und akzeptiere sie.",
+    "terms_required": "Sie müssen die AGB akzeptieren, um eine Bestellung aufzugeben."
   },
   "header": {
     "my_orders": "Meine Bestellungen",
@@ -635,5 +767,39 @@
     "browse_products": "Produkte entdecken",
     "quick_links": "Oder springe zu",
     "quick_links_label": "Schnellnavigation"
+  },
+  "danger": {
+    "confirm_password": "Mit Passwort bestätigen",
+    "delete_account": "Konto löschen",
+    "delete_btn": "Kontolöschung anfordern",
+    "delete_desc": "Ihr Konto und alle zugehörigen Daten – einschließlich Bestellverlauf, Bewertungen und persönliche Informationen – werden dauerhaft gelöscht. Zur Bestätigung wird eine E-Mail gesendet.",
+    "email_sent_desc": "Überprüfen Sie Ihren Posteingang und klicken Sie auf den Link, um die Kontolöschung zu bestätigen. Der Link ist 7 Tage gültig.",
+    "email_sent_title": "Bestätigungs-E-Mail gesendet",
+    "password_hint": "Zur Bestätigung wird ein Link an Ihre E-Mail-Adresse gesendet. Ihr Konto wird erst nach dem Klick auf den Link gelöscht.",
+    "password_placeholder": "Geben Sie Ihr aktuelles Passwort ein",
+    "subtitle": "Unwiderrufliche Kontoaktionen",
+    "warning_banner": "Die Aktionen auf dieser Seite sind endgültig und können nicht rückgängig gemacht werden. Bitte gehen Sie mit Vorsicht vor."
+  },
+  "errors": {
+    "current_password_required": "Bitte geben Sie Ihr aktuelles Passwort ein.",
+    "delete_failed": "Die Löschanfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "name_required": "Vorname und Nachname sind erforderlich.",
+    "new_password_too_short": "Das neue Passwort muss mindestens 6 Zeichen lang sein.",
+    "password_change_failed": "Passwortänderung fehlgeschlagen. Überprüfen Sie Ihr aktuelles Passwort und versuchen Sie es erneut.",
+    "passwords_do_not_match": "Die neuen Passwörter stimmen nicht überein.",
+    "update_failed": "Profilaktualisierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+  },
+  "orders": {
+    "browse_products": "Produkte durchstöbern",
+    "empty_desc": "Sie haben noch keine Bestellungen aufgegeben. Stöbern Sie in unserem Produktkatalog!",
+    "empty_title": "Noch keine Bestellungen",
+    "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung"
+  },
+  "success": {
+    "profile_updated": "Ihr Profil wurde erfolgreich aktualisiert."
+  },
+  "account": {
+    "empty_fields": "Du hast ein paar Felder leer gelassen.",
+    "bad_request": "Ungültige Anfrage"
   }
 }

@@ -23,7 +23,7 @@ namespace Servo.service
             {
                 resp = model.get_all_product_categories.communicate_get_all_product_categories();
             }
-            catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.get_all_products.process_get_all_product_categories"); }
+            catch (Exception ex) { service.shared.log($"Error 1: {ex.Message} --service.get_all_product_categories.process_get_all_product_categories"); }
 
 
             /*try
@@ -48,7 +48,7 @@ namespace Servo.service
 
             if (resp["statuscode"].ToString() == "500")
             {
-                shared.log($"Debug 1: {resp["status"]} --service.get_all_products.process_get_all_product_categories");
+                shared.log($"Debug 1: {resp["status"]} --service.get_all_product_categories.process_get_all_product_categories");
                 return "error";
             }
             else

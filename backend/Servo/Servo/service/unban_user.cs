@@ -17,7 +17,7 @@ namespace Servo.service
 
             string admin_accstate = model.shared.get_account_state_by_id(controller_admin_id);
             string target_accstate = model.shared.get_account_state_by_id(controller_target_user_id);
-            string model_sesstoken = model.shared.get_token_by_id(controller_sesstoken);
+            string model_sesstoken = model.shared.get_token_by_id(controller_admin_id);
 
             if (model_sesstoken == controller_sesstoken && (admin_accstate == "admin" || admin_accstate == "superadmin"))
             {

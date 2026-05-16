@@ -145,7 +145,7 @@ namespace Servo.controller
             }
             finally
             {
-                data.Response.OutputStream.Close();
+                controller.router.safe_close(data);
             }
         }
 

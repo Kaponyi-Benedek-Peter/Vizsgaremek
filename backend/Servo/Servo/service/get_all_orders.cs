@@ -30,7 +30,7 @@ namespace Servo.service
 
 
 
-            if (accstate == "admin")
+            if (accstate == "admin" || accstate == "superadmin")
             {
 
 
@@ -53,7 +53,13 @@ namespace Servo.service
                     if (resp["statuscode"].ToString() == "500")
                     {
                         shared.log($"Debug 1: {resp["status"]} --service.get_all_orders.process_get_all_orders");
-                        return (500, "internal error");
+                        if (resp["status"] == "404")
+                        {
+                            return (401, "incorrect_credentials");
+                        }
+                        else { 
+                            return (500, "internal error");
+                        }
                     }
                     else
                     {
@@ -68,8 +74,6 @@ namespace Servo.service
                         }
 
 
-
-                        return (500, "internal error");
 
 
                     }
@@ -86,7 +90,7 @@ namespace Servo.service
 
                 else
                 {
-                    return (401, "wrong_token"); ;
+                    return (403, "wrong_token"); ;
                 }
 
 

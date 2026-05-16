@@ -190,7 +190,14 @@
       "section4_title": "4. Árak és fizetés",
       "section2_title": "2. A szolgáltató adatai",
       "section1_title": "1. Az általános szerződési feltételek hatálya",
-      "info_email_value": "info@roysshack.hu"
+      "info_email_value": "info@roysshack.hu",
+      "withdrawal_title": "5a. Elállási jog",
+      "withdrawal_text": "Az EU 2011/83/EU fogyasztóvédelmi irányelve és a 45/2014. (II. 26.) Korm. rendelet értelmében a fogyasztónak joga van a távollévők között kötött szerződéstől elállni.",
+      "withdrawal_period": "14 napos elállási jog",
+      "withdrawal_details": "A termék kézhezvételétől számított 14 napon belül indoklás nélkül elállhat a szerződéstől. Elállási szándékát egyértelmű nyilatkozattal (pl. e-mail útján) kell jeleznie. Érvényes elállás esetén az átvételtől számított 14 napon belül visszatérítjük a kifizetett összeget, beleértve a standard szállítási költséget.",
+      "complaints_title": "5b. Panaszkezelés és vitarendezés",
+      "complaints_text": "Panaszait a support@roysshack.hu e-mail címen jelezheti. Panaszára 30 napon belül válaszolunk.",
+      "odr_text": "Európai fogyasztók az EU online vitarendezési platformját is igénybe vehetik:"
     },
     "cookies": {
       "preferences_badge": "Beállítások",
@@ -373,7 +380,9 @@
     "increase_quantity": "Mennyiség növelése",
     "not_found": "A termék nem található",
     "not_found_desc": "A keresett termék nem létezik vagy eltávolításra került.",
-    "back_to_products": "Vissza a termékekhez"
+    "back_to_products": "Vissza a termékekhez",
+    "image_deleted": "Kép sikeresen törölve",
+    "delete_error": "Nem sikerült törölni a képet"
   },
   "common": {
     "next_page": "Következő oldal",
@@ -393,7 +402,9 @@
     "clear": "Törlés",
     "cancel": "Mégse",
     "scroll_right": "Görgetés jobbra",
-    "added_to_cart": "Kosárba helyezve"
+    "added_to_cart": "Kosárba helyezve",
+    "edit": "Szerkesztés",
+    "added": "Hozzáadva!"
   },
   "home": {
     "featured": {
@@ -445,7 +456,6 @@
     "back_to_forum": "Vissza a fórumhoz",
     "submit_comment": "Hozzászólás küldése",
     "comment_edited": "szerkesztve",
-
     "empty_title": "Még nincsenek posztok",
     "empty_description": "Sajnos még senki sem írt ide... Leszel te az első?",
     "error_title": "Nem sikerült betölteni",
@@ -470,6 +480,14 @@
     "items": "termék"
   },
   "admin": {
+    "order_actions": {
+      "cancel": "Rendelés lemondása",
+      "cancel_title": "Rendelés lemondása",
+      "cancel_text": "Biztosan lemondja a rendelést?",
+      "confirm_cancel": "Igen, lemondom a rendelést",
+      "status_updated": "Rendelés állapota frissült.",
+      "error": "Nem sikerült frissíteni a rendelését. Kérjük próbálja újra."
+    },
     "toggle_sidebar": "Oldalsáv váltás",
     "table": {
       "orders": "Rendelések",
@@ -492,7 +510,100 @@
       "category": "Kategória",
       "actions": "Műveletek",
       "items": "Tételek",
-      "price": "Ár"
+      "price": "Ár",
+      "brand": "Márka",
+      "billing": "Számlázás",
+      "view_images": "Képek megtekintése",
+      "images": "Képek"
+    },
+    "gallery": {
+      "title": "Termék képek",
+      "upload": "Feltöltés",
+      "delete_image": "Kép törlése",
+      "confirm_delete_title": "Biztosan törli a képeket?",
+      "confirm_delete_text": "Ez a művelet nem visszavonható. A kép teljesen törölve lesz.",
+      "details": "Kép részletek",
+      "download": "Letöltés",
+      "transparent": "Átlátszó",
+      "transparent_hint": "Bekapcsolva a backend automatikusan eltávolítja a kép hátterét",
+      "meta": {
+        "filename": "Fájlnév",
+        "type": "Típus",
+        "resolution": "Felbontás",
+        "size": "Fájl méret",
+        "modified": "Utoljára módosítva"
+      }
+    },
+    "user_actions": {
+      "actions": "Műveletek",
+      "set_role": "Jogosultság",
+      "ban": "Tiltás",
+      "unban": "Tiltás feloldása",
+      "delete": "Felhasználó törlése",
+      "you": "Te",
+      "confirm_role_title": "Jogosultság módosítása",
+      "confirm_role_text": "{{name}} jogosultságát módosítod: {{state}}?",
+      "confirm_ban_title": "Felhasználó tiltása",
+      "confirm_ban_text": "Tiltod {{name}} fiókját? Elveszíti a hozzáférését.",
+      "confirm_unban_title": "Tiltás feloldása",
+      "confirm_unban_text": "Feloldod {{name}} tiltását? A fiókja visszaáll verified állapotra.",
+      "confirm_delete_title": "Felhasználó törlése",
+      "confirm_delete_text": "Véglegesen törlöd {{name}} fiókját? Ez nem visszavonható.",
+      "success": "Felhasználó frissítve.",
+      "banned": "Felhasználó tiltva.",
+      "deleted": "Felhasználó törölve.",
+      "error": "A művelet sikertelen. Próbáld újra."
+    },
+    "posts_form": {
+      "add": "Új bejegyzés",
+      "add_title": "Új bejegyzés",
+      "edit_title": "Bejegyzés szerkesztése",
+      "save": "Mentés",
+      "create": "Bejegyzés létrehozása",
+      "delete": "Bejegyzés törlése",
+      "search_placeholder": "Bejegyzések keresése... (title:vitamin, status:draft)",
+      "no_posts": "Nem található bejegyzés.",
+      "featured": "Kiemelt",
+      "col_title": "Cím",
+      "col_views": "Megtekintés",
+      "col_likes": "Tetszések",
+      "col_comments": "Hozzászólások",
+      "manage_images": "Képek kezelése",
+      "section_meta": "Bejegyzés adatai",
+      "section_settings": "Beállítások",
+      "section_content": "Tartalom",
+      "section_images": "Képek",
+      "title": "Cím",
+      "title_placeholder": "pl. Téli vitaminok és kiegészítők",
+      "slug": "Slug (URL)",
+      "regenerate_slug": "Újragenerálás a címből",
+      "excerpt": "Rövid leírás",
+      "excerpt_placeholder": "Rövid összefoglaló, ami a bejegyzéskártyán jelenik meg...",
+      "cover_image_url": "Borítókép URL",
+      "content": "Tartalom (HTML)",
+      "content_hint": "HTML tagek használhatók. A képeket az URL másolásával ágyazhatod be a tartalomba.",
+      "content_placeholder": "<p>Ide kerül a bejegyzés tartalma...</p>",
+      "tags": "Tagek",
+      "tags_hint": "Vesszővel elválasztva: vitamin,egészség,tél",
+      "status_draft": "Piszkozat",
+      "status_published": "Publikált",
+      "status_hidden": "Rejtett",
+      "status_archived": "Archivált",
+      "images_hint": "Tölts fel képeket a bejegyzés tartalmába ágyazáshoz. Másold ki az URL-t és illeszd be <img> tagként a Tartalom fülön.",
+      "open_gallery": "Képgaléria megnyitása",
+      "save_first_for_images": "Először mentsd el a bejegyzést, utána lehet képeket kezelni.",
+      "copy_url": "URL másolása",
+      "copy_url_hint": "Kattints egy képre az URL másolásához, hogy beágyazhasd a tartalomba.",
+      "gallery_title": "Bejegyzés képei",
+      "no_images_yet": "Még nincs feltöltött kép. Használd a Feltöltés gombot.",
+      "confirm_delete_title": "Bejegyzés törlése",
+      "confirm_delete_text": "Véglegesen törlöd a(z) \"{{title}}\" bejegyzést? Ez nem vonható vissza.",
+      "created": "Bejegyzés sikeresen létrehozva.",
+      "updated": "Bejegyzés sikeresen frissítve.",
+      "deleted": "Bejegyzés sikeresen törölve.",
+      "save_error": "Nem sikerült menteni a bejegyzést.",
+      "delete_error": "Nem sikerült törölni a bejegyzést.",
+      "error_title_required": "A bejegyzés címe kötelező."
     },
     "stats": {
       "this_week": "ezen a héten",
@@ -510,7 +621,8 @@
       "orders": "Rendelések",
       "users": "Felhasználók",
       "dashboard": "Vezérlőpult",
-      "products": "Termékek"
+      "products": "Termékek",
+      "posts": "Bejegyzések"
     },
     "search_products": "Termékek keresése...",
     "loading": "Adatok betöltése...",
@@ -521,7 +633,12 @@
     "search_orders": "Rendelések keresése...",
     "recent_orders": "Legutóbbi rendelések",
     "no_orders": "Nem találhatók rendelések.",
-    "greeting": "Üdvözöljük, {{name}}!"
+    "greeting": "Üdvözöljük, {{name}}!",
+    "errors": {
+      "orders_load_failed": "Hiba történt a termékek betöltésekor!",
+      "users_load_failed": "Hiba történt a felhasználók betöltésekor!",
+      "posts_load_failed": "Hiba történt a bejegyzések betöltésekor."
+    }
   },
   "footer": {
     "contactInfo": "Kapcsolati információk",
@@ -558,7 +675,8 @@
     "filters": "Szűrők",
     "advanced_filters": "Részletes szűrés",
     "toggle_filters": "Szűrők megjelenítése/elrejtése",
-    "sort_by": "Rendezés"
+    "sort_by": "Rendezés",
+    "search_placeholder": "Termékek keresése..."
   },
   "checkout": {
     "invalid_phone": "Kérjük, adjon meg érvényes telefonszámot.",
@@ -589,7 +707,20 @@
     "house_number_placeholder": "pl. 42",
     "phone": "Telefonszám",
     "note": "Megjegyzés",
-    "phone_placeholder": "+36 30 123 4567"
+    "phone_placeholder": "+36 30 123 4567",
+    "guest_notice": "Vendégként vásárolsz. Add meg az email címed és a neved, hogy elküldhessük a rendelés visszaigazolást.",
+    "email": "Email cím",
+    "email_placeholder": "pelda@email.com",
+    "billing_name": "Teljes név",
+    "billing_name_placeholder": "Kovács Béla",
+    "guest_fields_required": "Vendég vásárláshoz email és név szükséges.",
+    "invalid_email": "Kérjük, adj meg egy érvényes email címet.",
+    "pdf_downloaded": "A rendelés visszaigazolásáról a pdf le lett töltve",
+    "download_again": "Letöltés újra",
+    "accept_terms_prefix": "Elolvastam és elfogadom az",
+    "accept_terms_link": "Általános Szerződési Feltételeket és az Adatvédelmi tájékoztatót",
+    "accept_terms_suffix": "",
+    "terms_required": "A rendelés leadásához el kell fogadnia az ÁSZF-et."
   },
   "header": {
     "my_orders": "Rendeléseim",
@@ -666,5 +797,9 @@
     "browse_products": "Termékek böngészése",
     "quick_links": "Vagy ugorj ide",
     "quick_links_label": "Gyors navigáció"
+  },
+  "account": {
+    "bad_request": "Hibás kérés",
+    "empty_fields": "Néhány mezőt üresen hagytál"
   }
 }

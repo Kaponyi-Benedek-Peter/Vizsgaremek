@@ -11,7 +11,7 @@ namespace Servo.model
     internal class get_all_products
     {
 
-        static MySqlConnection conn = model.shared.conn;
+        
 
 
 
@@ -25,9 +25,14 @@ namespace Servo.model
                 { "status", "success" },
                 { "products", new List<Dictionary<string, string>>() }
             };
-
+            MySqlConnection conn = null;
             try
             {
+
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
+
+
                 using (MySqlCommand cmd = new MySqlCommand("get_all_products", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -47,7 +52,7 @@ namespace Servo.model
                                       "stock", "sale_percentage", 
                                        
                                       "category_id", "manufacturer", "brand",
-                                      "rating", "sku", "active_ingredients", "packaging", "created_at",
+                                      "rating", "sku", "active_ingredients", "packaging_de",  "packaging_en", "packaging_hu","created_at",
                                       "updated_at" };
 
                             foreach (string field in fields)
@@ -57,7 +62,7 @@ namespace Servo.model
 
                             product["price_usd"] = service.shared.exchange(Convert.ToDouble(product["price_huf"]))[0].ToString();
                             product["price_eur"] = service.shared.exchange(Convert.ToDouble(product["price_huf"]))[1].ToString();
-                            product["thumbnail_url"] = service.shared.current_url + "assets/products/" + product["id"] + "/thumbnail.webp";
+                            product["thumbnail_url"] = service.shared.current_url + "assets/products/" + product["id"] + "/1.webp";
 
 
                             products.Add(product);
@@ -72,9 +77,15 @@ namespace Servo.model
             {
                 service.shared.log($"Error 1: {ex.Message} --model.get_all_products.communicate_get_all_products");
                 result["statuscode"] = "500";
-                result["status"] = "unknown error";
+                result["status"] = "internal_error";
 
             }
+            finally
+            {
+               
+                if (conn != null) conn.Dispose();
+            }
+
 
             return result;
         }

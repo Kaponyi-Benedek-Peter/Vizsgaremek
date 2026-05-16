@@ -12,14 +12,14 @@ namespace Servo.model
     internal class get_all_posts
     {
 
-        static MySqlConnection conn = model.shared.conn;
-
+         
 
 
 
 
         public static Dictionary<string, object> communicate_get_all_posts(string category)
-        {
+        {MySqlConnection conn = null;
+
             var result = new Dictionary<string, object>
             {
                 { "statuscode", "200" },
@@ -29,6 +29,8 @@ namespace Servo.model
 
             try
             {
+                conn = new MySqlConnection(model.shared.connStr);
+                conn.Open();
                 using (MySqlCommand cmd = new MySqlCommand("get_all_posts", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -71,8 +73,15 @@ namespace Servo.model
             {
                 service.shared.log($"Error 1: {ex.Message} --model.get_all_products.communicate_get_all_posts");
                 result["statuscode"] = "500";
-                result["status"] = "unknown error";
+                result["status"] = "internal_error";
 
+            }
+            finally
+            {
+                if (conn != null)
+                {
+                    conn.Close();
+                }
             }
 
             return result;

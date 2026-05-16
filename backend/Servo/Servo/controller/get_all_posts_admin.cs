@@ -41,7 +41,7 @@ namespace Servo.controller
                 {
                     JObject jsonObj = JObject.Parse(lenyeg);
                     category = service.shared.b64dec(jsonObj["category"].ToString());
-                    sesstoken = service.shared.b64dec(jsonObj["sesstoken"].ToString());
+                    sesstoken = service.shared.b64dec(jsonObj["session_token"].ToString());
                     user_id = service.shared.b64dec(jsonObj["user_id"].ToString());
 
                 }
@@ -154,7 +154,7 @@ namespace Servo.controller
             }
             finally
             {
-                data.Response.OutputStream.Close();
+                controller.router.safe_close(data);
             }
         }
 

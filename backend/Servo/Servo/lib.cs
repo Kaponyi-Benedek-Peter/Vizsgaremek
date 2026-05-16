@@ -1,5 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
+using Servo.controller;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,7 +19,7 @@ namespace Servo
     public class shared
     {
 
-        public void start_server(int port)
+        public async Task start_server(int port, Boolean honeypot, Boolean ddosprotection)
         {
             //service.shared.log("[starting server 1.1]");
 
@@ -42,39 +43,95 @@ namespace Servo
             cts = new CancellationTokenSource();
             var token = cts.Token;
 
+
+            ThreadPool.SetMinThreads(100, 100); // no befagyas
+
+
             server_main = Task.Factory.StartNew(() =>
             {
-                service.shared.log("[! server started !]");
-                //service.shared.log("[starting server 3]");
+                service.shared.log("[! server started !]", "server");
+
+                while (isrunning)
+                {
+                    try
+                    {
+                        
+                        HttpListenerContext context = hallgatozo.GetContext();
+
+                      
+                        ThreadPool.QueueUserWorkItem(o =>
+                        {
+                            try
+                            {
+                                controller.router.main(context, service.shared.baseDir,ddosprotection);
+                            }
+                            catch { }
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        
+                        if (!isrunning) break;
+                        Thread.Sleep(100);
+                    }
+                }
+            }, TaskCreationOptions.LongRunning);
+
+
+
+
+            if (honeypot) { 
+            honeypotport = Task.Factory.StartNew(() =>
+            {
+
+
+                HttpListener trap = new HttpListener();
+                trap.Prefixes.Add("http://+:8080/");
+                trap.Prefixes.Add("http://+:3000/");
+                trap.Prefixes.Add("http://+:3001/");
+                trap.Prefixes.Add("http://+:4200/");
+                trap.Prefixes.Add("http://+:5000/");
+                trap.Prefixes.Add("http://+:8888/");
+                trap.Prefixes.Add("http://+:4000/");
+                trap.Prefixes.Add("http://+:6379/");
+                trap.Prefixes.Add("http://+:1433/");
+                trap.Prefixes.Add("http://+:5984/");
+                trap.Prefixes.Add("http://+:9090/");
+                trap.Prefixes.Add("http://+:2375/");
+                trap.Prefixes.Add("http://+:21/");
+                trap.Prefixes.Add("http://+:23/");
+                trap.Prefixes.Add("http://+:2222/");
+                trap.Prefixes.Add("http://+:4444/");
+
+
+                trap.Prefixes.Add("http://+:514/");
+                trap.Prefixes.Add("http://+:513/");
+                trap.Prefixes.Add("http://+:512/");
+                
+                trap.Start();
+                service.shared.log("[honeypot started]", "server");
+
                 while (!token.IsCancellationRequested)
                 {
                     try
                     {
-                      
-                        //service.shared.log("[starting server 4]");
-                        HttpListenerContext context = hallgatozo.GetContext();
-                        ThreadPool.QueueUserWorkItem(o => controller.router.main(context, service.shared.baseDir));
-
-                        //Form1.Instance.updateconnections();
-                        //service.shared.log("[starting server 5]");
-                        
+                        HttpListenerContext ctx = trap.GetContext();
+                        string ip = ctx.Request.RemoteEndPoint.Address.ToString();
+                        router.honeypot_ips.Add(ip);
+                        service.shared.log($"[honeypot hit] {ip}", "server");
+                        //ctx.Response.StatusCode = 404;
+                        ctx.Response.Close();
                     }
-                    catch (HttpListenerException ex) when (token.IsCancellationRequested)
+                    catch (Exception ex) when (!token.IsCancellationRequested)
                     {
-
-                        service.shared.log("[server stopped 1/1]");
-                    }
-                    catch (Exception ex)
-                    {
-
-                        service.shared.log($"Error 1: {ex.Message} --lib.shared.start_server > server");
+                        service.shared.log($"Error: {ex.Message} --honeypot", "server");
                     }
                 }
-                
+
+                trap.Stop();
             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
-
-
+            }
 
 
             email_auth_refresh = Task.Factory.StartNew(() =>
@@ -88,7 +145,7 @@ namespace Servo
                     }
                     catch (Exception ex)
                     {
-                        service.shared.log($"Error 2: {ex.Message} --lib.shared.start_server > email_auth refresh");
+                        service.shared.log($"Error 2: {ex.Message} --lib.shared.start_server > email_auth refresh", "server");
                     }
 
                      
@@ -114,12 +171,12 @@ namespace Servo
 
                             service.shared.eur = (double)data.rates.EUR;
                             service.shared.usd = (double)data.rates.USD;
-                            service.shared.log($"[exchange rate fetched succesfully]");
+                            service.shared.log($"[exchange rate fetched succesfully]", "server");
                         }
                     }
                     catch (Exception ex)
                     {
-                        service.shared.log($"Error 3: {ex.Message} --lib.shared > exhange_rates");
+                        service.shared.log($"Error 3: {ex.Message} --lib.shared > exhange_rates", "server");
                     }
 
                     Thread.Sleep(3000000);
@@ -128,7 +185,28 @@ namespace Servo
 
 
 
+            /* anti_ddos = Task.Factory.StartNew(() =>
+             {
+                 while (!token.IsCancellationRequested)
+                 {
+                     router.connectioncounts.Clear();
 
+                     Thread.Sleep(10000);
+                 }
+             }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            */
+
+
+             iplog = Task.Factory.StartNew(() =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    router.connectioncounts.Clear();
+                    
+                    Thread.Sleep(10000);
+                }
+            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+           
 
 
         }
@@ -142,8 +220,14 @@ namespace Servo
         public Task email_auth_refresh;
 
         public Task newsletter_main;
+        public Task honeypotport;
 
         public Task exchange_rates;
+        
+        //public Task anti_ddos;
+
+        public Task iplog;
+
 
 
         public CancellationTokenSource cts;
