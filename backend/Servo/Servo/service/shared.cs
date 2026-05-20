@@ -42,7 +42,9 @@ namespace Servo.service
             {
                 try
                 {
-                    toReturn = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(toReturn));
+                    string decoded = Encoding.UTF8.GetString(Convert.FromBase64String(toReturn));
+                    if (decoded == toReturn) break; 
+                    toReturn = decoded;
                 }
                 catch (FormatException)
                 {

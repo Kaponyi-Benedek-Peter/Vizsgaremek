@@ -16,7 +16,6 @@ namespace Servo.controller
             string product_id = "";
             string image_b64 = "";
 
-            string transparency = "";
 
             try
             {
@@ -34,7 +33,6 @@ namespace Servo.controller
                     sesstoken = service.shared.b64dec(jsonObj["admin_session_token"].ToString());
                     product_id = service.shared.b64dec(jsonObj["product_id"].ToString());
 
-                    transparency = service.shared.b64dec(jsonObj["transparency"].ToString());
                     image_b64 = jsonObj["image_b64"].ToString();
                 }
                 catch
@@ -49,7 +47,7 @@ namespace Servo.controller
                 service.shared.log($"Image upload request: {admin_id} : product {product_id} ({data.Request.RemoteEndPoint.Address})");
 
                 string saved_filename = "";
-                int resp = service.upload_product_image_admin.process_upload_product_image(admin_id, sesstoken, product_id, image_b64, out saved_filename, transparency);
+                int resp = service.upload_product_image_admin.process_upload_product_image(admin_id, sesstoken, product_id, image_b64, out saved_filename);
 
                 if (resp == 200)
                 {

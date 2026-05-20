@@ -14,7 +14,7 @@ namespace Servo.service
     {
         private static readonly HttpClient _http = new HttpClient();
         
-        public static int process_upload_product_image(string controller_admin_id, string controller_sesstoken, string controller_product_id, string image_b64, out string saved_filename, string transparency)
+        public static int process_upload_product_image(string controller_admin_id, string controller_sesstoken, string controller_product_id, string image_b64, out string saved_filename)
         {
             saved_filename = "";
 
@@ -42,30 +42,9 @@ namespace Servo.service
 
                 byte[] result_bytes; // rembg
 
-                if (transparency == "1") { 
-
-                    using (var client = new System.Net.Http.HttpClient())
-                    {
-                        var content = new MultipartFormDataContent();
-                        content.Add(new ByteArrayContent(image_bytes), "file", "image.png");
-
-                        var response = Task.Run(() =>
-                            client.PostAsync("http://localhost:7000/api/remove", content)
-                        ).Result;
-
-                        if (!response.IsSuccessStatusCode)
-                        {
-                            var error = response.Content.ReadAsStringAsync().Result;
-                            throw new Exception($"Error: {response.StatusCode}, {error}");
-                        }
-
-                       result_bytes = response.Content.ReadAsByteArrayAsync().Result;
-                    }
-                }
-                else
-                {
+                
                     result_bytes= image_bytes;
-                }
+               
 
 
 

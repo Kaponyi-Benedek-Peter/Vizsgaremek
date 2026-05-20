@@ -29,7 +29,9 @@ namespace Servo.controller
 
                 using (StreamReader reader = new StreamReader(data.Request.InputStream, data.Request.ContentEncoding))
                 {
-                    lenyeg = reader.ReadToEnd();
+                    byte[] bodyBytes = new byte[data.Request.ContentLength64];
+                    data.Request.InputStream.Read(bodyBytes, 0, bodyBytes.Length);
+                    lenyeg = Encoding.UTF8.GetString(bodyBytes);
                 }
 
                 service.shared.log($"Body received: {lenyeg}");
@@ -40,8 +42,9 @@ namespace Servo.controller
                     category = service.shared.b64dec(jsonObj["category"].ToString());
                    
                 }
-                catch
+                catch (Exception ex)  
                 {
+                    service.shared.log("inner catch: " + ex.Message);
 
 
                     var respon = new
@@ -70,8 +73,10 @@ namespace Servo.controller
 
 
 
-
-                string resp = service.get_all_posts.process_get_all_posts(category); // SERVICE
+                service.shared.log("calling service");
+                string resp = service.get_all_posts.process_get_all_posts(category); //service
+                service.shared.log("service returned");
+            
                 if (resp != "error")
                 {
                     data.Response.StatusCode = 200;

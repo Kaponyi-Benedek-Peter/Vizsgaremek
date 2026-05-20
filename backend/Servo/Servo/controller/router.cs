@@ -519,6 +519,22 @@ namespace Servo.controller
 
 
                 }
+                else if (lenyeg.Contains("get_all_posts"))
+                {
+
+                    try
+                    {
+                      
+                        controller.get_all_posts.main(data, lenyeg);
+                    }
+                    catch (Exception ex)
+                    {
+                        service.shared.log("get_all_posts CRASH: " + ex.Message);
+                    }
+                   
+
+
+                }
                 else if (lenyeg.Contains("get_all_posts_admin"))
                 {
 
@@ -528,15 +544,7 @@ namespace Servo.controller
                     service.shared.log("1");
 
                 }
-                else if (lenyeg.Contains("get_all_posts"))
-                {
-
-                    controller.get_all_posts.main(data, lenyeg);
-
-
-
-
-                }
+               
                 else if (lenyeg.Contains("get_post_by_id"))
                 {
 

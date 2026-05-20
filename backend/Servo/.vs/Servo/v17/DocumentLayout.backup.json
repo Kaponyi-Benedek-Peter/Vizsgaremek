@@ -3,28 +3,32 @@
   "WorkspaceRootPath": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\from-github\\vizsgaremek\\backend\\servo\\servo\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\from-github\\vizsgaremek\\backend\\servo\\servo\\controller\\upload_product_image_admin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\upload_product_image_admin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\servo\\controller\\update_order_state_admin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\update_order_state_admin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\from-github\\vizsgaremek\\backend\\servo\\servo\\service\\upload_product_image_admin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\upload_product_image_admin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\servo\\service\\newsletter_subscription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\newsletter_subscription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\from-github\\vizsgaremek\\backend\\servo\\servo\\service\\upload_post_image_admin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\upload_post_image_admin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\servo\\model\\get_all_featured_products.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\model\\get_all_featured_products.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\from-github\\vizsgaremek\\backend\\servo\\servo\\controller\\router.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\router.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\servo\\service\\get_all_featured_products.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\get_all_featured_products.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\from-github\\vizsgaremek\\backend\\servo\\servo\\model\\get_all_posts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\model\\get_all_posts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\servo\\controller\\get_all_featured_products.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\get_all_featured_products.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\from-github\\vizsgaremek\\backend\\servo\\servo\\controller\\get_all_posts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\controller\\get_all_posts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|c:\\users\\nsc\\desktop\\from-github\\vizsgaremek\\backend\\servo\\servo\\service\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E85AE47-E16E-4C3A-B57D-D8403DC96856}|Servo\\Servo.csproj|solutionrelative:servo\\service\\shared.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,7 +38,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -46,76 +50,94 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "update_order_state_admin.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\update_order_state_admin.cs",
-              "RelativeDocumentMoniker": "Servo\\controller\\update_order_state_admin.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\update_order_state_admin.cs",
-              "RelativeToolTip": "Servo\\controller\\update_order_state_admin.cs",
-              "ViewState": "AgIAACIAAAAAAAAAAAAQwC0AAABSAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "upload_product_image_admin.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\upload_product_image_admin.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\upload_product_image_admin.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\upload_product_image_admin.cs",
+              "RelativeToolTip": "Servo\\controller\\upload_product_image_admin.cs",
+              "ViewState": "AgIAAFgAAAAAAAAAAAAAADEAAACZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-16T17:23:46.234Z"
+              "WhenOpened": "2026-05-20T10:04:57.269Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "upload_product_image_admin.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\service\\upload_product_image_admin.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\upload_product_image_admin.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\service\\upload_product_image_admin.cs",
+              "RelativeToolTip": "Servo\\service\\upload_product_image_admin.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABAAAAC5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-20T10:04:18.524Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "newsletter_subscription.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\service\\newsletter_subscription.cs",
-              "RelativeDocumentMoniker": "Servo\\service\\newsletter_subscription.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\service\\newsletter_subscription.cs",
-              "RelativeToolTip": "Servo\\service\\newsletter_subscription.cs",
-              "ViewState": "AgIAADUAAAAAAAAAAAAuwEAAAABHAAAAAAAAAA==",
+              "Title": "upload_post_image_admin.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\service\\upload_post_image_admin.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\upload_post_image_admin.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\service\\upload_post_image_admin.cs",
+              "RelativeToolTip": "Servo\\service\\upload_post_image_admin.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-16T17:23:27.464Z"
+              "WhenOpened": "2026-05-20T10:04:16.313Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "get_all_featured_products.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\get_all_featured_products.cs",
-              "RelativeDocumentMoniker": "Servo\\controller\\get_all_featured_products.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\get_all_featured_products.cs",
-              "RelativeToolTip": "Servo\\controller\\get_all_featured_products.cs",
-              "ViewState": "AgIAAE0AAAAAAAAAAAAwwGUAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 6,
+              "Title": "shared.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\service\\shared.cs",
+              "RelativeDocumentMoniker": "Servo\\service\\shared.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\service\\shared.cs",
+              "RelativeToolTip": "Servo\\service\\shared.cs",
+              "ViewState": "AgIAACkAAAAAAAAAAAAAAC0AAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-22T07:42:28.725Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Form1.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\Form1.cs",
-              "RelativeDocumentMoniker": "Servo\\Form1.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\Form1.cs",
-              "RelativeToolTip": "Servo\\Form1.cs",
-              "ViewState": "AgIAAOIAAAAAAAAAAAAmwO4AAAAZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-22T07:34:17.528Z",
+              "WhenOpened": "2026-05-20T09:54:29.939Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "get_all_featured_products.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\service\\get_all_featured_products.cs",
-              "RelativeDocumentMoniker": "Servo\\service\\get_all_featured_products.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\service\\get_all_featured_products.cs",
-              "RelativeToolTip": "Servo\\service\\get_all_featured_products.cs",
-              "ViewState": "AgIAADQAAAAAAAAAAAAwwEwAAAAAAAAAAAAAAA==",
+              "Title": "get_all_posts.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\model\\get_all_posts.cs",
+              "RelativeDocumentMoniker": "Servo\\model\\get_all_posts.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\model\\get_all_posts.cs",
+              "RelativeToolTip": "Servo\\model\\get_all_posts.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAAABUAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-22T07:42:34.925Z"
+              "WhenOpened": "2026-05-20T09:42:20.702Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "get_all_featured_products.cs",
-              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\model\\get_all_featured_products.cs",
-              "RelativeDocumentMoniker": "Servo\\model\\get_all_featured_products.cs",
-              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\model\\get_all_featured_products.cs",
-              "RelativeToolTip": "Servo\\model\\get_all_featured_products.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFQAAAAaAAAAAAAAAA==",
+              "Title": "router.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\router.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\router.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\router.cs",
+              "RelativeToolTip": "Servo\\controller\\router.cs",
+              "ViewState": "AgIAAAECAAAAAAAAAAAIwBUCAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-22T07:39:36.581Z"
+              "WhenOpened": "2026-05-20T09:33:34.93Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "get_all_posts.cs",
+              "DocumentMoniker": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\get_all_posts.cs",
+              "RelativeDocumentMoniker": "Servo\\controller\\get_all_posts.cs",
+              "ToolTip": "C:\\Users\\Nsc\\Desktop\\from-github\\Vizsgaremek\\backend\\Servo\\Servo\\controller\\get_all_posts.cs",
+              "RelativeToolTip": "Servo\\controller\\get_all_posts.cs",
+              "ViewState": "AgIAADgAAAAAAAAAAAAkwEwAAABJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-20T09:28:58.782Z",
+              "EditorCaption": ""
             }
           ]
         }

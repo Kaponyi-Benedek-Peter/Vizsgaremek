@@ -18,7 +18,10 @@ namespace Servo.model
 
 
         public static Dictionary<string, object> communicate_get_all_posts(string category)
-        {MySqlConnection conn = null;
+        {
+          
+
+            MySqlConnection conn = null;
 
             var result = new Dictionary<string, object>
             {
@@ -29,45 +32,62 @@ namespace Servo.model
 
             try
             {
+               
                 conn = new MySqlConnection(model.shared.connStr);
                 conn.Open();
+               
                 using (MySqlCommand cmd = new MySqlCommand("get_all_posts", conn))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("p_category_id", category);
-                    cmd.Parameters.AddWithValue("p_status", "published");
-
+                    cmd.CommandTimeout = 10;
                    
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new MySqlParameter("p_category_id", MySqlDbType.VarChar, 20)
+                    {
+                        Value = string.IsNullOrEmpty(category) ? (object)DBNull.Value : category
+                    });
+                    cmd.Parameters.Add(new MySqlParameter("p_status", MySqlDbType.VarChar, 20)
+                    {
+                        Value = "published"
+                    });
+                  
+
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         var posts = (List<Dictionary<string, string>>)result["posts"];
 
                         while (reader.Read())
                         {
-
+                           
 
                             var post = new Dictionary<string, string>();
 
-                            /*	id	title		user_id	created_at														*/
-                            string[] fields = { "id","title","content", "updated_at", "slug", "excerpt", "status","views","likes",  "comment_count", "is_featured", "published_at", "last_activity_at", "tags",
-                                      "image_url", "category_id",
-                                      };
+                            string[] fields = { "id","title","content", "updated_at", "slug", "excerpt",
+    "status","views","likes", "comment_count", "is_featured", "published_at",
+    "last_activity_at", "tags", "category_id" };
 
                             foreach (string field in fields)
                             {
-                                post[field] = reader.IsDBNull(reader.GetOrdinal(field)) ? "" : reader[field].ToString();
+                                int ordinal = reader.GetOrdinal(field);
+                                if (reader.IsDBNull(ordinal))
+                                {
+                                    post[field] = "";
+                                }
+                                else
+                                {
+                                    post[field] = reader.GetValue(ordinal).ToString();
+                                }
                             }
-
-                            post["image_url"] = service.shared.current_url + "assets/posts/" + post["id"] + "/thumbnail.webp";
+                          
 
 
                             posts.Add(post);
                         }
-
+                       
                     }
-
+                  
 
                 }
+               
             }
             catch (Exception ex)
             {
