@@ -18,7 +18,7 @@ namespace Servo.controller
     {
         private static readonly HashSet<string> public_apis = new HashSet<string>
         {
-            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin","get_all_product","update_stock_admin","get_post_by_id","upload_product_image_admin","delete_product_image_admin","get_all_orders_user","get_user_data","delete_product_by_id_admin","update_order_status_admin","upload_post_image_admin","delete_post_image_admin","get_all_post_categories"
+            "login", "registration_request", "registration_promise", "chpass_request", "chpass_promise", "get_all_products", "newsletter_subscription", "get_all_featured_products", "get_all_product_categories", "get_all_reviews_page_by_product_id", "get_all_posts", "get_post_by_id", "get_product_by_id","get_user_state","get_all_product_images_by_id","increment_post_views_by_id","create_product","create_post_admin","update_post_by_id","create_post_comment","delete_all_post_comments_by_post_id","delete_post_comment_by_comment_id","update_post_comment_by_comment_id","get_all_orders_admin","create_order","update_user_state_admin","get_all_product","update_stock_admin","get_post_by_id","upload_product_image_admin","delete_product_image_admin","get_all_orders_user","get_user_data","delete_product_by_id_admin","update_order_status_admin","upload_post_image_admin","delete_post_image_admin","get_all_post_categories","get_post_comments_by_post_id"
         };
 
 
@@ -544,7 +544,12 @@ namespace Servo.controller
                     service.shared.log("1");
 
                 }
-               
+                else if (lenyeg.Contains("get_post_comments_by_post_id"))
+                {
+
+                    controller.get_post_comments_by_post_id.main(data, lenyeg);
+
+                }
                 else if (lenyeg.Contains("get_post_by_id"))
                 {
 

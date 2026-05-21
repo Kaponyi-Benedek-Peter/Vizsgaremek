@@ -219,6 +219,7 @@
     <Compile Include="controller\get_all_reviews_page_by_product_id.cs" />
     <Compile Include="controller\get_all_users.cs" />
     <Compile Include="controller\get_post.cs" />
+    <Compile Include="controller\get_post_comments_by_post_id.cs" />
     <Compile Include="controller\get_product_by_id.cs" />
     <Compile Include="controller\get_user_data.cs" />
     <Compile Include="controller\get_user_state.cs" />
@@ -265,6 +266,7 @@
     <Compile Include="model\get_all_reviews_page_by_product_id.cs" />
     <Compile Include="model\get_all_users.cs" />
     <Compile Include="model\get_post.cs" />
+    <Compile Include="model\get_post_comments_by_post_id.cs" />
     <Compile Include="model\get_product_by_id.cs" />
     <Compile Include="model\get_user_data.cs" />
     <Compile Include="model\registration_request.cs" />
@@ -279,6 +281,7 @@
     <Compile Include="service\delete_product_admin.cs" />
     <Compile Include="service\delete_product_image_by_id.cs" />
     <Compile Include="service\get_all_product_images.cs" />
+    <Compile Include="service\get_post_comments_by_post_id.cs" />
     <Compile Include="service\get_user_data.cs" />
     <Compile Include="service\update_order_status_admin.cs" />
     <Compile Include="service\update_product_state_admin.cs" />
