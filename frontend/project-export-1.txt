@@ -137,7 +137,6 @@ PROJECT STRUCTURE
 │   │   │       ├── 📄 registration-promise.css
 │   │   │       ├── 📄 registration-promise.html
 │   │   │       └── 📄 registration-promise.ts
-│   │   ├── 📁 services/
 │   │   └── 📁 shared/
 │   │       ├── 📁 components/
 │   │       │   ├── 📁 category-bar/
@@ -2224,9 +2223,11 @@ export interface Comment {
   id: string;
   post_id: string;
   user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
   content: string;
   likes: number;
-  is_edited: boolean;
   created_at: string;
   updated_at?: string;
 }
@@ -2789,7 +2790,7 @@ FILE: src\app\core\services\account.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { User } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
@@ -2910,6 +2911,30 @@ export class AccountService {
 
   private lastOrderToken = signal<string | null>(null);
 
+  private decodeOrderFields(order: AdminOrder): AdminOrder {
+    const dec = (v: string | undefined | null): string => {
+      if (!v) return '';
+      try {
+        return decodeURIComponent(escape(atob(v)));
+      } catch {
+        return v; // ha nem base64, marad ahogy van
+      }
+    };
+
+    return {
+      ...order,
+      email: dec(order.email),
+      billing_name: dec(order.billing_name),
+      address: dec(order.address),
+      city: dec(order.city),
+      zipcode: dec(order.zipcode),
+      house_number: dec(order.house_number),
+      apartment_number: dec(order.apartment_number),
+      phone_number: dec(order.phone_number),
+      note: dec(order.note),
+    };
+  }
+
   setLastOrderToken(token: string) {
     this.lastOrderToken.set(token);
   }
@@ -3029,7 +3054,7 @@ export class AccountService {
 
   getOrders(data: { id: string; session_token: string }) {
     const body = {
-      id: data.id,
+      id: btoa(unescape(encodeURIComponent(data.id))),
       session_token: btoa(unescape(encodeURIComponent(data.session_token))),
     };
     return this.http.post<ApiResponse & { orders: AdminOrder[] }>(
@@ -3059,17 +3084,28 @@ export class AccountService {
     const body = this.buildAdminAuthBody();
     return this.http
       .post<AdminOrdersResponse>(`${this.API_URL}/api/get_all_orders_admin`, body)
-      .pipe(catchError(this.handleError));
+      .pipe(
+        map((response) => {
+          if (response.statuscode === '200' && Array.isArray(response.orders)) {
+            response.orders = response.orders.map((order) => this.decodeOrderFields(order));
+          }
+          return response;
+        }),
+        catchError(this.handleError),
+      );
   }
 
   updateOrderStatusAdmin(orderId: string, newStatus: string): Observable<ApiResponse> {
     const storedId = sessionStorage.getItem('user_id') ?? localStorage.getItem('user_id') ?? '';
     const sessionToken = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    const enc = (v: string) => btoa(unescape(encodeURIComponent(String(v))));
+
     const body = {
-      admin_id: storedId,
-      admin_session_token: sessionToken,
-      target_order_id: orderId,
-      new_order_status: newStatus,
+      admin_id: enc(storedId), // ← ez hiányzott
+      admin_session_token: enc(sessionToken),
+      target_order_id: enc(orderId),
+      new_order_status: enc(newStatus),
     };
     return this.http
       .post<ApiResponse>(`${this.API_URL}/api/update_order_status_admin`, body)
@@ -4230,6 +4266,7 @@ import {
 import { GalleryImage } from '../models/admin.models';
 import { getCategoryIcon } from '../constants/visuals';
 import { environment } from '../../../environments/environment';
+import { encodeObjectValues } from '../utils/base64.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -4291,6 +4328,15 @@ export class ForumService {
         this.loadErrorSignal.set(true);
         this.isLoadingSignal.set(false);
       },
+    });
+  }
+
+  loadCategories(): void {
+    if (this.categoriesSignal().length > 0) return;
+
+    this.fetchCategories().subscribe({
+      next: (categories) => this.categoriesSignal.set(categories),
+      error: () => {},
     });
   }
 
@@ -4406,7 +4452,7 @@ export class ForumService {
 
   addComment(postId: string, sesstoken: string, content: string) {
     return this.http
-      .post<{ status: string; statuscode: number; new_comment_id?: number }>(
+      .post<{ status: string; statuscode: number; comment?: Comment }>(
         `${this.API_URL}/api/create_post_comment`,
         {
           post_id: postId,
@@ -4451,15 +4497,16 @@ export class ForumService {
     return this.http
       .post<{ status: string; statuscode: number; posts: Post[] }>(
         `${this.API_URL}/api/get_all_posts_admin`,
-        {
+        encodeObjectValues({
           admin_id: adminId,
           session_token: sessionToken,
-        },
+          category: '',
+        }),
       )
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' && Array.isArray(res.posts) ? res.posts : [])),
-        catchError(() => this.fetchPosts()), // fallback ha az endpoint hibázna
+        catchError(() => this.fetchPosts()),
       );
   }
 
@@ -4478,7 +4525,7 @@ export class ForumService {
       is_featured: '1' | '0';
     },
   ) {
-    const body = {
+    const body = encodeObjectValues({
       user_id: userId,
       session_token: sessionToken,
       title: data.title,
@@ -4493,9 +4540,9 @@ export class ForumService {
       comment_count: '0',
       is_featured: data.is_featured ? '1' : '0',
       tags: data.tags,
-    };
+    });
     return this.http
-      .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/create_post`, body)
+      .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/create_post_admin`, body)
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         catchError(() => of({ status: 'error', statuscode: 500 })),
@@ -8484,6 +8531,122 @@ tr.cancelled-row .order-status-select {
   margin-top: 2px;
 }
 
+.pf-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-brand-primary, #067a45);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  min-height: 40px;
+  transition:
+    background var(--transition-fast),
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.pf-save-btn:hover:not(:disabled) {
+  background: var(--color-brand-primary-hover, #065f36);
+  transform: translateY(-1px);
+}
+
+.pf-save-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pf-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pf-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-5);
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  min-height: 40px;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.pf-cancel-btn:hover:not(:disabled) {
+  background: var(--color-surface);
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+}
+
+.pf-cancel-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pf-save-btn.is-invalid {
+  background: var(--color-neutral-400, #9ca3af);
+  cursor: not-allowed;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.pf-open-gallery-btn {
+  background: var(--color-surface);
+  border-color: var(--color-brand-primary, #067a45);
+  color: var(--color-brand-primary, #067a45);
+  font-weight: var(--font-semibold);
+}
+
+.pf-open-gallery-btn:hover {
+  background: var(--color-brand-primary, #067a45);
+  color: #fff;
+}
+
+.new-post-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-secondary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.new-post-button:hover {
+  background: var(--color-secondary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
 
 
 ================================================================================
@@ -8768,7 +8931,7 @@ FILE: src\app\pages\admin\admin.html
                         <td>{{ order.billing_name || '—' }}</td>
                         <td class="muted">{{ formatDate(order.created_at) }}</td>
                         <td>{{ getOrderAddressSummary(order) }}</td>
-                        <td class="muted">{{ order.phone_number || '—' }}</td>
+                        <td class="muted">{{ formatPhone(order.phone_number) }}</td>
                         <td class="font-bold">{{ formatRevenue(order.price) }}</td>
                         <td>
                           <select
@@ -9126,6 +9289,127 @@ FILE: src\app\pages\admin\admin.html
                                   d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
                                 />
                               </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeSection() === 'posts') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="postSearch"
+              [placeholder]="'admin.posts_form.search_placeholder' | translate"
+            />
+          </div>
+          <button class="new-post-button" (click)="openPostForm()">
+            + {{ 'admin.posts_form.add' | translate }}
+          </button>
+        </div>
+
+        @if (postsLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
+          </div>
+        } @else if (postsError()) {
+          <div class="error-state">
+            <span>⚠️ {{ postsError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadPostsForAdmin()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredPosts().length === 0) {
+                <div class="empty-state">{{ 'admin.posts_form.no_posts' | translate }}</div>
+              } @else {
+                <table class="admin-table" appResizableTable="posts">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.posts_form.col_title' | translate }}</th>
+                      <th>{{ 'admin.table.category' | translate }}</th>
+                      <th>{{ 'admin.table.status' | translate }}</th>
+                      <th>{{ 'admin.posts_form.col_views' | translate }}</th>
+                      <th>{{ 'admin.posts_form.col_likes' | translate }}</th>
+                      <th>{{ 'admin.posts_form.col_comments' | translate }}</th>
+                      <th>{{ 'admin.table.date' | translate }}</th>
+                      <th>{{ 'admin.table.actions' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (post of filteredPosts(); track post.id) {
+                      <tr>
+                        <td>
+                          <div class="product-cell">
+                            @if (post.image_url) {
+                              <div class="product-thumb">
+                                <img
+                                  [src]="post.image_url"
+                                  [alt]="post.title"
+                                  class="product-thumb-img"
+                                  loading="lazy"
+                                />
+                              </div>
+                            }
+                            <div class="product-cell-info">
+                              <span class="product-name">{{ post.title }}</span>
+                              @if (post.is_featured) {
+                                <span class="featured-badge"
+                                  >⭐ {{ 'admin.posts_form.featured' | translate }}</span
+                                >
+                              }
+                            </div>
+                          </div>
+                        </td>
+                        <td class="muted">
+                          {{ getPostCategoryName(post.category_id) }}
+                        </td>
+                        <td>
+                          <span [class]="getPostStatusClass(post.status)">
+                            {{ 'admin.posts_form.status_' + post.status | translate }}
+                          </span>
+                        </td>
+                        <td class="muted">{{ post.views }}</td>
+                        <td class="muted">{{ post.likes }}</td>
+                        <td class="muted">{{ post.comment_count }}</td>
+                        <td class="muted">{{ formatDate(post.created_at) }}</td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="images-btn"
+                              (click)="openPostGallery(post)"
+                              [attr.title]="'admin.posts_form.manage_images' | translate"
+                            >
+                              🖼
+                            </button>
+                            <button
+                              class="action-btn edit-btn"
+                              (click)="openPostForm(post)"
+                              [attr.title]="'common.edit' | translate"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              class="action-btn delete-btn"
+                              (click)="requestDeletePost(post, $event)"
+                              [attr.title]="'admin.posts_form.delete' | translate"
+                            >
+                              🗑
                             </button>
                           </div>
                         </td>
@@ -9780,127 +10064,6 @@ FILE: src\app\pages\admin\admin.html
   </div>
 }
 
-@if (activeSection() === 'posts') {
-  <div class="section-content">
-    <div class="section-toolbar">
-      <div class="search-input-wrapper">
-        <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
-        <input
-          type="search"
-          class="admin-search"
-          [(ngModel)]="postSearch"
-          [placeholder]="'admin.posts_form.search_placeholder' | translate"
-        />
-      </div>
-      <button class="add-product-btn" (click)="openPostForm()">
-        + {{ 'admin.posts_form.add' | translate }}
-      </button>
-    </div>
-
-    @if (postsLoading()) {
-      <div class="loading-state">
-        <span class="spinner">⏳</span>
-        <span>{{ 'admin.loading' | translate }}</span>
-      </div>
-    } @else if (postsError()) {
-      <div class="error-state">
-        <span>⚠️ {{ postsError()! | translate }}</span>
-        <button class="retry-btn" (click)="loadPostsForAdmin()">
-          {{ 'common.retry' | translate }}
-        </button>
-      </div>
-    } @else {
-      <div class="admin-card">
-        <div class="table-wrapper">
-          @if (filteredPosts().length === 0) {
-            <div class="empty-state">{{ 'admin.posts_form.no_posts' | translate }}</div>
-          } @else {
-            <table class="admin-table" appResizableTable="posts">
-              <thead>
-                <tr>
-                  <th>{{ 'admin.posts_form.col_title' | translate }}</th>
-                  <th>{{ 'admin.table.category' | translate }}</th>
-                  <th>{{ 'admin.table.status' | translate }}</th>
-                  <th>{{ 'admin.posts_form.col_views' | translate }}</th>
-                  <th>{{ 'admin.posts_form.col_likes' | translate }}</th>
-                  <th>{{ 'admin.posts_form.col_comments' | translate }}</th>
-                  <th>{{ 'admin.table.date' | translate }}</th>
-                  <th>{{ 'admin.table.actions' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (post of filteredPosts(); track post.id) {
-                  <tr>
-                    <td>
-                      <div class="product-cell">
-                        @if (post.image_url) {
-                          <div class="product-thumb">
-                            <img
-                              [src]="post.image_url"
-                              [alt]="post.title"
-                              class="product-thumb-img"
-                              loading="lazy"
-                            />
-                          </div>
-                        }
-                        <div class="product-cell-info">
-                          <span class="product-name">{{ post.title }}</span>
-                          @if (post.is_featured) {
-                            <span class="featured-badge"
-                              >⭐ {{ 'admin.posts_form.featured' | translate }}</span
-                            >
-                          }
-                        </div>
-                      </div>
-                    </td>
-                    <td class="muted">
-                      {{ getPostCategoryName(post.category_id) }}
-                    </td>
-                    <td>
-                      <span [class]="getPostStatusClass(post.status)">
-                        {{ 'admin.posts_form.status_' + post.status | translate }}
-                      </span>
-                    </td>
-                    <td class="muted">{{ post.views }}</td>
-                    <td class="muted">{{ post.likes }}</td>
-                    <td class="muted">{{ post.comment_count }}</td>
-                    <td class="muted">{{ formatDate(post.created_at) }}</td>
-                    <td>
-                      <div class="action-buttons">
-                        <button
-                          class="images-btn"
-                          (click)="openPostGallery(post)"
-                          [attr.title]="'admin.posts_form.manage_images' | translate"
-                        >
-                          🖼
-                        </button>
-                        <button
-                          class="action-btn edit-btn"
-                          (click)="openPostForm(post)"
-                          [attr.title]="'common.edit' | translate"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          class="action-btn delete-btn"
-                          (click)="requestDeletePost(post, $event)"
-                          [attr.title]="'admin.posts_form.delete' | translate"
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          }
-        </div>
-      </div>
-    }
-  </div>
-}
-
 @if (postDeleteConfirm()) {
   <div class="confirm-overlay" (click)="cancelDeletePost()">
     <div class="confirm-dialog" (click)="$event.stopPropagation()">
@@ -10153,7 +10316,13 @@ FILE: src\app\pages\admin\admin.html
         <button class="pf-cancel-btn" (click)="closePostForm()" [disabled]="postFormSaving()">
           {{ 'common.cancel' | translate }}
         </button>
-        <button class="pf-save-btn" (click)="savePost()" [disabled]="postFormSaving()">
+        <button
+          class="pf-save-btn"
+          [class.is-invalid]="!postFormIsValid()"
+          (click)="savePost()"
+          [disabled]="postFormSaving()"
+          [title]="!postFormIsValid() ? ('admin.posts_form.fill_required' | translate) : ''"
+        >
           @if (postFormSaving()) {
             <span class="btn-spinner"></span>
           }
@@ -10781,7 +10950,7 @@ FILE: src\app\pages\admin\admin.ts
 import { Component, HostListener, signal, computed, inject, OnInit } from '@angular/core';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import {
   AccountService,
@@ -10830,7 +10999,7 @@ import {
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [RouterModule, FormsModule, TranslateModule, ResizableTableDirective],
+  imports: [RouterModule, FormsModule, TranslatePipe, ResizableTableDirective],
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })
@@ -10951,6 +11120,10 @@ export class Admin implements OnInit {
 
   productFormIsEdit = computed(() => this.productFormEditId() !== null);
   postFormIsEdit = computed(() => this.postFormEditId() !== null);
+  postFormIsValid = computed(() => {
+    const d = this.postFormData();
+    return d.title.trim().length > 0 && d.content.trim().length > 0;
+  });
 
   availableCategories = computed(() => this.productService.categories());
   availablePostCategories = computed(() => this.forumService.categories());
@@ -11275,6 +11448,28 @@ export class Admin implements OnInit {
     }
   }
 
+  formatPhone(raw: string | undefined): string {
+    if (!raw) return '—';
+    const digits = raw.replace(/[^\d+]/g, '');
+    if (!digits) return raw;
+
+    // Magyar formátum: +36 XX XXX XXXX vagy +36 1 XXX XXXX
+    if (digits.startsWith('+36') && digits.length >= 11) {
+      const country = '+36';
+      const rest = digits.slice(3);
+      if (rest.length === 8) {
+        // Mobil: +36 XX XXX XXX
+        return `${country} ${rest.slice(0, 2)} ${rest.slice(2, 5)} ${rest.slice(5)}`;
+      }
+      if (rest.length === 9) {
+        // Mobil: +36 XX XXX XXXX
+        return `${country} ${rest.slice(0, 2)} ${rest.slice(2, 5)} ${rest.slice(5)}`;
+      }
+    }
+
+    return digits; // unknown format
+  }
+
   getProductName(product: OrderProductDetail): string {
     const lang = this.translate.currentLang || 'en';
     if (lang === 'hu' && product.product_name_hu) return product.product_name_hu;
@@ -11283,12 +11478,15 @@ export class Admin implements OnInit {
   }
 
   getUserFullName(user: AdminUser): string {
-    const full = `${user.last_name} ${user.first_name}`.trim();
+    const last = user.last_name ?? '';
+    const first = user.first_name ?? '';
+    const full = `${last} ${first}`.trim();
     return full || user.email;
   }
 
   getUserInitial(user: AdminUser): string {
-    return (user.last_name || user.first_name || user.email).charAt(0).toUpperCase();
+    const name = user.last_name || user.first_name || user.email;
+    return name.charAt(0).toUpperCase();
   }
 
   getAccountStateClass(state: string): string {
@@ -11784,6 +11982,8 @@ export class Admin implements OnInit {
   }
 
   openPostForm(post?: Post): void {
+    this.forumService.loadCategories();
+
     if (post) {
       this.postFormEditId.set(post.id);
       this.postFormData.set({
@@ -11850,6 +12050,11 @@ export class Admin implements OnInit {
     if (!data.title.trim()) {
       this.toastService.show('admin.posts_form.error_title_required', 'error');
       this.postFormTab.set('basic');
+      return;
+    }
+    if (!data.content.trim()) {
+      this.toastService.show('admin.posts_form.error_content_required', 'error');
+      this.postFormTab.set('content');
       return;
     }
 
@@ -12790,14 +12995,14 @@ FILE: src\app\pages\delacc-promise\delacc-promise.ts
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AccountService } from '../../core/services/account.service';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-delacc-promise',
   standalone: true,
-  imports: [RouterModule, TranslateModule],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './delacc-promise.html',
   styleUrl: './delacc-promise.css',
 })
@@ -13806,7 +14011,7 @@ FILE: src\app\pages\forum\forum.ts
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -13817,7 +14022,7 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 @Component({
   selector: 'app-forum',
   standalone: true,
-  imports: [RouterModule, FormsModule, TranslateModule, PostCardComponent],
+  imports: [RouterModule, FormsModule, TranslatePipe, PostCardComponent],
   templateUrl: './forum.html',
   styleUrl: './forum.css',
 })
@@ -14843,9 +15048,6 @@ FILE: src\app\pages\forum-detail\forum-detail.html
                       />
                       {{ comment.likes }}
                     </span>
-                    @if (comment.is_edited) {
-                      <span class="comment-edited">{{ 'forum.comment_edited' | translate }}</span>
-                    }
                   </div>
                 </div>
               </div>
@@ -14953,7 +15155,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { ForumService } from '../../core/services/forum.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -14963,7 +15165,7 @@ import { ICONS, IMAGES } from '../../core/constants/visuals';
 @Component({
   selector: 'app-forum-detail',
   standalone: true,
-  imports: [RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslatePipe],
   templateUrl: './forum-detail.html',
   styleUrl: './forum-detail.css',
 })
@@ -15387,7 +15589,7 @@ FILE: src\app\pages\home\home.ts
 
 import { Component, inject, computed, OnInit, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -15401,7 +15603,7 @@ import { ProductService } from '../../core/services/product.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [Slide, Featured, FeaturedProductCard, ScrollRevealDirective, TranslateModule],
+  imports: [Slide, Featured, FeaturedProductCard, ScrollRevealDirective, TranslatePipe],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -16156,14 +16358,14 @@ FILE: src\app\pages\legal\legal.ts
 
 import { Component, signal } from '@angular/core';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 type LegalTab = 'terms' | 'privacy' | 'cookies';
 
 @Component({
   selector: 'app-legal',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   templateUrl: './legal.html',
   styleUrl: './legal.css',
 })
@@ -16818,14 +17020,14 @@ import { Component, computed, inject, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { SupportedLanguage, TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, RouterModule, TranslateModule],
+  imports: [FormsModule, RouterModule, TranslatePipe],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
@@ -17059,13 +17261,13 @@ FILE: src\app\pages\login-promise\login-promise.ts
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login-promise',
   standalone: true,
-  imports: [RouterModule, TranslateModule],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './login-promise.html',
   styleUrl: './login-promise.css',
 })
@@ -17679,7 +17881,7 @@ FILE: src\app\pages\not-found\not-found.ts
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { ThemeService, Theme } from '../../core/services/theme.service';
@@ -17689,7 +17891,7 @@ import { getLogoSrc } from '../../core/constants/visuals';
 @Component({
   selector: 'app-not-found',
   standalone: true,
-  imports: [RouterModule, TranslateModule],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './not-found.html',
   styleUrl: './not-found.css',
 })
@@ -18039,12 +18241,12 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AccountService, AdminOrder } from '../../core/services/account.service';
 import { AuthService } from '../../core/services/auth.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './orders.html',
   styleUrl: './orders.css',
 })
@@ -18161,7 +18363,7 @@ FILE: src\app\pages\password-reset\password-reset.ts
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { tap } from 'rxjs';
@@ -18169,7 +18371,7 @@ import { tap } from 'rxjs';
 @Component({
   selector: 'app-password-reset',
   standalone: true,
-  imports: [RouterModule, TranslateModule],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './password-reset.html',
   styleUrl: './password-reset.css',
 })
@@ -18402,14 +18604,14 @@ import { Component, computed, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-password-reset-request',
   standalone: true,
-  imports: [FormsModule, RouterModule, TranslateModule],
+  imports: [FormsModule, RouterModule, TranslatePipe],
   templateUrl: './password-reset-request.html',
   styleUrl: './password-reset-request.css',
 })
@@ -19705,7 +19907,7 @@ FILE: src\app\pages\product-detail\product-detail.ts
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ProductWithHelpers, ProductImage, enrichProduct } from '../../core/models/product.model';
 import { ReviewWithHelpers } from '../../core/models/review.model';
 import { ProductService } from '../../core/services/product.service';
@@ -19721,7 +19923,7 @@ import { ICONS } from '../../core/constants/visuals';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [DatePipe, TranslateModule, RouterLink],
+  imports: [DatePipe, TranslatePipe, RouterLink],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.css',
 })
@@ -21661,6 +21863,266 @@ FILE: src\app\pages\profile\profile.css
   }
 }
 
+/* ── Order List ────────────────────────────────────────── */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.orders-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-10);
+  color: var(--color-text-secondary);
+}
+
+.btn-spinner--large {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+}
+
+.order-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal);
+}
+
+.order-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.order-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+}
+
+.order-card__id {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.order-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.order-value {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono, monospace);
+}
+
+.order-card__body {
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.order-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.order-meta__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.order-meta__item svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.order-meta__item--price {
+  color: var(--color-text-primary);
+  font-weight: var(--font-medium);
+}
+
+.order-meta__item--price strong {
+  color: var(--color-primary);
+}
+
+.order-recipient {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.order-recipient svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.order-card__footer {
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.order-tracking-label {
+  color: var(--color-text-secondary);
+}
+
+.order-tracking-code {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-xs);
+  background: var(--color-border);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  word-break: break-all;
+}
+
+/* Order status badges */
+.order-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px var(--space-3);
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.order-badge--pending {
+  background: rgba(234, 179, 8, 0.12);
+  color: #a16207;
+}
+[data-theme='dark'] .order-badge--pending {
+  background: rgba(234, 179, 8, 0.15);
+  color: #fbbf24;
+}
+
+.order-badge--processing {
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+}
+[data-theme='dark'] .order-badge--processing {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.order-badge--shipped {
+  background: rgba(168, 85, 247, 0.12);
+  color: #7e22ce;
+}
+[data-theme='dark'] .order-badge--shipped {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+}
+
+.order-badge--delivered {
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+}
+[data-theme='dark'] .order-badge--delivered {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.order-badge--cancelled {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+[data-theme='dark'] .order-badge--cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+/* ── Stat badge (account status card) ─────────────────── */
+.stat-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px var(--space-3);
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-1);
+}
+
+.stat-badge--superadmin {
+  background: rgba(168, 85, 247, 0.15);
+  color: #7e22ce;
+}
+[data-theme='dark'] .stat-badge--superadmin {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+}
+
+.stat-badge--admin {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+[data-theme='dark'] .stat-badge--admin {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.stat-badge--verified {
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+}
+[data-theme='dark'] .stat-badge--verified {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.stat-number--loading {
+  opacity: 0.4;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@media (max-width: 640px) {
+  .order-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .order-meta {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+}
+
 
 
 ================================================================================
@@ -21885,7 +22347,11 @@ FILE: src\app\pages\profile\profile.html
                   </svg>
                 </div>
                 <div class="stat-card__content">
-                  <span class="stat-number">—</span>
+                  @if (isLoadingOrders()) {
+                    <span class="stat-number stat-number--loading">…</span>
+                  } @else {
+                    <span class="stat-number">{{ orderCount() }}</span>
+                  }
                   <span class="stat-label">{{ 'profile.stats.orders' | translate }}</span>
                 </div>
               </div>
@@ -21917,7 +22383,23 @@ FILE: src\app\pages\profile\profile.html
                   </svg>
                 </div>
                 <div class="stat-card__content">
-                  <span class="stat-number">{{ accountState() }}</span>
+                  @switch (accountState()) {
+                    @case ('superadmin') {
+                      <span class="stat-badge stat-badge--superadmin">{{
+                        'profile.role.superadmin' | translate
+                      }}</span>
+                    }
+                    @case ('admin') {
+                      <span class="stat-badge stat-badge--admin">{{
+                        'profile.role.admin' | translate
+                      }}</span>
+                    }
+                    @default {
+                      <span class="stat-badge stat-badge--verified">{{
+                        'profile.role.verified' | translate
+                      }}</span>
+                    }
+                  }
                   <span class="stat-label">{{ 'profile.stats.status' | translate }}</span>
                 </div>
               </div>
@@ -21976,7 +22458,7 @@ FILE: src\app\pages\profile\profile.html
                   </svg>
                 </button>
 
-                <a class="quick-action-btn" routerLink="/purchase">
+                <button class="quick-action-btn" (click)="setSection('orders')">
                   <span class="qa-icon qa-icon--orange">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path
@@ -21999,7 +22481,7 @@ FILE: src\app\pages\profile\profile.html
                   >
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
-                </a>
+                </button>
               </div>
             </div>
           </section>
@@ -22378,24 +22860,177 @@ FILE: src\app\pages\profile\profile.html
               </div>
             </div>
 
-            <div class="content-card">
-              <div class="empty-state">
-                <div class="empty-state__icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            @if (isLoadingOrders()) {
+              <div class="content-card">
+                <div class="orders-loading">
+                  <span class="btn-spinner btn-spinner--large"></span>
+                  <p>{{ 'profile.orders.loading' | translate }}</p>
+                </div>
+              </div>
+            } @else if (ordersError()) {
+              <div class="content-card">
+                <div class="alert alert--error" role="alert">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
+                  {{ ordersError() | translate }}
                 </div>
-                <h3>{{ 'profile.orders.empty_title' | translate }}</h3>
-                <p>{{ 'profile.orders.empty_desc' | translate }}</p>
-                <a routerLink="/products" class="btn btn-primary">
-                  {{ 'profile.orders.browse_products' | translate }}
-                </a>
               </div>
-            </div>
+            } @else if (orders().length === 0) {
+              <div class="content-card">
+                <div class="empty-state">
+                  <div class="empty-state__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                      />
+                    </svg>
+                  </div>
+                  <h3>{{ 'profile.orders.empty_title' | translate }}</h3>
+                  <p>{{ 'profile.orders.empty_desc' | translate }}</p>
+                  <a routerLink="/products" class="btn btn-primary">
+                    {{ 'profile.orders.browse_products' | translate }}
+                  </a>
+                </div>
+              </div>
+            } @else {
+              <div class="orders-list">
+                @for (order of orders(); track order.id) {
+                  <div class="order-card">
+                    <div class="order-card__header">
+                      <div class="order-card__id">
+                        <span class="order-label">{{ 'profile.orders.order_id' | translate }}</span>
+                        <span class="order-value">#{{ order.id }}</span>
+                      </div>
+                      <div class="order-card__status">
+                        @switch (order.order_status) {
+                          @case ('pending') {
+                            <span class="order-badge order-badge--pending">{{
+                              'orders.status.pending' | translate
+                            }}</span>
+                          }
+                          @case ('processing') {
+                            <span class="order-badge order-badge--processing">{{
+                              'orders.status.processing' | translate
+                            }}</span>
+                          }
+                          @case ('shipped') {
+                            <span class="order-badge order-badge--shipped">{{
+                              'orders.status.shipped' | translate
+                            }}</span>
+                          }
+                          @case ('delivered') {
+                            <span class="order-badge order-badge--delivered">{{
+                              'orders.status.delivered' | translate
+                            }}</span>
+                          }
+                          @case ('cancelled') {
+                            <span class="order-badge order-badge--cancelled">{{
+                              'orders.status.cancelled' | translate
+                            }}</span>
+                          }
+                          @default {
+                            <span class="order-badge order-badge--pending">{{
+                              order.order_status
+                            }}</span>
+                          }
+                        }
+                      </div>
+                    </div>
+
+                    <div class="order-card__body">
+                      <div class="order-meta">
+                        <div class="order-meta__item">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <span>{{ order.created_at | date: 'yyyy.MM.dd' }}</span>
+                        </div>
+                        <div class="order-meta__item">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            />
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                          <span
+                            >{{ order.city }}{{ order.zipcode ? ', ' + order.zipcode : '' }}</span
+                          >
+                        </div>
+                        <div class="order-meta__item order-meta__item--price">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <strong>{{ order.price }} Ft</strong>
+                        </div>
+                      </div>
+
+                      @if (order.billing_name) {
+                        <div class="order-recipient">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
+                          <span>{{ order.billing_name }}</span>
+                        </div>
+                      }
+                    </div>
+
+                    @if (order.tracking_token) {
+                      <div class="order-card__footer">
+                        <span class="order-tracking-label"
+                          >{{ 'profile.orders.tracking' | translate }}:</span
+                        >
+                        <code class="order-tracking-code">{{ order.tracking_token }}</code>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
           </section>
         }
 
@@ -22564,18 +23199,19 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
-import { AccountService } from '../../core/services/account.service';
+import { AccountService, AdminOrder } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { DatePipe } from '@angular/common';
 
 export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | 'danger';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslatePipe, DatePipe],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
@@ -22609,6 +23245,30 @@ export class Profile implements OnInit {
 
   activeSection = signal<ProfileSection>('overview');
 
+  orders = signal<AdminOrder[]>([]);
+  isLoadingOrders = signal(false);
+  ordersError = signal('');
+
+  orderCount = computed(() => this.orders().length);
+
+  isAdmin = computed(() => {
+    const state = this.accountState();
+    return state === 'admin' || state === 'superadmin';
+  });
+
+  accountStateBadgeKey = computed(() => {
+    switch (this.accountState()) {
+      case 'superadmin':
+        return 'profile.role.superadmin';
+      case 'admin':
+        return 'profile.role.admin';
+      case 'verified':
+        return 'profile.role.verified';
+      default:
+        return 'profile.role.verified';
+    }
+  });
+
   editFirstname = '';
   editLastname = '';
   isUpdatingProfile = signal(false);
@@ -22633,6 +23293,7 @@ export class Profile implements OnInit {
 
   ngOnInit(): void {
     this.loadPersonalInfoIntoForm();
+    this.loadOrders();
   }
 
   setSection(section: ProfileSection): void {
@@ -22653,6 +23314,43 @@ export class Profile implements OnInit {
     const u = this.user();
     this.editFirstname = u?.firstname ?? '';
     this.editLastname = u?.lastname ?? '';
+  }
+
+  loadOrders(): void {
+    const userId = this.authService.getUserId();
+    const sessionToken = this.authService.getSessionToken();
+    if (!userId || !sessionToken) return;
+
+    this.isLoadingOrders.set(true);
+    this.ordersError.set('');
+
+    if (this.isAdmin()) {
+      this.accountService.getAllOrdersAdmin().subscribe({
+        next: (res) => {
+          this.isLoadingOrders.set(false);
+          if (res.statuscode === '200' && Array.isArray(res.orders)) {
+            this.orders.set(res.orders);
+          }
+        },
+        error: () => {
+          this.isLoadingOrders.set(false);
+          this.ordersError.set('profile.orders.load_error');
+        },
+      });
+    } else {
+      this.accountService.getOrders({ id: userId, session_token: sessionToken }).subscribe({
+        next: (res) => {
+          this.isLoadingOrders.set(false);
+          if (res.statuscode === '200' && Array.isArray(res.orders)) {
+            this.orders.set(res.orders);
+          }
+        },
+        error: () => {
+          this.isLoadingOrders.set(false);
+          this.ordersError.set('profile.orders.load_error');
+        },
+      });
+    }
   }
 
   savePersonalInfo(): void {
@@ -23438,6 +24136,19 @@ FILE: src\app\pages\purchase\purchase.html
                 />
               </div>
             </div>
+          } @else if (needsBillingNameInput()) {
+            <div class="form-group">
+              <label for="billingName">{{ 'checkout.billing_name' | translate }} *</label>
+              <input
+                type="text"
+                id="billingName"
+                name="billingName"
+                [(ngModel)]="form.billingName"
+                [placeholder]="'checkout.billing_name_placeholder' | translate"
+                required
+                [disabled]="isSubmitting()"
+              />
+            </div>
           }
 
           <form (ngSubmit)="submitOrder()" #checkoutForm="ngForm">
@@ -23591,7 +24302,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { CartService } from '../../core/services/cart.service';
@@ -23617,7 +24328,7 @@ interface CheckoutForm {
 @Component({
   selector: 'app-purchase',
   standalone: true,
-  imports: [RouterModule, FormsModule, TranslateModule],
+  imports: [RouterModule, FormsModule, TranslatePipe],
   templateUrl: './purchase.html',
   styleUrl: './purchase.css',
 })
@@ -23659,17 +24370,19 @@ export class Purchase implements OnInit {
 
   isGuest = signal(false);
 
+  needsBillingNameInput = signal(false);
+
   ngOnInit(): void {
-    this.isGuest.set(!this.authService.isUserAuthenticated());
+    const isAuthenticated = this.authService.isUserAuthenticated();
+    this.isGuest.set(!isAuthenticated);
 
-    if (!this.isGuest()) {
+    if (isAuthenticated) {
       const user = this.authService.currentUser();
-      const pending = this.authService.getPendingUserName();
-      const firstname = user?.firstname || pending?.firstname || '';
-      const lastname = user?.lastname || pending?.lastname || '';
-
+      const firstname = user?.firstname?.trim() || '';
+      const lastname = user?.lastname?.trim() || '';
       this.form.email = user?.email ?? '';
       this.form.billingName = `${firstname} ${lastname}`.trim();
+      this.needsBillingNameInput.set(!this.form.billingName);
     }
 
     if (this.cartItems().length === 0) {
@@ -23824,19 +24537,19 @@ export class Purchase implements OnInit {
 
       const orderData: CreateOrderRequest = {
         order: encodeObjectValues({
-          user_id: isGuest ? '0' : (user?.id ?? ''),
-          session_token: isGuest ? '' : (this.authService.getSessionToken() ?? ''),
+          user_id: this.isGuest() ? '0' : (this.authService.currentUser()?.id ?? '0'),
+          session_token: this.isGuest() ? '0' : (this.authService.getSessionToken() ?? '0'),
           email: this.form.email,
           billing_name: this.form.billingName,
           shipping_name: this.form.billingName,
-          shipping_company: '',
+          shipping_company: ' ',
           price: String(this.cartTotal()),
           city: this.form.city,
           guest: isGuest ? '1' : '0',
           zipcode: this.form.zipcode,
           address: this.form.address,
-          apartment_number: this.form.apartmentNumber ?? '0',
-          note: this.form.note ?? '',
+          apartment_number: this.form.apartmentNumber?.trim() || '0',
+          note: this.form.note?.trim() || '0',
           house_number: this.form.houseNumber,
           phone_number: this.form.phoneNumber,
         }),
@@ -23855,13 +24568,16 @@ export class Purchase implements OnInit {
         this.successMessage.set('checkout.success');
         this.toastService.success('checkout.success');
 
-        const trackingTokenEncoded = response.tracking_token ?? '';
-        const trackingToken = trackingTokenEncoded ? this.decode(trackingTokenEncoded) : '';
+        const trackingToken = response.tracking_token ?? '';
 
         this.lastTrackingToken.set(trackingToken);
         this.showDownloadConfirmation.set(true);
 
-        await this.generateOrderConfirmationPdf(trackingToken);
+        try {
+          await this.generateOrderConfirmationPdf(trackingToken);
+        } catch (pdfError) {
+          console.error('PDF generation error:', pdfError);
+        }
 
         this.cartService.clearCart();
 
@@ -24153,14 +24869,14 @@ import { Component, computed, inject, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, RouterModule, TranslateModule],
+  imports: [FormsModule, RouterModule, TranslatePipe],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
@@ -24672,13 +25388,13 @@ FILE: src\app\pages\registration-promise\registration-promise.ts
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-registration-promise',
   standalone: true,
-  imports: [RouterModule, TranslateModule],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './registration-promise.html',
   styleUrl: './registration-promise.css',
 })
@@ -24977,13 +25693,13 @@ FILE: src\app\shared\components\category-bar\category-bar.ts
 ================================================================================
 
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Category } from '../../../core/models/product.model';
 import { CategoryItem } from '../category-item/category-item';
 
 @Component({
   selector: 'app-category-bar',
-  imports: [TranslateModule, CategoryItem],
+  imports: [TranslatePipe, CategoryItem],
   templateUrl: './category-bar.html',
   styleUrl: './category-bar.css',
 })
@@ -25367,12 +26083,12 @@ FILE: src\app\shared\components\featured\featured.ts
 
 import { Component, signal } from '@angular/core';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-featured',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   templateUrl: './featured.html',
   styleUrl: './featured.css',
 })
@@ -25835,7 +26551,7 @@ FILE: src\app\shared\components\featured-product-card\featured-product-card.ts
 ================================================================================
 
 import { Component, EventEmitter, Input, Output, inject, computed } from '@angular/core';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyPipe } from '../../pipes/currency.pipe';
@@ -25845,7 +26561,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-featured-product-card',
-  imports: [TranslateModule, CurrencyPipe],
+  imports: [TranslatePipe, CurrencyPipe],
   templateUrl: './featured-product-card.html',
   styleUrl: './featured-product-card.css',
 })
@@ -25974,7 +26690,7 @@ FILE: src\app\shared\components\footer\footer-bottom\footer-bottom.ts
 
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { IconBtn } from '../../icon-btn/icon-btn';
 import { PrimaryBtn } from '../../primary-btn/primary-btn';
 import { ICONS, IMAGES } from '../../../../core/constants/visuals';
@@ -25982,7 +26698,7 @@ import { ICONS, IMAGES } from '../../../../core/constants/visuals';
 @Component({
   selector: 'app-footer-bottom',
   standalone: true,
-  imports: [IconBtn, PrimaryBtn, RouterModule, TranslateModule],
+  imports: [IconBtn, PrimaryBtn, RouterModule, TranslatePipe],
   templateUrl: './footer-bottom.html',
   styleUrl: './footer-bottom.css',
 })
@@ -26102,13 +26818,13 @@ FILE: src\app\shared\components\footer\footer-main\footer-main.ts
 ================================================================================
 
 import { Component } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { NewsletterForm } from '../newsletter-form/newsletter-form';
 
 @Component({
   selector: 'app-footer-main',
   standalone: true,
-  imports: [TranslateModule, NewsletterForm],
+  imports: [TranslatePipe, NewsletterForm],
   templateUrl: './footer-main.html',
   styleUrl: './footer-main.css',
 })
@@ -26543,7 +27259,7 @@ FILE: src\app\shared\components\footer\newsletter-form\newsletter-form.ts
 
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { ICONS, IMAGES, LANGUAGE_OPTIONS } from '../../../../core/constants/visuals';
 import { environment } from '../../../../../environments/environment';
@@ -26569,7 +27285,7 @@ interface SocialLink {
 @Component({
   selector: 'app-newsletter-form',
   standalone: true,
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './newsletter-form.html',
   styleUrl: './newsletter-form.css',
 })
@@ -27573,7 +28289,7 @@ import {
   inject,
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { PrimaryBtn } from '../primary-btn/primary-btn';
@@ -27589,7 +28305,7 @@ import { User } from '../../../core/models/auth.model';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [PrimaryBtn, IconBtn, RouterModule, LanguageSwitcher, TranslateModule],
+  imports: [PrimaryBtn, IconBtn, RouterModule, LanguageSwitcher, TranslatePipe],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
@@ -28015,7 +28731,7 @@ FILE: src\app\shared\components\language-switcher\language-switcher.ts
 
 import { Component, ElementRef, HostListener, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { TranslationService, SupportedLanguage } from '../../../core/services/translation.service';
 import { environment } from '../../../../environments/environment';
 
@@ -28029,7 +28745,7 @@ interface Language {
 @Component({
   selector: 'app-language-switcher',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   templateUrl: './language-switcher.html',
   styleUrl: './language-switcher.css',
 })
@@ -28708,7 +29424,7 @@ FILE: src\app\shared\components\post-card\post-card.ts
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Post } from '../../../core/models/forum.model';
 import { ForumService } from '../../../core/services/forum.service';
 import { ICONS } from '../../../core/constants/visuals';
@@ -28716,7 +29432,7 @@ import { ICONS } from '../../../core/constants/visuals';
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [RouterModule, TranslateModule],
+  imports: [RouterModule, TranslatePipe],
   templateUrl: './post-card.html',
   styleUrl: './post-card.css',
 })
@@ -29590,7 +30306,7 @@ FILE: src\app\shared\components\product-card\product-card.ts
 
 import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ProductWithHelpers } from '../../../core/models/product.model';
 import { CurrencyService } from '../../../core/services/currency.service';
 import { ProductService } from '../../../core/services/product.service';
@@ -29601,7 +30317,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [TranslateModule, RouterLink],
+  imports: [TranslatePipe, RouterLink],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
 })
@@ -30244,7 +30960,7 @@ import { ProductFilterOptions, SortOption } from '../../../core/models/product.m
 import { ICONS } from '../../../core/constants/visuals';
 
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 interface FilterState {
   categories: string[];
@@ -30257,7 +30973,7 @@ interface FilterState {
 
 @Component({
   selector: 'app-product-filter',
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './product-filter.html',
   styleUrl: './product-filter.css',
 })
@@ -30746,7 +31462,7 @@ FILE: src\app\shared\components\product-list\product-list.ts
 
 import { Component, computed, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { interval } from 'rxjs';
 import {
   Category,
@@ -30768,7 +31484,7 @@ const POLL_INTERVAL_MS = 60_000;
 @Component({
   selector: 'app-product-list',
   imports: [
-    TranslateModule,
+    TranslatePipe,
     CategoryBar,
     ProductFilter,
     ProductCard,
@@ -31146,12 +31862,12 @@ FILE: src\app\shared\components\product-pagination\product-pagination.ts
 ================================================================================
 
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { PaginationConfig } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-product-pagination',
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   templateUrl: './product-pagination.html',
   styleUrl: './product-pagination.css',
 })
@@ -31788,13 +32504,13 @@ FILE: src\app\shared\components\slide\slide.ts
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { HERO_SLIDES } from '../../../core/constants/visuals';
 
 @Component({
   selector: 'app-slide',
   standalone: true,
-  imports: [TranslateModule, RouterModule],
+  imports: [TranslatePipe, RouterModule],
   templateUrl: './slide.html',
   styleUrl: './slide.css',
 })
@@ -32100,13 +32816,13 @@ FILE: src\app\shared\components\toast\toast.ts
 
 import { Component, inject } from '@angular/core';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   templateUrl: './toast.html',
   styleUrl: './toast.css',
 })
@@ -32595,7 +33311,8 @@ FILE: src\assets\i18n\de.json
       "already_activated": "Dieses Konto wurde bereits aktiviert.",
       "token_expired": "Der Bestätigungslink ist abgelaufen. Bitte fordern Sie einen neuen an.",
       "account_banned": "Dieses Konto wurde gesperrt. Bitte wenden Sie sich an den Support.",
-      "unknown_error": "Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+      "unknown_error": "Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+      "passwords_dont_match": "Passwörter stimmen nicht überein."
     }
   },
   "legal": {
@@ -32990,6 +33707,9 @@ FILE: src\assets\i18n\de.json
       "error": "Fehler bei der Durchführung der Operation. Bitte versuchen Sie es erneut."
     },
     "posts_form": {
+      "tab_basic": "Grundeinstellungen",
+      "tab_content": "Inhalt",
+      "tab_images": "Bilder",
       "add": "Neuer Beitrag",
       "add_title": "Neuer Beitrag",
       "edit_title": "Beitrag bearbeiten",
@@ -33073,6 +33793,31 @@ FILE: src\assets\i18n\de.json
       "orders_load_failed": "Fehler beim Laden der Produkte!",
       "users_load_failed": "Fehler beim Laden der Benutzer!",
       "posts_load_failed": "Fehler beim Laden der Beiträge."
+    },
+    "product_form": {
+      "add_title": "Produkt hinzufügen",
+      "edit_title": "Produkt bearbeiten",
+      "name_hu": "Name (HU)",
+      "name_en": "Name (EN)",
+      "name_de": "Name (DE)",
+      "identification": "Identifikation",
+      "manufacturer": "Hersteller",
+      "thumbnail_url": "Vorschaubild-URL",
+      "save": "Speichern",
+      "tab_basic": "Grunddaten",
+      "tab_pricing": "Preisgestaltung",
+      "tab_descriptions": "Beschreibungen",
+      "tab_details": "Details",
+      "add": "Produkt hinzufügen",
+      "names": "Namen",
+      "previews": "Kurzbeschreibungen",
+      "full_descriptions": "Vollständige Beschreibungen",
+      "packaging": "Verpackung",
+      "active_ingredients": "Wirkstoffe",
+      "featured": "Empfohlen",
+      "price_huf": "Preis (HUF)",
+      "sale_pct": "Rabatt (%)",
+      "create": "Erstellen"
     }
   },
   "footer": {
@@ -33260,10 +34005,8 @@ FILE: src\assets\i18n\de.json
     "subtitle": "Ihre Bestellhistorie und Sendungsverfolgung",
     "loading": "Bestellungen werden geladen...",
     "retry": "Erneut versuchen",
-
     "empty_title": "Noch keine Bestellungen",
     "empty_desc": "Sie haben noch keine Bestellung aufgegeben. Beginnen Sie mit dem Durchsuchen unseres Produktkatalogs!",
-
     "fields": {
       "email": "E-Mail",
       "city": "Stadt",
@@ -33272,12 +34015,10 @@ FILE: src\assets\i18n\de.json
       "phone": "Telefon",
       "tracking": "Sendungsverfolgung"
     },
-
     "products": {
       "title": "Produkte",
       "sku": "Artikelnummer"
     },
-
     "status": {
       "pending": "Ausstehend",
       "processing": "In Bearbeitung",
@@ -33433,7 +34174,8 @@ FILE: src\assets\i18n\en.json
       "already_activated": "This account has already been activated.",
       "token_expired": "The confirmation link has expired. Please request a new one.",
       "account_banned": "This account has been suspended. Please contact support.",
-      "unknown_error": "An unknown error occurred. Please try again."
+      "unknown_error": "An unknown error occurred. Please try again.",
+      "passwords_dont_match": "The passwords do not match."
     }
   },
   "legal": {
@@ -33629,10 +34371,8 @@ FILE: src\assets\i18n\en.json
     "subtitle": "Your order history and tracking",
     "loading": "Loading orders...",
     "retry": "Retry",
-
     "empty_title": "No orders yet",
     "empty_desc": "You haven't placed any orders yet. Start browsing our product catalog!",
-
     "fields": {
       "email": "Email",
       "city": "City",
@@ -33641,12 +34381,10 @@ FILE: src\assets\i18n\en.json
       "phone": "Phone",
       "tracking": "Tracking"
     },
-
     "products": {
       "title": "Products",
       "sku": "SKU"
     },
-
     "status": {
       "pending": "Pending",
       "processing": "Processing",
@@ -33884,6 +34622,9 @@ FILE: src\assets\i18n\en.json
       "error": "Action failed. Please try again."
     },
     "posts_form": {
+      "tab_basic": "Basic Information",
+      "tab_content": "Content",
+      "tab_images": "Images",
       "add": "New Post",
       "add_title": "New Post",
       "edit_title": "Edit Post",
@@ -33967,6 +34708,31 @@ FILE: src\assets\i18n\en.json
       "orders_load_failed": "There was an error loading the products!",
       "users_load_failed": "There was an error loading the users!",
       "posts_load_failed": "There was an error loading the posts."
+    },
+    "product_form": {
+      "add_title": "Add Product",
+      "edit_title": "Edit Product",
+      "name_hu": "Name (HU)",
+      "name_en": "Name (EN)",
+      "name_de": "Name (DE)",
+      "identification": "Identification",
+      "manufacturer": "Manufacturer",
+      "thumbnail_url": "Thumbnail URL",
+      "save": "Save",
+      "tab_basic": "Basic",
+      "tab_pricing": "Pricing",
+      "tab_descriptions": "Descriptions",
+      "tab_details": "Details",
+      "add": "Add Product",
+      "names": "Names",
+      "previews": "Preview Descriptions",
+      "full_descriptions": "Full Descriptions",
+      "packaging": "Packaging",
+      "active_ingredients": "Active Ingredients",
+      "featured": "Featured",
+      "price_huf": "Price (HUF)",
+      "sale_pct": "Discount (%)",
+      "create": "Create"
     }
   },
   "footer": {
@@ -34271,7 +35037,8 @@ FILE: src\assets\i18n\hu.json
       "already_activated": "Ez a fiók már korábban aktiválva lett.",
       "token_expired": "A megerősítő link lejárt. Kérjen újat.",
       "account_banned": "A fiók le van tiltva. Lépjen kapcsolatba az ügyfélszolgálattal.",
-      "unknown_error": "Ismeretlen hiba történt. Kérjük, próbálja újra."
+      "unknown_error": "Ismeretlen hiba történt. Kérjük, próbálja újra.",
+      "passwords_dont_match": "A jelszavak nem egyeznek."
     }
   },
   "legal": {
@@ -34467,10 +35234,8 @@ FILE: src\assets\i18n\hu.json
     "subtitle": "Rendelési előzmények és követés",
     "loading": "Rendelések betöltése...",
     "retry": "Újrapróbálás",
-
     "empty_title": "Még nincsenek rendeléseid",
     "empty_desc": "Még nem adtál le rendelést. Kezdj el böngészni a termékeink között!",
-
     "fields": {
       "email": "Email",
       "city": "Város",
@@ -34479,12 +35244,10 @@ FILE: src\assets\i18n\hu.json
       "phone": "Telefonszám",
       "tracking": "Követés"
     },
-
     "products": {
       "title": "Termékek",
       "sku": "Cikkszám"
     },
-
     "status": {
       "pending": "Függőben",
       "processing": "Feldolgozás alatt",
@@ -34722,6 +35485,9 @@ FILE: src\assets\i18n\hu.json
       "error": "A művelet sikertelen. Próbáld újra."
     },
     "posts_form": {
+      "tab_basic": "Alapadatok",
+      "tab_content": "Tartalom",
+      "tab_images": "Képek",
       "add": "Új bejegyzés",
       "add_title": "Új bejegyzés",
       "edit_title": "Bejegyzés szerkesztése",
@@ -34805,6 +35571,31 @@ FILE: src\assets\i18n\hu.json
       "orders_load_failed": "Hiba történt a termékek betöltésekor!",
       "users_load_failed": "Hiba történt a felhasználók betöltésekor!",
       "posts_load_failed": "Hiba történt a bejegyzések betöltésekor."
+    },
+    "product_form": {
+      "add_title": "Termék hozzáadása",
+      "edit_title": "Termék szerkesztése",
+      "name_hu": "Név (HU)",
+      "name_en": "Név (EN)",
+      "name_de": "Név (DE)",
+      "identification": "Azonosítás",
+      "manufacturer": "Gyártó",
+      "thumbnail_url": "Bélyegkép URL",
+      "save": "Mentés",
+      "tab_basic": "Alapadatok",
+      "tab_pricing": "Árazás",
+      "tab_descriptions": "Leírások",
+      "tab_details": "Részletek",
+      "add": "Termék hozzáadása",
+      "names": "Nevek",
+      "previews": "Rövid leírások",
+      "full_descriptions": "Teljes leírások",
+      "packaging": "Csomagolás",
+      "active_ingredients": "Hatóanyagok",
+      "featured": "Kiemelt",
+      "price_huf": "Ár (HUF)",
+      "sale_pct": "Kedvezmény (%)",
+      "create": "Létrehozás"
     }
   },
   "footer": {

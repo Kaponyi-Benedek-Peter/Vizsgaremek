@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { User } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
@@ -122,6 +122,30 @@ export class AccountService {
 
   private lastOrderToken = signal<string | null>(null);
 
+  private decodeOrderFields(order: AdminOrder): AdminOrder {
+    const dec = (v: string | undefined | null): string => {
+      if (!v) return '';
+      try {
+        return decodeURIComponent(escape(atob(v)));
+      } catch {
+        return v; // ha nem base64, marad ahogy van
+      }
+    };
+
+    return {
+      ...order,
+      email: dec(order.email),
+      billing_name: dec(order.billing_name),
+      address: dec(order.address),
+      city: dec(order.city),
+      zipcode: dec(order.zipcode),
+      house_number: dec(order.house_number),
+      apartment_number: dec(order.apartment_number),
+      phone_number: dec(order.phone_number),
+      note: dec(order.note),
+    };
+  }
+
   setLastOrderToken(token: string) {
     this.lastOrderToken.set(token);
   }
@@ -241,7 +265,7 @@ export class AccountService {
 
   getOrders(data: { id: string; session_token: string }) {
     const body = {
-      id: data.id,
+      id: btoa(unescape(encodeURIComponent(data.id))),
       session_token: btoa(unescape(encodeURIComponent(data.session_token))),
     };
     return this.http.post<ApiResponse & { orders: AdminOrder[] }>(
@@ -271,7 +295,15 @@ export class AccountService {
     const body = this.buildAdminAuthBody();
     return this.http
       .post<AdminOrdersResponse>(`${this.API_URL}/api/get_all_orders_admin`, body)
-      .pipe(catchError(this.handleError));
+      .pipe(
+        map((response) => {
+          if (response.statuscode === '200' && Array.isArray(response.orders)) {
+            response.orders = response.orders.map((order) => this.decodeOrderFields(order));
+          }
+          return response;
+        }),
+        catchError(this.handleError),
+      );
   }
 
   updateOrderStatusAdmin(orderId: string, newStatus: string): Observable<ApiResponse> {
@@ -281,7 +313,7 @@ export class AccountService {
     const enc = (v: string) => btoa(unescape(encodeURIComponent(String(v))));
 
     const body = {
-      admin_id: storedId,
+      admin_id: enc(storedId), // ← ez hiányzott
       admin_session_token: enc(sessionToken),
       target_order_id: enc(orderId),
       new_order_status: enc(newStatus),

@@ -4,16 +4,17 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
-import { AccountService } from '../../core/services/account.service';
+import { AccountService, AdminOrder } from '../../core/services/account.service';
 import { ToastService } from '../../core/services/toast.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { DatePipe } from '@angular/common';
 
 export type ProfileSection = 'overview' | 'personal' | 'security' | 'orders' | 'danger';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [RouterModule, FormsModule, TranslatePipe],
+  imports: [RouterModule, FormsModule, TranslatePipe, DatePipe],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
@@ -47,6 +48,30 @@ export class Profile implements OnInit {
 
   activeSection = signal<ProfileSection>('overview');
 
+  orders = signal<AdminOrder[]>([]);
+  isLoadingOrders = signal(false);
+  ordersError = signal('');
+
+  orderCount = computed(() => this.orders().length);
+
+  isAdmin = computed(() => {
+    const state = this.accountState();
+    return state === 'admin' || state === 'superadmin';
+  });
+
+  accountStateBadgeKey = computed(() => {
+    switch (this.accountState()) {
+      case 'superadmin':
+        return 'profile.role.superadmin';
+      case 'admin':
+        return 'profile.role.admin';
+      case 'verified':
+        return 'profile.role.verified';
+      default:
+        return 'profile.role.verified';
+    }
+  });
+
   editFirstname = '';
   editLastname = '';
   isUpdatingProfile = signal(false);
@@ -71,6 +96,7 @@ export class Profile implements OnInit {
 
   ngOnInit(): void {
     this.loadPersonalInfoIntoForm();
+    this.loadOrders();
   }
 
   setSection(section: ProfileSection): void {
@@ -91,6 +117,43 @@ export class Profile implements OnInit {
     const u = this.user();
     this.editFirstname = u?.firstname ?? '';
     this.editLastname = u?.lastname ?? '';
+  }
+
+  loadOrders(): void {
+    const userId = this.authService.getUserId();
+    const sessionToken = this.authService.getSessionToken();
+    if (!userId || !sessionToken) return;
+
+    this.isLoadingOrders.set(true);
+    this.ordersError.set('');
+
+    if (this.isAdmin()) {
+      this.accountService.getAllOrdersAdmin().subscribe({
+        next: (res) => {
+          this.isLoadingOrders.set(false);
+          if (res.statuscode === '200' && Array.isArray(res.orders)) {
+            this.orders.set(res.orders);
+          }
+        },
+        error: () => {
+          this.isLoadingOrders.set(false);
+          this.ordersError.set('profile.orders.load_error');
+        },
+      });
+    } else {
+      this.accountService.getOrders({ id: userId, session_token: sessionToken }).subscribe({
+        next: (res) => {
+          this.isLoadingOrders.set(false);
+          if (res.statuscode === '200' && Array.isArray(res.orders)) {
+            this.orders.set(res.orders);
+          }
+        },
+        error: () => {
+          this.isLoadingOrders.set(false);
+          this.ordersError.set('profile.orders.load_error');
+        },
+      });
+    }
   }
 
   savePersonalInfo(): void {

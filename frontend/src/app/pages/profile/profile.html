@@ -216,7 +216,11 @@
                   </svg>
                 </div>
                 <div class="stat-card__content">
-                  <span class="stat-number">—</span>
+                  @if (isLoadingOrders()) {
+                    <span class="stat-number stat-number--loading">…</span>
+                  } @else {
+                    <span class="stat-number">{{ orderCount() }}</span>
+                  }
                   <span class="stat-label">{{ 'profile.stats.orders' | translate }}</span>
                 </div>
               </div>
@@ -248,7 +252,23 @@
                   </svg>
                 </div>
                 <div class="stat-card__content">
-                  <span class="stat-number">{{ accountState() }}</span>
+                  @switch (accountState()) {
+                    @case ('superadmin') {
+                      <span class="stat-badge stat-badge--superadmin">{{
+                        'profile.role.superadmin' | translate
+                      }}</span>
+                    }
+                    @case ('admin') {
+                      <span class="stat-badge stat-badge--admin">{{
+                        'profile.role.admin' | translate
+                      }}</span>
+                    }
+                    @default {
+                      <span class="stat-badge stat-badge--verified">{{
+                        'profile.role.verified' | translate
+                      }}</span>
+                    }
+                  }
                   <span class="stat-label">{{ 'profile.stats.status' | translate }}</span>
                 </div>
               </div>
@@ -307,7 +327,7 @@
                   </svg>
                 </button>
 
-                <a class="quick-action-btn" routerLink="/purchase">
+                <button class="quick-action-btn" (click)="setSection('orders')">
                   <span class="qa-icon qa-icon--orange">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path
@@ -330,7 +350,7 @@
                   >
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
-                </a>
+                </button>
               </div>
             </div>
           </section>
@@ -709,24 +729,177 @@
               </div>
             </div>
 
-            <div class="content-card">
-              <div class="empty-state">
-                <div class="empty-state__icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            @if (isLoadingOrders()) {
+              <div class="content-card">
+                <div class="orders-loading">
+                  <span class="btn-spinner btn-spinner--large"></span>
+                  <p>{{ 'profile.orders.loading' | translate }}</p>
+                </div>
+              </div>
+            } @else if (ordersError()) {
+              <div class="content-card">
+                <div class="alert alert--error" role="alert">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
+                  {{ ordersError() | translate }}
                 </div>
-                <h3>{{ 'profile.orders.empty_title' | translate }}</h3>
-                <p>{{ 'profile.orders.empty_desc' | translate }}</p>
-                <a routerLink="/products" class="btn btn-primary">
-                  {{ 'profile.orders.browse_products' | translate }}
-                </a>
               </div>
-            </div>
+            } @else if (orders().length === 0) {
+              <div class="content-card">
+                <div class="empty-state">
+                  <div class="empty-state__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                      />
+                    </svg>
+                  </div>
+                  <h3>{{ 'profile.orders.empty_title' | translate }}</h3>
+                  <p>{{ 'profile.orders.empty_desc' | translate }}</p>
+                  <a routerLink="/products" class="btn btn-primary">
+                    {{ 'profile.orders.browse_products' | translate }}
+                  </a>
+                </div>
+              </div>
+            } @else {
+              <div class="orders-list">
+                @for (order of orders(); track order.id) {
+                  <div class="order-card">
+                    <div class="order-card__header">
+                      <div class="order-card__id">
+                        <span class="order-label">{{ 'profile.orders.order_id' | translate }}</span>
+                        <span class="order-value">#{{ order.id }}</span>
+                      </div>
+                      <div class="order-card__status">
+                        @switch (order.order_status) {
+                          @case ('pending') {
+                            <span class="order-badge order-badge--pending">{{
+                              'orders.status.pending' | translate
+                            }}</span>
+                          }
+                          @case ('processing') {
+                            <span class="order-badge order-badge--processing">{{
+                              'orders.status.processing' | translate
+                            }}</span>
+                          }
+                          @case ('shipped') {
+                            <span class="order-badge order-badge--shipped">{{
+                              'orders.status.shipped' | translate
+                            }}</span>
+                          }
+                          @case ('delivered') {
+                            <span class="order-badge order-badge--delivered">{{
+                              'orders.status.delivered' | translate
+                            }}</span>
+                          }
+                          @case ('cancelled') {
+                            <span class="order-badge order-badge--cancelled">{{
+                              'orders.status.cancelled' | translate
+                            }}</span>
+                          }
+                          @default {
+                            <span class="order-badge order-badge--pending">{{
+                              order.order_status
+                            }}</span>
+                          }
+                        }
+                      </div>
+                    </div>
+
+                    <div class="order-card__body">
+                      <div class="order-meta">
+                        <div class="order-meta__item">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <span>{{ order.created_at | date: 'yyyy.MM.dd' }}</span>
+                        </div>
+                        <div class="order-meta__item">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            />
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                          <span
+                            >{{ order.city }}{{ order.zipcode ? ', ' + order.zipcode : '' }}</span
+                          >
+                        </div>
+                        <div class="order-meta__item order-meta__item--price">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <strong>{{ order.price }} Ft</strong>
+                        </div>
+                      </div>
+
+                      @if (order.billing_name) {
+                        <div class="order-recipient">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
+                          <span>{{ order.billing_name }}</span>
+                        </div>
+                      }
+                    </div>
+
+                    @if (order.tracking_token) {
+                      <div class="order-card__footer">
+                        <span class="order-tracking-label"
+                          >{{ 'profile.orders.tracking' | translate }}:</span
+                        >
+                        <code class="order-tracking-code">{{ order.tracking_token }}</code>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
           </section>
         }
 

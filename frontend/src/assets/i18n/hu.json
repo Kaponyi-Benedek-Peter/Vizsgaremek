@@ -578,6 +578,9 @@
       "error": "A művelet sikertelen. Próbáld újra."
     },
     "posts_form": {
+      "tab_basic": "Alapadatok",
+      "tab_content": "Tartalom",
+      "tab_images": "Képek",
       "add": "Új bejegyzés",
       "add_title": "Új bejegyzés",
       "edit_title": "Bejegyzés szerkesztése",

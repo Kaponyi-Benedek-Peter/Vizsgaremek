@@ -578,6 +578,9 @@
       "error": "Action failed. Please try again."
     },
     "posts_form": {
+      "tab_basic": "Basic Information",
+      "tab_content": "Content",
+      "tab_images": "Images",
       "add": "New Post",
       "add_title": "New Post",
       "edit_title": "Edit Post",

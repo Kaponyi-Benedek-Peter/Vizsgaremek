@@ -171,6 +171,10 @@ export class Admin implements OnInit {
 
   productFormIsEdit = computed(() => this.productFormEditId() !== null);
   postFormIsEdit = computed(() => this.postFormEditId() !== null);
+  postFormIsValid = computed(() => {
+    const d = this.postFormData();
+    return d.title.trim().length > 0 && d.content.trim().length > 0;
+  });
 
   availableCategories = computed(() => this.productService.categories());
   availablePostCategories = computed(() => this.forumService.categories());
@@ -493,6 +497,28 @@ export class Admin implements OnInit {
     } catch {
       return dateStr;
     }
+  }
+
+  formatPhone(raw: string | undefined): string {
+    if (!raw) return '—';
+    const digits = raw.replace(/[^\d+]/g, '');
+    if (!digits) return raw;
+
+    // Magyar formátum: +36 XX XXX XXXX vagy +36 1 XXX XXXX
+    if (digits.startsWith('+36') && digits.length >= 11) {
+      const country = '+36';
+      const rest = digits.slice(3);
+      if (rest.length === 8) {
+        // Mobil: +36 XX XXX XXX
+        return `${country} ${rest.slice(0, 2)} ${rest.slice(2, 5)} ${rest.slice(5)}`;
+      }
+      if (rest.length === 9) {
+        // Mobil: +36 XX XXX XXXX
+        return `${country} ${rest.slice(0, 2)} ${rest.slice(2, 5)} ${rest.slice(5)}`;
+      }
+    }
+
+    return digits; // unknown format
   }
 
   getProductName(product: OrderProductDetail): string {
@@ -1007,6 +1033,8 @@ export class Admin implements OnInit {
   }
 
   openPostForm(post?: Post): void {
+    this.forumService.loadCategories();
+
     if (post) {
       this.postFormEditId.set(post.id);
       this.postFormData.set({
@@ -1073,6 +1101,11 @@ export class Admin implements OnInit {
     if (!data.title.trim()) {
       this.toastService.show('admin.posts_form.error_title_required', 'error');
       this.postFormTab.set('basic');
+      return;
+    }
+    if (!data.content.trim()) {
+      this.toastService.show('admin.posts_form.error_content_required', 'error');
+      this.postFormTab.set('content');
       return;
     }
 

@@ -268,13 +268,16 @@ export class Purchase implements OnInit {
         this.successMessage.set('checkout.success');
         this.toastService.success('checkout.success');
 
-        const trackingTokenEncoded = response.tracking_token ?? '';
-        const trackingToken = trackingTokenEncoded ? this.decode(trackingTokenEncoded) : '';
+        const trackingToken = response.tracking_token ?? '';
 
         this.lastTrackingToken.set(trackingToken);
         this.showDownloadConfirmation.set(true);
 
-        await this.generateOrderConfirmationPdf(trackingToken);
+        try {
+          await this.generateOrderConfirmationPdf(trackingToken);
+        } catch (pdfError) {
+          console.error('PDF generation error:', pdfError);
+        }
 
         this.cartService.clearCart();
 

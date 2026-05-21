@@ -18,6 +18,7 @@ import {
 import { GalleryImage } from '../models/admin.models';
 import { getCategoryIcon } from '../constants/visuals';
 import { environment } from '../../../environments/environment';
+import { encodeObjectValues } from '../utils/base64.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -79,6 +80,15 @@ export class ForumService {
         this.loadErrorSignal.set(true);
         this.isLoadingSignal.set(false);
       },
+    });
+  }
+
+  loadCategories(): void {
+    if (this.categoriesSignal().length > 0) return;
+
+    this.fetchCategories().subscribe({
+      next: (categories) => this.categoriesSignal.set(categories),
+      error: () => {},
     });
   }
 
@@ -194,7 +204,7 @@ export class ForumService {
 
   addComment(postId: string, sesstoken: string, content: string) {
     return this.http
-      .post<{ status: string; statuscode: number; new_comment_id?: number }>(
+      .post<{ status: string; statuscode: number; comment?: Comment }>(
         `${this.API_URL}/api/create_post_comment`,
         {
           post_id: postId,
@@ -239,15 +249,16 @@ export class ForumService {
     return this.http
       .post<{ status: string; statuscode: number; posts: Post[] }>(
         `${this.API_URL}/api/get_all_posts_admin`,
-        {
+        encodeObjectValues({
           admin_id: adminId,
           session_token: sessionToken,
-        },
+          category: '',
+        }),
       )
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => (res?.status === 'success' && Array.isArray(res.posts) ? res.posts : [])),
-        catchError(() => this.fetchPosts()), // fallback ha az endpoint hibázna
+        catchError(() => this.fetchPosts()),
       );
   }
 
@@ -266,7 +277,7 @@ export class ForumService {
       is_featured: '1' | '0';
     },
   ) {
-    const body = {
+    const body = encodeObjectValues({
       user_id: userId,
       session_token: sessionToken,
       title: data.title,
@@ -281,9 +292,9 @@ export class ForumService {
       comment_count: '0',
       is_featured: data.is_featured ? '1' : '0',
       tags: data.tags,
-    };
+    });
     return this.http
-      .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/create_post`, body)
+      .post<{ status: string; statuscode: number }>(`${this.API_URL}/api/create_post_admin`, body)
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         catchError(() => of({ status: 'error', statuscode: 500 })),

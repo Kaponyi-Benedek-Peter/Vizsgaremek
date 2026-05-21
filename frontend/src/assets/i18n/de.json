@@ -526,6 +526,9 @@
       "error": "Fehler bei der Durchführung der Operation. Bitte versuchen Sie es erneut."
     },
     "posts_form": {
+      "tab_basic": "Grundeinstellungen",
+      "tab_content": "Inhalt",
+      "tab_images": "Bilder",
       "add": "Neuer Beitrag",
       "add_title": "Neuer Beitrag",
       "edit_title": "Beitrag bearbeiten",

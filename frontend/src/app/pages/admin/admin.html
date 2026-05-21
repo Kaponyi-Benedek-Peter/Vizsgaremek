@@ -276,7 +276,7 @@
                         <td>{{ order.billing_name || '—' }}</td>
                         <td class="muted">{{ formatDate(order.created_at) }}</td>
                         <td>{{ getOrderAddressSummary(order) }}</td>
-                        <td class="muted">{{ order.phone_number || '—' }}</td>
+                        <td class="muted">{{ formatPhone(order.phone_number) }}</td>
                         <td class="font-bold">{{ formatRevenue(order.price) }}</td>
                         <td>
                           <select
@@ -634,6 +634,127 @@
                                   d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
                                 />
                               </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeSection() === 'posts') {
+      <div class="section-content">
+        <div class="section-toolbar">
+          <div class="search-input-wrapper">
+            <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
+            <input
+              type="search"
+              class="admin-search"
+              [(ngModel)]="postSearch"
+              [placeholder]="'admin.posts_form.search_placeholder' | translate"
+            />
+          </div>
+          <button class="new-post-button" (click)="openPostForm()">
+            + {{ 'admin.posts_form.add' | translate }}
+          </button>
+        </div>
+
+        @if (postsLoading()) {
+          <div class="loading-state">
+            <span class="spinner">⏳</span>
+            <span>{{ 'admin.loading' | translate }}</span>
+          </div>
+        } @else if (postsError()) {
+          <div class="error-state">
+            <span>⚠️ {{ postsError()! | translate }}</span>
+            <button class="retry-btn" (click)="loadPostsForAdmin()">
+              {{ 'common.retry' | translate }}
+            </button>
+          </div>
+        } @else {
+          <div class="admin-card">
+            <div class="table-wrapper">
+              @if (filteredPosts().length === 0) {
+                <div class="empty-state">{{ 'admin.posts_form.no_posts' | translate }}</div>
+              } @else {
+                <table class="admin-table" appResizableTable="posts">
+                  <thead>
+                    <tr>
+                      <th>{{ 'admin.posts_form.col_title' | translate }}</th>
+                      <th>{{ 'admin.table.category' | translate }}</th>
+                      <th>{{ 'admin.table.status' | translate }}</th>
+                      <th>{{ 'admin.posts_form.col_views' | translate }}</th>
+                      <th>{{ 'admin.posts_form.col_likes' | translate }}</th>
+                      <th>{{ 'admin.posts_form.col_comments' | translate }}</th>
+                      <th>{{ 'admin.table.date' | translate }}</th>
+                      <th>{{ 'admin.table.actions' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (post of filteredPosts(); track post.id) {
+                      <tr>
+                        <td>
+                          <div class="product-cell">
+                            @if (post.image_url) {
+                              <div class="product-thumb">
+                                <img
+                                  [src]="post.image_url"
+                                  [alt]="post.title"
+                                  class="product-thumb-img"
+                                  loading="lazy"
+                                />
+                              </div>
+                            }
+                            <div class="product-cell-info">
+                              <span class="product-name">{{ post.title }}</span>
+                              @if (post.is_featured) {
+                                <span class="featured-badge"
+                                  >⭐ {{ 'admin.posts_form.featured' | translate }}</span
+                                >
+                              }
+                            </div>
+                          </div>
+                        </td>
+                        <td class="muted">
+                          {{ getPostCategoryName(post.category_id) }}
+                        </td>
+                        <td>
+                          <span [class]="getPostStatusClass(post.status)">
+                            {{ 'admin.posts_form.status_' + post.status | translate }}
+                          </span>
+                        </td>
+                        <td class="muted">{{ post.views }}</td>
+                        <td class="muted">{{ post.likes }}</td>
+                        <td class="muted">{{ post.comment_count }}</td>
+                        <td class="muted">{{ formatDate(post.created_at) }}</td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="images-btn"
+                              (click)="openPostGallery(post)"
+                              [attr.title]="'admin.posts_form.manage_images' | translate"
+                            >
+                              🖼
+                            </button>
+                            <button
+                              class="action-btn edit-btn"
+                              (click)="openPostForm(post)"
+                              [attr.title]="'common.edit' | translate"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              class="action-btn delete-btn"
+                              (click)="requestDeletePost(post, $event)"
+                              [attr.title]="'admin.posts_form.delete' | translate"
+                            >
+                              🗑
                             </button>
                           </div>
                         </td>
@@ -1288,127 +1409,6 @@
   </div>
 }
 
-@if (activeSection() === 'posts') {
-  <div class="section-content">
-    <div class="section-toolbar">
-      <div class="search-input-wrapper">
-        <img [src]="icons.search" alt="" class="search-icon-small" aria-hidden="true" />
-        <input
-          type="search"
-          class="admin-search"
-          [(ngModel)]="postSearch"
-          [placeholder]="'admin.posts_form.search_placeholder' | translate"
-        />
-      </div>
-      <button class="add-product-btn" (click)="openPostForm()">
-        + {{ 'admin.posts_form.add' | translate }}
-      </button>
-    </div>
-
-    @if (postsLoading()) {
-      <div class="loading-state">
-        <span class="spinner">⏳</span>
-        <span>{{ 'admin.loading' | translate }}</span>
-      </div>
-    } @else if (postsError()) {
-      <div class="error-state">
-        <span>⚠️ {{ postsError()! | translate }}</span>
-        <button class="retry-btn" (click)="loadPostsForAdmin()">
-          {{ 'common.retry' | translate }}
-        </button>
-      </div>
-    } @else {
-      <div class="admin-card">
-        <div class="table-wrapper">
-          @if (filteredPosts().length === 0) {
-            <div class="empty-state">{{ 'admin.posts_form.no_posts' | translate }}</div>
-          } @else {
-            <table class="admin-table" appResizableTable="posts">
-              <thead>
-                <tr>
-                  <th>{{ 'admin.posts_form.col_title' | translate }}</th>
-                  <th>{{ 'admin.table.category' | translate }}</th>
-                  <th>{{ 'admin.table.status' | translate }}</th>
-                  <th>{{ 'admin.posts_form.col_views' | translate }}</th>
-                  <th>{{ 'admin.posts_form.col_likes' | translate }}</th>
-                  <th>{{ 'admin.posts_form.col_comments' | translate }}</th>
-                  <th>{{ 'admin.table.date' | translate }}</th>
-                  <th>{{ 'admin.table.actions' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (post of filteredPosts(); track post.id) {
-                  <tr>
-                    <td>
-                      <div class="product-cell">
-                        @if (post.image_url) {
-                          <div class="product-thumb">
-                            <img
-                              [src]="post.image_url"
-                              [alt]="post.title"
-                              class="product-thumb-img"
-                              loading="lazy"
-                            />
-                          </div>
-                        }
-                        <div class="product-cell-info">
-                          <span class="product-name">{{ post.title }}</span>
-                          @if (post.is_featured) {
-                            <span class="featured-badge"
-                              >⭐ {{ 'admin.posts_form.featured' | translate }}</span
-                            >
-                          }
-                        </div>
-                      </div>
-                    </td>
-                    <td class="muted">
-                      {{ getPostCategoryName(post.category_id) }}
-                    </td>
-                    <td>
-                      <span [class]="getPostStatusClass(post.status)">
-                        {{ 'admin.posts_form.status_' + post.status | translate }}
-                      </span>
-                    </td>
-                    <td class="muted">{{ post.views }}</td>
-                    <td class="muted">{{ post.likes }}</td>
-                    <td class="muted">{{ post.comment_count }}</td>
-                    <td class="muted">{{ formatDate(post.created_at) }}</td>
-                    <td>
-                      <div class="action-buttons">
-                        <button
-                          class="images-btn"
-                          (click)="openPostGallery(post)"
-                          [attr.title]="'admin.posts_form.manage_images' | translate"
-                        >
-                          🖼
-                        </button>
-                        <button
-                          class="action-btn edit-btn"
-                          (click)="openPostForm(post)"
-                          [attr.title]="'common.edit' | translate"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          class="action-btn delete-btn"
-                          (click)="requestDeletePost(post, $event)"
-                          [attr.title]="'admin.posts_form.delete' | translate"
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          }
-        </div>
-      </div>
-    }
-  </div>
-}
-
 @if (postDeleteConfirm()) {
   <div class="confirm-overlay" (click)="cancelDeletePost()">
     <div class="confirm-dialog" (click)="$event.stopPropagation()">
@@ -1661,7 +1661,13 @@
         <button class="pf-cancel-btn" (click)="closePostForm()" [disabled]="postFormSaving()">
           {{ 'common.cancel' | translate }}
         </button>
-        <button class="pf-save-btn" (click)="savePost()" [disabled]="postFormSaving()">
+        <button
+          class="pf-save-btn"
+          [class.is-invalid]="!postFormIsValid()"
+          (click)="savePost()"
+          [disabled]="postFormSaving()"
+          [title]="!postFormIsValid() ? ('admin.posts_form.fill_required' | translate) : ''"
+        >
           @if (postFormSaving()) {
             <span class="btn-spinner"></span>
           }

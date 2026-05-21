@@ -2479,3 +2479,119 @@ tr.cancelled-row .order-status-select {
   color: var(--color-warning);
   margin-top: 2px;
 }
+
+.pf-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-brand-primary, #067a45);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  min-height: 40px;
+  transition:
+    background var(--transition-fast),
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.pf-save-btn:hover:not(:disabled) {
+  background: var(--color-brand-primary-hover, #065f36);
+  transform: translateY(-1px);
+}
+
+.pf-save-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pf-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pf-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-5);
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  min-height: 40px;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.pf-cancel-btn:hover:not(:disabled) {
+  background: var(--color-surface);
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+}
+
+.pf-cancel-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pf-save-btn.is-invalid {
+  background: var(--color-neutral-400, #9ca3af);
+  cursor: not-allowed;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.pf-open-gallery-btn {
+  background: var(--color-surface);
+  border-color: var(--color-brand-primary, #067a45);
+  color: var(--color-brand-primary, #067a45);
+  font-weight: var(--font-semibold);
+}
+
+.pf-open-gallery-btn:hover {
+  background: var(--color-brand-primary, #067a45);
+  color: #fff;
+}
+
+.new-post-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-secondary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.new-post-button:hover {
+  background: var(--color-secondary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
