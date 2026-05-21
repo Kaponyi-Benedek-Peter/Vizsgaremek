@@ -2,8 +2,8 @@
 -- version 5.1.2
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Apr 20, 2026 at 10:55 AM
+-- Host: localhost:3307
+-- Generation Time: May 21, 2026 at 07:10 PM
 -- Server version: 5.7.24
 -- PHP Version: 8.3.1
 
@@ -565,7 +565,13 @@ END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_all_posts` (IN `p_category_id` VARCHAR(20), IN `p_status` VARCHAR(20))   BEGIN
     IF p_status IS NULL OR p_status = '' THEN
-        SELECT * FROM roy.posts
+        SELECT id, title, content, updated_at, slug, excerpt, status,
+       views, likes, comment_count,
+       CAST(is_featured AS UNSIGNED) AS is_featured,
+       published_at, last_activity_at,
+       CAST(tags AS CHAR) AS tags,
+       category_id
+FROM roy.posts
         WHERE (
             p_category_id IS NULL 
             OR p_category_id = '' 
@@ -758,6 +764,23 @@ END$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_post_by_slug` (IN `p_slug` VARCHAR(255))   BEGIN
     SELECT * FROM roy.posts
     WHERE slug = p_slug;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_post_comments_by_post_id` (IN `p_post_id` INT)   BEGIN
+    SELECT
+        pc.id,
+        pc.post_id,
+        pc.user_id,
+        u.first_name,
+        u.last_name,
+        u.email,
+        pc.content,
+        pc.likes,
+        pc.created_at
+    FROM post_comments pc
+    INNER JOIN users u ON pc.user_id = u.id
+    WHERE pc.post_id = p_post_id
+    ORDER BY pc.created_at ASC;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_post_status_by_id` (IN `p_id` INT)   BEGIN
@@ -1113,8 +1136,7 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `user_id`, `email`, `billing_name`, `shipping_name`, `tracking_token`, `guest`, `order_status`, `shipping_company`, `created_at`, `price`, `city`, `zipcode`, `address`, `apartment_number`, `note`, `house_number`, `phone_number`) VALUES
-(1, 38, 'a@a', 'a', 'a', 'a', 0, 'pending', 'shipping_company', '2026-03-23 09:51:31', '0.00', 'city', '0000', 'address', 1, 'note', 2, '0'),
-(3, 38, 'a', 'billing_name', 'shipping_name', 'b', 1, 'cancelled', 'shipping_company', '2026-03-24 09:22:32', '0.00', 'a', '0000', 'aa', 1, 'a', 1, '1');
+(10, 11, 'bp.kaponyi@gmail.com', 'Teszt W�', 'Teszt Elek', 'WTyIKxzeNLezBZbJqRIuDz', 0, 'pending', '', '2026-05-21 20:21:51', '23200.00', 'Tesztcity', '�m�', 'Teszt utca', 11, 'Teszt Elek rendelése', 12, '12243334325');
 
 -- --------------------------------------------------------
 
@@ -1135,6 +1157,18 @@ CREATE TABLE `order_items` (
   `thumbnail_url` varchar(255) DEFAULT NULL,
   `sku` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`, `unit_price`, `product_name_hu`, `product_name_en`, `product_name_de`, `thumbnail_url`, `sku`) VALUES
+(11, 10, 1, 2, '2980.00', '1490.00', 'Aspirin 500mg filmtabletta', 'Aspirin 500mg Film-coated Tablets', 'Aspirin 500mg Filmtabletten', '/assets/products/aspirin-500-thumb.jpg', 'ASP-500-20T'),
+(12, 10, 4, 4, '7560.00', '1890.00', 'Cetirizin 10mg tabletta (allergia)', 'Cetirizine 10mg Tablets (Allergy)', 'Cetirizin 10mg Tabletten (Allergie)', '/assets/products/cetirizin-10-thumb.jpg', 'CTZ-10-30T'),
+(13, 10, 2, 1, '3890.00', '3890.00', 'Omega-3 Halolaj 1000mg kapszula', 'Omega-3 Fish Oil 1000mg Capsules', 'Omega-3 Fischöl 1000mg Kapseln', '/assets/products/omega3-1000-thumb.jpg', 'OMG3-1000-60C'),
+(14, 10, 3, 1, '2290.00', '2290.00', 'Magnézium + B6-vitamin tabletta', 'Magnesium + Vitamin B6 Tablets', 'Magnesium + Vitamin B6 Tabletten', '/assets/products/magnesium-b6-thumb.jpg', 'MGVB6-400-60T'),
+(15, 10, 10, 1, '3490.00', '3490.00', 'Zarbee\'s Naturals Gyerek Méz Alapú Köhögés Szirup', 'Zarbee\'s Naturals Children\'s Honey Cough Syrup', 'Zarbees Naturals Kinder Honig-Hustensirup', '/assets/products/zarbees-cough-thumb.jpg', 'ZAR-COUGH-118ML'),
+(16, 10, 9, 1, '2990.00', '2990.00', 'Tri-Vi-Sol D3+A+C Vitamin Csepp Csecsemőknek', 'Tri-Vi-Sol D3+A+C Vitamin Drops for Infants', 'Tri-Vi-Sol D3+A+C Vitamin Tropfen für Säuglinge', '/assets/products/tri-vi-sol-thumb.jpg', 'TVS-DAC-50ML');
 
 -- --------------------------------------------------------
 
@@ -1162,13 +1196,6 @@ CREATE TABLE `posts` (
   `last_activity_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `tags` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `posts`
---
-
-INSERT INTO `posts` (`id`, `title`, `content`, `user_id`, `created_at`, `image_url`, `category_id`, `updated_at`, `slug`, `excerpt`, `status`, `views`, `likes`, `comment_count`, `is_featured`, `published_at`, `last_activity_at`, `tags`) VALUES
-(2, 'reg', 'reg', 77, '2026-03-10 12:42:58', 'rg', 1, '2026-03-10 13:05:37', 'reg', 'erg', 'hidden', 0, 0, 0, 0, NULL, '2026-03-10 13:42:58', 'reg');
 
 -- --------------------------------------------------------
 
@@ -1398,8 +1425,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `email`, `created_at`, `sesstoken`, `passhash`, `sesstoken_expire`, `first_name`, `last_name`, `account_state`, `ban_reason`) VALUES
-(77, 'bp.kaponyi@gmail.com', '2026-03-10 13:39:11', 'jyWrVjsbmJzNNejcqLESus', 'waajxlkYiW4JdiOOAn2w6Uv3IptLfHWVHYnBqaxaYg8=', '2026-03-17 13:39:11', 'kukukuku', 'kukukuku', 'admin', NULL),
-(78, 'kerepesi.aron@szechenyi.hu', '2026-03-10 14:12:10', 'zhOcUbUsGaJzWIdHiXwHBA', '7L6z2bdXVIb0e8BLlkzWtYZ9cMCX+g568nwo22mguMo=', '2026-03-17 14:12:36', 'first', 'last', 'verified', NULL);
+(11, 'bp.kaponyi@gmail.com', '2026-05-21 20:18:56', 'yCRHQhlCVtDUIGczzFfMsc', 'WZDgGDDiCUeo0YjwSq2K0YxqSgrDcAj2gncQDt46QAc=', '2026-05-28 20:18:56', 'Teszt', 'W�', 'admin', NULL);
 
 --
 -- Indexes for dumped tables
@@ -1503,7 +1529,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `confirmations`
 --
 ALTER TABLE `confirmations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `newsletter_recipients`
@@ -1515,19 +1541,19 @@ ALTER TABLE `newsletter_recipients`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `post_categories`
@@ -1569,7 +1595,7 @@ ALTER TABLE `reviews`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Constraints for dumped tables
