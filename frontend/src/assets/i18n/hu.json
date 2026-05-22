@@ -307,7 +307,8 @@
       "subtitle": "Rendelési előzmények és nyomon követés",
       "empty_title": "Még nincs rendelésed",
       "empty_desc": "Ha leadtál rendelést, itt fogod látni az előzményeidet.",
-      "browse_products": "Termékek böngészése"
+      "browse_products": "Termékek böngészése",
+      "load_error": "Nem sikerült betölteni a rendeléseket. Kérjük, próbálja újra."
     },
     "success": {
       "profile_updated": "Profil sikeresen frissítve."

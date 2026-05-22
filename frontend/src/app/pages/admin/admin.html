@@ -276,7 +276,14 @@
                         <td>{{ order.billing_name || '—' }}</td>
                         <td class="muted">{{ formatDate(order.created_at) }}</td>
                         <td>{{ getOrderAddressSummary(order) }}</td>
-                        <td class="muted">{{ formatPhone(order.phone_number) }}</td>
+                        <td class="phone-cell">
+                          @if (order.phone_number) {
+                            <span class="phone-prefix" aria-hidden="true">+</span
+                            ><span class="phone-body">{{ formatPhone(order.phone_number) }}</span>
+                          } @else {
+                            <span class="muted">—</span>
+                          }
+                        </td>
                         <td class="font-bold">{{ formatRevenue(order.price) }}</td>
                         <td>
                           <select
@@ -784,21 +791,6 @@
           }
         </div>
         <div class="gallery-header-controls">
-          <label
-            class="transparent-toggle"
-            [attr.title]="'admin.gallery.transparent_hint' | translate"
-          >
-            <span class="transparent-label">{{ 'admin.gallery.transparent' | translate }}</span>
-            <button
-              class="toggle-switch"
-              [class.active]="uploadTransparent()"
-              (click)="toggleTransparent()"
-              role="switch"
-              [attr.aria-checked]="uploadTransparent()"
-            >
-              <span class="toggle-knob"></span>
-            </button>
-          </label>
           <button
             class="gallery-close-btn"
             (click)="closeGallery()"
@@ -1369,20 +1361,7 @@
             </div>
           </div>
 
-          <div class="pf-section">
-            <label class="transparent-toggle">
-              <span class="transparent-label">{{ 'admin.product_form.featured' | translate }}</span>
-              <button
-                class="toggle-switch"
-                [class.active]="productFormData().featured"
-                (click)="toggleProductFeatured()"
-                role="switch"
-                [attr.aria-checked]="productFormData().featured"
-              >
-                <span class="toggle-knob"></span>
-              </button>
-            </label>
-          </div>
+          <div class="pf-section"></div>
         }
       </div>
 

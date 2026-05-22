@@ -70,7 +70,7 @@
 
               <div>
                 <strong>{{ 'orders.fields.phone' | translate }}:</strong>
-                {{ order.phone_number }}
+                {{ formatPhone(order.phone_number) }}
               </div>
 
               @if (order.tracking_token) {

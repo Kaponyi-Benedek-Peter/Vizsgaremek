@@ -102,6 +102,24 @@ export class Purchase implements OnInit {
     }
   }
 
+  onPhoneInput(value: string): void {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    let formatted = digits;
+    if (digits.length > 2) formatted = digits.slice(0, 2) + ' ' + digits.slice(2);
+    if (digits.length > 4)
+      formatted = digits.slice(0, 2) + ' ' + digits.slice(2, 4) + ' ' + digits.slice(4);
+    if (digits.length > 7)
+      formatted =
+        digits.slice(0, 2) +
+        ' ' +
+        digits.slice(2, 4) +
+        ' ' +
+        digits.slice(4, 7) +
+        ' ' +
+        digits.slice(7);
+    this.form.phoneNumber = formatted;
+  }
+
   getFormattedUnitPrice(product: Product): string {
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(product));
   }
@@ -251,7 +269,7 @@ export class Purchase implements OnInit {
           apartment_number: this.form.apartmentNumber?.trim() || '0',
           note: this.form.note?.trim() || '0',
           house_number: this.form.houseNumber,
-          phone_number: this.form.phoneNumber,
+          phone_number: '+' + this.form.phoneNumber.replace(/\s/g, ''),
         }),
 
         items: this.cartItems().map((i) =>

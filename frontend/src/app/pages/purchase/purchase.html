@@ -230,15 +230,19 @@
 
             <div class="form-group">
               <label for="phoneNumber">{{ 'checkout.phone' | translate }} *</label>
-              <input
-                type="tel"
-                id="phoneNumber"
-                name="phoneNumber"
-                [(ngModel)]="form.phoneNumber"
-                [placeholder]="'checkout.phone_placeholder' | translate"
-                required
-                [disabled]="isSubmitting()"
-              />
+              <div class="phone-input-wrapper">
+                <span class="phone-prefix-label">+</span>
+                <input
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  [ngModel]="form.phoneNumber"
+                  (ngModelChange)="onPhoneInput($event)"
+                  [placeholder]="'36 20 123 4567'"
+                  required
+                  [disabled]="isSubmitting()"
+                />
+              </div>
             </div>
 
             <div class="form-group">

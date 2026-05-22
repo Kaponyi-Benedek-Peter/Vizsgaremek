@@ -2914,10 +2914,16 @@ export class AccountService {
   private decodeOrderFields(order: AdminOrder): AdminOrder {
     const dec = (v: string | undefined | null): string => {
       if (!v) return '';
+
+      const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
+      const isLikelyBase64 = base64Regex.test(v) && v.length % 4 === 0 && v.length > 4;
+
+      if (!isLikelyBase64) return v;
+
       try {
         return decodeURIComponent(escape(atob(v)));
       } catch {
-        return v; // ha nem base64, marad ahogy van
+        return v;
       }
     };
 
@@ -3075,9 +3081,34 @@ export class AccountService {
 
   getAllUsersAdmin(): Observable<AdminUsersResponse> {
     const body = this.buildAdminAuthBody();
-    return this.http
-      .post<AdminUsersResponse>(`${this.API_URL}/api/get_all_users_admin`, body)
-      .pipe(catchError(this.handleError));
+    return this.http.post<AdminUsersResponse>(`${this.API_URL}/api/get_all_users_admin`, body).pipe(
+      map((response) => {
+        if (response.statuscode === '200' && Array.isArray(response.users)) {
+          const dec = (v: string | undefined | null): string => {
+            if (!v) return '';
+
+            const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
+            const isLikelyBase64 = base64Regex.test(v) && v.length % 4 === 0 && v.length > 4;
+
+            if (!isLikelyBase64) return v;
+
+            try {
+              return decodeURIComponent(escape(atob(v)));
+            } catch {
+              return v;
+            }
+          };
+          response.users = response.users.map((u) => ({
+            ...u,
+            first_name: dec(u.first_name),
+            last_name: dec(u.last_name),
+            email: dec(u.email),
+          }));
+        }
+        return response;
+      }),
+      catchError(this.handleError),
+    );
   }
 
   getAllOrdersAdmin(): Observable<AdminOrdersResponse> {
@@ -4630,7 +4661,6 @@ export class ForumService {
   uploadPostImageAdmin(
     adminId: string,
     adminSessionToken: string,
-    transparency: string,
     postId: string,
     imageBase64: string,
   ) {
@@ -4640,7 +4670,7 @@ export class ForumService {
         {
           admin_id: adminId,
           admin_session_token: adminSessionToken,
-          transparency: transparency,
+          transparency: '0',
           post_id: postId,
           image_b64: imageBase64,
         },
@@ -5333,13 +5363,12 @@ export class ProductService {
     adminSessionToken: string,
     productId: string,
     imageBase64: string,
-    isTransparent: boolean,
   ): Observable<{ statuscode: string; status: string; image?: ProductImage }> {
     const body = {
       admin_id: adminId,
       admin_session_token: adminSessionToken,
       product_id: productId,
-      transparency: isTransparent ? '1' : '0',
+      transparency: '0',
       image_b64: imageBase64,
     };
     return this.http
@@ -8647,6 +8676,54 @@ tr.cancelled-row .order-status-select {
   box-shadow: var(--shadow-sm);
 }
 
+.phone-cell {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-prefix {
+  user-select: none;
+  -webkit-user-select: none;
+  color: var(--color-text-secondary);
+  margin-right: 1px;
+}
+
+.phone-body {
+  user-select: text;
+  -webkit-user-select: text;
+  letter-spacing: 0.02em;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.modal-cancel-btn {
+}
+
 
 
 ================================================================================
@@ -8931,7 +9008,14 @@ FILE: src\app\pages\admin\admin.html
                         <td>{{ order.billing_name || '—' }}</td>
                         <td class="muted">{{ formatDate(order.created_at) }}</td>
                         <td>{{ getOrderAddressSummary(order) }}</td>
-                        <td class="muted">{{ formatPhone(order.phone_number) }}</td>
+                        <td class="phone-cell">
+                          @if (order.phone_number) {
+                            <span class="phone-prefix" aria-hidden="true">+</span
+                            ><span class="phone-body">{{ formatPhone(order.phone_number) }}</span>
+                          } @else {
+                            <span class="muted">—</span>
+                          }
+                        </td>
                         <td class="font-bold">{{ formatRevenue(order.price) }}</td>
                         <td>
                           <select
@@ -9439,21 +9523,6 @@ FILE: src\app\pages\admin\admin.html
           }
         </div>
         <div class="gallery-header-controls">
-          <label
-            class="transparent-toggle"
-            [attr.title]="'admin.gallery.transparent_hint' | translate"
-          >
-            <span class="transparent-label">{{ 'admin.gallery.transparent' | translate }}</span>
-            <button
-              class="toggle-switch"
-              [class.active]="uploadTransparent()"
-              (click)="toggleTransparent()"
-              role="switch"
-              [attr.aria-checked]="uploadTransparent()"
-            >
-              <span class="toggle-knob"></span>
-            </button>
-          </label>
           <button
             class="gallery-close-btn"
             (click)="closeGallery()"
@@ -10024,20 +10093,7 @@ FILE: src\app\pages\admin\admin.html
             </div>
           </div>
 
-          <div class="pf-section">
-            <label class="transparent-toggle">
-              <span class="transparent-label">{{ 'admin.product_form.featured' | translate }}</span>
-              <button
-                class="toggle-switch"
-                [class.active]="productFormData().featured"
-                (click)="toggleProductFeatured()"
-                role="switch"
-                [attr.aria-checked]="productFormData().featured"
-              >
-                <span class="toggle-knob"></span>
-              </button>
-            </label>
-          </div>
+          <div class="pf-section"></div>
         }
       </div>
 
@@ -11064,7 +11120,6 @@ export class Admin implements OnInit {
   galleryProduct = signal<ProductWithHelpers | null>(null);
   galleryImages = signal<GalleryImage[]>([]);
   galleryLoading = signal(false);
-  uploadTransparent = signal(false);
   uploadInProgress = signal(false);
 
   detailOpen = signal(false);
@@ -11204,6 +11259,7 @@ export class Admin implements OnInit {
       return;
     }
 
+    this.forumService.loadCategories();
     this.loadUsers();
     this.loadOrders();
     this.loadProducts();
@@ -11338,13 +11394,13 @@ export class Admin implements OnInit {
   openOrderDetail(order: AdminOrder): void {
     this.orderDetailOrder.set(order);
     this.orderDetailOpen.set(true);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
   }
 
   closeOrderDetail(): void {
     this.orderDetailOpen.set(false);
     this.orderDetailOrder.set(null);
-    document.body.style.overflow = '';
+    this.unlockBodyScrollIfNoModal();
   }
 
   exportOrdersPdf(): void {
@@ -11450,24 +11506,24 @@ export class Admin implements OnInit {
 
   formatPhone(raw: string | undefined): string {
     if (!raw) return '—';
-    const digits = raw.replace(/[^\d+]/g, '');
-    if (!digits) return raw;
+    const digits = raw.replace(/\D/g, '');
+    if (!digits) return '—';
 
-    // Magyar formátum: +36 XX XXX XXXX vagy +36 1 XXX XXXX
-    if (digits.startsWith('+36') && digits.length >= 11) {
-      const country = '+36';
-      const rest = digits.slice(3);
-      if (rest.length === 8) {
-        // Mobil: +36 XX XXX XXX
-        return `${country} ${rest.slice(0, 2)} ${rest.slice(2, 5)} ${rest.slice(5)}`;
-      }
-      if (rest.length === 9) {
-        // Mobil: +36 XX XXX XXXX
-        return `${country} ${rest.slice(0, 2)} ${rest.slice(2, 5)} ${rest.slice(5)}`;
-      }
+    // Format: CC AA BBB CCCC (pl. 36 20 123 4567)
+    if (digits.length >= 9) {
+      const cc = digits.slice(0, 2);
+      const area = digits.slice(2, 4);
+      const p1 = digits.slice(4, 7);
+      const p2 = digits.slice(7);
+      return `${cc}\u00a0${area}\u00a0${p1}\u00a0${p2}`;
     }
 
-    return digits; // unknown format
+    return digits;
+  }
+
+  formatPhoneDigits(raw: string | undefined): string {
+    if (!raw) return '';
+    return raw.replace(/\D/g, '');
   }
 
   getProductName(product: OrderProductDetail): string {
@@ -11869,14 +11925,14 @@ export class Admin implements OnInit {
     }
     this.productFormTab.set('basic');
     this.productFormOpen.set(true);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
   }
 
   closeProductForm(): void {
     this.productFormOpen.set(false);
     this.productFormEditId.set(null);
     this.productFormData.set(emptyProductForm());
-    document.body.style.overflow = '';
+    this.unlockBodyScrollIfNoModal();
   }
 
   onProductFormOverlayClick(event: MouseEvent): void {
@@ -12003,14 +12059,14 @@ export class Admin implements OnInit {
     }
     this.postFormTab.set('basic');
     this.postFormOpen.set(true);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
   }
 
   closePostForm(): void {
     this.postFormOpen.set(false);
     this.postFormEditId.set(null);
     this.postFormData.set(emptyPostForm());
-    document.body.style.overflow = '';
+    this.unlockBodyScrollIfNoModal();
   }
 
   onPostFormOverlayClick(event: MouseEvent): void {
@@ -12207,7 +12263,7 @@ export class Admin implements OnInit {
     this.postGalleryImages.set([]);
     this.postGalleryOpen.set(true);
     this.postGalleryLoading.set(true);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
 
     if (MOCK_MODE) {
       const mockImages: GalleryImage[] = [];
@@ -12248,9 +12304,7 @@ export class Admin implements OnInit {
     this.postGalleryOpen.set(false);
     this.postGalleryPost.set(null);
     this.postGalleryImages.set([]);
-    if (!this.postImageDetailOpen()) {
-      document.body.style.overflow = '';
-    }
+    this.unlockBodyScrollIfNoModal();
   }
 
   onPostGalleryOverlayClick(event: MouseEvent): void {
@@ -12269,10 +12323,6 @@ export class Admin implements OnInit {
       if (files) this.handlePostFileUpload(files);
     };
     input.click();
-  }
-
-  private mapTransparency(value: boolean): string {
-    return value ? '1' : '0';
   }
 
   private async handlePostFileUpload(files: FileList): Promise<void> {
@@ -12314,12 +12364,7 @@ export class Admin implements OnInit {
       this.postGalleryImages.update((imgs) => [...imgs, newImage]);
 
       if (!MOCK_MODE) {
-        this.uploadPostImageToBackend(
-          post.id,
-          this.mapTransparency(this.uploadTransparent()),
-          file,
-          newImage.id,
-        );
+        this.uploadPostImageToBackend(post.id, '0', file, newImage.id);
       }
     }
   }
@@ -12338,29 +12383,27 @@ export class Admin implements OnInit {
     reader.onload = () => {
       const imageBase64 = reader.result as string;
 
-      this.forumService
-        .uploadPostImageAdmin(adminId, token, transparency, postId, imageBase64)
-        .subscribe({
-          next: (res) => {
-            if (res.statuscode === '200' && 'image' in res) {
-              const uploaded = (res as { statuscode: string; status: string; image: GalleryImage })
-                .image;
-              if (uploaded) {
-                this.postGalleryImages.update((imgs) =>
-                  imgs.map((img) =>
-                    img.id === tempId
-                      ? { ...img, id: uploaded.id, image_url: uploaded.image_url, file: undefined }
-                      : img,
-                  ),
-                );
-              }
+      this.forumService.uploadPostImageAdmin(adminId, token, postId, imageBase64).subscribe({
+        next: (res) => {
+          if (res.statuscode === '200' && 'image' in res) {
+            const uploaded = (res as { statuscode: string; status: string; image: GalleryImage })
+              .image;
+            if (uploaded) {
+              this.postGalleryImages.update((imgs) =>
+                imgs.map((img) =>
+                  img.id === tempId
+                    ? { ...img, id: uploaded.id, image_url: uploaded.image_url, file: undefined }
+                    : img,
+                ),
+              );
             }
-            this.postUploadInProgress.set(false);
-          },
-          error: () => {
-            this.postUploadInProgress.set(false);
-          },
-        });
+          }
+          this.postUploadInProgress.set(false);
+        },
+        error: () => {
+          this.postUploadInProgress.set(false);
+        },
+      });
     };
     reader.onerror = () => {
       this.postUploadInProgress.set(false);
@@ -12483,8 +12526,7 @@ export class Admin implements OnInit {
     this.galleryImages.set([]);
     this.galleryOpen.set(true);
     this.galleryLoading.set(true);
-    this.uploadTransparent.set(false);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
 
     if (MOCK_MODE) {
       this.loadMockGalleryImages(product);
@@ -12541,20 +12583,13 @@ export class Admin implements OnInit {
     this.galleryOpen.set(false);
     this.galleryProduct.set(null);
     this.galleryImages.set([]);
-    this.uploadTransparent.set(false);
-    if (!this.detailOpen()) {
-      document.body.style.overflow = '';
-    }
+    this.unlockBodyScrollIfNoModal();
   }
 
   onGalleryOverlayClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('gallery-overlay')) {
       this.closeGallery();
     }
-  }
-
-  toggleTransparent(): void {
-    this.uploadTransparent.update((v) => !v);
   }
 
   triggerFileUpload(): void {
@@ -12624,13 +12659,7 @@ export class Admin implements OnInit {
       const imageBase64 = reader.result as string;
 
       this.productService
-        .uploadProductImageAdmin(
-          adminId,
-          adminSessionToken,
-          productId,
-          imageBase64,
-          this.uploadTransparent(),
-        )
+        .uploadProductImageAdmin(adminId, adminSessionToken, productId, imageBase64)
         .subscribe({
           next: (res) => {
             if (res.statuscode === '200' && res.image) {
@@ -12812,6 +12841,24 @@ export class Admin implements OnInit {
       svg: 'image/svg+xml',
     };
     return map[ext ?? ''] || 'image/*';
+  }
+
+  private lockBodyScroll(): void {
+    document.body.style.overflow = 'hidden';
+  }
+
+  private unlockBodyScrollIfNoModal(): void {
+    const anyModalOpen =
+      this.orderDetailOpen() ||
+      this.productFormOpen() ||
+      this.postFormOpen() ||
+      this.galleryOpen() ||
+      this.detailOpen() ||
+      this.postGalleryOpen() ||
+      this.postImageDetailOpen();
+    if (!anyModalOpen) {
+      document.body.style.overflow = '';
+    }
   }
 }
 
@@ -18195,7 +18242,7 @@ FILE: src\app\pages\orders\orders.html
 
               <div>
                 <strong>{{ 'orders.fields.phone' | translate }}:</strong>
-                {{ order.phone_number }}
+                {{ formatPhone(order.phone_number) }}
               </div>
 
               @if (order.tracking_token) {
@@ -18242,6 +18289,7 @@ import { CommonModule } from '@angular/common';
 import { AccountService, AdminOrder } from '../../core/services/account.service';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-orders',
@@ -18269,12 +18317,35 @@ export class Orders implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
+    const accountState = this.authService.currentUser()?.account_state ?? '';
+    const isAdmin = accountState === 'admin' || accountState === 'superadmin';
+
+    if (isAdmin) {
+      this.accountService.getAllOrdersAdmin().subscribe({
+        next: (res) => {
+          this.orders.set(res?.orders ?? []);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set(err?.message ?? 'orders.error_load');
+          this.loading.set(false);
+        },
+      });
+      return;
+    }
+
     const userId =
       this.authService.getUserId() ??
       sessionStorage.getItem('user_id') ??
       localStorage.getItem('user_id') ??
       '';
     const token = this.authService.getSessionToken() ?? this.authService.getToken() ?? '';
+
+    if (!userId || !token) {
+      this.error.set('orders.error_load');
+      this.loading.set(false);
+      return;
+    }
 
     this.accountService.getOrders({ id: userId, session_token: token }).subscribe({
       next: (res) => {
@@ -18286,6 +18357,20 @@ export class Orders implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  formatPhone(raw: string | undefined): string {
+    if (!raw) return '—';
+    const digits = raw.replace(/\D/g, '');
+    if (!digits) return '—';
+    if (digits.length >= 9) {
+      const cc = digits.slice(0, 2);
+      const area = digits.slice(2, 4);
+      const p1 = digits.slice(4, 7);
+      const p2 = digits.slice(7);
+      return `+${cc}\u00a0${area}\u00a0${p1}\u00a0${p2}`;
+    }
+    return digits;
   }
 
   toggle(orderId: string) {
@@ -23328,7 +23413,7 @@ export class Profile implements OnInit {
       this.accountService.getAllOrdersAdmin().subscribe({
         next: (res) => {
           this.isLoadingOrders.set(false);
-          if (res.statuscode === '200' && Array.isArray(res.orders)) {
+          if (Array.isArray(res.orders)) {
             this.orders.set(res.orders);
           }
         },
@@ -23341,7 +23426,7 @@ export class Profile implements OnInit {
       this.accountService.getOrders({ id: userId, session_token: sessionToken }).subscribe({
         next: (res) => {
           this.isLoadingOrders.set(false);
-          if (res.statuscode === '200' && Array.isArray(res.orders)) {
+          if (Array.isArray(res.orders)) {
             this.orders.set(res.orders);
           }
         },
@@ -23984,6 +24069,49 @@ FILE: src\app\pages\purchase\purchase.css
   color: var(--color-brand-primary-hover);
 }
 
+/* Phone input with + prefix */
+.phone-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.phone-input-wrapper:focus-within {
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px var(--color-success-light);
+}
+
+.phone-prefix-label {
+  padding: 0.75rem 0.25rem 0.75rem 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.phone-input-wrapper input {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent;
+  flex: 1;
+  padding-left: 2px;
+}
+
+.phone-input-wrapper input:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
 
 
 ================================================================================
@@ -24222,15 +24350,19 @@ FILE: src\app\pages\purchase\purchase.html
 
             <div class="form-group">
               <label for="phoneNumber">{{ 'checkout.phone' | translate }} *</label>
-              <input
-                type="tel"
-                id="phoneNumber"
-                name="phoneNumber"
-                [(ngModel)]="form.phoneNumber"
-                [placeholder]="'checkout.phone_placeholder' | translate"
-                required
-                [disabled]="isSubmitting()"
-              />
+              <div class="phone-input-wrapper">
+                <span class="phone-prefix-label">+</span>
+                <input
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  [ngModel]="form.phoneNumber"
+                  (ngModelChange)="onPhoneInput($event)"
+                  [placeholder]="'36 20 123 4567'"
+                  required
+                  [disabled]="isSubmitting()"
+                />
+              </div>
             </div>
 
             <div class="form-group">
@@ -24402,6 +24534,24 @@ export class Purchase implements OnInit {
     }
   }
 
+  onPhoneInput(value: string): void {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    let formatted = digits;
+    if (digits.length > 2) formatted = digits.slice(0, 2) + ' ' + digits.slice(2);
+    if (digits.length > 4)
+      formatted = digits.slice(0, 2) + ' ' + digits.slice(2, 4) + ' ' + digits.slice(4);
+    if (digits.length > 7)
+      formatted =
+        digits.slice(0, 2) +
+        ' ' +
+        digits.slice(2, 4) +
+        ' ' +
+        digits.slice(4, 7) +
+        ' ' +
+        digits.slice(7);
+    this.form.phoneNumber = formatted;
+  }
+
   getFormattedUnitPrice(product: Product): string {
     return this.currencyService.formatPrice(this.currencyService.getDiscountedPrice(product));
   }
@@ -24551,7 +24701,7 @@ export class Purchase implements OnInit {
           apartment_number: this.form.apartmentNumber?.trim() || '0',
           note: this.form.note?.trim() || '0',
           house_number: this.form.houseNumber,
-          phone_number: this.form.phoneNumber,
+          phone_number: '+' + this.form.phoneNumber.replace(/\s/g, ''),
         }),
 
         items: this.cartItems().map((i) =>
@@ -33476,7 +33626,8 @@ FILE: src\assets\i18n\de.json
       "subtitle": "Bestellverlauf und Verfolgung",
       "empty_title": "Noch keine Bestellungen",
       "empty_desc": "Sobald Sie eine Bestellung aufgeben, erscheint der Verlauf hier.",
-      "browse_products": "Produkte durchsuchen"
+      "browse_products": "Produkte durchsuchen",
+      "load_error": "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es erneut."
     },
     "danger": {
       "subtitle": "Unwiderrufliche Kontoaktionen verwalten",
@@ -34351,7 +34502,8 @@ FILE: src\assets\i18n\en.json
       "subtitle": "Order history and tracking",
       "empty_title": "No orders yet",
       "empty_desc": "Once you place an order, your history will appear here.",
-      "browse_products": "Browse Products"
+      "browse_products": "Browse Products",
+      "load_error": "Failed to load orders. Please try again."
     },
     "success": {
       "profile_updated": "Profile updated successfully."
@@ -35214,7 +35366,8 @@ FILE: src\assets\i18n\hu.json
       "subtitle": "Rendelési előzmények és nyomon követés",
       "empty_title": "Még nincs rendelésed",
       "empty_desc": "Ha leadtál rendelést, itt fogod látni az előzményeidet.",
-      "browse_products": "Termékek böngészése"
+      "browse_products": "Termékek böngészése",
+      "load_error": "Nem sikerült betölteni a rendeléseket. Kérjük, próbálja újra."
     },
     "success": {
       "profile_updated": "Profil sikeresen frissítve."

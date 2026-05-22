@@ -501,3 +501,46 @@
 .terms-link:hover {
   color: var(--color-brand-primary-hover);
 }
+
+/* Phone input with + prefix */
+.phone-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.phone-input-wrapper:focus-within {
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px var(--color-success-light);
+}
+
+.phone-prefix-label {
+  padding: 0.75rem 0.25rem 0.75rem 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.phone-input-wrapper input {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent;
+  flex: 1;
+  padding-left: 2px;
+}
+
+.phone-input-wrapper input:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}

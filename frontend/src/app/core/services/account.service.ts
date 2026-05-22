@@ -125,10 +125,16 @@ export class AccountService {
   private decodeOrderFields(order: AdminOrder): AdminOrder {
     const dec = (v: string | undefined | null): string => {
       if (!v) return '';
+
+      const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
+      const isLikelyBase64 = base64Regex.test(v) && v.length % 4 === 0 && v.length > 4;
+
+      if (!isLikelyBase64) return v;
+
       try {
         return decodeURIComponent(escape(atob(v)));
       } catch {
-        return v; // ha nem base64, marad ahogy van
+        return v;
       }
     };
 
@@ -286,9 +292,34 @@ export class AccountService {
 
   getAllUsersAdmin(): Observable<AdminUsersResponse> {
     const body = this.buildAdminAuthBody();
-    return this.http
-      .post<AdminUsersResponse>(`${this.API_URL}/api/get_all_users_admin`, body)
-      .pipe(catchError(this.handleError));
+    return this.http.post<AdminUsersResponse>(`${this.API_URL}/api/get_all_users_admin`, body).pipe(
+      map((response) => {
+        if (response.statuscode === '200' && Array.isArray(response.users)) {
+          const dec = (v: string | undefined | null): string => {
+            if (!v) return '';
+
+            const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
+            const isLikelyBase64 = base64Regex.test(v) && v.length % 4 === 0 && v.length > 4;
+
+            if (!isLikelyBase64) return v;
+
+            try {
+              return decodeURIComponent(escape(atob(v)));
+            } catch {
+              return v;
+            }
+          };
+          response.users = response.users.map((u) => ({
+            ...u,
+            first_name: dec(u.first_name),
+            last_name: dec(u.last_name),
+            email: dec(u.email),
+          }));
+        }
+        return response;
+      }),
+      catchError(this.handleError),
+    );
   }
 
   getAllOrdersAdmin(): Observable<AdminOrdersResponse> {

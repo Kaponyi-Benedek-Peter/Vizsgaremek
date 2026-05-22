@@ -131,7 +131,7 @@ export class Profile implements OnInit {
       this.accountService.getAllOrdersAdmin().subscribe({
         next: (res) => {
           this.isLoadingOrders.set(false);
-          if (res.statuscode === '200' && Array.isArray(res.orders)) {
+          if (Array.isArray(res.orders)) {
             this.orders.set(res.orders);
           }
         },
@@ -144,7 +144,7 @@ export class Profile implements OnInit {
       this.accountService.getOrders({ id: userId, session_token: sessionToken }).subscribe({
         next: (res) => {
           this.isLoadingOrders.set(false);
-          if (res.statuscode === '200' && Array.isArray(res.orders)) {
+          if (Array.isArray(res.orders)) {
             this.orders.set(res.orders);
           }
         },

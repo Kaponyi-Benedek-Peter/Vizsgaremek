@@ -307,7 +307,8 @@
       "subtitle": "Order history and tracking",
       "empty_title": "No orders yet",
       "empty_desc": "Once you place an order, your history will appear here.",
-      "browse_products": "Browse Products"
+      "browse_products": "Browse Products",
+      "load_error": "Failed to load orders. Please try again."
     },
     "success": {
       "profile_updated": "Profile updated successfully."

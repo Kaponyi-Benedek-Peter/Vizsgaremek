@@ -115,7 +115,6 @@ export class Admin implements OnInit {
   galleryProduct = signal<ProductWithHelpers | null>(null);
   galleryImages = signal<GalleryImage[]>([]);
   galleryLoading = signal(false);
-  uploadTransparent = signal(false);
   uploadInProgress = signal(false);
 
   detailOpen = signal(false);
@@ -255,6 +254,7 @@ export class Admin implements OnInit {
       return;
     }
 
+    this.forumService.loadCategories();
     this.loadUsers();
     this.loadOrders();
     this.loadProducts();
@@ -389,13 +389,13 @@ export class Admin implements OnInit {
   openOrderDetail(order: AdminOrder): void {
     this.orderDetailOrder.set(order);
     this.orderDetailOpen.set(true);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
   }
 
   closeOrderDetail(): void {
     this.orderDetailOpen.set(false);
     this.orderDetailOrder.set(null);
-    document.body.style.overflow = '';
+    this.unlockBodyScrollIfNoModal();
   }
 
   exportOrdersPdf(): void {
@@ -501,24 +501,24 @@ export class Admin implements OnInit {
 
   formatPhone(raw: string | undefined): string {
     if (!raw) return '—';
-    const digits = raw.replace(/[^\d+]/g, '');
-    if (!digits) return raw;
+    const digits = raw.replace(/\D/g, '');
+    if (!digits) return '—';
 
-    // Magyar formátum: +36 XX XXX XXXX vagy +36 1 XXX XXXX
-    if (digits.startsWith('+36') && digits.length >= 11) {
-      const country = '+36';
-      const rest = digits.slice(3);
-      if (rest.length === 8) {
-        // Mobil: +36 XX XXX XXX
-        return `${country} ${rest.slice(0, 2)} ${rest.slice(2, 5)} ${rest.slice(5)}`;
-      }
-      if (rest.length === 9) {
-        // Mobil: +36 XX XXX XXXX
-        return `${country} ${rest.slice(0, 2)} ${rest.slice(2, 5)} ${rest.slice(5)}`;
-      }
+    // Format: CC AA BBB CCCC (pl. 36 20 123 4567)
+    if (digits.length >= 9) {
+      const cc = digits.slice(0, 2);
+      const area = digits.slice(2, 4);
+      const p1 = digits.slice(4, 7);
+      const p2 = digits.slice(7);
+      return `${cc}\u00a0${area}\u00a0${p1}\u00a0${p2}`;
     }
 
-    return digits; // unknown format
+    return digits;
+  }
+
+  formatPhoneDigits(raw: string | undefined): string {
+    if (!raw) return '';
+    return raw.replace(/\D/g, '');
   }
 
   getProductName(product: OrderProductDetail): string {
@@ -920,14 +920,14 @@ export class Admin implements OnInit {
     }
     this.productFormTab.set('basic');
     this.productFormOpen.set(true);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
   }
 
   closeProductForm(): void {
     this.productFormOpen.set(false);
     this.productFormEditId.set(null);
     this.productFormData.set(emptyProductForm());
-    document.body.style.overflow = '';
+    this.unlockBodyScrollIfNoModal();
   }
 
   onProductFormOverlayClick(event: MouseEvent): void {
@@ -1054,14 +1054,14 @@ export class Admin implements OnInit {
     }
     this.postFormTab.set('basic');
     this.postFormOpen.set(true);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
   }
 
   closePostForm(): void {
     this.postFormOpen.set(false);
     this.postFormEditId.set(null);
     this.postFormData.set(emptyPostForm());
-    document.body.style.overflow = '';
+    this.unlockBodyScrollIfNoModal();
   }
 
   onPostFormOverlayClick(event: MouseEvent): void {
@@ -1258,7 +1258,7 @@ export class Admin implements OnInit {
     this.postGalleryImages.set([]);
     this.postGalleryOpen.set(true);
     this.postGalleryLoading.set(true);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
 
     if (MOCK_MODE) {
       const mockImages: GalleryImage[] = [];
@@ -1299,9 +1299,7 @@ export class Admin implements OnInit {
     this.postGalleryOpen.set(false);
     this.postGalleryPost.set(null);
     this.postGalleryImages.set([]);
-    if (!this.postImageDetailOpen()) {
-      document.body.style.overflow = '';
-    }
+    this.unlockBodyScrollIfNoModal();
   }
 
   onPostGalleryOverlayClick(event: MouseEvent): void {
@@ -1320,10 +1318,6 @@ export class Admin implements OnInit {
       if (files) this.handlePostFileUpload(files);
     };
     input.click();
-  }
-
-  private mapTransparency(value: boolean): string {
-    return value ? '1' : '0';
   }
 
   private async handlePostFileUpload(files: FileList): Promise<void> {
@@ -1365,12 +1359,7 @@ export class Admin implements OnInit {
       this.postGalleryImages.update((imgs) => [...imgs, newImage]);
 
       if (!MOCK_MODE) {
-        this.uploadPostImageToBackend(
-          post.id,
-          this.mapTransparency(this.uploadTransparent()),
-          file,
-          newImage.id,
-        );
+        this.uploadPostImageToBackend(post.id, '0', file, newImage.id);
       }
     }
   }
@@ -1389,29 +1378,27 @@ export class Admin implements OnInit {
     reader.onload = () => {
       const imageBase64 = reader.result as string;
 
-      this.forumService
-        .uploadPostImageAdmin(adminId, token, transparency, postId, imageBase64)
-        .subscribe({
-          next: (res) => {
-            if (res.statuscode === '200' && 'image' in res) {
-              const uploaded = (res as { statuscode: string; status: string; image: GalleryImage })
-                .image;
-              if (uploaded) {
-                this.postGalleryImages.update((imgs) =>
-                  imgs.map((img) =>
-                    img.id === tempId
-                      ? { ...img, id: uploaded.id, image_url: uploaded.image_url, file: undefined }
-                      : img,
-                  ),
-                );
-              }
+      this.forumService.uploadPostImageAdmin(adminId, token, postId, imageBase64).subscribe({
+        next: (res) => {
+          if (res.statuscode === '200' && 'image' in res) {
+            const uploaded = (res as { statuscode: string; status: string; image: GalleryImage })
+              .image;
+            if (uploaded) {
+              this.postGalleryImages.update((imgs) =>
+                imgs.map((img) =>
+                  img.id === tempId
+                    ? { ...img, id: uploaded.id, image_url: uploaded.image_url, file: undefined }
+                    : img,
+                ),
+              );
             }
-            this.postUploadInProgress.set(false);
-          },
-          error: () => {
-            this.postUploadInProgress.set(false);
-          },
-        });
+          }
+          this.postUploadInProgress.set(false);
+        },
+        error: () => {
+          this.postUploadInProgress.set(false);
+        },
+      });
     };
     reader.onerror = () => {
       this.postUploadInProgress.set(false);
@@ -1534,8 +1521,7 @@ export class Admin implements OnInit {
     this.galleryImages.set([]);
     this.galleryOpen.set(true);
     this.galleryLoading.set(true);
-    this.uploadTransparent.set(false);
-    document.body.style.overflow = 'hidden';
+    this.lockBodyScroll();
 
     if (MOCK_MODE) {
       this.loadMockGalleryImages(product);
@@ -1592,20 +1578,13 @@ export class Admin implements OnInit {
     this.galleryOpen.set(false);
     this.galleryProduct.set(null);
     this.galleryImages.set([]);
-    this.uploadTransparent.set(false);
-    if (!this.detailOpen()) {
-      document.body.style.overflow = '';
-    }
+    this.unlockBodyScrollIfNoModal();
   }
 
   onGalleryOverlayClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('gallery-overlay')) {
       this.closeGallery();
     }
-  }
-
-  toggleTransparent(): void {
-    this.uploadTransparent.update((v) => !v);
   }
 
   triggerFileUpload(): void {
@@ -1675,13 +1654,7 @@ export class Admin implements OnInit {
       const imageBase64 = reader.result as string;
 
       this.productService
-        .uploadProductImageAdmin(
-          adminId,
-          adminSessionToken,
-          productId,
-          imageBase64,
-          this.uploadTransparent(),
-        )
+        .uploadProductImageAdmin(adminId, adminSessionToken, productId, imageBase64)
         .subscribe({
           next: (res) => {
             if (res.statuscode === '200' && res.image) {
@@ -1863,5 +1836,23 @@ export class Admin implements OnInit {
       svg: 'image/svg+xml',
     };
     return map[ext ?? ''] || 'image/*';
+  }
+
+  private lockBodyScroll(): void {
+    document.body.style.overflow = 'hidden';
+  }
+
+  private unlockBodyScrollIfNoModal(): void {
+    const anyModalOpen =
+      this.orderDetailOpen() ||
+      this.productFormOpen() ||
+      this.postFormOpen() ||
+      this.galleryOpen() ||
+      this.detailOpen() ||
+      this.postGalleryOpen() ||
+      this.postImageDetailOpen();
+    if (!anyModalOpen) {
+      document.body.style.overflow = '';
+    }
   }
 }

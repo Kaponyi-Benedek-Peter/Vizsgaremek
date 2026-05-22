@@ -382,7 +382,6 @@ export class ForumService {
   uploadPostImageAdmin(
     adminId: string,
     adminSessionToken: string,
-    transparency: string,
     postId: string,
     imageBase64: string,
   ) {
@@ -392,7 +391,7 @@ export class ForumService {
         {
           admin_id: adminId,
           admin_session_token: adminSessionToken,
-          transparency: transparency,
+          transparency: '0',
           post_id: postId,
           image_b64: imageBase64,
         },

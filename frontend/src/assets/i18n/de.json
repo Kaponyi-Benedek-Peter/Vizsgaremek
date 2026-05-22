@@ -295,7 +295,8 @@
       "subtitle": "Bestellverlauf und Verfolgung",
       "empty_title": "Noch keine Bestellungen",
       "empty_desc": "Sobald Sie eine Bestellung aufgeben, erscheint der Verlauf hier.",
-      "browse_products": "Produkte durchsuchen"
+      "browse_products": "Produkte durchsuchen",
+      "load_error": "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es erneut."
     },
     "danger": {
       "subtitle": "Unwiderrufliche Kontoaktionen verwalten",
