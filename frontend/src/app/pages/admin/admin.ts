@@ -172,7 +172,7 @@ export class Admin implements OnInit {
   postFormIsEdit = computed(() => this.postFormEditId() !== null);
   postFormIsValid = computed(() => {
     const d = this.postFormData();
-    return d.title.trim().length > 0 && d.content.trim().length > 0;
+    return d.title.trim().length > 0 && d.content.trim().length > 0 && d.category_id.length > 0;
   });
 
   availableCategories = computed(() => this.productService.categories());
@@ -254,7 +254,6 @@ export class Admin implements OnInit {
       return;
     }
 
-    this.forumService.loadCategories();
     this.loadUsers();
     this.loadOrders();
     this.loadProducts();
@@ -264,9 +263,12 @@ export class Admin implements OnInit {
       if (params['section'] === 'posts') {
         this.activeSection.set('posts');
         if (params['action'] === 'new') {
-          // Kis delay, hogy az oldal betöltsön
-          setTimeout(() => this.openPostForm(), 100);
+          this.forumService.loadCategories().subscribe(() => this.openPostForm());
+        } else {
+          this.forumService.loadCategories().subscribe();
         }
+      } else {
+        this.forumService.loadCategories().subscribe();
       }
     });
   }
@@ -1033,8 +1035,6 @@ export class Admin implements OnInit {
   }
 
   openPostForm(post?: Post): void {
-    this.forumService.loadCategories();
-
     if (post) {
       this.postFormEditId.set(post.id);
       this.postFormData.set({
@@ -1048,9 +1048,16 @@ export class Admin implements OnInit {
         is_featured: !!post.is_featured ? '0' : '1',
         slug: post.slug || '',
       });
+      this.forumService.loadCategories().subscribe();
     } else {
       this.postFormEditId.set(null);
       this.postFormData.set(emptyPostForm());
+      // Betöltjük a kategóriákat, és ha még nem volt kiválasztva, az elsőt állítjuk be alapértelmezettként
+      this.forumService.loadCategories().subscribe((categories) => {
+        if (categories.length > 0 && !this.postFormData().category_id) {
+          this.postFormData.update((data) => ({ ...data, category_id: categories[0].id }));
+        }
+      });
     }
     this.postFormTab.set('basic');
     this.postFormOpen.set(true);
@@ -1106,6 +1113,11 @@ export class Admin implements OnInit {
     if (!data.content.trim()) {
       this.toastService.show('admin.posts_form.error_content_required', 'error');
       this.postFormTab.set('content');
+      return;
+    }
+    if (!data.category_id) {
+      this.toastService.show('admin.posts_form.error_category_required', 'error');
+      this.postFormTab.set('basic');
       return;
     }
 

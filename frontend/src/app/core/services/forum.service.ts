@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { catchError, map, timeout, forkJoin, of } from 'rxjs';
+import { catchError, map, tap, timeout, forkJoin, of, Observable } from 'rxjs';
 
 import {
   Post,
@@ -83,13 +83,12 @@ export class ForumService {
     });
   }
 
-  loadCategories(): void {
-    if (this.categoriesSignal().length > 0) return;
+  loadCategories(): Observable<CategoryInfo[]> {
+    if (this.categoriesSignal().length > 0) {
+      return of(this.categoriesSignal());
+    }
 
-    this.fetchCategories().subscribe({
-      next: (categories) => this.categoriesSignal.set(categories),
-      error: () => {},
-    });
+    return this.fetchCategories().pipe(tap((categories) => this.categoriesSignal.set(categories)));
   }
 
   private fetchCategories() {
@@ -98,8 +97,9 @@ export class ForumService {
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => {
-          if (res?.status === 'success' && Array.isArray(res.categories)) {
-            return this.mapBackendCategories(res.categories);
+          const cats = (res as any)?.post_categories ?? res?.categories;
+          if (Array.isArray(cats) && cats.length > 0) {
+            return this.mapBackendCategories(cats);
           }
           return [] as CategoryInfo[];
         }),
@@ -115,7 +115,7 @@ export class ForumService {
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => {
-          if (res?.status === 'success' && Array.isArray(res.posts)) {
+          if (Array.isArray(res?.posts) && res.posts.length > 0) {
             return res.posts;
           }
           return [] as Post[];

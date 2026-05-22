@@ -308,7 +308,9 @@
       "empty_title": "Még nincs rendelésed",
       "empty_desc": "Ha leadtál rendelést, itt fogod látni az előzményeidet.",
       "browse_products": "Termékek böngészése",
-      "load_error": "Nem sikerült betölteni a rendeléseket. Kérjük, próbálja újra."
+      "load_error": "Nem sikerült betölteni a rendeléseket. Kérjük, próbálja újra.",
+      "tracking": "Követési azonosító",
+      "order_id": "Rendelés Azonosítója"
     },
     "success": {
       "profile_updated": "Profil sikeresen frissítve."
@@ -630,7 +632,9 @@
       "deleted": "Bejegyzés sikeresen törölve.",
       "save_error": "Nem sikerült menteni a bejegyzést.",
       "delete_error": "Nem sikerült törölni a bejegyzést.",
-      "error_title_required": "A bejegyzés címe kötelező."
+      "error_title_required": "A bejegyzés címe kötelező.",
+      "error_category_required": "A kategória megadása kötelező.",
+      "select_category": "Válassz kategóriát..."
     },
     "stats": {
       "this_week": "ezen a héten",

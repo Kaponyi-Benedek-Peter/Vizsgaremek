@@ -1523,13 +1523,23 @@
             <h3 class="pf-section-title">{{ 'admin.posts_form.section_settings' | translate }}</h3>
             <div class="pf-grid-2">
               <div class="pf-field">
-                <label class="pf-label">{{ 'admin.table.category' | translate }}</label>
+                <label class="pf-label"
+                  >{{ 'admin.table.category' | translate }}
+                  <span class="pf-required">*</span></label
+                >
                 <select
                   class="pf-select"
+                  [class.pf-select-invalid]="!postFormData().category_id"
                   [ngModel]="postFormData().category_id"
                   (ngModelChange)="updatePostField('category_id', $event)"
                 >
-                  <option value="">—</option>
+                  <option value="">
+                    @if (availablePostCategories().length === 0) {
+                      {{ 'common.loading' | translate }}
+                    } @else {
+                      {{ 'admin.posts_form.select_category' | translate }}
+                    }
+                  </option>
                   @for (cat of availablePostCategories(); track cat.id) {
                     <option [value]="cat.id">{{ cat.display_name }}</option>
                   }

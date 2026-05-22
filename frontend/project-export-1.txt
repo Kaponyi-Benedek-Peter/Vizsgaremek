@@ -680,19 +680,19 @@ describe('Products page', () => {
   });
 
   it('should search products with the search bar', () => {
-    cy.get('app-product-filter .search-input', { timeout: 10000 }).type('algoflex');
+    cy.get('app-product-filter .search-input', { timeout: 10000 }).type('aspirin');
     cy.wait(500);
     cy.get('app-product-card').each(($card) => {
       cy.wrap($card)
         .invoke('text')
         .then((text) => {
-          expect(text.toLowerCase()).to.include('algoflex');
+          expect(text.toLowerCase()).to.include('aspirin');
         });
     });
   });
 
   it('should clear search and show all products again', () => {
-    cy.get('app-product-filter .search-input', { timeout: 10000 }).type('algoflex');
+    cy.get('app-product-filter .search-input', { timeout: 10000 }).type('aspirin');
     cy.wait(500);
     cy.get('app-product-card').should('have.length.at.least', 1);
 
@@ -852,7 +852,7 @@ import { defineConfig } from 'cypress';
 
 export default defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:4200',
+    baseUrl: 'https://www.roysshack.hu',
     supportFile: 'cypress/support/e2e.ts',
     specPattern: 'cypress/support/e2e/**/*.cy.ts',
     viewportWidth: 1280,
@@ -4280,7 +4280,7 @@ FILE: src\app\core\services\forum.service.ts
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { catchError, map, timeout, forkJoin, of } from 'rxjs';
+import { catchError, map, tap, timeout, forkJoin, of, Observable } from 'rxjs';
 
 import {
   Post,
@@ -4362,13 +4362,12 @@ export class ForumService {
     });
   }
 
-  loadCategories(): void {
-    if (this.categoriesSignal().length > 0) return;
+  loadCategories(): Observable<CategoryInfo[]> {
+    if (this.categoriesSignal().length > 0) {
+      return of(this.categoriesSignal());
+    }
 
-    this.fetchCategories().subscribe({
-      next: (categories) => this.categoriesSignal.set(categories),
-      error: () => {},
-    });
+    return this.fetchCategories().pipe(tap((categories) => this.categoriesSignal.set(categories)));
   }
 
   private fetchCategories() {
@@ -4377,8 +4376,9 @@ export class ForumService {
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => {
-          if (res?.status === 'success' && Array.isArray(res.categories)) {
-            return this.mapBackendCategories(res.categories);
+          const cats = (res as any)?.post_categories ?? res?.categories;
+          if (Array.isArray(cats) && cats.length > 0) {
+            return this.mapBackendCategories(cats);
           }
           return [] as CategoryInfo[];
         }),
@@ -4394,7 +4394,7 @@ export class ForumService {
       .pipe(
         timeout(this.REQUEST_TIMEOUT),
         map((res) => {
-          if (res?.status === 'success' && Array.isArray(res.posts)) {
+          if (Array.isArray(res?.posts) && res.posts.length > 0) {
             return res.posts;
           }
           return [] as Post[];
@@ -10255,13 +10255,23 @@ FILE: src\app\pages\admin\admin.html
             <h3 class="pf-section-title">{{ 'admin.posts_form.section_settings' | translate }}</h3>
             <div class="pf-grid-2">
               <div class="pf-field">
-                <label class="pf-label">{{ 'admin.table.category' | translate }}</label>
+                <label class="pf-label"
+                  >{{ 'admin.table.category' | translate }}
+                  <span class="pf-required">*</span></label
+                >
                 <select
                   class="pf-select"
+                  [class.pf-select-invalid]="!postFormData().category_id"
                   [ngModel]="postFormData().category_id"
                   (ngModelChange)="updatePostField('category_id', $event)"
                 >
-                  <option value="">—</option>
+                  <option value="">
+                    @if (availablePostCategories().length === 0) {
+                      {{ 'common.loading' | translate }}
+                    } @else {
+                      {{ 'admin.posts_form.select_category' | translate }}
+                    }
+                  </option>
                   @for (cat of availablePostCategories(); track cat.id) {
                     <option [value]="cat.id">{{ cat.display_name }}</option>
                   }
@@ -11177,7 +11187,7 @@ export class Admin implements OnInit {
   postFormIsEdit = computed(() => this.postFormEditId() !== null);
   postFormIsValid = computed(() => {
     const d = this.postFormData();
-    return d.title.trim().length > 0 && d.content.trim().length > 0;
+    return d.title.trim().length > 0 && d.content.trim().length > 0 && d.category_id.length > 0;
   });
 
   availableCategories = computed(() => this.productService.categories());
@@ -11259,7 +11269,6 @@ export class Admin implements OnInit {
       return;
     }
 
-    this.forumService.loadCategories();
     this.loadUsers();
     this.loadOrders();
     this.loadProducts();
@@ -11269,9 +11278,12 @@ export class Admin implements OnInit {
       if (params['section'] === 'posts') {
         this.activeSection.set('posts');
         if (params['action'] === 'new') {
-          // Kis delay, hogy az oldal betöltsön
-          setTimeout(() => this.openPostForm(), 100);
+          this.forumService.loadCategories().subscribe(() => this.openPostForm());
+        } else {
+          this.forumService.loadCategories().subscribe();
         }
+      } else {
+        this.forumService.loadCategories().subscribe();
       }
     });
   }
@@ -12038,8 +12050,6 @@ export class Admin implements OnInit {
   }
 
   openPostForm(post?: Post): void {
-    this.forumService.loadCategories();
-
     if (post) {
       this.postFormEditId.set(post.id);
       this.postFormData.set({
@@ -12053,9 +12063,16 @@ export class Admin implements OnInit {
         is_featured: !!post.is_featured ? '0' : '1',
         slug: post.slug || '',
       });
+      this.forumService.loadCategories().subscribe();
     } else {
       this.postFormEditId.set(null);
       this.postFormData.set(emptyPostForm());
+      // Betöltjük a kategóriákat, és ha még nem volt kiválasztva, az elsőt állítjuk be alapértelmezettként
+      this.forumService.loadCategories().subscribe((categories) => {
+        if (categories.length > 0 && !this.postFormData().category_id) {
+          this.postFormData.update((data) => ({ ...data, category_id: categories[0].id }));
+        }
+      });
     }
     this.postFormTab.set('basic');
     this.postFormOpen.set(true);
@@ -12111,6 +12128,11 @@ export class Admin implements OnInit {
     if (!data.content.trim()) {
       this.toastService.show('admin.posts_form.error_content_required', 'error');
       this.postFormTab.set('content');
+      return;
+    }
+    if (!data.category_id) {
+      this.toastService.show('admin.posts_form.error_category_required', 'error');
+      this.postFormTab.set('basic');
       return;
     }
 
@@ -33627,7 +33649,9 @@ FILE: src\assets\i18n\de.json
       "empty_title": "Noch keine Bestellungen",
       "empty_desc": "Sobald Sie eine Bestellung aufgeben, erscheint der Verlauf hier.",
       "browse_products": "Produkte durchsuchen",
-      "load_error": "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es erneut."
+      "load_error": "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+      "tracking": "Nachverfolgung Bezeichner",
+      "order_id": "Bestellung Bezeichner"
     },
     "danger": {
       "subtitle": "Unwiderrufliche Kontoaktionen verwalten",
@@ -33909,7 +33933,9 @@ FILE: src\assets\i18n\de.json
       "deleted": "Beitrag erfolgreich gelöscht.",
       "save_error": "Beitrag konnte nicht gespeichert werden.",
       "delete_error": "Beitrag konnte nicht gelöscht werden.",
-      "error_title_required": "Titel des Beitrags ist erforderlich."
+      "error_title_required": "Titel des Beitrags ist erforderlich.",
+      "error_category_required": "Kategorie ist erforderlich.",
+      "select_category": "Kategorie auswählen..."
     },
     "stats": {
       "this_week": "diese Woche",
@@ -34503,7 +34529,9 @@ FILE: src\assets\i18n\en.json
       "empty_title": "No orders yet",
       "empty_desc": "Once you place an order, your history will appear here.",
       "browse_products": "Browse Products",
-      "load_error": "Failed to load orders. Please try again."
+      "load_error": "Failed to load orders. Please try again.",
+      "tracking": "Tracking identification",
+      "order_id": "Order ID"
     },
     "success": {
       "profile_updated": "Profile updated successfully."
@@ -34825,7 +34853,9 @@ FILE: src\assets\i18n\en.json
       "deleted": "Post deleted successfully.",
       "save_error": "Failed to save post.",
       "delete_error": "Failed to delete post.",
-      "error_title_required": "Post title is required."
+      "error_title_required": "Post title is required.",
+      "error_category_required": "Category is required.",
+      "select_category": "Select a category..."
     },
     "stats": {
       "this_week": "this week",
@@ -35367,7 +35397,9 @@ FILE: src\assets\i18n\hu.json
       "empty_title": "Még nincs rendelésed",
       "empty_desc": "Ha leadtál rendelést, itt fogod látni az előzményeidet.",
       "browse_products": "Termékek böngészése",
-      "load_error": "Nem sikerült betölteni a rendeléseket. Kérjük, próbálja újra."
+      "load_error": "Nem sikerült betölteni a rendeléseket. Kérjük, próbálja újra.",
+      "tracking": "Követési azonosító",
+      "order_id": "Rendelés Azonosítója"
     },
     "success": {
       "profile_updated": "Profil sikeresen frissítve."
@@ -35689,7 +35721,9 @@ FILE: src\assets\i18n\hu.json
       "deleted": "Bejegyzés sikeresen törölve.",
       "save_error": "Nem sikerült menteni a bejegyzést.",
       "delete_error": "Nem sikerült törölni a bejegyzést.",
-      "error_title_required": "A bejegyzés címe kötelező."
+      "error_title_required": "A bejegyzés címe kötelező.",
+      "error_category_required": "A kategória megadása kötelező.",
+      "select_category": "Válassz kategóriát..."
     },
     "stats": {
       "this_week": "ezen a héten",

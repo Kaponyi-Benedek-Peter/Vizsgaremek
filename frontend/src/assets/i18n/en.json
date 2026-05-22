@@ -308,7 +308,9 @@
       "empty_title": "No orders yet",
       "empty_desc": "Once you place an order, your history will appear here.",
       "browse_products": "Browse Products",
-      "load_error": "Failed to load orders. Please try again."
+      "load_error": "Failed to load orders. Please try again.",
+      "tracking": "Tracking identification",
+      "order_id": "Order ID"
     },
     "success": {
       "profile_updated": "Profile updated successfully."
@@ -630,7 +632,9 @@
       "deleted": "Post deleted successfully.",
       "save_error": "Failed to save post.",
       "delete_error": "Failed to delete post.",
-      "error_title_required": "Post title is required."
+      "error_title_required": "Post title is required.",
+      "error_category_required": "Category is required.",
+      "select_category": "Select a category..."
     },
     "stats": {
       "this_week": "this week",

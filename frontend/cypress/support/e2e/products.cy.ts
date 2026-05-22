@@ -47,19 +47,19 @@ describe('Products page', () => {
   });
 
   it('should search products with the search bar', () => {
-    cy.get('app-product-filter .search-input', { timeout: 10000 }).type('algoflex');
+    cy.get('app-product-filter .search-input', { timeout: 10000 }).type('aspirin');
     cy.wait(500);
     cy.get('app-product-card').each(($card) => {
       cy.wrap($card)
         .invoke('text')
         .then((text) => {
-          expect(text.toLowerCase()).to.include('algoflex');
+          expect(text.toLowerCase()).to.include('aspirin');
         });
     });
   });
 
   it('should clear search and show all products again', () => {
-    cy.get('app-product-filter .search-input', { timeout: 10000 }).type('algoflex');
+    cy.get('app-product-filter .search-input', { timeout: 10000 }).type('aspirin');
     cy.wait(500);
     cy.get('app-product-card').should('have.length.at.least', 1);
 
