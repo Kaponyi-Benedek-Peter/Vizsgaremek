@@ -30,43 +30,89 @@ export class PostCardComponent {
   private forumService = inject(ForumService);
 
   get categoryInfo() {
-    // category_id alapján keres (nem category — az nem létezik a Post modellben)
     return this.forumService.categories().find((cat) => cat.id === this.post.category_id);
   }
 
-  // author_role nincs a DB-ben — user_id alapján nem tudunk szerepet meghatározni,
-  // a badge-et a backend oldal bővítésekor lehet majd visszahozni
   get authorBadgeClass(): string {
     return 'badge-user';
   }
 
   getRelativeTime(): string {
+    if (!this.post.created_at) {
+      return 'Unknown date';
+    }
+
+    // Safari-safe parse
+    const safeDate = this.post.created_at.replace(' ', 'T');
+    const postDate = new Date(safeDate);
+
+    if (isNaN(postDate.getTime())) {
+      return 'Unknown date';
+    }
+
     const now = new Date();
-    const postDate = new Date(this.post.created_at);
     const diffMs = now.getTime() - postDate.getTime();
+
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) {
-      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-      if (diffHours === 0) {
-        const diffMinutes = Math.floor(diffMs / (1000 * 60));
-        return this.translateService.instant('time.minutes_ago', { count: diffMinutes });
-      }
-      return this.translateService.instant('time.hours_ago', { count: diffHours });
-    } else if (diffDays === 1) {
-      return this.translateService.instant('time.yesterday');
-    } else if (diffDays < 7) {
-      return this.translateService.instant('time.days_ago', { count: diffDays });
-    } else if (diffDays < 30) {
-      return this.translateService.instant('time.weeks_ago', { count: Math.floor(diffDays / 7) });
-    } else if (diffDays < 365) {
-      return this.translateService.instant('time.months_ago', { count: Math.floor(diffDays / 30) });
-    } else {
-      return this.translateService.instant('time.years_ago', { count: Math.floor(diffDays / 365) });
+    if (diffMinutes < 1) {
+      return 'Just now';
     }
+
+    if (diffHours < 1) {
+      return this.translateService.instant('time.minutes_ago', {
+        count: diffMinutes,
+      });
+    }
+
+    if (diffDays < 1) {
+      return this.translateService.instant('time.hours_ago', {
+        count: diffHours,
+      });
+    }
+
+    if (diffDays === 1) {
+      return this.translateService.instant('time.yesterday');
+    }
+
+    if (diffDays < 7) {
+      return this.translateService.instant('time.days_ago', {
+        count: diffDays,
+      });
+    }
+
+    if (diffDays < 30) {
+      return this.translateService.instant('time.weeks_ago', {
+        count: Math.floor(diffDays / 7),
+      });
+    }
+
+    if (diffDays < 365) {
+      return this.translateService.instant('time.months_ago', {
+        count: Math.floor(diffDays / 30),
+      });
+    }
+
+    return this.translateService.instant('time.years_ago', {
+      count: Math.floor(diffDays / 365),
+    });
   }
 
   handleCardClick(): void {
     this.cardClick.emit(this.post);
+  }
+
+  hideImg(event: Event): void {
+    const img = event.target as HTMLImageElement;
+
+    img.style.display = 'none';
+
+    const parent = img.parentElement;
+
+    if (parent) {
+      parent.style.display = 'none';
+    }
   }
 }

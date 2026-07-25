@@ -446,6 +446,7 @@
     }
   },
   "forum": {
+    "read_more": "Olvass tovább",
     "pinned": "Rögzítve",
     "search_placeholder": "Keresés a fórum bejegyzései között...",
     "sort_by": "Rendezés",

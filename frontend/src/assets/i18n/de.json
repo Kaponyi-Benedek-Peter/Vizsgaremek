@@ -394,6 +394,7 @@
     }
   },
   "forum": {
+    "read_more": "weiterlesen",
     "pinned": "Angepinnt",
     "search_placeholder": "Forenbeiträge durchsuchen...",
     "sort_by": "Sortieren nach",

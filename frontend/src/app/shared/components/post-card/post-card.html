@@ -14,9 +14,9 @@
     </div>
   }
 
-  @if (showImage && post.image_url) {
+  @if (showImage && post.image_url?.trim()) {
     <div class="post-image">
-      <img [src]="post.image_url" [alt]="post.title" loading="lazy" />
+      <img [src]="post.image_url" [alt]="post.title" loading="lazy" (error)="hideImg($event)" />
 
       @if (showCategory && categoryInfo) {
         <div class="category-badge-overlay" [class]="categoryInfo.color_class">
@@ -52,7 +52,7 @@
         <div class="author-info">
           <!-- author_name nincs a DB-ben — user_id első karakterét mutatjuk -->
           <div class="author-avatar-placeholder">
-            {{ post.user_id.charAt(0).toUpperCase() }}
+            {{ post.user_id.toString().charAt(0).toUpperCase() || '?' }}
           </div>
           <div class="author-details">
             <span class="author-name">#{{ post.user_id }}</span>
@@ -65,7 +65,15 @@
     @if (showStats) {
       <div class="post-stats">
         <div class="stat-item">
-          <img [src]="ICONS.statViews" alt="" class="stat-icon-img" aria-hidden="true" />
+          <img
+            [src]="ICONS.statViews"
+            alt=""
+            class="stat-icon-img"
+            width="16"
+            height="16"
+            aria-hidden="true"
+            (error)="hideImg($event)"
+          />
           <span class="stat-value">{{ post.views }}</span>
         </div>
         <div class="stat-item">

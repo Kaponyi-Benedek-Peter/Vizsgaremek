@@ -446,6 +446,7 @@
     }
   },
   "forum": {
+    "read_more": "Read more",
     "pinned": "Pinned",
     "search_placeholder": "Search forum posts...",
     "sort_by": "Sort by",
